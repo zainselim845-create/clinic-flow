@@ -1,0 +1,45 @@
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+  direction: rtl;
+  background: var(--bg-primary, #F5F7FB);
+  transition: background 0.3s ease;
+  width: 100%;
+}
+
+.app-wrapper.booking-layout {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.app-wrapper.booking-layout > * {
+  width: 100%;
+  display: block;
+}
+
+.main-content {
+  flex: 1;
+  margin-right: 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+  padding: var(--spacing-xl);
+  animation: fadeIn 0.4s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    margin-right: 0;
+    padding-bottom: 70px;
+  }
+
+  .page-content {
+    padding: var(--spacing-md);
+  }
+}
