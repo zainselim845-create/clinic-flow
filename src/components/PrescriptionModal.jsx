@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   X, Plus, Trash2, Printer, Send, FileText, CheckCircle2, 
-  Stethoscope, Calendar, User, Phone, Pill
+  Stethoscope, Calendar, User, Phone, Pill, AlertTriangle, ShieldAlert
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
+import { checkPrescriptionSafety } from '../services/drugInteractionService';
 import './PrescriptionModal.css';
 
 
@@ -41,6 +42,14 @@ export const PrescriptionModal = ({ isOpen, onClose, patient, appointment }) => 
   const [generalAdvice, setGeneralAdvice] = useState('الراحة التامة وتناول السوائل الدافئة والالتزام بالجرعات في مواعيدها.');
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const allMedicationText = useMemo(() => {
+    return medications.map(m => m.name + ' ' + (m.notes || '')).join(' ') + ' ' + diagnosis;
+  }, [medications, diagnosis]);
+
+  const safetyAlerts = useMemo(() => {
+    return checkPrescriptionSafety(allMedicationText, patient || appointment || {});
+  }, [allMedicationText, patient, appointment]);
 
   if (!isOpen) return null;
 
@@ -207,6 +216,29 @@ ${followUpDate ? `*موعد الاستشارة القادم:* ${followUpDate}\n`
               ))}
             </div>
           </div>
+
+          {/* CDS Drug Safety & Allergy Alert */}
+          {safetyAlerts.length > 0 && (
+            <div className="cds-safety-alert-banner" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1.5px solid #ef4444', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#dc2626', fontWeight: 800, fontSize: '0.95rem', marginBottom: '0.5rem' }}>
+                <ShieldAlert size={20} />
+                <span>نظام الأمان الدوائي السريري (Clinical Decision Support Alert)</span>
+              </div>
+              {safetyAlerts.map((alert, idx) => (
+                <div key={idx} style={{ marginTop: idx > 0 ? '0.75rem' : '0', padding: '0.75rem', background: '#fff', borderRadius: '8px', borderRight: '4px solid #dc2626', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+                  <div style={{ fontWeight: 800, color: '#991b1b', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                    {alert.title}
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '0.35rem' }}>
+                    {alert.description}
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: '#047857', fontWeight: 700, background: '#ecfdf5', padding: '0.35rem 0.65rem', borderRadius: '6px' }}>
+                    💡 الإجراء المقترح: {alert.recommendation}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* 2. Medications Section (Rx) */}
           <div className="rx-section-box">

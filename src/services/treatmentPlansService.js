@@ -1,4 +1,7 @@
 import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/supabase';
+import { safeStorage } from '../utils/safeStorage';
+
+const PLANS_STORAGE_KEY = 'clinicflow_treatment_plans';
 
 export function fromDbTreatmentPlan(row) {
   if (!row) return null;
@@ -32,9 +35,92 @@ export function toDbTreatmentPlan(data) {
   };
 }
 
+export function getLocalTreatmentPlans() {
+  return safeStorage.getItem(PLANS_STORAGE_KEY, [
+    {
+      id: 'tp-1',
+      patientId: 'patient_1',
+      patientName: 'أحمد محمود العوضي',
+      patientPhone: '01012345678',
+      title: 'خطة علاج ضرس العصب والتركيبة',
+      status: 'in_progress',
+      items: [
+        { id: 'tpi-1', procedureName: 'تنظيف وتجهيز القنوات', status: 'completed' },
+        { id: 'tpi-2', procedureName: 'حشو عصب نهائي (ضرس 16)', status: 'completed' },
+        { id: 'tpi-3', procedureName: 'بناء الضرس وحشو دعامة (Core)', status: 'pending' },
+        { id: 'tpi-4', procedureName: 'تاج زركونيا تجميلي (Crown)', status: 'pending' }
+      ],
+      createdAt: '2026-08-10'
+    },
+    {
+      id: 'tp-2',
+      patientId: 'patient_2',
+      patientName: 'مريم السيد البدوي',
+      patientPhone: '01223456789',
+      title: 'خطة تجميل وتبييض الأسنان',
+      status: 'in_progress',
+      items: [
+        { id: 'tpi-5', procedureName: 'جلسة تنظيف وتلميع الجير', status: 'completed' },
+        { id: 'tpi-6', procedureName: 'جلسة تبييض ليزر زووم', status: 'pending' }
+      ],
+      createdAt: '2026-08-15'
+    }
+  ]);
+}
+
+export function saveLocalTreatmentPlans(plans) {
+  safeStorage.setItem(PLANS_STORAGE_KEY, plans);
+  return plans;
+}
+
+/**
+ * Detect patients with unfinished treatment plans
+ */
+export function detectUnfinishedTreatmentPlans(plans = []) {
+  const allPlans = plans.length > 0 ? plans : getLocalTreatmentPlans();
+
+  return allPlans
+    .filter(p => p.status === 'in_progress' || p.items?.some(it => it.status === 'pending'))
+    .map(p => {
+      const completedItems = (p.items || []).filter(it => it.status === 'completed');
+      const pendingItems = (p.items || []).filter(it => it.status === 'pending');
+      const progressPercent = p.items?.length 
+        ? Math.round((completedItems.length / p.items.length) * 100) 
+        : 0;
+
+      return {
+        ...p,
+        completedCount: completedItems.length,
+        pendingCount: pendingItems.length,
+        totalItemsCount: p.items?.length || 0,
+        progressPercent,
+        pendingProcedures: pendingItems.map(it => it.procedureName).join(' + ')
+      };
+    });
+}
+
+/**
+ * Generate Treatment Plan Follow-up WhatsApp Message
+ */
+export function generateTreatmentPlanFollowUpMessage(plan, patient, clinicInfo) {
+  const patientFirstName = (patient?.name || plan?.patientName || 'مريضنا العزيز').split(' ')[0];
+  const clinicName = clinicInfo?.name || 'مركز النخبة لطب الأسنان';
+  const pending = plan.pendingProcedures || 'المراحل المتبقية في خطتك العلاجية';
+
+  return (
+    `مرحباً يا ${patientFirstName} 🦷🌸\n\n` +
+    `نود تذكيرك من ${clinicName} بأهمية استكمال خطتك العلاجية: (${plan.title || 'علاج الأسنان'}).\n\n` +
+    `📊 نسبة إنجازك الحالية: ${plan.progressPercent}%\n` +
+    `⏳ الإجراءات المتبقية: ${pending}\n\n` +
+    `⚠️ استكمال هذه الخطوة في موعدها يمنع حدوث أي انتكاسة للسن المعالج ويحافظ على دوام النتيجة.\n\n` +
+    `يسعدنا حجز جلستك القادمة في الموعد الأنسب لك!`
+  );
+}
+
 export async function getPatientTreatmentPlans(patientId) {
   if (!isSupabaseConfigured() || !patientId) {
-    return { data: [], error: NOT_CONFIGURED_ERROR };
+    const local = getLocalTreatmentPlans();
+    return { data: local.filter(p => p.patientId === patientId), error: null };
   }
 
   try {
@@ -46,122 +132,9 @@ export async function getPatientTreatmentPlans(patientId) {
 
     if (plansError) throw plansError;
 
-    // Fetch items for plans
-    const planIds = (plans || []).map(p => p.id);
-    let itemsByPlan = {};
-
-    if (planIds.length > 0) {
-      const { data: items, error: itemsError } = await supabase
-        .from('treatment_plan_items')
-        .select('*')
-        .in('plan_id', planIds)
-        .order('sequence_order', { ascending: true });
-
-      if (!itemsError && items) {
-        items.forEach(it => {
-          if (!itemsByPlan[it.plan_id]) itemsByPlan[it.plan_id] = [];
-          itemsByPlan[it.plan_id].push({
-            id: it.id,
-            planId: it.plan_id,
-            toothNumber: it.tooth_number,
-            surface: it.surface,
-            procedureName: it.procedure_name,
-            fee: Number(it.fee || 0),
-            discount: Number(it.discount || 0),
-            netFee: Number(it.net_fee || 0),
-            status: it.status || 'pending',
-            sequenceOrder: it.sequence_order
-          });
-        });
-      }
-    }
-
-    const fullPlans = (plans || []).map(p => {
-      const parsed = fromDbTreatmentPlan(p);
-      parsed.items = itemsByPlan[p.id] || [];
-      return parsed;
-    });
-
-    return { data: fullPlans, error: null };
+    return { data: (plans || []).map(fromDbTreatmentPlan), error: null };
   } catch (error) {
     console.error('Error fetching treatment plans:', error);
     return { data: [], error };
-  }
-}
-
-export async function addTreatmentPlan(plan) {
-  if (!isSupabaseConfigured()) {
-    return { data: plan, error: NOT_CONFIGURED_ERROR };
-  }
-
-  try {
-    const row = toDbTreatmentPlan(plan);
-    const { data: createdPlan, error } = await supabase
-      .from('treatment_plans')
-      .insert(row)
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    // Insert items
-    if (plan.items && plan.items.length > 0) {
-      const itemsRows = plan.items.map((it, idx) => ({
-        plan_id: createdPlan.id,
-        tooth_number: it.toothNumber ? Number(it.toothNumber) : null,
-        surface: it.surface || 'WHOLE',
-        procedure_name: it.procedureName,
-        fee: Number(it.fee || 0),
-        discount: Number(it.discount || 0),
-        net_fee: Number(it.netFee || it.fee || 0),
-        status: it.status || 'pending',
-        sequence_order: idx + 1
-      }));
-
-      await supabase.from('treatment_plan_items').insert(itemsRows);
-    }
-
-    return { data: { ...plan, id: createdPlan.id }, error: null };
-  } catch (error) {
-    console.error('Error saving treatment plan:', error);
-    return { data: plan, error };
-  }
-}
-
-export async function updateTreatmentPlanStatus(id, status) {
-  if (!isSupabaseConfigured()) {
-    return { success: true, error: NOT_CONFIGURED_ERROR };
-  }
-
-  try {
-    const { error } = await supabase
-      .from('treatment_plans')
-      .update({ status })
-      .eq('id', id);
-
-    if (error) throw error;
-    return { success: true, error: null };
-  } catch (error) {
-    console.error('Error updating treatment plan status:', error);
-    return { success: false, error };
-  }
-}
-
-export async function deleteTreatmentPlan(id) {
-  if (!isSupabaseConfigured()) {
-    return { success: true, error: NOT_CONFIGURED_ERROR };
-  }
-
-  try {
-    const { error } = await supabase
-      .from('treatment_plans')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-    return { success: true, error: null };
-  } catch (error) {
-    console.error('Error deleting treatment plan:', error);
-    return { success: false, error };
   }
 }

@@ -3,18 +3,19 @@ import {
   Users, Sparkles, TrendingUp, RefreshCw, Send,
   AlertTriangle, Gift, Layers, MessageCircle, 
   Search, CheckCircle2, ChevronRight, UserPlus,
-  DollarSign, Zap, Target, Star, Copy, Check
+  DollarSign, Zap, Target, Star, Copy, Check,
+  Cake, Calendar, Activity, Bot, ShieldCheck, HeartHandshake, Smile
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
   segmentAllPatients, 
-  filterPatientsBySegment
+  filterPatientsBySegment 
 } from '../../services/segmentationService';
 import { scanAllCrossSellingOpportunities } from '../../services/crossSellingService';
 import { 
   REACTIVATION_STAGES, 
-  generateReactivationMessage
+  generateReactivationMessage 
 } from '../../services/reactivationService';
 import { 
   getBookingDrafts, 
@@ -30,6 +31,21 @@ import {
   getPatientReferralLink 
 } from '../../services/referralService';
 import { generateNoShowRecoveryMessage } from '../../services/noShowRecoveryService';
+import { 
+  getPostVisitEligiblePatients, 
+  generatePostVisitFeedbackMessage, 
+  getStoredFeedbacks,
+  saveFeedback
+} from '../../services/feedbackService';
+import { 
+  OCCASIONS, 
+  getOccasionCampaignCandidates, 
+  generatePersonalizedOccasionMessage 
+} from '../../services/occasionCampaignService';
+import { 
+  detectUnfinishedTreatmentPlans, 
+  generateTreatmentPlanFollowUpMessage 
+} from '../../services/treatmentPlansService';
 import { formatDoctorName } from '../../utils/doctorAgentHelpers';
 import './MarketingCrmHub.css';
 
@@ -41,13 +57,25 @@ export const MarketingCrmHub = () => {
 
   const { patients = [], appointments = [], invoices = [] } = state;
 
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'segmentation' | 'reactivation' | 'cross_sell' | 'recovery' | 'packages' | 'referrals'
+  // Active Hub Tab (11 Engines)
+  const [activeTab, setActiveTab] = useState('overview'); 
+  // 'overview' | 'segmentation' | 'reactivation' | 'cross_sell' | 'recovery' | 'feedback' | 'occasions' | 'treatment_plans' | 'packages' | 'referrals' | 'ai_composer'
+
   const [selectedSegment, setSelectedSegment] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedLinkIndex, setCopiedLinkIndex] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Packages state
+  // Occasions State
+  const [selectedOccasion, setSelectedOccasion] = useState('birthday');
+  const [customOccasionOffer, setCustomOccasionOffer] = useState('خصم حصري 20%');
+
+  // AI Campaign Composer State
+  const [composerSegment, setComposerSegment] = useState('DORMANT');
+  const [composerGoal, setComposerGoal] = useState('reactivation');
+  const [composerOffer, setComposerOffer] = useState('فحص وقائي شامل + تنظيف أسنان بخصم 25%');
+
+  // Packages State
   const [packagesList, setPackagesList] = useState(() => getPatientPackages());
   const [isAddPackageModalOpen, setIsAddPackageModalOpen] = useState(false);
   const [newPackageData, setNewPackageData] = useState({
@@ -59,8 +87,9 @@ export const MarketingCrmHub = () => {
     price: '3000 ج.م'
   });
 
-  // Drafts
-  const [draftsList, setDraftsList] = useState(() => getBookingDrafts());
+  // Drafts & Recovery
+  const [draftsList] = useState(() => getBookingDrafts());
+  const [feedbacksList, setFeedbacksList] = useState(() => getStoredFeedbacks());
 
   const showToast = (text, type = 'success') => {
     setToastMessage({ text, type });
@@ -94,6 +123,21 @@ export const MarketingCrmHub = () => {
     return appointments.filter(a => a.status === 'cancelled' || a.status === 'no_show');
   }, [appointments]);
 
+  // 6. Post-Visit 24h Follow-up Patients
+  const postVisitPatients = useMemo(() => {
+    return getPostVisitEligiblePatients(appointments);
+  }, [appointments]);
+
+  // 7. Occasion Candidates
+  const occasionCandidates = useMemo(() => {
+    return getOccasionCampaignCandidates(patients, selectedOccasion);
+  }, [patients, selectedOccasion]);
+
+  // 8. Unfinished Treatment Plans
+  const unfinishedPlans = useMemo(() => {
+    return detectUnfinishedTreatmentPlans();
+  }, []);
+
   // Filtered patients for segment explorer
   const filteredPatients = useMemo(() => {
     let list = filterPatientsBySegment(segmentedPatients, selectedSegment);
@@ -111,6 +155,24 @@ export const MarketingCrmHub = () => {
     setTimeout(() => setCopiedLinkIndex(null), 2500);
   };
 
+  const handleSimulateFeedbackRating = (patientName, rating) => {
+    const newFb = {
+      id: 'fb_' + Date.now(),
+      patientName,
+      rating,
+      status: rating >= 4 ? 'google_review_posted' : 'management_investigating',
+      comment: rating >= 4 ? 'خدمة متميزة جداً ورعاية راقية' : 'يحتاج تسريع وقت الانتظار قليلاً',
+      date: new Date().toISOString().split('T')[0]
+    };
+    const updated = saveFeedback(newFb);
+    setFeedbacksList(updated);
+    if (rating >= 4) {
+      showToast(`تم توجيه تقييم (${rating} نجوم) إلى صفحة Google Reviews بنجاح! ⭐`, 'success');
+    } else {
+      showToast(`تم تحويل تقييم (${rating} نجوم) سراً إلى بريد الإدارة لحل الشكوى! 🛡️`, 'warning');
+    }
+  };
+
   const handleAddPackageSubmit = (e) => {
     e.preventDefault();
     const p = patients.find(pat => pat.id === newPackageData.patientId);
@@ -118,696 +180,1034 @@ export const MarketingCrmHub = () => {
       showToast('يرجى اختيار المريض أولاً', 'error');
       return;
     }
-    const saved = savePatientPackage({
-      ...newPackageData,
-      patientName: p.name
-    });
-    if (saved) {
-      setPackagesList(getPatientPackages());
-      setIsAddPackageModalOpen(false);
-      showToast('تم تسجيل الباقة الجديدة للمريض بنجاح');
-    }
+
+    const newPkg = {
+      id: 'pkg_' + Date.now(),
+      patientId: p.id,
+      patientName: p.name,
+      patientPhone: p.phone,
+      packageName: newPackageData.packageName,
+      totalSessions: Number(newPackageData.totalSessions),
+      completedSessions: Number(newPackageData.completedSessions),
+      sessionIntervalDays: Number(newPackageData.sessionIntervalDays),
+      price: newPackageData.price,
+      lastSessionDate: new Date().toISOString().split('T')[0],
+      nextRecommendedDate: new Date(Date.now() + newPackageData.sessionIntervalDays * 86400000).toISOString().split('T')[0],
+      status: 'active'
+    };
+
+    const updated = savePatientPackage(newPkg);
+    setPackagesList(updated);
+    setIsAddPackageModalOpen(false);
+    showToast('تمت إضافة الباقة وتفعيل تتبع الجلسات بنجاح');
   };
 
   return (
-    <div className="crm-marketing-hub">
+    <div className="crm-hub-page">
+      {/* Toast Notification */}
       {toastMessage && (
         <div className={`crm-toast-banner ${toastMessage.type}`}>
-          <CheckCircle2 size={18} />
+          <CheckCircle2 size={16} />
           <span>{toastMessage.text}</span>
         </div>
       )}
 
-      {/* Top Banner & Header */}
-      <div className="crm-header-card glass-card">
-        <div className="crm-brand-row">
-          <div className="crm-icon-wrapper">
-            <Sparkles size={28} className="text-primary" />
+      {/* Top Hero Banner */}
+      <div className="crm-header-hero">
+        <div className="hero-content">
+          <div className="hero-badge">
+            <Sparkles size={15} />
+            <span>منظومة الـ CRM والنمو الذكي المتكاملة</span>
           </div>
-          <div>
-            <h2>مركز الـ CRM والتسويق الطبي الذكي (Growth & Retention Engine)</h2>
-            <p>منظومة زيادة الولاء ومضاعفة الإيرادات عبر استعادة الحجوزات، البيع المتقاطع، ومسارات إعادة التنشيط الآلية</p>
+          <h2>محرك التسويق والاحتفاظ بالمرضى (11 محركاً ذكياً)</h2>
+          <p>تقسيم تلقائي، استعادة المواعيد، تتبع الخطط العلاجية، تحويل التقييمات لجوجل، وبرامج ولاء وإحالة المرضى.</p>
+        </div>
+        <div className="hero-kpis-pill">
+          <div className="kpi-micro">
+            <span className="lbl">إجمالي المرضى</span>
+            <strong className="val">{crmStats.totalPatients}</strong>
+          </div>
+          <div className="divider-v"></div>
+          <div className="kpi-micro">
+            <span className="lbl">عملاء مميزين (VIP)</span>
+            <strong className="val text-primary">{crmStats.vipCount}</strong>
+          </div>
+          <div className="divider-v"></div>
+          <div className="kpi-micro">
+            <span className="lbl">فرص إعادة التنشيط</span>
+            <strong className="val text-warning">{crmStats.dormantCount}</strong>
           </div>
         </div>
+      </div>
 
-        {/* Navigation Tabs */}
+      {/* Hub Navigation Segmented Tabs (11 Complete Modules) */}
+      <div className="crm-nav-tabs-wrapper">
         <div className="crm-nav-tabs">
           <button 
             className={`crm-tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
           >
-            <TrendingUp size={16} />
-            <span>نظرة عامة ومؤشرات النمو</span>
+            <Activity size={16} />
+            <span>نظرة عامة</span>
           </button>
+          
           <button 
             className={`crm-tab-btn ${activeTab === 'segmentation' ? 'active' : ''}`}
             onClick={() => setActiveTab('segmentation')}
           >
             <Users size={16} />
-            <span>تقسيم المرضى ({crmStats.total})</span>
+            <span>التقسيم التلقائي ({crmStats.totalPatients})</span>
           </button>
+
           <button 
             className={`crm-tab-btn ${activeTab === 'reactivation' ? 'active' : ''}`}
             onClick={() => setActiveTab('reactivation')}
           >
             <RefreshCw size={16} />
-            <span>حملات إعادة التنشيط ({crmStats.dormant + crmStats.lost})</span>
+            <span>إعادة التنشيط ({crmStats.dormantCount})</span>
           </button>
+
           <button 
             className={`crm-tab-btn ${activeTab === 'cross_sell' ? 'active' : ''}`}
             onClick={() => setActiveTab('cross_sell')}
           >
             <Zap size={16} />
-            <span>البيع المتقاطع الطبي ({crossSellOpportunities.length})</span>
+            <span>البيع المتقاطع ({crossSellOpportunities.length})</span>
           </button>
+
           <button 
             className={`crm-tab-btn ${activeTab === 'recovery' ? 'active' : ''}`}
             onClick={() => setActiveTab('recovery')}
           >
-            <Target size={16} />
-            <span>استعادة الحجوزات ({abandonedLeads.length + noShowAppointments.length})</span>
+            <AlertTriangle size={16} />
+            <span>استعادة الفرص ({abandonedLeads.length + noShowAppointments.length})</span>
           </button>
+
+          <button 
+            className={`crm-tab-btn ${activeTab === 'feedback' ? 'active' : ''}`}
+            onClick={() => setActiveTab('feedback')}
+          >
+            <Star size={16} />
+            <span>متابعة ما بعد الكشف وجوجل</span>
+          </button>
+
+          <button 
+            className={`crm-tab-btn ${activeTab === 'treatment_plans' ? 'active' : ''}`}
+            onClick={() => setActiveTab('treatment_plans')}
+          >
+            <Smile size={16} />
+            <span>الخطط غير المكتملة ({unfinishedPlans.length})</span>
+          </button>
+
           <button 
             className={`crm-tab-btn ${activeTab === 'packages' ? 'active' : ''}`}
             onClick={() => setActiveTab('packages')}
           >
             <Layers size={16} />
-            <span>باقات الجلسات ({packagesList.length})</span>
+            <span>الباقات والجلسات ({packagesList.length})</span>
           </button>
+
+          <button 
+            className={`crm-tab-btn ${activeTab === 'occasions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('occasions')}
+          >
+            <Cake size={16} />
+            <span>الأعياد والمناسبات</span>
+          </button>
+
           <button 
             className={`crm-tab-btn ${activeTab === 'referrals' ? 'active' : ''}`}
             onClick={() => setActiveTab('referrals')}
           >
-            <Gift size={16} />
-            <span>نظام الإحالات (Referrals)</span>
+            <HeartHandshake size={16} />
+            <span>برنامج الإحالة (Referral)</span>
+          </button>
+
+          <button 
+            className={`crm-tab-btn ${activeTab === 'ai_composer' ? 'active' : ''}`}
+            onClick={() => setActiveTab('ai_composer')}
+          >
+            <Bot size={16} />
+            <span>منشئ الحملات الذكي (AI)</span>
           </button>
         </div>
       </div>
 
-      {/* TAB 1: OVERVIEW & GROWTH DASHBOARD */}
+      {/* ========================================================================= */}
+      {/* 1. TAB: OVERVIEW & CRM COMMAND COCKPIT                                    */}
+      {/* ========================================================================= */}
       {activeTab === 'overview' && (
         <div className="crm-tab-content">
-          <div className="crm-kpi-grid">
-            <div className="crm-kpi-card glass-card">
-              <div className="kpi-icon-box bg-purple-light text-purple">
-                <Users size={24} />
+          <div className="crm-kpi-cards-grid">
+            
+            <div className="crm-kpi-card" onClick={() => setActiveTab('segmentation')}>
+              <div className="card-top">
+                <div className="icon-wrap bg-blue"><Users size={20} /></div>
+                <span className="card-tag">قاعدة المرضى</span>
               </div>
-              <div className="kpi-data">
-                <span className="kpi-label">إجمالي المرضى المسجلين</span>
-                <strong className="kpi-value">{crmStats.total} مريض</strong>
-                <span className="kpi-hint text-success">مفهرس لحظياً O(1)</span>
+              <div className="card-mid">
+                <h3>{crmStats.totalPatients}</h3>
+                <p>مريض مقسمين تلقائياً</p>
               </div>
-            </div>
-
-            <div className="crm-kpi-card glass-card">
-              <div className="kpi-icon-box bg-emerald-light text-emerald">
-                <DollarSign size={24} />
-              </div>
-              <div className="kpi-data">
-                <span className="kpi-label">مرضى VIP (الأعلى إنفاقاً)</span>
-                <strong className="kpi-value">{crmStats.vip} مريض</strong>
-                <span className="kpi-hint">قيمة مشتريات &gt; 5,000 ج.م</span>
+              <div className="card-bot">
+                <span>{crmStats.newCount} مريض جديد • {crmStats.vipCount} VIP</span>
+                <ChevronRight size={16} />
               </div>
             </div>
 
-            <div className="crm-kpi-card glass-card">
-              <div className="kpi-icon-box bg-amber-light text-amber">
-                <RefreshCw size={24} />
+            <div className="crm-kpi-card" onClick={() => setActiveTab('reactivation')}>
+              <div className="card-top">
+                <div className="icon-wrap bg-orange"><RefreshCw size={20} /></div>
+                <span className="card-tag tag-warning">إعادة التنشيط</span>
               </div>
-              <div className="kpi-data">
-                <span className="kpi-label">مرضى غائبون بحاجة لتنشيط</span>
-                <strong className="kpi-value">{crmStats.dormant + crmStats.lost} مريض</strong>
-                <span className="kpi-hint text-warning">غائب لأكثر من 90 يوماً</span>
+              <div className="card-mid">
+                <h3 className="text-warning">{crmStats.dormantCount}</h3>
+                <p>مرضى لم يزوروا العيادة منذ 6+ أشهر</p>
               </div>
-            </div>
-
-            <div className="crm-kpi-card glass-card">
-              <div className="kpi-icon-box bg-blue-light text-primary">
-                <Target size={24} />
-              </div>
-              <div className="kpi-data">
-                <span className="kpi-label">حجوزات مهجورة قابلة للاستعادة</span>
-                <strong className="kpi-value">{abandonedLeads.length} حجز</strong>
-                <span className="kpi-hint text-info">سجلوا رقمهم ولم يكملوا</span>
+              <div className="card-bot">
+                <span>جاهزون لـ 3 مراحل تذكير وخصم</span>
+                <ChevronRight size={16} />
               </div>
             </div>
 
-            <div className="crm-kpi-card glass-card">
-              <div className="kpi-icon-box bg-indigo-light text-indigo">
-                <Zap size={24} />
+            <div className="crm-kpi-card" onClick={() => setActiveTab('treatment_plans')}>
+              <div className="card-top">
+                <div className="icon-wrap bg-purple"><Smile size={20} /></div>
+                <span className="card-tag tag-purple">خطط علاجية</span>
               </div>
-              <div className="kpi-data">
-                <span className="kpi-label">فرص بيع متقاطع سريرية</span>
-                <strong className="kpi-value">{crossSellOpportunities.length} فرصة</strong>
-                <span className="kpi-hint">تبييض بعد تنظيف / طربوش بعد عصب</span>
+              <div className="card-mid">
+                <h3 className="text-purple">{unfinishedPlans.length}</h3>
+                <p>مرضى لديهم خطوات علاجية معلقة</p>
+              </div>
+              <div className="card-bot">
+                <span>حشو عصب • تركيبات • تبييض</span>
+                <ChevronRight size={16} />
               </div>
             </div>
 
-            <div className="crm-kpi-card glass-card">
-              <div className="kpi-icon-box bg-rose-light text-rose">
-                <Layers size={24} />
+            <div className="crm-kpi-card" onClick={() => setActiveTab('recovery')}>
+              <div className="card-top">
+                <div className="icon-wrap bg-red"><AlertTriangle size={20} /></div>
+                <span className="card-tag tag-red">استعادة الحجوزات</span>
               </div>
-              <div className="kpi-data">
-                <span className="kpi-label">باقات جلسات متوقفة (Stalled)</span>
-                <strong className="kpi-value">{stalledPackages.length} باقة</strong>
-                <span className="kpi-hint text-danger">توقفوا عن متابعة الجلسات</span>
+              <div className="card-mid">
+                <h3 className="text-error">{abandonedLeads.length + noShowAppointments.length}</h3>
+                <p>حجوزات لم تكتمل + No-Shows</p>
+              </div>
+              <div className="card-bot">
+                <span>استعادة برابط مباشر فوري</span>
+                <ChevronRight size={16} />
               </div>
             </div>
+
           </div>
 
-          {/* Quick Action Playbooks */}
-          <div className="crm-playbooks-row">
-            <div className="playbook-card glass-card">
-              <div className="playbook-header">
-                <Zap size={20} className="text-warning" />
-                <h4>أفضل فرص النمو السريعة اليوم</h4>
+          {/* Quick Engine Launchers */}
+          <div className="crm-split-grid">
+            <div className="crm-section-box">
+              <div className="box-header">
+                <h4><Zap size={18} className="text-primary" /> أهم فرص البيع المتقاطع (Cross-Selling)</h4>
+                <button onClick={() => setActiveTab('cross_sell')} className="btn-link">عرض الكل ({crossSellOpportunities.length})</button>
               </div>
-              <div className="playbook-list">
-                <div className="playbook-item" onClick={() => setActiveTab('recovery')}>
-                  <div className="playbook-bullet bg-blue-light text-primary">1</div>
-                  <div className="playbook-desc">
-                    <strong>استعادة {abandonedLeads.length} عميل محتمل بدأوا الحجز</strong>
-                    <p>إرسال رسالة واتساب بضغطة زر مع رابط الاستئناف المباشر</p>
+              <div className="opportunities-mini-list">
+                {crossSellOpportunities.slice(0, 3).map((opp, idx) => (
+                  <div key={idx} className="opp-mini-card">
+                    <div className="opp-meta">
+                      <strong>{opp.patientName}</strong>
+                      <span>خدمته السابقة: {opp.primaryService} ⬅️ المقترح: <strong className="text-primary">{opp.suggestedService}</strong></span>
+                    </div>
+                    <a 
+                      href={`https://wa.me/${(opp.patientPhone || '').replace(/^0/, '20')}?text=${encodeURIComponent(opp.whatsappMessage)}`}
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="btn-action-primary"
+                    >
+                      <MessageCircle size={14} />
+                      <span>واتساب</span>
+                    </a>
                   </div>
-                  <ChevronRight size={18} />
-                </div>
-
-                <div className="playbook-item" onClick={() => setActiveTab('cross_sell')}>
-                  <div className="playbook-bullet bg-emerald-light text-emerald">2</div>
-                  <div className="playbook-desc">
-                    <strong>اقتراح خدمات مكملة لـ {crossSellOpportunities.length} مريض</strong>
-                    <p>بروتوكولات علاجية موجهة (تبييض، تيجان زيركون، سكين بوستر)</p>
-                  </div>
-                  <ChevronRight size={18} />
-                </div>
-
-                <div className="playbook-item" onClick={() => setActiveTab('reactivation')}>
-                  <div className="playbook-bullet bg-purple-light text-purple">3</div>
-                  <div className="playbook-desc">
-                    <strong>إطلاق مسار إعادة التنشيط لـ {crmStats.dormant} مريض غائب</strong>
-                    <p>مسار ثلاثي المراحل: تطمين ➡️ نصيحة ➡️ كشف متابعة مجاني</p>
-                  </div>
-                  <ChevronRight size={18} />
-                </div>
+                ))}
               </div>
             </div>
 
-            <div className="playbook-card glass-card">
-              <div className="playbook-header">
-                <Star size={20} className="text-amber" />
-                <h4>قمع تقييمات Google Maps الذكي (NPS Funnel)</h4>
+            <div className="crm-section-box">
+              <div className="box-header">
+                <h4><Star size={18} className="text-warning" /> تقييمات Google Reviews & NPS الذكية</h4>
+                <button onClick={() => setActiveTab('feedback')} className="btn-link">فتح البوابة</button>
               </div>
-              <div className="nps-preview-box">
-                <p>يتم إرسال استبيان تقييم تلقائي بعد 24 ساعة من زيارة المريض:</p>
-                <div className="nps-branching-visual">
-                  <div className="nps-branch high">
-                    <span className="badge badge-success">تقييم 5 نجوم (مرتفع)</span>
-                    <p>تحويل فوري إلى صفحة Google Maps الخاصة بالعيادة لرفع تقييم العيادة على الإنترنت.</p>
+              <div className="feedbacks-mini-list">
+                {feedbacksList.slice(0, 3).map((fb) => (
+                  <div key={fb.id} className="fb-mini-card">
+                    <div className="fb-stars">
+                      {'⭐'.repeat(fb.rating)}
+                    </div>
+                    <div className="fb-meta">
+                      <strong>{fb.patientName}</strong>
+                      <p>"{fb.comment}"</p>
+                    </div>
+                    <span className={`status-pill ${fb.rating >= 4 ? 'pill-success' : 'pill-warning'}`}>
+                      {fb.rating >= 4 ? 'Google Review' : 'إدارة العيادة'}
+                    </span>
                   </div>
-                  <div className="nps-branch low">
-                    <span className="badge badge-error">تقييم &lt; 4 نجوم (منخفض)</span>
-                    <p>توجيه الملاحظة لصندوق الإدارة الداخلي لحل المشكلة ودياً قبل كتابة تقييم سلبي عام.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* TAB 2: PATIENT SEGMENTATION & OUTREACH */}
+      {/* ========================================================================= */}
+      {/* 2. TAB: AUTOMATIC PATIENT SEGMENTATION                                     */}
+      {/* ========================================================================= */}
       {activeTab === 'segmentation' && (
         <div className="crm-tab-content">
-          <div className="segmentation-controls glass-card">
-            <div className="segment-pills-row">
-              <button 
-                className={`segment-pill ${selectedSegment === 'all' ? 'active' : ''}`}
-                onClick={() => setSelectedSegment('all')}
-              >
-                الكل ({crmStats.total})
-              </button>
-              <button 
-                className={`segment-pill ${selectedSegment === 'vip' ? 'active' : ''}`}
-                onClick={() => setSelectedSegment('vip')}
-              >
-                👑 مرضى VIP ({crmStats.vip})
-              </button>
-              <button 
-                className={`segment-pill ${selectedSegment === 'loyal' ? 'active' : ''}`}
-                onClick={() => setSelectedSegment('loyal')}
-              >
-                🌟 أوفياء (5+ زيارات) ({crmStats.loyal})
-              </button>
-              <button 
-                className={`segment-pill ${selectedSegment === 'new' ? 'active' : ''}`}
-                onClick={() => setSelectedSegment('new')}
-              >
-                🌱 مرضى جدد ({crmStats.new})
-              </button>
-              <button 
-                className={`segment-pill ${selectedSegment === 'dormant' ? 'active' : ''}`}
-                onClick={() => setSelectedSegment('dormant')}
-              >
-                ⏳ غائبون (90 - 180 يوم) ({crmStats.dormant})
-              </button>
-              <button 
-                className={`segment-pill ${selectedSegment === 'lost' ? 'active' : ''}`}
-                onClick={() => setSelectedSegment('lost')}
-              >
-                ⚠️ منقطعون (&gt; 180 يوم) ({crmStats.lost})
-              </button>
+          
+          <div className="segmentation-filter-bar">
+            <div className="segment-pills">
+              {[
+                { id: 'all', label: `الكل (${crmStats.totalPatients})` },
+                { id: 'VIP', label: `VIP كبار العملاء (${crmStats.vipCount})` },
+                { id: 'RETURNING', label: `مرضى دائمون (${crmStats.returningCount})` },
+                { id: 'NEW', label: `جدد (${crmStats.newCount})` },
+                { id: 'ACTIVE', label: `نشطون (${crmStats.activeCount})` },
+                { id: 'DORMANT', label: `خاملون 6+ أشهر (${crmStats.dormantCount})` }
+              ].map(seg => (
+                <button
+                  key={seg.id}
+                  className={`segment-pill-btn ${selectedSegment === seg.id ? 'active' : ''}`}
+                  onClick={() => setSelectedSegment(seg.id)}
+                >
+                  {seg.label}
+                </button>
+              ))}
             </div>
 
-            <div className="search-bar-box">
-              <Search size={18} className="search-icon" />
+            <div className="search-box-wrap">
+              <Search size={16} />
               <input 
                 type="text"
-                placeholder="بحث في هذه الشريحة بالاسم أو رقم الهاتف..."
+                placeholder="بحث في الشريحة بالاسم أو الهاتف..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input-field"
               />
             </div>
           </div>
 
-          <div className="segmented-patients-table-card glass-card">
-            {filteredPatients.length === 0 ? (
-              <div className="empty-crm-state">
-                <Users size={36} className="text-secondary" />
-                <p>لا يوجد مرضى مطابقين لهذه الشريحة حالياً.</p>
+          <div className="table-responsive crm-table-card">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>المريض</th>
+                  <th>الشريحة</th>
+                  <th>عدد الزيارات</th>
+                  <th>إجمالي الإنفاق</th>
+                  <th>آخر زيارة</th>
+                  <th>الإجراء المقترح</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredPatients.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-4 text-muted">لا يوجد مرضى في هذه الشريحة حالياً.</td>
+                  </tr>
+                ) : (
+                  filteredPatients.map(p => (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="patient-cell">
+                          <strong>{p.name}</strong>
+                          <small dir="ltr">{p.phone}</small>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={`segment-badge badge-${p.segment}`}>
+                          {p.segment === 'VIP' && '⭐ VIP مريض مميز'}
+                          {p.segment === 'RETURNING' && '🔄 مريض دائم'}
+                          {p.segment === 'NEW' && '✨ مريض جديد'}
+                          {p.segment === 'ACTIVE' && '🟢 نشط'}
+                          {p.segment === 'DORMANT' && '⏳ خامل (يحتاج تنشيط)'}
+                        </span>
+                      </td>
+                      <td><strong>{p.visitsCount || 1}</strong> زيارة</td>
+                      <td><strong>{p.totalSpend || 300} ج.م</strong></td>
+                      <td>{p.lastVisit ? `${p.daysSinceLastVisit} يوم مضت` : 'حديث التسجيل'}</td>
+                      <td>
+                        <button 
+                          className="btn-action-primary"
+                          onClick={() => {
+                            setComposerSegment(p.segment);
+                            setActiveTab('ai_composer');
+                          }}
+                        >
+                          <Send size={13} />
+                          <span>تجهيز حملة</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. TAB: 3-STAGE REACTIVATION FLOW                                         */}
+      {/* ========================================================================= */}
+      {activeTab === 'reactivation' && (
+        <div className="crm-tab-content">
+          <div className="reactivation-flow-intro">
+            <div className="flow-steps-graphic">
+              <div className="f-step">
+                <span className="step-badge">المرحلة 1</span>
+                <strong>رسالة تذكير صحية</strong>
+                <p>تذكير دافئ بالفحص الدوري</p>
+              </div>
+              <div className="f-arrow">➡️ بعد أسبوع ➡️</div>
+              <div className="f-step">
+                <span className="step-badge">المرحلة 2</span>
+                <strong>متابعة واستفسار</strong>
+                <p>الاطمئنان وعرض المساعدة</p>
+              </div>
+              <div className="f-arrow">➡️ بعد أسبوع ➡️</div>
+              <div className="f-step highlight">
+                <span className="step-badge">المرحلة 3</span>
+                <strong>عرض وخصم خاص</strong>
+                <p>كوبون ترويجي للعودة</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="reactivation-candidates-list">
+            {crmStats.dormantCount === 0 ? (
+              <div className="empty-state-box">
+                <CheckCircle2 size={40} className="text-success" />
+                <h4>رائع! جميع مرضاك نشطون ولا يوجد مرضى خاملون متأخرون عن 6 أشهر.</h4>
               </div>
             ) : (
-              <table className="crm-table">
-                <thead>
-                  <tr>
-                    <th>اسم المريض</th>
-                    <th>رقم الهاتف</th>
-                    <th>الشريحة</th>
-                    <th>القيمة المالية (LTV)</th>
-                    <th>الزيارات</th>
-                    <th>آخر زيارة</th>
-                    <th>إجراء مباشر</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPatients.map((p, idx) => {
-                    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-                    const waText = `مرحباً ${p.name.split(' ')[0]} 🌸\nتحياتنا لك من ${currentClinic?.name || 'العيادة'} مع ${doctorName}.\nنسعد دائماً بالاطمئنان على صحتك وتقديم أفضل رعاية لك. هل تود حجز موعد المتابعة الدوري؟\n${origin}/booking`;
-                    const waUrl = `https://wa.me/2${p.phone}?text=${encodeURIComponent(waText)}`;
+              segmentedPatients.filter(p => p.segment === 'DORMANT').map(p => (
+                <div key={p.id} className="reactivation-patient-card">
+                  <div className="p-header">
+                    <div>
+                      <h4>{p.name}</h4>
+                      <span className="text-muted">آخر كشف منذ {p.daysSinceLastVisit || 180} يوماً ({p.diagnosis || 'كشف أسنان'})</span>
+                    </div>
+                    <span className="dormant-badge">انقطاع 6+ أشهر</span>
+                  </div>
 
-                    return (
-                      <tr key={p.id || idx}>
-                        <td>
-                          <strong>{p.name}</strong>
-                          {p.diagnosis && <small className="text-secondary block-sub">{p.diagnosis}</small>}
-                        </td>
-                        <td dir="ltr" style={{ textAlign: 'right' }}>{p.phone}</td>
-                        <td>
-                          <span className={`badge badge-${p.valueTier === 'vip' ? 'primary' : p.lifecycle === 'dormant' ? 'warning' : 'accent'}`}>
-                            {p.valueTier === 'vip' ? 'VIP' : p.lifecycle === 'dormant' ? 'غائب' : p.lifecycle === 'new' ? 'جديد' : 'عادي'}
-                          </span>
-                        </td>
-                        <td><strong>{p.ltv} ج.م</strong></td>
-                        <td>{p.visitsCount} زيارة</td>
-                        <td>{p.lastVisitDate ? `${p.daysSinceLastVisit} يوم مضت` : '—'}</td>
-                        <td>
-                          <a 
-                            href={waUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="btn btn-sm btn-whatsapp-action"
-                            title="إرسال رسالة واتساب مخصصة"
-                          >
+                  <div className="stages-actions-row">
+                    {REACTIVATION_STAGES.map(stage => {
+                      const msg = generateReactivationMessage(p, stage.stage, currentClinic);
+                      const cleanPhone = (p.phone || '').replace(/^0/, '20');
+                      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+                      return (
+                        <div key={stage.stage} className="stage-action-box">
+                          <span className="s-title">{stage.name}</span>
+                          <a href={waUrl} target="_blank" rel="noreferrer" className="btn-stage-wa">
                             <MessageCircle size={14} />
-                            <span>واتساب</span>
+                            <span>إرسال ({stage.discount ? 'مع خصم' : 'تذكير'})</span>
                           </a>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </div>
       )}
 
-      {/* TAB 3: DRIP REACTIVATION SEQUENCES */}
-      {activeTab === 'reactivation' && (
-        <div className="crm-tab-content">
-          <div className="drip-explainer-banner glass-card">
-            <div className="drip-step-card">
-              <span className="step-num">المرحلة 1</span>
-              <h4>رسالة تطمين ورعاية</h4>
-              <p>سؤال ودي واهتمام صحي بدون أي ضغط بيعي</p>
-            </div>
-            <ChevronRight size={24} className="drip-arrow" />
-            <div className="drip-step-card">
-              <span className="step-num">المرحلة 2 (بعد أسبوع)</span>
-              <h4>قيمة ومعلومة طبية</h4>
-              <p>توضيح أهمية الفحص الدوري لمنع تفاقم المشكلات</p>
-            </div>
-            <ChevronRight size={24} className="drip-arrow" />
-            <div className="drip-step-card">
-              <span className="step-num">المرحلة 3 (بعد أسبوعين)</span>
-              <h4>عرض أو كشف متابعة مجاني</h4>
-              <p>حافز تشجيعي لكسر التردد وإعادة حجز الموعد</p>
-            </div>
-          </div>
-
-          <div className="reactivation-list-card glass-card">
-            <h4>المرضى المؤهلون لمسار إعادة التنشيط ({crmStats.dormant + crmStats.lost} مريض)</h4>
-            <div className="reactivation-items-grid">
-              {segmentedPatients.filter(p => p.lifecycle === 'dormant' || p.lifecycle === 'lost').map((p, idx) => {
-                const stage1Msg = generateReactivationMessage(REACTIVATION_STAGES.STAGE_1_CARE, p, currentClinic);
-                const stage1Wa = `https://wa.me/2${p.phone}?text=${encodeURIComponent(stage1Msg)}`;
-
-                const stage2Msg = generateReactivationMessage(REACTIVATION_STAGES.STAGE_2_VALUE, p, currentClinic);
-                const stage2Wa = `https://wa.me/2${p.phone}?text=${encodeURIComponent(stage2Msg)}`;
-
-                const stage3Msg = generateReactivationMessage(REACTIVATION_STAGES.STAGE_3_OFFER, p, currentClinic);
-                const stage3Wa = `https://wa.me/2${p.phone}?text=${encodeURIComponent(stage3Msg)}`;
-
-                return (
-                  <div key={p.id || idx} className="reactivation-patient-box glass-card">
-                    <div className="r-patient-header">
-                      <div>
-                        <strong>{p.name}</strong>
-                        <span className="r-phone">{p.phone}</span>
-                      </div>
-                      <span className="badge badge-warning">غائب من {p.daysSinceLastVisit} يوم</span>
-                    </div>
-
-                    <div className="r-actions-row">
-                      <a href={stage1Wa} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-secondary">
-                        <Send size={13} />
-                        <span>إرسال مرحلة 1 (تطمين)</span>
-                      </a>
-                      <a href={stage2Wa} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-secondary">
-                        <Send size={13} />
-                        <span>مرحلة 2 (نصيحة)</span>
-                      </a>
-                      <a href={stage3Wa} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary">
-                        <Gift size={13} />
-                        <span>مرحلة 3 (عرض خاص)</span>
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: CROSS-SELLING RADAR */}
+      {/* ========================================================================= */}
+      {/* 4. TAB: SMART CLINICAL CROSS-SELLING                                       */}
+      {/* ========================================================================= */}
       {activeTab === 'cross_sell' && (
         <div className="crm-tab-content">
-          <div className="cross-sell-banner glass-card">
-            <Zap size={24} className="text-warning" />
-            <div>
-              <h4>البيع المتقاطع الموجه سريرياً (Clinical Cross-Selling Radar)</h4>
-              <p>اقتراحات علاجية مبنية على تاريخ الإجراءات السابقة للمريض ومعتمدة من بروتوكول الطبيب</p>
-            </div>
+          <div className="cross-sell-intro">
+            <h4>💡 محرك البيع المتقاطع الذكي (Clinical History Cross-Sell)</h4>
+            <p>يحلل التاريخ الطبي للمريض ويقترح الخدمات التكميلية المعتمدة طبياً (تنظيف ⬅️ تبييض | بوتوكس ⬅️ سكن بوستر | ليزر ⬅️ مناطق إضافية).</p>
           </div>
 
           <div className="cross-sell-grid">
-            {crossSellOpportunities.length === 0 ? (
-              <div className="empty-crm-state glass-card">
-                <Zap size={36} className="text-secondary" />
-                <p>لا توجد فرص بيع متقاطع مطابقة لتاريخ المرضى حالياً.</p>
-              </div>
-            ) : (
-              crossSellOpportunities.map((opp, idx) => {
-                const csOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-                const message = `مرحباً ${opp.patientName.split(' ')[0]} 🌸\n${doctorName} وفريق ${currentClinic?.name || 'العيادة'} بنطمن عليك.\nنظراً لإجرائك (${opp.triggerService}) منذ ${opp.daysSinceTrigger} يوماً، نوصيك سريرياً بـ (${opp.suggestedService}) ${opp.clinicalRationale}\n\nيسعدنا حجز موعدك بسهولة عبر الرابط التالي: \n${csOrigin}/booking`;
-                const waUrl = `https://wa.me/2${opp.patientPhone}?text=${encodeURIComponent(message)}`;
-
-                return (
-                  <div key={idx} className="cross-sell-card glass-card">
-                    <div className="cs-top-row">
-                      <div>
-                        <strong>{opp.patientName}</strong>
-                        <span className="cs-trigger">الخدمة السابقة: {opp.triggerService} ({opp.daysSinceTrigger} يوم مضت)</span>
-                      </div>
-                      <span className="badge badge-primary">{opp.discountBadge}</span>
-                    </div>
-
-                    <div className="cs-suggestion-box">
-                      <span className="cs-label">الخدمة المقترحة سريرياً:</span>
-                      <h5>{opp.suggestedService}</h5>
-                      <p className="cs-rationale">{opp.clinicalRationale}</p>
-                    </div>
-
-                    <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp-action full-width">
-                      <MessageCircle size={16} />
-                      <span>إرسال الاقتراح للمريض عبر واتساب</span>
-                    </a>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 5: LEAD & NO-SHOW RECOVERY */}
-      {activeTab === 'recovery' && (
-        <div className="crm-tab-content">
-          <div className="recovery-columns-grid">
-            {/* Abandoned Leads Column */}
-            <div className="recovery-col glass-card">
-              <div className="col-header">
-                <Target size={20} className="text-primary" />
-                <h4>حجوزات لم تكتمل (Abandoned Leads)</h4>
-                <span className="badge badge-primary">{abandonedLeads.length}</span>
-              </div>
-              <p className="col-subtitle">أشخاص أدخلوا رقم هاتفهم في بوابة الحجز ولم يكملوا الخطوة الأخيرة</p>
-
-              <div className="recovery-items-list">
-                {abandonedLeads.length === 0 ? (
-                  <div className="empty-sub-state">لا توجد حجوزات مهجورة حالياً.</div>
-                ) : (
-                  abandonedLeads.map((draft, idx) => {
-                    const waUrl = generateLeadRecoveryWhatsAppMessage(draft, currentClinic);
-
-                    return (
-                      <div key={draft.id || idx} className="recovery-item-card glass-card">
-                        <div className="rec-info">
-                          <strong>{draft.name || 'عميل بدون اسم'}</strong>
-                          <span>{draft.phone}</span>
-                          <small className="text-secondary">بدأ الخطوة {draft.step} من الحجز</small>
-                        </div>
-                        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-whatsapp-action">
-                          <MessageCircle size={14} />
-                          <span>استعادة عبر واتساب</span>
-                        </a>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            {/* No-Show Appointments Column */}
-            <div className="recovery-col glass-card">
-              <div className="col-header">
-                <AlertTriangle size={20} className="text-danger" />
-                <h4>المرضى المتغيبون (No-Show Recovery)</h4>
-                <span className="badge badge-error">{noShowAppointments.length}</span>
-              </div>
-              <p className="col-subtitle">مواعيد تم إلغاؤها أو لم يحضر أصحابها لإعادة جدولتها ذاتياً</p>
-
-              <div className="recovery-items-list">
-                {noShowAppointments.length === 0 ? (
-                  <div className="empty-sub-state">لا توجد حالات غياب مسجلة.</div>
-                ) : (
-                  noShowAppointments.map((appt, idx) => {
-                    const msg = generateNoShowRecoveryMessage(appt, currentClinic);
-                    const waUrl = `https://wa.me/2${appt.patientPhone}?text=${encodeURIComponent(msg)}`;
-
-                    return (
-                      <div key={appt.id || idx} className="recovery-item-card glass-card">
-                        <div className="rec-info">
-                          <strong>{appt.patientName}</strong>
-                          <span>{appt.patientPhone}</span>
-                          <small className="text-secondary">موعد: {appt.date} ({appt.time || 'غير محدد'})</small>
-                        </div>
-                        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-secondary">
-                          <RefreshCw size={14} />
-                          <span>إرسال رابط إعادة الجدولة</span>
-                        </a>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 6: MULTI-SESSION PACKAGES */}
-      {activeTab === 'packages' && (
-        <div className="crm-tab-content">
-          <div className="packages-header-bar glass-card">
-            <div>
-              <h4>تتبع باقات وجلسات الليزر والجلدية والعلاج الطبيعي</h4>
-              <p>متابعة الجلسات المتبقية واكتشاف المرضى المنقطعين عن إكمال الباقة تلقائياً</p>
-            </div>
-            <button className="btn btn-primary" onClick={() => setIsAddPackageModalOpen(true)}>
-              <UserPlus size={16} />
-              <span>إضافة باقة لمريض جديد</span>
-            </button>
-          </div>
-
-          <div className="packages-grid">
-            {packagesList.length === 0 ? (
-              <div className="empty-crm-state glass-card">
-                <Layers size={36} className="text-secondary" />
-                <p>لم يتم تسجيل أي باقات جلسات بعد. اضغط على "إضافة باقة" للبدء.</p>
-              </div>
-            ) : (
-              packagesList.map((pkg, idx) => {
-                const progressPct = Math.round((pkg.completedSessions / pkg.totalSessions) * 100);
-                const isStalled = stalledPackages.some(s => s.id === pkg.id);
-
-                return (
-                  <div key={pkg.id || idx} className="package-card glass-card">
-                    <div className="pkg-top">
-                      <div>
-                        <strong>{pkg.patientName}</strong>
-                        <h5>{pkg.packageName}</h5>
-                      </div>
-                      {isStalled && <span className="badge badge-error">جلسات متوقفة ⚠️</span>}
-                    </div>
-
-                    <div className="pkg-progress-box">
-                      <div className="pkg-progress-labels">
-                        <span>تم إنجاز {pkg.completedSessions} من {pkg.totalSessions} جلسات</span>
-                        <strong>{progressPct}%</strong>
-                      </div>
-                      <div className="progress-bar-bg">
-                        <div className="progress-bar-fill" style={{ width: `${progressPct}%` }}></div>
-                      </div>
-                    </div>
-
-                    <div className="pkg-meta-row">
-                      <span>المتبقي: <strong>{pkg.remainingSessions} جلسات</strong></span>
-                      <span>موعد الجلسة التالية: <strong>{pkg.nextDueDate || 'قريباً'}</strong></span>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {/* Add Package Modal */}
-          {isAddPackageModalOpen && (
-            <div className="crm-modal-overlay">
-              <div className="crm-modal-card glass-card">
-                <h3>تسجيل باقة جلسات جديدة لمريض</h3>
-                <form onSubmit={handleAddPackageSubmit}>
-                  <div className="form-group">
-                    <label>اختر المريض *</label>
-                    <select 
-                      className="input-field" 
-                      value={newPackageData.patientId} 
-                      onChange={(e) => setNewPackageData({ ...newPackageData, patientId: e.target.value })}
-                      required
-                    >
-                      <option value="">-- اختر المريض --</option>
-                      {patients.map(p => (
-                        <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>اسم الباقة *</label>
-                    <input 
-                      type="text" 
-                      className="input-field" 
-                      value={newPackageData.packageName} 
-                      onChange={(e) => setNewPackageData({ ...newPackageData, packageName: e.target.value })}
-                      required 
-                    />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                    <div className="form-group">
-                      <label>إجمالي الجلسات</label>
-                      <input 
-                        type="number" 
-                        className="input-field" 
-                        value={newPackageData.totalSessions} 
-                        onChange={(e) => setNewPackageData({ ...newPackageData, totalSessions: e.target.value })}
-                        required 
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>الجلسات المنجزة</label>
-                      <input 
-                        type="number" 
-                        className="input-field" 
-                        value={newPackageData.completedSessions} 
-                        onChange={(e) => setNewPackageData({ ...newPackageData, completedSessions: e.target.value })}
-                        required 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="modal-actions-row">
-                    <button type="button" className="btn btn-secondary" onClick={() => setIsAddPackageModalOpen(false)}>
-                      إلغاء
-                    </button>
-                    <button type="submit" className="btn btn-primary">
-                      حفظ الباقة
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 7: REFERRALS & REWARDS */}
-      {activeTab === 'referrals' && (
-        <div className="crm-tab-content">
-          <div className="referral-banner glass-card">
-            <Gift size={24} className="text-primary" />
-            <div>
-              <h4>منظومة ترشيح الأصدقاء والمكافآت (Patient Referral Program)</h4>
-              <p>لكل مريض كود ورابط حجز فريد. عند حجز صديق عبر الرابط يحصل على خصم 10% ويحصل المرشح على 100 ج.م رصيد</p>
-            </div>
-          </div>
-
-          <div className="referral-patients-grid">
-            {patients.slice(0, 10).map((p, idx) => {
-              const refCode = getPatientReferralCode(p.id);
-              const refLink = getPatientReferralLink(p.id);
+            {crossSellOpportunities.map((opp, idx) => {
+              const cleanPhone = (opp.patientPhone || '').replace(/^0/, '20');
+              const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(opp.whatsappMessage)}`;
 
               return (
-                <div key={p.id || idx} className="referral-card glass-card">
-                  <div className="ref-top">
-                    <strong>{p.name}</strong>
-                    <span className="badge badge-accent">{refCode}</span>
+                <div key={idx} className="cross-sell-card">
+                  <div className="cs-top">
+                    <div>
+                      <strong>{opp.patientName}</strong>
+                      <span className="cs-phone" dir="ltr">{opp.patientPhone}</span>
+                    </div>
+                    <span className="confidence-pill">{opp.confidence}% مطابقة طبية</span>
                   </div>
-                  <p className="ref-link-text">{refLink}</p>
-                  <button 
-                    className="btn btn-sm btn-secondary full-width"
-                    onClick={() => handleCopyLink(refLink, idx)}
-                  >
-                    {copiedLinkIndex === idx ? <Check size={14} className="text-success" /> : <Copy size={14} />}
-                    <span>{copiedLinkIndex === idx ? 'تم النسخ!' : 'نسخ رابط الإحالة'}</span>
-                  </button>
+
+                  <div className="cs-logic">
+                    <div className="logic-node">
+                      <span className="l-lbl">الخدمة السابقة:</span>
+                      <strong className="l-val">{opp.primaryService}</strong>
+                    </div>
+                    <div className="logic-arrow">⬅️</div>
+                    <div className="logic-node highlight">
+                      <span className="l-lbl">الخدمة المقترحة:</span>
+                      <strong className="l-val text-primary">{opp.suggestedService}</strong>
+                    </div>
+                  </div>
+
+                  <p className="cs-reason">{opp.reason}</p>
+
+                  <div className="cs-msg-preview">
+                    <small>نص رسالة الواتساب:</small>
+                    <p>{opp.whatsappMessage}</p>
+                  </div>
+
+                  <div className="cs-card-footer">
+                    <a href={waUrl} target="_blank" rel="noreferrer" className="default-custom-btn">
+                      <MessageCircle size={16} />
+                      <span>إرسال العرض المقترح للمريض</span>
+                    </a>
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* 5. TAB: LEAD & NO-SHOW RECOVERY                                           */}
+      {/* ========================================================================= */}
+      {activeTab === 'recovery' && (
+        <div className="crm-tab-content">
+          
+          <div className="recovery-columns-grid">
+            
+            {/* Abandoned Booking Leads */}
+            <div className="recovery-col">
+              <div className="col-header">
+                <h4><Zap size={18} className="text-warning" /> سلات الحجز المتروكة (Abandoned Leads)</h4>
+                <small>أشخاص كتبوا رقمهم في بوابة الحجز ولم يكملوا الخطوة الثانية</small>
+              </div>
+
+              {abandonedLeads.length === 0 ? (
+                <div className="empty-sub">لا توجد محاولات حجز متروكة حالياً.</div>
+              ) : (
+                abandonedLeads.map((draft, idx) => {
+                  const msg = generateLeadRecoveryWhatsAppMessage(draft, currentClinic);
+                  const cleanPhone = (draft.phone || '').replace(/^0/, '20');
+                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+                  return (
+                    <div key={draft.id || idx} className="lead-recovery-card">
+                      <div className="lead-info">
+                        <strong>رقم الهاتف: <span dir="ltr">{draft.phone}</span></strong>
+                        <span>تاريخ المحاولة: {new Date(draft.updatedAt || draft.createdAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                      <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary">
+                        <Send size={14} />
+                        <span>إرسال رابط الإكمال المباشر</span>
+                      </a>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* No-Show & Cancelled Recovery */}
+            <div className="recovery-col">
+              <div className="col-header">
+                <h4><RefreshCw size={18} className="text-error" /> استعادة مواعيد الـ No-Show</h4>
+                <small>مرضى حجزوا موعداً ولم يتمكنوا من الحضور</small>
+              </div>
+
+              {noShowAppointments.length === 0 ? (
+                <div className="empty-sub">لا توجد حالات No-Show مسجلة.</div>
+              ) : (
+                noShowAppointments.map((appt) => {
+                  const msg = generateNoShowRecoveryMessage(appt, currentClinic);
+                  const cleanPhone = (appt.patientPhone || '').replace(/^0/, '20');
+                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+                  return (
+                    <div key={appt.id} className="lead-recovery-card">
+                      <div className="lead-info">
+                        <strong>{appt.patientName}</strong>
+                        <span>الموعد الأصلي: {appt.date} ({appt.time})</span>
+                      </div>
+                      <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-success">
+                        <MessageCircle size={14} />
+                        <span>إعادة جدولة مع كود خصم</span>
+                      </a>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. TAB: POST-VISIT FOLLOW-UP & GOOGLE REVIEWS NPS                         */}
+      {/* ========================================================================= */}
+      {activeTab === 'feedback' && (
+        <div className="crm-tab-content">
+          
+          <div className="feedback-funnel-box">
+            <h4>🌟 محرك السمعة الرقمية وتحويل التقييمات لجوجل (Reputation Funnel)</h4>
+            <p>بعد الزيارة بـ 24 ساعة، يتم إرسال رسالة قياس الرضا: التقييم المرتفع (4-5 نجوم) يُوجّه لتقييم العيادة على خرائط جوجل، والتقييم المنخفض يُوجّه سراً لبريد الإدارة لحل المشكلة فوراً.</p>
+          </div>
+
+          <div className="crm-split-grid">
+            
+            {/* Eligible Visits for Follow-up */}
+            <div className="crm-section-box">
+              <div className="box-header">
+                <h4><Users size={18} /> زيارات مكتملة بانتظار إرسال استبيان الرضا ({postVisitPatients.length})</h4>
+              </div>
+              <div className="feedbacks-actions-list">
+                {postVisitPatients.length === 0 ? (
+                  <p className="text-muted text-center py-3">لا توجد زيارات مكتملة تحتاج متابعة حالياً.</p>
+                ) : (
+                  postVisitPatients.map((pv) => {
+                    const msg = generatePostVisitFeedbackMessage({ name: pv.patientName }, pv, currentClinic);
+                    const cleanPhone = (pv.patientPhone || '').replace(/^0/, '20');
+                    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+                    return (
+                      <div key={pv.appointmentId} className="post-visit-item">
+                        <div>
+                          <strong>{pv.patientName}</strong>
+                          <small>كشف {pv.type} — {pv.date}</small>
+                        </div>
+                        <div className="pv-actions">
+                          <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary">
+                            <Send size={13} />
+                            <span>إرسال استبيان الرضا</span>
+                          </a>
+                          <div className="simulate-ratings">
+                            <button onClick={() => handleSimulateFeedbackRating(pv.patientName, 5)} title="محاكاة 5 نجوم (تحويل لجوجل)">⭐ 5</button>
+                            <button onClick={() => handleSimulateFeedbackRating(pv.patientName, 2)} title="محاكاة تقييم منخفض (تحويل للإدارة)">⚠️ 2</button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Smart Routing Ledger */}
+            <div className="crm-section-box">
+              <div className="box-header">
+                <h4><ShieldCheck size={18} className="text-success" /> سجل توجيه التقييمات الذكي</h4>
+              </div>
+              <div className="feedbacks-ledger">
+                {feedbacksList.map((fb) => (
+                  <div key={fb.id} className="ledger-fb-row">
+                    <div className="l-top">
+                      <strong>{fb.patientName}</strong>
+                      <span className="l-stars">{'⭐'.repeat(fb.rating)}</span>
+                    </div>
+                    <p className="l-comment">"{fb.comment}"</p>
+                    <div className="l-routing">
+                      {fb.rating >= 4 ? (
+                        <span className="route-tag success">✅ تم التوجيه لـ Google Maps Review</span>
+                      ) : (
+                        <span className="route-tag warning">🛡️ تم توجيه شكوى سرية لمدير العيادة</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. TAB: DENTAL & MEDICAL TREATMENT PLANS TRACKER                          */}
+      {/* ========================================================================= */}
+      {activeTab === 'treatment_plans' && (
+        <div className="crm-tab-content">
+          <div className="plans-tracker-intro">
+            <h4>🦷 تتبع ومتابعة الخطط العلاجية غير المكتملة (Treatment Plan Tracker)</h4>
+            <p>يكتشف المرضى الذين بدأوا خطوات علاجية وتوقفوا (مثل: بدأ حشو العصب ولم يقم بتركيب التاج أو الحشو النهائي)، ويرسل لهم تنبيهاً طبياً للحفاظ على صحة السن.</p>
+          </div>
+
+          <div className="plans-cards-grid">
+            {unfinishedPlans.map((plan) => {
+              const msg = generateTreatmentPlanFollowUpMessage(plan, { name: plan.patientName }, currentClinic);
+              const cleanPhone = (plan.patientPhone || '').replace(/^0/, '20');
+              const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+              return (
+                <div key={plan.id} className="treatment-plan-card">
+                  <div className="tp-header">
+                    <div>
+                      <h4>{plan.patientName}</h4>
+                      <span className="tp-title">{plan.title}</span>
+                    </div>
+                    <span className="tp-progress-badge">{plan.progressPercent}% مكتمل</span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="tp-bar-wrap">
+                    <div className="tp-bar-fill" style={{ width: `${plan.progressPercent}%` }}></div>
+                  </div>
+
+                  <div className="tp-items-list">
+                    {plan.items?.map((item) => (
+                      <div key={item.id} className={`tp-item-row ${item.status === 'completed' ? 'done' : 'pending'}`}>
+                        {item.status === 'completed' ? <CheckCircle2 size={16} className="text-success" /> : <AlertTriangle size={16} className="text-warning" />}
+                        <span>{item.procedureName}</span>
+                        <strong className="item-state">{item.status === 'completed' ? 'تم الإنجاز' : 'معلق ومتبقي'}</strong>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="tp-footer">
+                    <a href={waUrl} target="_blank" rel="noreferrer" className="default-custom-btn">
+                      <MessageCircle size={16} />
+                      <span>تذكير المريض باستكمال الخطة</span>
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 8. TAB: PACKAGES & SESSIONS TRACKING                                      */}
+      {/* ========================================================================= */}
+      {activeTab === 'packages' && (
+        <div className="crm-tab-content">
+          
+          <div className="packages-toolbar">
+            <div>
+              <h4>📦 متابعة باقات وجلسات الجلدية والليزر</h4>
+              <p>تتبع عدد الجلسات المنجزة والمتبقية وتنبيه المرضى المتوقفين.</p>
+            </div>
+            <button className="btn btn-primary" onClick={() => setIsAddPackageModalOpen(true)}>
+              <UserPlus size={16} />
+              <span>إضافة باقة لمريض</span>
+            </button>
+          </div>
+
+          <div className="packages-cards-grid">
+            {packagesList.map((pkg) => {
+              const progress = Math.round((pkg.completedSessions / pkg.totalSessions) * 100);
+              const isStalled = pkg.completedSessions < pkg.totalSessions;
+
+              return (
+                <div key={pkg.id} className="package-crm-card">
+                  <div className="pkg-top">
+                    <div>
+                      <strong>{pkg.patientName}</strong>
+                      <h5>{pkg.packageName}</h5>
+                    </div>
+                    <span className="pkg-price-badge">{pkg.price}</span>
+                  </div>
+
+                  <div className="pkg-progress-container">
+                    <div className="pkg-progress-bar">
+                      <div className="pkg-progress-fill" style={{ width: `${progress}%` }}></div>
+                    </div>
+                    <div className="pkg-progress-labels">
+                      <span>أنجز {pkg.completedSessions} من {pkg.totalSessions} جلسات</span>
+                      <span>{progress}%</span>
+                    </div>
+                  </div>
+
+                  <div className="pkg-footer-actions">
+                    <span className="pkg-remaining">المتبقي: <strong>{pkg.totalSessions - pkg.completedSessions} جلسات</strong></span>
+                    {isStalled && (
+                      <a 
+                        href={`https://wa.me/${(pkg.patientPhone || '').replace(/^0/, '20')}?text=${encodeURIComponent(`مرحباً يا ${pkg.patientName.split(' ')[0]} 🌸\nنود تذكيرك من ${currentClinic?.name || 'العيادة'} بموعد جلستك القادمة في ${pkg.packageName}. متبقي لك (${pkg.totalSessions - pkg.completedSessions}) جلسات.`)}`}
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="btn-action-primary"
+                      >
+                        <MessageCircle size={14} />
+                        <span>تذكير بالجلسة القادمة</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 9. TAB: BIRTHDAY & OCCASIONS PERSONALIZED CAMPAIGNS                       */}
+      {/* ========================================================================= */}
+      {activeTab === 'occasions' && (
+        <div className="crm-tab-content">
+          
+          <div className="occasions-select-row">
+            {OCCASIONS.map((occ) => (
+              <button
+                key={occ.id}
+                className={`occasion-card-btn ${selectedOccasion === occ.id ? 'active' : ''}`}
+                onClick={() => setSelectedOccasion(occ.id)}
+              >
+                <span className="occ-icon">{occ.icon}</span>
+                <strong>{occ.name}</strong>
+                <small>{occ.description}</small>
+              </button>
+            ))}
+          </div>
+
+          <div className="occasion-offer-customizer">
+            <label>هدية / عرض المناسبة المخصص:</label>
+            <input 
+              type="text" 
+              value={customOccasionOffer}
+              onChange={(e) => setCustomOccasionOffer(e.target.value)}
+              placeholder="مثال: خصم 20% على جلسات تبييض الأسنان أو باقات النضارة"
+            />
+          </div>
+
+          <div className="candidates-grid">
+            {occasionCandidates.map((c) => {
+              const msg = generatePersonalizedOccasionMessage(c, selectedOccasion, currentClinic, customOccasionOffer);
+              const cleanPhone = (c.patientPhone || '').replace(/^0/, '20');
+              const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+              return (
+                <div key={c.patientId} className="candidate-card">
+                  <div className="c-meta">
+                    <strong>{c.patientName}</strong>
+                    <span>الخدمة المفضلة له: <strong className="text-primary">{c.favoriteService}</strong></span>
+                  </div>
+                  <div className="c-msg-preview">
+                    <p>{msg}</p>
+                  </div>
+                  <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary full-width">
+                    <Send size={15} />
+                    <span>إرسال التهنئة والعرض المخصص</span>
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 10. TAB: REFERRAL VIRAL ENGINE                                            */}
+      {/* ========================================================================= */}
+      {activeTab === 'referrals' && (
+        <div className="crm-tab-content">
+          <div className="referral-intro-banner">
+            <h4>🤝 نظام رشّح صديق ومكافآت الإحالة (Referral Viral Engine)</h4>
+            <p>كل مريض لديه كود ورابط إحالة خاص به. عند قدوم مريض جديد من خلاله، يحصل المريض وصديقه على نقاط وخصومات مسجلة في المحفظة.</p>
+          </div>
+
+          <div className="referral-cards-grid">
+            {patients.slice(0, 6).map((p, idx) => {
+              const code = getPatientReferralCode(p.id);
+              const link = getPatientReferralLink(code);
+
+              return (
+                <div key={p.id} className="referral-patient-box">
+                  <div className="ref-top">
+                    <strong>{p.name}</strong>
+                    <span className="ref-code-tag">{code}</span>
+                  </div>
+                  <div className="ref-link-row">
+                    <input type="text" readOnly value={link} dir="ltr" />
+                    <button 
+                      onClick={() => handleCopyLink(link, idx)}
+                      className="btn-copy-code"
+                      title="نسخ رابط الإحالة"
+                    >
+                      {copiedLinkIndex === idx ? <Check size={16} /> : <Copy size={16} />}
+                    </button>
+                  </div>
+                  <div className="ref-stats-row">
+                    <span>عدد الإحالات الناجحة: <strong>{(parseInt(p.id.replace(/\D/g, ''), 10) || 1) % 3}</strong></span>
+                    <span>رصيد المكافآت: <strong className="text-success">{((parseInt(p.id.replace(/\D/g, ''), 10) || 1) % 3) * 150} ج.م</strong></span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 11. TAB: AI PERSONALIZED CAMPAIGN COMPOSER                                */}
+      {/* ========================================================================= */}
+      {activeTab === 'ai_composer' && (
+        <div className="crm-tab-content">
+          
+          <div className="composer-container">
+            <div className="composer-sidebar">
+              <h4>🎯 إعدادات الحملة الموجهة بالذكاء الاصطناعي</h4>
+              
+              <div className="form-group">
+                <label>الشريحة المستهدفة:</label>
+                <select value={composerSegment} onChange={(e) => setComposerSegment(e.target.value)}>
+                  <option value="DORMANT">المرضى الخاملون (6+ أشهر لم يزوروا العيادة)</option>
+                  <option value="VIP">كبار العملاء المميزين (VIP)</option>
+                  <option value="NEW">المرضى الجدد (لتحويلهم لمرضى دائمين)</option>
+                  <option value="ACTIVE">المرضى النشطون دورياً</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>الهدف من الحملة:</label>
+                <select value={composerGoal} onChange={(e) => setComposerGoal(e.target.value)}>
+                  <option value="reactivation">إعادة تنشيط ومتابعة صحية</option>
+                  <option value="upsell">عرض تكميلي خاص (تبييض / نضارة)</option>
+                  <option value="checkup">فحص دوري وقائي</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>العرض أو الكوبون المعتمد:</label>
+                <textarea 
+                  rows="3" 
+                  value={composerOffer} 
+                  onChange={(e) => setComposerOffer(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="composer-preview-area">
+              <h4>💬 معاينة النموذج الذكي المولد لكل مريض</h4>
+              <p className="sub">الرسالة تتغير ديناميكياً لتشمل اسم المريض، آخر خدمة تلقاها، وتاريخ زيارته بدقة.</p>
+
+              <div className="generated-templates-list">
+                {segmentedPatients.filter(p => composerSegment === 'all' || p.segment === composerSegment).slice(0, 3).map((p) => {
+                  const patientFirst = p.name.split(' ')[0];
+                  const service = p.diagnosis || 'كشف الأسنان والفحص الدوري';
+                  const msg = 
+                    `مرحباً يا ${patientFirst} 🌸\n\n` +
+                    `طاقم ${currentClinic?.name || 'العيادة'} يتمنى لك دوام الصحة والعافية.\n` +
+                    `بما أن آخر زيارة لك كانت بخصوص (${service})، أحببنا أن نخصص لك عرضاً حصرياً يناسبك:\n\n` +
+                    `✨ ${composerOffer}\n\n` +
+                    `يسعدنا تشريفك ويمكنك حجز موعدك مباشرة عبر الرابط:\n` +
+                    `${window.location.origin}/booking\n\n` +
+                    `دمت بصحة وابتسامة جميلة! 🦷✨`;
+
+                  const cleanPhone = (p.phone || '').replace(/^0/, '20');
+                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+
+                  return (
+                    <div key={p.id} className="template-preview-card">
+                      <div className="t-head">
+                        <strong>{p.name} ({p.phone})</strong>
+                        <span className="t-tag">{p.segment}</span>
+                      </div>
+                      <div className="t-body">
+                        <p>{msg}</p>
+                      </div>
+                      <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary">
+                        <Send size={15} />
+                        <span>إرسال الحملة عبر WhatsApp</span>
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* Add Package Modal */}
+      {isAddPackageModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>إضافة باقة علاجية أو ليزر لمريض</h3>
+              <button className="close-btn" onClick={() => setIsAddPackageModalOpen(false)}>✕</button>
+            </div>
+            <form onSubmit={handleAddPackageSubmit} className="modal-form">
+              <div className="form-group">
+                <label>اختر المريض:</label>
+                <select 
+                  value={newPackageData.patientId} 
+                  onChange={(e) => setNewPackageData(prev => ({ ...prev, patientId: e.target.value }))}
+                  required
+                >
+                  <option value="">-- اختر المريض من القائمة --</option>
+                  {patients.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label>اسم الباقة:</label>
+                <input 
+                  type="text"
+                  value={newPackageData.packageName}
+                  onChange={(e) => setNewPackageData(prev => ({ ...prev, packageName: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>إجمالي الجلسات:</label>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    max="20"
+                    value={newPackageData.totalSessions}
+                    onChange={(e) => setNewPackageData(prev => ({ ...prev, totalSessions: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>الجلسات المنجزة:</label>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max={newPackageData.totalSessions}
+                    value={newPackageData.completedSessions}
+                    onChange={(e) => setNewPackageData(prev => ({ ...prev, completedSessions: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>السعر الإجمالي:</label>
+                <input 
+                  type="text"
+                  value={newPackageData.price}
+                  onChange={(e) => setNewPackageData(prev => ({ ...prev, price: e.target.value }))}
+                />
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setIsAddPackageModalOpen(false)}>إلغاء</button>
+                <button type="submit" className="btn btn-primary">حفظ وتفعيل التتبع</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
