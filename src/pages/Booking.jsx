@@ -5,11 +5,12 @@ import { clinicInfo, availableSlots } from '../data/demoData';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import { 
-  MapPin, Phone, Clock, Stethoscope, 
+  MapPin, Phone, Stethoscope, 
   Calendar, MessageCircle, Copy, Check, CalendarPlus, AlertCircle,
-  AlertTriangle, Sparkles, Users, UserCheck, UserPlus, Loader2,
+  AlertTriangle, Sparkles, Users, UserPlus, Loader2,
   RefreshCw, CheckCircle, ArrowRight, ShieldCheck, ChevronLeft
 } from 'lucide-react';
+
 
 import BookingCalendar from '../components/BookingCalendar';
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../utils/phoneValidation';

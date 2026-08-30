@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { addTreatmentPlan, updateTreatmentPlanStatus, deleteTreatmentPlan } from '../services/treatmentPlansService';
 import { addInvoice } from '../services/invoicesService';
 import { 
-  FileSpreadsheet, Plus, Trash2, CheckCircle2, 
-  Calendar, Clock, DollarSign, Edit3, X, ChevronDown, Receipt 
+  FileSpreadsheet, Plus, Trash2, CheckCircle2, X, Receipt 
 } from 'lucide-react';
 import './TreatmentPlanModal.css';
+
 
 const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) => {
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -50,8 +50,11 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
       setTimeout(() => setInvoiceNotice(null), 4000);
     } catch (err) {
       console.error('Error converting plan to invoice:', err);
+      setInvoiceNotice('تعذر إصدار الفاتورة حالياً، يرجى إعادة المحاولة.');
+      setTimeout(() => setInvoiceNotice(null), 4000);
     }
   };
+
 
 
   // Common quick procedures

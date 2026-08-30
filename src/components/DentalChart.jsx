@@ -3,11 +3,9 @@ import {
   ADULT_TEETH, PEDIATRIC_TEETH, TOOTH_SURFACES, CLINICAL_CONDITIONS,
   saveToothCondition, deleteToothCondition
 } from '../services/dentalChartService';
-import { 
-  AlertCircle, CheckCircle2, Award, Activity, X, Trash2, 
-  Sparkles, Layers, Anchor, Shield, Plus, Edit2, Info
-} from 'lucide-react';
+import { CheckCircle2, X, Trash2 } from 'lucide-react';
 import './DentalChart.css';
+
 
 const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
   const [isPediatric, setIsPediatric] = useState(false);
@@ -82,9 +80,11 @@ const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
         showFeedback(`تم تسجيل [${condition?.nameAr || activeTool}] فوراً على سن #${toothNum}`);
       } catch (err) {
         console.error('Error stamping tooth condition:', err);
+        showFeedback(`تعذر حفظ السن #${toothNum}، يرجى إعادة المحاولة`);
       }
       return;
     }
+
 
     // Default 'select' mode: open full inspector modal
     setSelectedTooth(toothNum);
@@ -126,8 +126,10 @@ const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
         onChartUpdate([...chartEntries, newEntry]);
       }
       setSelectedTooth(null);
+      showFeedback(`تم تحديث بيانات سن #${selectedTooth} بنجاح`);
     } catch (err) {
       console.error('Error saving condition:', err);
+      showFeedback('فشل حفظ التشخيص، يرجى المحاولة مرة أخرى');
     } finally {
       setIsSaving(false);
     }
@@ -140,10 +142,13 @@ const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
       if (onChartUpdate) {
         onChartUpdate(chartEntries.filter(e => e.id !== entryId));
       }
+      showFeedback('تم حذف الإجراء من السن');
     } catch (err) {
       console.error('Error deleting condition:', err);
+      showFeedback('تعذر حذف الإجراء');
     }
   };
+
 
   // Render a single tooth button with anatomical surface dividers
   const renderToothCell = (toothNum) => {
