@@ -4,6 +4,7 @@ import {
   CalendarDays, ArrowLeft, Plus, Trash2, Edit3, Stethoscope, Sparkles, DollarSign
 } from 'lucide-react';
 import { defaultServices } from '../../data/demoData';
+import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
 
 export default function GeneralSettingsTab({
   clinicForm,
@@ -17,8 +18,31 @@ export default function GeneralSettingsTab({
   const [newServiceDuration, setNewServiceDuration] = useState('30');
   const [newServiceDesc, setNewServiceDesc] = useState('');
   const [isAddingService, setIsAddingService] = useState(false);
+  const [specialtyNotice, setSpecialtyNotice] = useState('');
+
+  const handleSelectSpecialty = (specId) => {
+    const spec = CLINIC_SPECIALTIES.find(s => s.id === specId);
+    if (!spec) return;
+    setClinicForm(prev => ({
+      ...prev,
+      specialty: spec.name
+    }));
+  };
+
+  const handleApplySpecialtyServices = (specId) => {
+    const spec = CLINIC_SPECIALTIES.find(s => s.id === specId);
+    if (!spec) return;
+    setClinicForm(prev => ({
+      ...prev,
+      specialty: spec.name,
+      services: spec.defaultServices
+    }));
+    setSpecialtyNotice(`تم تطبيق باقة خدمات (${spec.name}) النموذجية بنجاح!`);
+    setTimeout(() => setSpecialtyNotice(''), 4500);
+  };
 
   const services = clinicForm.services || defaultServices;
+
 
   const handleAddService = (e) => {
     e.preventDefault();
@@ -122,15 +146,71 @@ export default function GeneralSettingsTab({
           />
         </div>
 
-        <div className="form-group">
-          <label>التخصص الدقيق</label>
-          <input 
-            type="text" 
-            value={clinicForm.specialty || ''} 
-            onChange={(e) => setClinicForm({ ...clinicForm, specialty: e.target.value })}
-            placeholder="مثال: استشاري الباطنة والجهاز الهضمي والكبد" 
-          />
+        <div className="form-group full-width specialty-picker-card">
+          <div className="specialty-picker-header">
+            <div>
+              <label>التخصص الطبي الرئيسي للعيادة *</label>
+              <p className="field-hint">اختر تخصص العيادة المعتمد لضبط الخدمات الطبية ومخططات العلاج تلقائياً دون تداخل</p>
+            </div>
+            {specialtyNotice && (
+              <span className="specialty-notice-badge">
+                <CheckCircle2 size={15} />
+                <span>{specialtyNotice}</span>
+              </span>
+            )}
+          </div>
+
+          <div className="specialty-selector-controls">
+            <select 
+              className="specialty-dropdown-select"
+              value={CLINIC_SPECIALTIES.find(s => s.name === clinicForm.specialty)?.id || ''}
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleSelectSpecialty(e.target.value);
+                }
+              }}
+            >
+              <option value="">-- اختر من قائمة التخصصات الطبية والسنية --</option>
+              <optgroup label="طب وجراحة الأسنان (Dental Specialties)">
+                {CLINIC_SPECIALTIES.filter(s => s.category === 'dental').map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </optgroup>
+              <optgroup label="تخصصات طبية أخرى">
+                {CLINIC_SPECIALTIES.filter(s => s.category === 'medical').map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </optgroup>
+            </select>
+
+            {CLINIC_SPECIALTIES.find(s => s.name === clinicForm.specialty) && (
+              <button
+                type="button"
+                className="btn-apply-specialty-preset"
+                onClick={() => {
+                  const curr = CLINIC_SPECIALTIES.find(s => s.name === clinicForm.specialty);
+                  if (curr) handleApplySpecialtyServices(curr.id);
+                }}
+                title="تحديث باقة الخدمات المعتمدة بالعيادة وفق هذا التخصص"
+              >
+                <Sparkles size={16} />
+                <span>تحميل الخدمات النموذجية لهذا التخصص تلقائياً</span>
+              </button>
+            )}
+          </div>
+
+          <div className="custom-specialty-input-group">
+            <label className="sub-field-label">المسمى المهني واللقب التخصصي الدقيق (كما يظهر للمرضى في ترويسة الروشتة والحجز):</label>
+            <input 
+              type="text" 
+              value={clinicForm.specialty || ''} 
+              onChange={(e) => setClinicForm({ ...clinicForm, specialty: e.target.value })}
+              placeholder="مثال: استشاري طب وجراحة الفم والأسنان وتجميل الابتسامة" 
+              required
+            />
+          </div>
         </div>
+
 
         <div className="form-group">
           <label>رقم هاتف العيادة (للتواصل)</label>

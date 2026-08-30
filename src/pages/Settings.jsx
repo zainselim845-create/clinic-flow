@@ -22,17 +22,18 @@ const Settings = () => {
 
   // Clinic Profile State
   const clinicInfo = state.clinicInfo || {
-    name: 'عيادة د. أحمد الشريف',
+    name: 'مركز النخبة لطب وجراحة الأسنان',
     doctorName: 'د. أحمد الشريف',
     doctorEmail: 'doctor@clinicflow.com',
     doctorPassword: 'admin',
-    specialty: 'استشاري الباطنة والجهاز الهضمي والكبد',
+    specialty: 'طب وجراحة الفم والأسنان وتجميل الابتسامة',
     address: 'مصر الجديدة — شارع الأهرام، برج الأطباء، الدور الرابع',
     phone: '01006285031',
     regularFee: '300 ج.م',
     consultationFee: '150 ج.م',
     workingHours: 'السبت - الخميس: ٥:٠٠ مساءً - ١٠:٠٠ مساءً'
   };
+
 
   const [clinicForm, setClinicForm] = useState(clinicInfo);
   const [clinicSaveSuccess, setClinicSaveSuccess] = useState(false);
