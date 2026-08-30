@@ -172,3 +172,23 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  z-index: 10;
+}
+
+.btn-close-modal:hover {
+  background: var(--bg-tertiary);
+  color: var(--error);
+}
+

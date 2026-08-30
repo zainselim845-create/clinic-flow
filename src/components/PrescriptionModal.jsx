@@ -172,6 +172,12 @@ ${followUpDate ? `*موعد الاستشارة القادم:* ${followUpDate}\n`
           </div>
         </div>
 
+        {errorMessage && (
+          <div style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#dc2626', padding: '0.65rem 1rem', borderRadius: '8px', margin: '0.75rem 1.5rem 0', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+            <span>⚠️ {errorMessage}</span>
+          </div>
+        )}
+
         <div className="modal-body-scrollable">
           
           {/* 1. Diagnosis Section */}

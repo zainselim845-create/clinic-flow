@@ -21,6 +21,7 @@ export default function GeneralSettingsTab({
   const [isAddingService, setIsAddingService] = useState(false);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState('all');
   const [specialtyNotice, setSpecialtyNotice] = useState('');
+  const [serviceError, setServiceError] = useState('');
 
   const handleSelectSpecialty = (specId) => {
     const spec = CLINIC_SPECIALTIES.find(s => s.id === specId);
@@ -44,9 +45,8 @@ export default function GeneralSettingsTab({
     e.preventDefault();
     if (!newServiceName.trim() || !newServicePrice.trim()) return;
 
-    const formattedPrice = newServicePrice.includes('ج.م') 
-      ? newServicePrice.trim() 
-      : `${newServicePrice.trim()} ج.م`;
+    const cleanNum = newServicePrice.replace(/\D/g, '');
+    const formattedPrice = cleanNum ? `${cleanNum} ج.م` : newServicePrice;
 
     const newService = {
       id: 'srv-' + Date.now(),
@@ -70,9 +70,11 @@ export default function GeneralSettingsTab({
 
   const handleDeleteService = (id) => {
     if (services.length <= 1) {
-      alert('يجب الإبقاء على خدمة طبية واحدة على الأقل في دليل العيادة.');
+      setServiceError('يجب الإبقاء على خدمة طبية واحدة على الأقل في دليل العيادة.');
+      setTimeout(() => setServiceError(''), 4000);
       return;
     }
+    setServiceError('');
     setClinicForm({
       ...clinicForm,
       services: services.filter(s => s.id !== id)
@@ -367,6 +369,13 @@ export default function GeneralSettingsTab({
                 إلغاء
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Service Error Notice */}
+        {serviceError && (
+          <div style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#dc2626', padding: '0.65rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+            <span>⚠️ {serviceError}</span>
           </div>
         )}
 
