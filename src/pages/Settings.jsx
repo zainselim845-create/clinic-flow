@@ -1,6 +1,8 @@
+import React, { useState } from 'react';
 import { 
   Building2, Users, CalendarDays, Smartphone, Bot, Database, Stethoscope
 } from 'lucide-react';
+
 import { useApp } from '../context/AppContext';
 import * as clinicsService from '../services/clinicsService';
 import { isSupabaseConfigured } from '../lib/supabase';
