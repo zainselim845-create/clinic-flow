@@ -18,6 +18,7 @@ export default function GeneralSettingsTab({
   const [newServiceDuration, setNewServiceDuration] = useState('30');
   const [newServiceDesc, setNewServiceDesc] = useState('');
   const [isAddingService, setIsAddingService] = useState(false);
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState('all');
   const [specialtyNotice, setSpecialtyNotice] = useState('');
 
   const handleSelectSpecialty = (specId) => {
@@ -25,21 +26,15 @@ export default function GeneralSettingsTab({
     if (!spec) return;
     setClinicForm(prev => ({
       ...prev,
-      specialty: spec.name
+      specialty: spec.name,
+      category: spec.category,
+      services: spec.defaultServices || prev.services,
+      visitTypes: spec.defaultVisitTypes || prev.visitTypes
     }));
+    setSpecialtyNotice(`تم تفعيل تخصص (${spec.name}) وتحميل الخدمات والعيادات النموذجية تلقائياً!`);
+    setTimeout(() => setSpecialtyNotice(''), 5000);
   };
 
-  const handleApplySpecialtyServices = (specId) => {
-    const spec = CLINIC_SPECIALTIES.find(s => s.id === specId);
-    if (!spec) return;
-    setClinicForm(prev => ({
-      ...prev,
-      specialty: spec.name,
-      services: spec.defaultServices
-    }));
-    setSpecialtyNotice(`تم تطبيق باقة خدمات (${spec.name}) النموذجية بنجاح!`);
-    setTimeout(() => setSpecialtyNotice(''), 4500);
-  };
 
   const services = clinicForm.services || defaultServices;
 
@@ -149,8 +144,8 @@ export default function GeneralSettingsTab({
         <div className="form-group full-width specialty-picker-card">
           <div className="specialty-picker-header">
             <div>
-              <label>التخصص الطبي الرئيسي للعيادة *</label>
-              <p className="field-hint">اختر تخصص العيادة المعتمد لضبط الخدمات الطبية ومخططات العلاج تلقائياً دون تداخل</p>
+              <label>التخصص الطبي السريري للعيادة *</label>
+              <p className="field-hint">اختر تخصص عيادتك لضبط الملفات الطبية، والخدمات، والكشوفات النموذجية تلقائياً</p>
             </div>
             {specialtyNotice && (
               <span className="specialty-notice-badge">
@@ -160,47 +155,66 @@ export default function GeneralSettingsTab({
             )}
           </div>
 
-          <div className="specialty-selector-controls">
-            <select 
-              className="specialty-dropdown-select"
-              value={CLINIC_SPECIALTIES.find(s => s.name === clinicForm.specialty)?.id || ''}
-              onChange={(e) => {
-                if (e.target.value) {
-                  handleSelectSpecialty(e.target.value);
-                }
-              }}
+          {/* Category Filter Tabs */}
+          <div className="specialty-filter-tabs">
+            <button
+              type="button"
+              className={`specialty-filter-btn ${activeCategoryFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveCategoryFilter('all')}
             >
-              <option value="">-- اختر من قائمة التخصصات الطبية والسنية --</option>
-              <optgroup label="طب وجراحة الأسنان (Dental Specialties)">
-                {CLINIC_SPECIALTIES.filter(s => s.category === 'dental').map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </optgroup>
-              <optgroup label="تخصصات طبية أخرى">
-                {CLINIC_SPECIALTIES.filter(s => s.category === 'medical').map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </optgroup>
-            </select>
+              جميع التخصصات ({CLINIC_SPECIALTIES.length})
+            </button>
+            <button
+              type="button"
+              className={`specialty-filter-btn ${activeCategoryFilter === 'dental' ? 'active' : ''}`}
+              onClick={() => setActiveCategoryFilter('dental')}
+            >
+              🦷 طب وجراحة الأسنان ({CLINIC_SPECIALTIES.filter(s => s.category === 'dental').length})
+            </button>
+            <button
+              type="button"
+              className={`specialty-filter-btn ${activeCategoryFilter === 'medical' ? 'active' : ''}`}
+              onClick={() => setActiveCategoryFilter('medical')}
+            >
+              🩺 الطب البشري والتخصصات ({CLINIC_SPECIALTIES.filter(s => s.category === 'medical').length})
+            </button>
+          </div>
 
-            {CLINIC_SPECIALTIES.find(s => s.name === clinicForm.specialty) && (
-              <button
-                type="button"
-                className="btn-apply-specialty-preset"
-                onClick={() => {
-                  const curr = CLINIC_SPECIALTIES.find(s => s.name === clinicForm.specialty);
-                  if (curr) handleApplySpecialtyServices(curr.id);
-                }}
-                title="تحديث باقة الخدمات المعتمدة بالعيادة وفق هذا التخصص"
-              >
-                <Sparkles size={16} />
-                <span>تحميل الخدمات النموذجية لهذا التخصص تلقائياً</span>
-              </button>
-            )}
+          {/* Interactive Specialty Cards Grid */}
+          <div className="specialty-cards-grid">
+            {CLINIC_SPECIALTIES
+              .filter(s => activeCategoryFilter === 'all' || s.category === activeCategoryFilter)
+              .map(spec => {
+                const isSelected = clinicForm.specialty === spec.name;
+                const emoji = spec.category === 'dental' 
+                  ? (spec.id === 'orthodontics' ? '📐' : spec.id === 'implantology' ? '🔩' : spec.id === 'endodontics' ? '🔬' : spec.id === 'prosthodontics' ? '✨' : spec.id === 'pedodontics' ? '👶' : '🦷')
+                  : (spec.id === 'dermatology' ? '🌸' : spec.id === 'pediatrics' ? '👶' : spec.id === 'orthopedics' ? '🦴' : spec.id === 'ophthalmology' ? '👁️' : spec.id === 'obstetrics_gynecology' ? '🤰' : '🩺');
+
+                return (
+                  <div
+                    key={spec.id}
+                    className={`specialty-card-item ${isSelected ? 'active' : ''}`}
+                    onClick={() => handleSelectSpecialty(spec.id)}
+                  >
+                    <div className="specialty-card-header">
+                      <span className="specialty-card-icon">{emoji}</span>
+                      <span className="specialty-card-badge">{spec.badge || (spec.category === 'dental' ? 'أسنان' : 'طبي')}</span>
+                    </div>
+                    <h4 className="specialty-card-title">{spec.name}</h4>
+                    <p className="specialty-card-desc">{spec.description}</p>
+                    {isSelected && (
+                      <div className="specialty-active-check">
+                        <CheckCircle2 size={14} />
+                        <span>التخصص النشط المعتمد</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
 
           <div className="custom-specialty-input-group">
-            <label className="sub-field-label">المسمى المهني واللقب التخصصي الدقيق (كما يظهر للمرضى في ترويسة الروشتة والحجز):</label>
+            <label className="sub-field-label">المسمى واللقب الأكاديمي والمهني للطبيب (كما يظهر في ترويسة الروشتات وبوابة الحجز):</label>
             <input 
               type="text" 
               value={clinicForm.specialty || ''} 
@@ -210,6 +224,7 @@ export default function GeneralSettingsTab({
             />
           </div>
         </div>
+
 
 
         <div className="form-group">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Layers, Plus, Search, Filter, Clock, CheckCircle2, 
-  AlertCircle, ChevronRight, Phone, Calendar, Download, Eye 
+  Layers, Plus, Search, Clock, CheckCircle2, 
+  AlertCircle, ChevronRight, Calendar 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import LabOrderModal from '../components/LabOrderModal';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   DEFAULT_DENTAL_VISIT_TYPES, addVisitType, updateVisitType, deleteVisitType 
 } from '../../services/visitTypesService';
@@ -8,10 +8,29 @@ import {
 } from 'lucide-react';
 import './VisitTypesTab.css';
 
+const normalizeTypes = (list) => {
+  if (!list || list.length === 0) return DEFAULT_DENTAL_VISIT_TYPES;
+  return list.map(vt => ({
+    id: vt.id || 'vt_' + Math.random().toString(36).substring(2, 9),
+    nameAr: vt.nameAr || vt.name || 'زيارة طبية',
+    nameEn: vt.nameEn || '',
+    durationMin: Number(vt.durationMin || vt.duration || 30),
+    standardFee: Number(vt.standardFee !== undefined ? vt.standardFee : (vt.price ? parseInt(vt.price.toString().replace(/\D/g, '')) || 300 : 300)),
+    colorCode: vt.colorCode || '#0D9488',
+    isOnline: vt.isOnline !== undefined ? vt.isOnline : true,
+    isDefault: Boolean(vt.isDefault)
+  }));
+};
+
 const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitTypes }) => {
-  const [typesList, setTypesList] = useState(visitTypes);
+  const [typesList, setTypesList] = useState(() => normalizeTypes(visitTypes));
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingType, setEditingType] = useState(null);
+
+  useEffect(() => {
+    setTypesList(normalizeTypes(visitTypes));
+  }, [visitTypes]);
+
 
   const [formData, setFormData] = useState({
     nameAr: '',

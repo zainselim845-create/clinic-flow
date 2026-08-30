@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import * as clinicsService from '../services/clinicsService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import GeneralSettingsTab from './settings/GeneralSettingsTab';
+import { useAuth } from '../context/AuthContext';
 import ScheduleBuilderTab from './settings/ScheduleBuilderTab';
 import VisitTypesTab from './settings/VisitTypesTab';
 import StaffManagementTab from './settings/StaffManagementTab';
@@ -18,6 +19,7 @@ import './Settings.css';
 
 const Settings = () => {
   const { state, dispatch } = useApp();
+  const { updateClinicInfo } = useAuth();
   const [activeTab, setActiveTab] = useState('clinic'); // 'clinic' | 'schedule' | 'staff' | 'sms' | 'ai' | 'database'
 
   const useSupabase = isSupabaseConfigured();
@@ -41,7 +43,7 @@ const Settings = () => {
   const [clinicSaveSuccess, setClinicSaveSuccess] = useState(false);
 
   const handleSaveClinic = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     if (useSupabase) {
       try {
         await clinicsService.updateClinicInfo(state.clinicInfo?.id, clinicForm);
@@ -53,9 +55,21 @@ const Settings = () => {
       type: 'UPDATE_CLINIC_INFO',
       payload: clinicForm
     });
+    if (updateClinicInfo) {
+      updateClinicInfo(clinicForm);
+    }
+    try {
+      const stored = localStorage.getItem('clinicflow_data');
+      const parsed = stored ? JSON.parse(stored) : {};
+      parsed.clinicInfo = clinicForm;
+      if (clinicForm.services) parsed.services = clinicForm.services;
+      localStorage.setItem('clinicflow_data', JSON.stringify(parsed));
+    } catch (_) {}
+
     setClinicSaveSuccess(true);
-    setTimeout(() => setClinicSaveSuccess(false), 3000);
+    setTimeout(() => setClinicSaveSuccess(false), 3500);
   };
+
 
 
   return (

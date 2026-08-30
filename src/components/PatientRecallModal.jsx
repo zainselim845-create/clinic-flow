@@ -1,20 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  X, Plus, BellRing, Calendar, Phone, MessageCircle, 
-  CheckCircle2, Trash2
+  X, Plus, BellRing, MessageCircle, Trash2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { recallPresets } from '../data/demoData';
 import './PatientRecallModal.css';
 
-
 export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
   const { state, dispatch } = useApp();
   const today = getTodayDateStr();
 
-  const patients = state.patients || [];
-  const recalls = state.recalls || [];
+  const patients = state?.patients || [];
+  const recalls = state?.recalls || [];
 
   const [selectedPatientId, setSelectedPatientId] = useState(initialPatient?.id || (patients[0]?.id || ''));
   const [selectedPresetId, setSelectedPresetId] = useState(recallPresets[0]?.id || '');

@@ -46,7 +46,6 @@ export const PrescriptionModal = ({ isOpen, onClose, patient, appointment }) => 
   const patientName = patient?.name || appointment?.patientName || 'مريض العيادة';
   const patientPhone = patient?.phone || appointment?.patientPhone || '';
   const patientAge = patient?.age || appointment?.patientAge || '30';
-  const patientGender = patient?.gender || appointment?.patientGender || 'غير محدد';
 
   const handleAddMedication = () => {
     setMedications(prev => [

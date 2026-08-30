@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Package, Plus, Search, Filter, AlertTriangle, 
-  Clock, CheckCircle2, ChevronUp, ChevronDown, Download, ShieldAlert 
+  Package, Plus, Search, 
+  Clock, CheckCircle2, ShieldAlert 
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
 import InventoryItemModal from '../components/InventoryItemModal';
 import { 
   getInventoryItems, addInventoryItem, adjustItemStock, 

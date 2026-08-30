@@ -5,8 +5,7 @@ import {
 } from '../services/dentalChartService';
 import { toDbInvoice, fromDbInvoice } from '../services/invoicesService';
 import { toDbTreatmentPlan, fromDbTreatmentPlan } from '../services/treatmentPlansService';
-import { toDbLabOrder, fromDbLabOrder, LAB_ORDER_STATUSES } from '../services/labsService';
-import { toDbInventoryItem, fromDbInventoryItem } from '../services/inventoryService';
+import { toDbLabOrder, fromDbLabOrder } from '../services/labsService';
 
 describe('Dental Clinical & Operations Domain Behavior', () => {
 

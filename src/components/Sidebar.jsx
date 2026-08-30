@@ -15,6 +15,10 @@ const Sidebar = () => {
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
   const isDoctor = (user?.role || role || 'doctor') === 'doctor';
 
+  const clinicSpecialty = state.clinicInfo?.specialty || '';
+  const isDental = !clinicSpecialty || clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('Dental');
+  const brandTitle = isDental ? 'كلينك فلو دنتال' : 'كلينك فلو ميديكال';
+
   const handleSignOut = async () => {
     await signOut();
   };
@@ -25,7 +29,7 @@ const Sidebar = () => {
         <div className="logo-icon-wrap">
           <Stethoscope size={22} />
         </div>
-        <h2>كلينك فلو دنتال</h2>
+        <h2>{brandTitle}</h2>
       </div>
 
       <nav className="sidebar-nav">
@@ -47,8 +51,9 @@ const Sidebar = () => {
         </NavLink>
         <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
           <Layers size={19} />
-          <span>المعامل والتركيبات</span>
+          <span>{isDental ? 'معامل الأسنان والتركيبات' : 'الفحوصات والتحاليل الطبية'}</span>
         </NavLink>
+
         <NavLink to="/inventory" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
           <Package size={19} />
           <span>المخزون والمستلزمات</span>

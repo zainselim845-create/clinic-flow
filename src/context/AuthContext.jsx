@@ -213,7 +213,19 @@ export const AuthProvider = ({ children }) => {
 
   const updateClinicInfo = (newInfo) => {
     setClinic(prev => ({ ...prev, ...newInfo }));
+    if (user && role === 'doctor') {
+      const updatedUser = {
+        ...user,
+        name: newInfo.doctorName || user.name,
+        jobTitle: newInfo.specialty || user.jobTitle
+      };
+      setUser(updatedUser);
+      try {
+        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(updatedUser));
+      } catch (_) {}
+    }
   };
+
 
   return (
     <AuthContext.Provider value={{

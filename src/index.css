@@ -71,18 +71,18 @@ button {
   --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   
-  /* Nebras DentaLore Luxury Medical Brand Colors */
-  --primary: #012757;
-  --primary-hover: #06397D;
-  --primary-dark: #001A3D;
-  --primary-light: rgba(1, 39, 87, 0.06);
-  --primary-glow: rgba(1, 39, 87, 0.18);
-  --gradient-primary: linear-gradient(135deg, #012757 0%, #0A458E 100%);
+  /* Unified Nebras Clinical Luxury Brand Tokens */
+  --primary: #0F2942;
+  --primary-hover: #163B5F;
+  --primary-dark: #091A2A;
+  --primary-light: rgba(15, 41, 66, 0.08);
+  --primary-glow: rgba(15, 41, 66, 0.2);
+  --gradient-primary: linear-gradient(135deg, #0F2942 0%, #1A4975 100%);
   
-  --accent: #F7931E;
-  --accent-hover: #E08216;
-  --accent-light: #FFF7ED;
-  --accent-glow: rgba(247, 147, 30, 0.25);
+  --accent: #0284C7;
+  --accent-hover: #0369A1;
+  --accent-light: #E0F2FE;
+  --accent-glow: rgba(2, 132, 199, 0.25);
   
   --warning: #F59E0B;
   --warning-light: #FEF3C7;
@@ -90,6 +90,19 @@ button {
   --error-light: #FEE2E2;
   --success: #10B981;
   --success-light: #D1FAE5;
+  --info: #0284C7;
+  --info-light: #E0F2FE;
+
+  /* Universal Cross-System Compatibility Aliases */
+  --primary-color: var(--primary);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --danger-color: var(--error);
+  --color-error: var(--error);
+  --warning-color: var(--warning);
+  --success-color: var(--success);
+  --info-color: var(--info);
+  --gradient-emerald: linear-gradient(135deg, #059669 0%, #10B981 100%);
 }
 
 
@@ -111,36 +124,65 @@ button {
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
-  --shadow-card-hover: 0 10px 25px -5px rgba(13, 148, 136, 0.1), 0 8px 10px -6px rgba(13, 148, 136, 0.06);
+  --shadow-card-hover: 0 10px 25px -5px rgba(15, 41, 66, 0.1), 0 8px 10px -6px rgba(15, 41, 66, 0.06);
 
   --glass-bg: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(226, 232, 240, 0.9);
   --glass-sidebar: rgba(255, 255, 255, 0.98);
+
+  /* Compatibility Aliases for Components */
+  --bg-hover: #EDF2F7;
+  --text-muted: #94A3B8;
+  --color-bg: #F8FAFC;
+  --color-card: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --color-border: #E2E8F0;
+  --color-text: #0F172A;
 }
 
 [data-theme="dark"] {
-  --bg-primary: #0B0F19;
+  --bg-primary: #0A0F1D;
   --bg-secondary: #111827;
   --bg-tertiary: #1E293B;
+  --surface: #111827;
+  --card-bg: #111827;
   
+  --primary: #38BDF8;
+  --primary-hover: #0EA5E9;
+  --primary-dark: #0284C7;
+  --primary-light: rgba(56, 189, 248, 0.15);
+  --primary-glow: rgba(56, 189, 248, 0.25);
+  --gradient-primary: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+
   --text-primary: #F8FAFC;
   --text-secondary: #94A3B8;
   --text-tertiary: #64748B;
   
-  --border-color: rgba(255, 255, 255, 0.15);
-  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.6);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
-  --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-card-hover: 0 0 0 1px rgba(59, 130, 246, 0.35), 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 0 0 1px rgba(56, 189, 248, 0.35), 0 8px 24px rgba(0, 0, 0, 0.5);
 
   --glass-bg: rgba(17, 24, 39, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.15);
-  --glass-sidebar: rgba(17, 24, 39, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-sidebar: rgba(17, 24, 39, 0.96);
+
+  /* Compatibility Aliases for Dark Mode */
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --text-muted: #64748B;
+  --color-bg: #0A0F1D;
+  --color-card: #111827;
+  --bg-card: #111827;
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-text: #F8FAFC;
 }
 
 /* 3. Global body & container styles */

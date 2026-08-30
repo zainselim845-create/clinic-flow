@@ -25,11 +25,9 @@ export default function PatientDossierDrawer({
   const [treatmentPlans, setTreatmentPlans] = useState([]);
   const [showPlansModal, setShowPlansModal] = useState(false);
 
-  if (!patient) return null;
-
-  const patientName = patient.name || patient.patientName || '';
-  const patientPhone = patient.phone || patient.patientPhone || '';
-  const patientId = patient.id || patient.patientId || ('pat_' + patientPhone.replace(/\D/g, ''));
+  const patientName = patient?.name || patient?.patientName || '';
+  const patientPhone = patient?.phone || patient?.patientPhone || '';
+  const patientId = patient?.id || patient?.patientId || (patientPhone ? 'pat_' + patientPhone.replace(/\D/g, '') : '');
 
   // Load clinical records
   useEffect(() => {
@@ -48,12 +46,17 @@ export default function PatientDossierDrawer({
     loadData();
   }, [patientId]);
 
+  if (!patient) return null;
+
   // Get patient's prescriptions
   const patientPrescriptions = (state.prescriptions || []).filter(
     rx => (patient.id && rx.patientId === patient.id) ||
           (patientPhone && rx.patientPhone === patientPhone) ||
           (patientName && rx.patientName === patientName)
   );
+
+  const clinicSpecialty = state.clinicInfo?.specialty || '';
+  const isDental = !clinicSpecialty || clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('Dental');
 
   return (
     <div className="modal-backdrop">
@@ -91,27 +94,30 @@ export default function PatientDossierDrawer({
             نظرة عامة والزيارات
           </button>
 
-          <button
-            type="button"
-            className={`btn-dossier-tab ${activeTab === 'chart' ? 'active' : ''}`}
-            onClick={() => setActiveTab('chart')}
-            style={{
-              background: activeTab === 'chart' ? '#012757' : '#FFFFFF',
-              color: activeTab === 'chart' ? '#FFFFFF' : '#334155',
-              border: '1px solid #CBD5E1',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '8px',
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.3rem'
-            }}
-          >
-            <Sparkles size={14} className="text-nebras-orange" />
-            <span>مخطط الأسنان FDI ({dentalChartEntries.length})</span>
-          </button>
+          {isDental && (
+            <button
+              type="button"
+              className={`btn-dossier-tab ${activeTab === 'chart' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chart')}
+              style={{
+                background: activeTab === 'chart' ? '#012757' : '#FFFFFF',
+                color: activeTab === 'chart' ? '#FFFFFF' : '#334155',
+                border: '1px solid #CBD5E1',
+                padding: '0.4rem 0.85rem',
+                borderRadius: '8px',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem'
+              }}
+            >
+              <Sparkles size={14} className="text-nebras-orange" />
+              <span>مخطط الأسنان FDI ({dentalChartEntries.length})</span>
+            </button>
+          )}
+
 
           <button
             type="button"

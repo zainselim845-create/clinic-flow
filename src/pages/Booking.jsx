@@ -37,9 +37,10 @@ const Booking = () => {
     gender: 'ذكر',
     date: todayStr,
     time: '',
-    type: 'كشف عادي',
+    type: currentClinic.services?.[0]?.name || 'كشف عادي',
     notes: ''
   });
+
 
   const [phoneError, setPhoneError] = useState('');
   const [bookingError, setBookingError] = useState('');

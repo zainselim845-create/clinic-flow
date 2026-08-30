@@ -13,10 +13,15 @@ const Header = ({ title }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
 
-  // Real Logged-in User Identity
-  const displayName = user?.name || (role === 'doctor' ? (clinic?.doctorName || 'د. أحمد الشريف') : 'موظف الاستقبال');
-  const displayRole = user?.jobTitle || (role === 'doctor' ? (clinic?.specialty || 'المدير الطبي') : (user?.role || 'سكرتارية العيادة'));
+  // Real Logged-in User Identity (syncs live with state.clinicInfo)
+  const displayName = role === 'doctor' 
+    ? (state.clinicInfo?.doctorName || clinic?.doctorName || user?.name || 'د. أحمد الشريف') 
+    : (user?.name || 'موظف الاستقبال');
+  const displayRole = role === 'doctor' 
+    ? (state.clinicInfo?.specialty || clinic?.specialty || user?.jobTitle || 'المدير الطبي') 
+    : (user?.jobTitle || user?.role || 'سكرتارية العيادة');
   const initial = displayName.charAt(0) || (role === 'doctor' ? 'د' : 'س');
+
 
   const handleLogout = async () => {
     if (window.confirm('هل تريد تسجيل الخروج من النظام؟')) {

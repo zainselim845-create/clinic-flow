@@ -4,8 +4,6 @@ import { addPatientFeedback } from '../services/feedbackService';
 import './FeedbackModal.css';
 
 const FeedbackModal = ({ isOpen, onClose, appointment, patient }) => {
-  if (!isOpen) return null;
-
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,6 +31,8 @@ const FeedbackModal = ({ isOpen, onClose, appointment, patient }) => {
       setIsSubmitting(false);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="feedback-modal-overlay">

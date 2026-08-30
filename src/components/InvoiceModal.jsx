@@ -13,8 +13,6 @@ const InvoiceModal = ({
   onClose, 
   onSaveInvoice 
 }) => {
-  if (!isOpen) return null;
-
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
@@ -135,6 +133,8 @@ const InvoiceModal = ({
     `المدفوع: ${currentInv.paidAmount} ج.م\n` +
     `المتبقي: ${currentInv.remainingBalance} ج.م`
   );
+
+  if (!isOpen) return null;
 
   return (
     <div className="invoice-modal-overlay">

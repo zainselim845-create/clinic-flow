@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { 
-  DENTAL_WORK_TYPES, TOOTH_SHADES, LAB_ORDER_STATUSES 
+  DENTAL_WORK_TYPES, TOOTH_SHADES 
 } from '../services/labsService';
-import { Layers, X, CheckCircle2, Calendar, DollarSign, Palette } from 'lucide-react';
+import { Layers, X, CheckCircle2 } from 'lucide-react';
 import './LabOrderModal.css';
 
 const LabOrderModal = ({ 
@@ -11,8 +11,6 @@ const LabOrderModal = ({
   onSaveOrder, 
   patients = [] 
 }) => {
-  if (!isOpen) return null;
-
   const [patientName, setPatientName] = useState('');
   const [labName, setLabName] = useState('معمل الأهرام للتركيبات الرقمية');
   const [workType, setWorkType] = useState('zircon_crown');
@@ -51,6 +49,8 @@ const LabOrderModal = ({
     setIsSubmitting(false);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="lab-modal-overlay">

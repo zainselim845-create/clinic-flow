@@ -1,10 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { 
-  Plus, Search, LayoutGrid, List, X, Trash2, Edit2, 
-  FileText, Image as ImageIcon, Download, Upload, Calendar,
-  ChevronLeft, ChevronRight, Pill, Printer, Send, BellRing
+  Plus, Search, LayoutGrid, List, X, Download, 
+  ChevronLeft, ChevronRight 
 } from 'lucide-react';
 import PatientCard from '../components/PatientCard';
 import PrescriptionModal from '../components/PrescriptionModal';
@@ -14,9 +12,7 @@ import { patientIndex } from '../services/indexedSearchService';
 import * as patientsService from '../services/patientsService';
 import './Patients.css';
 
-
 const Patients = () => {
-  const navigate = useNavigate();
   const { state, dispatch } = useApp();
   const { patients = [], appointments = [], useSupabase } = state;
 
@@ -60,27 +56,6 @@ const Patients = () => {
   const handleOpenDetail = (patient) => {
     setSelectedPatient(patient);
     setIsDetailModalOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm('هل أنت متأكد من حذف هذا المريض؟')) {
-      if (useSupabase) {
-        try {
-          await patientsService.deletePatient(id);
-        } catch (err) {
-          console.error('Failed to delete patient from Supabase:', err);
-        }
-      }
-      dispatch({ type: 'DELETE_PATIENT', payload: id });
-      setIsDetailModalOpen(false);
-      showToast('تم حذف المريض من السجل بنجاح ', 'success');
-    }
-  };
-
-  const handleEdit = (patient) => {
-    setFormData(patient);
-    setSelectedPatient(patient);
-    setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {

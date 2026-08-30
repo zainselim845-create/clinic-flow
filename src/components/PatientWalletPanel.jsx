@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Wallet, ArrowDownLeft, ArrowUpRight, Plus, 
-  DollarSign, Clock, RefreshCw, CheckCircle2 
+  Clock, CheckCircle2 
 } from 'lucide-react';
 import { getPatientWalletHistory, addWalletTransaction } from '../services/walletService';
 import './PatientWalletPanel.css';
@@ -14,18 +14,18 @@ const PatientWalletPanel = ({ patientId, patientName }) => {
   const [depositNotes, setDepositNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const loadWallet = async () => {
+  const loadWallet = useCallback(async () => {
     if (!patientId) return;
     const res = await getPatientWalletHistory(patientId);
     if (res) {
       setBalance(res.balance || 0);
       setTransactions(res.transactions || []);
     }
-  };
+  }, [patientId]);
 
   useEffect(() => {
     loadWallet();
-  }, [patientId]);
+  }, [loadWallet]);
 
   const handleDepositSubmit = async (e) => {
     e.preventDefault();

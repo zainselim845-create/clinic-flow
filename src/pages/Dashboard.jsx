@@ -1,9 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
-  UserCheck, CalendarClock, Users, TrendingUp, Wallet, Download, 
-  Plus, CheckCircle2, Clock, UserPlus, Search, FolderOpen, Share2,
-  TrendingDown, DollarSign, BellRing, Sparkles
+  UserPlus, Search, FolderOpen, Share2
 } from 'lucide-react';
 import { getTodayDateStr } from '../utils/timeSlots';
 import WaitingRoomQueue from './dashboard/WaitingRoomQueue';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Receipt, Plus, Search, Filter, Download, 
-  Printer, CheckCircle, Clock, AlertCircle, DollarSign, Eye 
+  Receipt, Plus, Search, Download, 
+  Clock, AlertCircle, DollarSign, Eye 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import InvoiceModal from '../components/InvoiceModal';

@@ -4,8 +4,6 @@ import { Package, X, CheckCircle2, Calendar, AlertTriangle } from 'lucide-react'
 import './InventoryItemModal.css';
 
 const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
-  if (!isOpen) return null;
-
   const [name, setName] = useState('');
   const [category, setCategory] = useState('composite');
   const [unit, setUnit] = useState('علبة / سرنجة');
@@ -40,6 +38,8 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
     setIsSubmitting(false);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="inventory-modal-overlay">
