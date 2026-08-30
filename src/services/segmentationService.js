@@ -36,14 +36,17 @@ export function getDaysDifference(dateStrA, dateStrB = getTodayDateStr()) {
 export function calculatePatientLtv(patient, appointments = [], invoices = []) {
   if (!patient) return 0;
   
+  const safeInvoices = Array.isArray(invoices) ? invoices : [];
+  const safeAppointments = Array.isArray(appointments) ? appointments : [];
+
   // 1. From invoices if available
-  const patientInvoices = invoices.filter(inv => inv.patientId === patient.id && inv.status !== 'cancelled');
+  const patientInvoices = safeInvoices.filter(inv => inv && inv.patientId === patient.id && inv.status !== 'cancelled');
   if (patientInvoices.length > 0) {
     return patientInvoices.reduce((sum, inv) => sum + (Number(inv.paidAmount) || Number(inv.total) || 0), 0);
   }
 
   // 2. From completed appointments fee
-  const patientAppts = appointments.filter(a => a.patientId === patient.id && a.status === 'completed');
+  const patientAppts = safeAppointments.filter(a => a && a.patientId === patient.id && a.status === 'completed');
   return patientAppts.reduce((sum, a) => {
     const feeNum = parseInt(String(a.fee || '300').replace(/\D/g, ''), 10) || 300;
     return sum + feeNum;
@@ -56,17 +59,20 @@ export function calculatePatientLtv(patient, appointments = [], invoices = []) {
 export function segmentPatient(patient, appointments = [], invoices = [], packages = [], treatmentPlans = []) {
   if (!patient) return null;
 
-  const visitsCount = Number(patient.visitsCount) || 
-    appointments.filter(a => a.patientId === patient.id && a.status === 'completed').length || 1;
+  const safeAppointments = Array.isArray(appointments) ? appointments : [];
+  const safeInvoices = Array.isArray(invoices) ? invoices : [];
+  const safePackages = Array.isArray(packages) ? packages : [];
+  const safePlans = Array.isArray(treatmentPlans) ? treatmentPlans : [];
+
+  const completedAppts = safeAppointments.filter(a => a && a.patientId === patient.id && a.status === 'completed');
+  const visitsCount = Number(patient.visitsCount) || completedAppts.length || 1;
 
   const lastVisitDate = patient.lastVisit || 
-    (appointments
-      .filter(a => a.patientId === patient.id && a.status === 'completed')
-      .sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.date) || null;
+    (completedAppts.sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.date) || null;
 
   const daysSinceLastVisit = lastVisitDate ? getDaysDifference(lastVisitDate) : 0;
   const hasVisitHistory = !!lastVisitDate;
-  const ltv = calculatePatientLtv(patient, appointments, invoices);
+  const ltv = calculatePatientLtv(patient, safeAppointments, safeInvoices);
 
   // 1. Lifecycle calculation
   let lifecycle = LIFECYCLE_SEGMENTS.NEW;
@@ -78,6 +84,8 @@ export function segmentPatient(patient, appointments = [], invoices = [], packag
     lifecycle = LIFECYCLE_SEGMENTS.LOYAL;
   } else if (visitsCount >= 2) {
     lifecycle = LIFECYCLE_SEGMENTS.RETURNING;
+  } else {
+    lifecycle = LIFECYCLE_SEGMENTS.NEW;
   }
 
   // 2. Value tier calculation
@@ -88,17 +96,18 @@ export function segmentPatient(patient, appointments = [], invoices = [], packag
     valueTier = VALUE_TIERS.REGULAR;
   }
 
-  // 3. Clinical Services History
+  // 3. Extract unique service history
+  const patientAppts = safeAppointments.filter(a => a && a.patientId === patient.id);
   const serviceHistory = [
-    ...(patient.diagnosis ? [patient.diagnosis] : []),
-    ...appointments.filter(a => a.patientId === patient.id).map(a => a.service || a.type || '')
+    patient.diagnosis,
+    ...patientAppts.map(a => a.type)
   ].filter(Boolean);
 
   // 4. Clinical Urgency / Unfinished treatment / Stalled sessions
-  const activePlan = treatmentPlans.find(tp => tp.patientId === patient.id && tp.status === 'active');
-  const hasUnfinishedTreatment = !!activePlan && (activePlan.procedures || []).some(p => p.status === 'pending');
+  const activePlan = safePlans.find(tp => tp && tp.patientId === patient.id && tp.status === 'active');
+  const hasUnfinishedTreatment = !!activePlan && (activePlan.procedures || []).some(p => p && p.status === 'pending');
 
-  const activePackage = packages.find(pkg => pkg.patientId === patient.id && pkg.remainingSessions > 0);
+  const activePackage = safePackages.find(pkg => pkg && pkg.patientId === patient.id && pkg.remainingSessions > 0);
   const isPackageStalled = !!activePackage && getDaysDifference(activePackage.lastSessionDate) > 40;
 
   return {
@@ -121,22 +130,31 @@ export function segmentPatient(patient, appointments = [], invoices = [], packag
  * Segment all patients and generate aggregate CRM statistics
  */
 export function segmentAllPatients(patients = [], appointments = [], invoices = [], packages = [], treatmentPlans = []) {
-  const segmented = patients.map(p => segmentPatient(p, appointments, invoices, packages, treatmentPlans));
+  const safePatients = Array.isArray(patients) ? patients : [];
+  const safeAppointments = Array.isArray(appointments) ? appointments : [];
+  const safeInvoices = Array.isArray(invoices) ? invoices : [];
+  const safePackages = Array.isArray(packages) ? packages : [];
+  const safePlans = Array.isArray(treatmentPlans) ? treatmentPlans : [];
+
+  const segmented = safePatients
+    .filter(Boolean)
+    .map(p => segmentPatient(p, safeAppointments, safeInvoices, safePackages, safePlans))
+    .filter(Boolean);
 
   const stats = {
     total: segmented.length,
-    new: segmented.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.NEW).length,
-    returning: segmented.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.RETURNING).length,
-    loyal: segmented.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.LOYAL).length,
-    dormant: segmented.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.DORMANT).length,
-    lost: segmented.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.LOST).length,
-    vip: segmented.filter(p => p.valueTier === VALUE_TIERS.VIP).length,
-    regular: segmented.filter(p => p.valueTier === VALUE_TIERS.REGULAR).length,
-    standard: segmented.filter(p => p.valueTier === VALUE_TIERS.STANDARD).length,
-    unfinishedTreatment: segmented.filter(p => p.hasUnfinishedTreatment).length,
-    stalledPackages: segmented.filter(p => p.isPackageStalled).length,
-    totalLtv: segmented.reduce((sum, p) => sum + p.ltv, 0),
-    avgLtv: segmented.length ? Math.round(segmented.reduce((sum, p) => sum + p.ltv, 0) / segmented.length) : 0
+    new: segmented.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.NEW).length,
+    returning: segmented.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.RETURNING).length,
+    loyal: segmented.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.LOYAL).length,
+    dormant: segmented.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.DORMANT).length,
+    lost: segmented.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.LOST).length,
+    vip: segmented.filter(p => p && p.valueTier === VALUE_TIERS.VIP).length,
+    regular: segmented.filter(p => p && p.valueTier === VALUE_TIERS.REGULAR).length,
+    standard: segmented.filter(p => p && p.valueTier === VALUE_TIERS.STANDARD).length,
+    unfinishedTreatment: segmented.filter(p => p && p.hasUnfinishedTreatment).length,
+    stalledPackages: segmented.filter(p => p && p.isPackageStalled).length,
+    totalLtv: segmented.reduce((sum, p) => sum + (p?.ltv || 0), 0),
+    avgLtv: segmented.length ? Math.round(segmented.reduce((sum, p) => sum + (p?.ltv || 0), 0) / segmented.length) : 0
   };
 
   return {
@@ -149,26 +167,27 @@ export function segmentAllPatients(patients = [], appointments = [], invoices = 
  * Filter patients by dynamic segment query
  */
 export function filterPatientsBySegment(segmentedPatients = [], segmentKey) {
-  if (!segmentKey || segmentKey === 'all') return segmentedPatients;
+  const safe = Array.isArray(segmentedPatients) ? segmentedPatients.filter(Boolean) : [];
+  if (!segmentKey || segmentKey === 'all') return safe;
 
   switch (segmentKey) {
     case 'vip':
-      return segmentedPatients.filter(p => p.valueTier === VALUE_TIERS.VIP);
+      return safe.filter(p => p && p.valueTier === VALUE_TIERS.VIP);
     case 'loyal':
-      return segmentedPatients.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.LOYAL);
+      return safe.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.LOYAL);
     case 'dormant':
-      return segmentedPatients.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.DORMANT);
+      return safe.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.DORMANT);
     case 'lost':
-      return segmentedPatients.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.LOST);
+      return safe.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.LOST);
     case 'new':
-      return segmentedPatients.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.NEW);
+      return safe.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.NEW);
     case 'returning':
-      return segmentedPatients.filter(p => p.lifecycle === LIFECYCLE_SEGMENTS.RETURNING);
+      return safe.filter(p => p && p.lifecycle === LIFECYCLE_SEGMENTS.RETURNING);
     case 'unfinished_treatment':
-      return segmentedPatients.filter(p => p.hasUnfinishedTreatment);
+      return safe.filter(p => p && p.hasUnfinishedTreatment);
     case 'stalled_packages':
-      return segmentedPatients.filter(p => p.isPackageStalled);
+      return safe.filter(p => p && p.isPackageStalled);
     default:
-      return segmentedPatients;
+      return safe;
   }
 }
