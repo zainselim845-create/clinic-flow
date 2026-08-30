@@ -11,14 +11,12 @@
  */
 export const normalizeArabicNumerals = (str) => {
   if (!str || typeof str !== 'string') return '';
-  const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  
-  let result = str;
-  for (let i = 0; i < 10; i++) {
-    result = result.replaceAll(arabicDigits[i], String(i)).replaceAll(persianDigits[i], String(i));
-  }
-  return result;
+  return str.replace(/[٠-٩۰-۹]/g, (ch) => {
+    const code = ch.charCodeAt(0);
+    if (code >= 0x0660 && code <= 0x0669) return String(code - 0x0660);
+    if (code >= 0x06F0 && code <= 0x06F9) return String(code - 0x06F0);
+    return ch;
+  });
 };
 
 /**

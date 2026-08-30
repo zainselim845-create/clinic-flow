@@ -20,38 +20,43 @@ async function auditPages() {
   await page.fill('#password', 'admin');
   await page.click('button[type="submit"]');
   await page.waitForURL('https://clinic-flow-lh3g.vercel.app/');
-  await page.waitForTimeout(1000);
+  await page.waitForSelector('.dashboard-top-hero', { timeout: 10000 });
+  await page.waitForTimeout(1500);
 
   // Dashboard
-  await page.screenshot({ path: path.join(outDir, 'audit_1_dashboard.png'), fullPage: true });
+  await page.screenshot({ path: path.join(outDir, 'audit_1_dashboard.png') });
   console.log('✓ Dashboard captured');
 
   // Appointments
   await page.goto('https://clinic-flow-lh3g.vercel.app/appointments', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(800);
-  await page.screenshot({ path: path.join(outDir, 'audit_2_appointments.png'), fullPage: true });
+  await page.waitForSelector('.appointments-page', { timeout: 10000 });
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, 'audit_2_appointments.png') });
   console.log('✓ Appointments captured');
 
   // Patients
   await page.goto('https://clinic-flow-lh3g.vercel.app/patients', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(800);
-  await page.screenshot({ path: path.join(outDir, 'audit_3_patients.png'), fullPage: true });
+  await page.waitForSelector('.patients-page', { timeout: 10000 });
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, 'audit_3_patients.png') });
   console.log('✓ Patients captured');
 
   // Doctor Agent & CRM Hub
   await page.goto('https://clinic-flow-lh3g.vercel.app/doctor-agent', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(800);
-  await page.screenshot({ path: path.join(outDir, 'audit_4_crm.png'), fullPage: true });
+  await page.waitForSelector('.crm-marketing-hub, .doctor-assistant-page', { timeout: 10000 });
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, 'audit_4_crm.png') });
   console.log('✓ CRM Hub captured');
 
   // Booking
   await page.goto('https://clinic-flow-lh3g.vercel.app/booking', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(800);
-  await page.screenshot({ path: path.join(outDir, 'audit_5_booking.png'), fullPage: true });
+  await page.waitForSelector('.nebras-booking-page', { timeout: 10000 });
+  await page.waitForTimeout(1000);
+  await page.screenshot({ path: path.join(outDir, 'audit_5_booking.png') });
   console.log('✓ Booking captured');
 
   await browser.close();
-  console.log('Audit screenshots complete!');
+  console.log('ALL AUDIT SCREENSHOTS READY!');
 }
 
 auditPages().catch(console.error);
