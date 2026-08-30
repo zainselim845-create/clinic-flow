@@ -67,12 +67,8 @@ export const filterTargetPatients = (patients, appointments, queryFilter) => {
     if (normalizedQuery === 'followup' || normalizedQuery.includes('متابعة')) {
       return (patient.visitsCount > 1) || patientAppts.some(a => (a.type || '').includes('متابعة') || (a.type || '').includes('استشارة'));
     }
-    if (normalizedQuery === 'urgent' || normalizedQuery.includes('طوارئ')) {
+    if (normalizedQuery.includes('طوارئ') || normalizedQuery === 'urgent') {
       return patientAppts.some(a => (a.type || '').includes('طوارئ'));
-    }
-
-    if (normalizedQuery.includes('تأمين') || normalizedQuery.includes('insurance')) {
-      return Boolean(patient.insurancePlan);
     }
 
     if (normalizedQuery.includes('حضور') || normalizedQuery.includes('مكتمل') || normalizedQuery.includes('تم الكشف')) {

@@ -19,9 +19,12 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
   const [notes, setNotes] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
 
+  const expenses = state.expenses || [];
+
   const filteredExpenses = useMemo(() => {
-    return (state.expenses || []).filter(e => filterCategory === 'all' || e.category === filterCategory);
-  }, [state.expenses, filterCategory]);
+    return expenses.filter(e => filterCategory === 'all' || e.category === filterCategory);
+  }, [expenses, filterCategory]);
+
 
   const totalAmount = useMemo(() => {
     return (state.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);

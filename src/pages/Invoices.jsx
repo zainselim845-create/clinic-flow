@@ -132,7 +132,7 @@ const Invoices = () => {
       <div className="page-header">
         <div>
           <h2>الفوترة والتحصيلات المالية (Invoices & Billing)</h2>
-          <p>إدارة الفواتير العلاجية، سندات القبض، المدفوعات الجزئية، وحسابات الضرائب والتأمين</p>
+          <p>إدارة الفواتير العلاجية، سندات القبض، المدفوعات الجزئية، والخصومات المعتمدة</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button onClick={handleExportCSV} className="btn-secondary">

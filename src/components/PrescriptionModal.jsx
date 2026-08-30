@@ -40,6 +40,7 @@ export const PrescriptionModal = ({ isOpen, onClose, patient, appointment }) => 
   const [followUpDate, setFollowUpDate] = useState('');
   const [generalAdvice, setGeneralAdvice] = useState('الراحة التامة وتناول السوائل الدافئة والالتزام بالجرعات في مواعيدها.');
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen) return null;
 
@@ -106,7 +107,8 @@ export const PrescriptionModal = ({ isOpen, onClose, patient, appointment }) => 
 
   const handleSendWhatsApp = () => {
     if (!patientPhone) {
-      alert('رقم هاتف المريض غير متوفر.');
+      setErrorMessage('رقم هاتف المريض غير متوفر لإرسال الروشتة عبر واتساب.');
+      setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
 
