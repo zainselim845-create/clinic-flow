@@ -101,7 +101,7 @@
   box-shadow: 0 4px 14px rgba(0, 113, 227, 0.35);
 }
 
-/* 2. KPI 4-Card Grid */
+/* 2. KPI 4-Card Grid (Exact Class Matches for Dashboard.jsx) */
 .cockpit-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -119,7 +119,7 @@
   }
 }
 
-.cockpit-kpi-card {
+.cockpit-stat-card {
   background: var(--surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -133,24 +133,23 @@
   cursor: pointer;
 }
 
-.cockpit-kpi-card:hover {
+.cockpit-stat-card:hover {
   box-shadow: var(--shadow-card-hover);
   transform: translateY(-2px);
 }
 
-.kpi-top-row {
+.cockpit-stat-card.active-filter-card {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.stat-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-}
-
-.kpi-header-group {
-  display: flex;
   align-items: center;
-  gap: 0.65rem;
 }
 
-.kpi-icon-square {
+.stat-icon-box {
   width: 36px;
   height: 36px;
   border-radius: 10px;
@@ -160,42 +159,66 @@
   flex-shrink: 0;
 }
 
-.kpi-icon-square.blue { background: var(--primary-light); color: var(--primary); }
-.kpi-icon-square.emerald { background: var(--success-light); color: var(--success); }
-.kpi-icon-square.amber { background: var(--warning-light); color: var(--warning); }
-.kpi-icon-square.indigo { background: rgba(88, 86, 214, 0.1); color: #5856D6; }
+.stat-icon-box.total { background: var(--primary-light); color: var(--primary); }
+.stat-icon-box.waiting { background: var(--warning-light); color: var(--warning); }
+.stat-icon-box.exam { background: rgba(88, 86, 214, 0.1); color: #5856D6; }
+.stat-icon-box.revenue { background: var(--success-light); color: var(--success); }
 
-.kpi-title-box {
+.stat-card-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+}
+
+.stat-card-tag.waiting-tag { background: var(--warning-light); color: var(--warning); }
+.stat-card-tag.in-session-tag { background: var(--warning-light); color: var(--warning); }
+.stat-card-tag.vacant-tag { background: var(--success-light); color: var(--success); }
+.stat-card-tag.paid-tag { background: var(--success-light); color: var(--success); }
+
+.stat-card-body {
   display: flex;
   flex-direction: column;
+  gap: 0.2rem;
 }
 
-.kpi-name {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.kpi-badge-sub {
-  font-size: 0.7rem;
-  color: var(--text-tertiary);
-}
-
-.kpi-body-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.kpi-metric-number {
+.stat-main-number {
   font-size: 1.6rem;
   font-weight: 700;
   color: var(--text-primary);
+  margin: 0;
   letter-spacing: -0.02em;
+}
+
+.stat-patient-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
   margin: 0;
 }
 
-.kpi-bottom-status {
+.stat-card-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.stat-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.stat-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+.stat-card-footer {
   font-size: 0.74rem;
   color: var(--text-secondary);
   border-top: 1px solid var(--border-subtle);
@@ -204,10 +227,10 @@
   justify-content: space-between;
 }
 
-/* 3. Main Split (Waiting Room + Revenue) */
+/* 3. Main Split Cockpit */
 .dashboard-main-grid {
   display: grid;
-  grid-template-columns: 2.2fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 1.25rem;
 }
 
@@ -434,25 +457,29 @@
 
 .financial-pill {
   flex: 1;
-  min-width: 90px;
+  min-width: 80px;
   background: var(--bg-primary);
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  padding: 0.5rem 0.65rem;
+  padding: 0.45rem 0.6rem;
   display: flex;
   flex-direction: column;
 }
 
 .financial-pill .p-label {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-secondary);
 }
 
 .financial-pill .p-val {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-primary);
 }
+
+.financial-pill.revenue { border-color: rgba(0, 113, 227, 0.2); }
+.financial-pill.expenses { border-color: rgba(255, 59, 48, 0.2); }
+.financial-pill.net { border-color: rgba(52, 199, 89, 0.2); }
 
 .chart-wrapper {
   width: 100%;
