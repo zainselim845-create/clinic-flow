@@ -360,21 +360,27 @@ textarea.input-field, textarea.form-control {
   min-height: 80px;
 }
 
-/* 15. Button styles */
-.btn {
+/* 15. Universal Button styles */
+.btn, .btn-primary, .btn-secondary, .btn-danger, .btn-success, .btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  padding: 0.65rem 1.15rem;
+  font-family: inherit;
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-600);
   border-radius: var(--radius-md);
   transition: all var(--transition-normal);
   white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
 }
-.btn:active {
+.btn:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active, .btn-success:active {
   transform: scale(0.98);
 }
+
 .btn-primary {
   background-color: var(--primary);
   color: #FFFFFF;

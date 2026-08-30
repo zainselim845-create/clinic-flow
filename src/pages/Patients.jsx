@@ -157,23 +157,24 @@ const Patients = () => {
         </div>
       )}
 
-      <div className="page-header">
-        <h2>إدارة المرضى</h2>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button className="btn-secondary" onClick={handleExportCSV} title="تصدير قائمة المرضى لملف إكسيل">
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <h2 style={{ margin: 0 }}>إدارة المرضى</h2>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <button className="btn btn-secondary" onClick={handleExportCSV} title="تصدير قائمة المرضى لملف إكسيل">
             <Download size={18} />
             <span>تصدير إكسيل (CSV)</span>
           </button>
-          <button className="btn-primary" onClick={() => {
+          <button className="btn btn-primary" onClick={() => {
             setSelectedPatient(null);
             setFormData({ name: '', age: '', gender: 'ذكر', phone: '', bloodType: '', diagnosis: '', notes: '' });
             setIsModalOpen(true);
           }}>
             <Plus size={20} />
-            إضافة مريض
+            <span>إضافة مريض جديد</span>
           </button>
         </div>
       </div>
+
 
       <div className="filters-bar glass-card">
         <div className="search-box full-width">

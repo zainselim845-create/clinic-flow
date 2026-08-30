@@ -47,7 +47,7 @@ const Header = ({ title }) => {
             <Search size={16} className="search-icon" />
             <input 
               type="text" 
-              placeholder="بحث شامل... (مريض، موعد، كود)" 
+              placeholder="بحث سريع في العيادة..." 
               readOnly 
               style={{ cursor: 'pointer' }}
             />

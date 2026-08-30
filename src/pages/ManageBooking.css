@@ -142,21 +142,32 @@
 .otp-actions-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
   flex-wrap: wrap;
 }
 
-.btn-whatsapp-help {
+.otp-actions-row .btn-primary,
+.otp-actions-row .btn-secondary,
+.otp-actions-row .btn-whatsapp-help,
+.otp-actions-row .btn-call-help {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.65rem 1.15rem;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.25rem;
   border-radius: var(--radius-md);
-  background: #25D366;
-  color: #FFFFFF;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-whatsapp-help {
+  background: #25D366;
+  color: #FFFFFF !important;
   text-decoration: none;
   transition: all 0.2s ease;
 }

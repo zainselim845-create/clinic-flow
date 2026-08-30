@@ -1,0 +1,82 @@
+[
+  {
+    "image": "C:/Users/mhmd/.gemini/antigravity/scratch/clinic-flow/ux-audit-2026-08-30-clinicflow/assets/05-manage-booking-verified.png",
+    "out": "C:/Users/mhmd/.gemini/antigravity/scratch/clinic-flow/ux-audit-2026-08-30-clinicflow/assets/05-manage-booking-verified-annotated.png",
+    "marks": [
+      {
+        "id": "F-01",
+        "sev": 3,
+        "x": 0.4,
+        "y": 0.58,
+        "w": 0.32,
+        "h": 0.15
+      }
+    ]
+  },
+  {
+    "image": "C:/Users/mhmd/.gemini/antigravity/scratch/clinic-flow/ux-audit-2026-08-30-clinicflow/assets/07-dashboard-cockpit.png",
+    "out": "C:/Users/mhmd/.gemini/antigravity/scratch/clinic-flow/ux-audit-2026-08-30-clinicflow/assets/07-dashboard-cockpit-annotated.png",
+    "marks": [
+      {
+        "id": "F-02",
+        "sev": 3,
+        "x": 0.42,
+        "y": 0.32,
+        "w": 0.19,
+        "h": 0.28
+      },
+      {
+        "id": "F-03",
+        "sev": 2,
+        "x": 0.21,
+        "y": 0.32,
+        "w": 0.19,
+        "h": 0.28
+      },
+      {
+        "id": "F-05",
+        "sev": 2,
+        "x": 0.3,
+        "y": 0.02,
+        "w": 0.2,
+        "h": 0.06
+      },
+      {
+        "id": "P-02",
+        "sev": 0,
+        "x": 0.01,
+        "y": 0.11,
+        "w": 0.8,
+        "h": 0.5
+      }
+    ]
+  },
+  {
+    "image": "C:/Users/mhmd/.gemini/antigravity/scratch/clinic-flow/ux-audit-2026-08-30-clinicflow/assets/06-doctor-login.png",
+    "out": "C:/Users/mhmd/.gemini/antigravity/scratch/clinic-flow/ux-audit-2026-08-30-clinicflow/assets/06-doctor-login-annotated.png",
+    "marks": [
+      {
+        "id": "F-04",
+        "sev": 2,
+        "x": 0.33,
+        "y": 0.38,
+        "w": 0.34,
+        "h": 0.08
+      }
+    ]
+  },
+  {
+    "image": "C:/Users/mhmd/.gemini/antigravity/scratch/clinic-flow/ux-audit-2026-08-30-clinicflow/assets/01-booking-step1.png",
+    "out": "C:/Users/mhmd/.gemini/antigravity/scratch/clinic-flow/ux-audit-2026-08-30-clinicflow/assets/01-booking-step1-annotated.png",
+    "marks": [
+      {
+        "id": "P-01",
+        "sev": 0,
+        "x": 0.16,
+        "y": 0.13,
+        "w": 0.68,
+        "h": 0.1
+      }
+    ]
+  }
+]

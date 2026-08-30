@@ -338,7 +338,7 @@ const Dashboard = () => {
             ></div>
           </div>
           <div className="stat-card-footer">
-            <span>متوسط الانتظار: ~10 دقيقة</span>
+            <span>{waitingToday.length > 0 ? 'متوسط الانتظار: حوالي 10 دقائق' : 'لا يوجد انتظار حالياً'}</span>
             <span>أولوية الطوارئ مفعلة</span>
           </div>
         </div>

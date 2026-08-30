@@ -108,7 +108,7 @@ const Login = () => {
               id="identifier"
               type="text"
               className="form-control"
-              placeholder="name@clinic.com أو 010XXXXXXXX"
+              placeholder="name@clinic.com / 010XXXXXXXX"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               disabled={isLocked || isLoading}
