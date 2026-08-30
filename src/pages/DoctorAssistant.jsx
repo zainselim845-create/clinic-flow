@@ -23,7 +23,7 @@ import './DoctorAssistant.css';
 const CHAT_HISTORY_STORAGE_KEY = 'clinicflow_doctor_chat_history';
 
 const DoctorAssistant = () => {
-  const { state, dispatch } = useApp();
+  const { state, dispatch, useSupabase } = useApp();
   const { clinic } = useAuth();
   const currentClinic = state.clinicInfo || clinic;
   const patients = state.patients || [];

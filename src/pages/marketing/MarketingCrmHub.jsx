@@ -1,23 +1,20 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
-  Users, UserCheck, Sparkles, TrendingUp, RefreshCw, Send,
-  AlertTriangle, Clock, Gift, Layers, MessageCircle, 
-  Search, CheckCircle2, ChevronRight, UserPlus, HeartHandshake,
-  DollarSign, ArrowUpRight, Zap, Target, Star, Eye, Copy, Check
+  Users, Sparkles, TrendingUp, RefreshCw, Send,
+  AlertTriangle, Gift, Layers, MessageCircle, 
+  Search, CheckCircle2, ChevronRight, UserPlus,
+  DollarSign, Zap, Target, Star, Copy, Check
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
   segmentAllPatients, 
-  filterPatientsBySegment, 
-  LIFECYCLE_SEGMENTS, 
-  VALUE_TIERS 
+  filterPatientsBySegment
 } from '../../services/segmentationService';
 import { scanAllCrossSellingOpportunities } from '../../services/crossSellingService';
 import { 
   REACTIVATION_STAGES, 
-  generateReactivationMessage, 
-  getNextDripStage 
+  generateReactivationMessage
 } from '../../services/reactivationService';
 import { 
   getBookingDrafts, 
@@ -29,18 +26,15 @@ import {
   detectStalledPackages 
 } from '../../services/packagesService';
 import { 
-  getReferralsLedger, 
   getPatientReferralCode, 
   getPatientReferralLink 
 } from '../../services/referralService';
 import { generateNoShowRecoveryMessage } from '../../services/noShowRecoveryService';
-import { generatePostVisitFeedbackMessage } from '../../services/feedbackService';
-import { sendSMS } from '../../services/smsService';
 import { formatDoctorName } from '../../utils/doctorAgentHelpers';
 import './MarketingCrmHub.css';
 
 export const MarketingCrmHub = () => {
-  const { state, dispatch } = useApp();
+  const { state } = useApp();
   const { clinic } = useAuth();
   const currentClinic = state.clinicInfo || clinic;
   const doctorName = formatDoctorName(currentClinic?.doctorName || 'طبيب العيادة');
@@ -65,9 +59,8 @@ export const MarketingCrmHub = () => {
     price: '3000 ج.م'
   });
 
-  // Drafts & Referrals
+  // Drafts
   const [draftsList, setDraftsList] = useState(() => getBookingDrafts());
-  const [referralsList, setReferralsList] = useState(() => getReferralsLedger());
 
   const showToast = (text, type = 'success') => {
     setToastMessage({ text, type });
@@ -418,7 +411,8 @@ export const MarketingCrmHub = () => {
                 </thead>
                 <tbody>
                   {filteredPatients.map((p, idx) => {
-                    const waText = `مرحباً ${p.name.split(' ')[0]} 🌸\nتحياتنا لك من ${currentClinic?.name || 'العيادة'} مع ${doctorName}.\nنسعد دائماً بالاطمئنان على صحتك وتقديم أفضل رعاية لك. هل تود حجز موعد المتابعة الدوري؟\n${window.location.origin}/booking`;
+                    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+                    const waText = `مرحباً ${p.name.split(' ')[0]} 🌸\nتحياتنا لك من ${currentClinic?.name || 'العيادة'} مع ${doctorName}.\nنسعد دائماً بالاطمئنان على صحتك وتقديم أفضل رعاية لك. هل تود حجز موعد المتابعة الدوري؟\n${origin}/booking`;
                     const waUrl = `https://wa.me/2${p.phone}?text=${encodeURIComponent(waText)}`;
 
                     return (
@@ -545,7 +539,8 @@ export const MarketingCrmHub = () => {
               </div>
             ) : (
               crossSellOpportunities.map((opp, idx) => {
-                const message = `مرحباً ${opp.patientName.split(' ')[0]} 🌸\n${doctorName} وفريق ${currentClinic?.name || 'العيادة'} بنطمن عليك.\nنظراً لإجرائك (${opp.triggerService}) منذ ${opp.daysSinceTrigger} يوماً، نوصيك سريرياً بـ (${opp.suggestedService}) ${opp.clinicalRationale}\n\nيسعدنا حجز موعدك بسهولة عبر الرابط التالي: \n${window.location.origin}/booking`;
+                const csOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+                const message = `مرحباً ${opp.patientName.split(' ')[0]} 🌸\n${doctorName} وفريق ${currentClinic?.name || 'العيادة'} بنطمن عليك.\nنظراً لإجرائك (${opp.triggerService}) منذ ${opp.daysSinceTrigger} يوماً، نوصيك سريرياً بـ (${opp.suggestedService}) ${opp.clinicalRationale}\n\nيسعدنا حجز موعدك بسهولة عبر الرابط التالي: \n${csOrigin}/booking`;
                 const waUrl = `https://wa.me/2${opp.patientPhone}?text=${encodeURIComponent(message)}`;
 
                 return (

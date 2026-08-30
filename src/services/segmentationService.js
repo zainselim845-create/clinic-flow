@@ -64,14 +64,15 @@ export function segmentPatient(patient, appointments = [], invoices = [], packag
       .filter(a => a.patientId === patient.id && a.status === 'completed')
       .sort((a, b) => new Date(b.date) - new Date(a.date))[0]?.date) || null;
 
-  const daysSinceLastVisit = lastVisitDate ? getDaysDifference(lastVisitDate) : 180;
+  const daysSinceLastVisit = lastVisitDate ? getDaysDifference(lastVisitDate) : 0;
+  const hasVisitHistory = !!lastVisitDate;
   const ltv = calculatePatientLtv(patient, appointments, invoices);
 
   // 1. Lifecycle calculation
   let lifecycle = LIFECYCLE_SEGMENTS.NEW;
-  if (daysSinceLastVisit > 180) {
+  if (hasVisitHistory && daysSinceLastVisit > 180) {
     lifecycle = LIFECYCLE_SEGMENTS.LOST;
-  } else if (daysSinceLastVisit > 90) {
+  } else if (hasVisitHistory && daysSinceLastVisit > 90) {
     lifecycle = LIFECYCLE_SEGMENTS.DORMANT;
   } else if (visitsCount >= 5) {
     lifecycle = LIFECYCLE_SEGMENTS.LOYAL;

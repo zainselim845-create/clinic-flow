@@ -84,10 +84,13 @@ export function getPatientCrossSellOpportunities(patient, customRules = []) {
   const matches = [];
 
   for (const rule of rules) {
-    // Check if patient had the trigger service in diagnosis or past services
-    const hadTriggerService = history.some(s => 
-      s.includes(rule.triggerService) || rule.triggerService.includes(s)
-    );
+    // Check if patient had the trigger service - require meaningful match length
+    // to prevent short generic terms (كشف, عادي) from false-triggering
+    const hadTriggerService = history.some(s => {
+      if (!s || s.length < 4) return false;
+      return s.includes(rule.triggerService) || 
+        (rule.triggerService.includes(s) && s.length >= 6);
+    });
 
     if (hadTriggerService && daysSinceVisit >= rule.minDaysAfter && daysSinceVisit <= rule.maxDaysAfter) {
       matches.push({

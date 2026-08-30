@@ -54,7 +54,7 @@ export class PatientIndexEngine {
       return this.phoneMap.get(clean);
     }
     // Try without leading 0 if 10 digits
-    const digitsOnly = String(phoneInput).replace(/\\D/g, '');
+    const digitsOnly = String(phoneInput).replace(/\D/g, '');
     if (this.phoneMap.has(digitsOnly)) {
       return this.phoneMap.get(digitsOnly);
     }

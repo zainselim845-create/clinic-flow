@@ -59,6 +59,14 @@ describe('Medical CRM & Retention Growth Engine Test Suite (test-guard compliant
       expect(segmented.daysSinceLastVisit).toBeGreaterThan(150);
     });
 
+    it('classifies patients without any visit history as NEW, not DORMANT', () => {
+      const newPatient = { id: 'p_new', name: 'مريض جديد', visitsCount: 0, lastVisit: null };
+      const segmented = segmentPatient(newPatient, [], [], [], []);
+      
+      expect(segmented.lifecycle).toBe(LIFECYCLE_SEGMENTS.NEW);
+      expect(segmented.daysSinceLastVisit).toBe(0);
+    });
+
     it('aggregates statistics across a population of patients', () => {
       const samplePatients = [
         { id: 'p1', name: 'مريض 1', visitsCount: 1, lastVisit: '2026-08-20' },
