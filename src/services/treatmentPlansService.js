@@ -138,3 +138,71 @@ export async function getPatientTreatmentPlans(patientId) {
     return { data: [], error };
   }
 }
+
+export async function addTreatmentPlan(plan) {
+  if (!isSupabaseConfigured()) {
+    const local = getLocalTreatmentPlans();
+    const newPlan = { ...plan, id: 'tp_' + Date.now(), createdAt: new Date().toISOString() };
+    saveLocalTreatmentPlans([newPlan, ...local]);
+    return { data: newPlan, error: null };
+  }
+
+  try {
+    const row = toDbTreatmentPlan(plan);
+    const { data: createdPlan, error } = await supabase
+      .from('treatment_plans')
+      .insert(row)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { data: fromDbTreatmentPlan(createdPlan), error: null };
+  } catch (error) {
+    console.error('Error adding treatment plan:', error);
+    return { data: plan, error };
+  }
+}
+
+export async function updateTreatmentPlanStatus(id, status) {
+  if (!isSupabaseConfigured()) {
+    const local = getLocalTreatmentPlans();
+    const updated = local.map(p => p.id === id ? { ...p, status } : p);
+    saveLocalTreatmentPlans(updated);
+    return { success: true, error: null };
+  }
+
+  try {
+    const { error } = await supabase
+      .from('treatment_plans')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) throw error;
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('Error updating treatment plan status:', error);
+    return { success: false, error };
+  }
+}
+
+export async function deleteTreatmentPlan(id) {
+  if (!isSupabaseConfigured()) {
+    const local = getLocalTreatmentPlans();
+    const updated = local.filter(p => p.id !== id);
+    saveLocalTreatmentPlans(updated);
+    return { success: true, error: null };
+  }
+
+  try {
+    const { error } = await supabase
+      .from('treatment_plans')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('Error deleting treatment plan:', error);
+    return { success: false, error };
+  }
+}
