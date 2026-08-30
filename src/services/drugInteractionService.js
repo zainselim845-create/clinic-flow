@@ -7,7 +7,7 @@ export const DRUG_SAFETY_RULES = [
   {
     id: 'penicillin_allergy',
     drugKeywords: ['أموكسيسيلين', 'أوجمنتين', 'بنسلين', 'اموكسيل', 'هاي بيوتك', 'كيورام', 'amoxicillin', 'augmentin', 'penicillin', 'curam', 'hibiotic'],
-    conditionKeywords: ['حساسية بنسلين', 'حساسية بنسلينات', 'penicillin allergy', 'حساسية من البنسلين'],
+    conditionKeywords: ['بنسلين', 'بنسلينات', 'penicillin', 'amoxicillin', 'حساسية بنسلين'],
     severity: 'danger',
     title: '⚠️ تحذير حرج: حساسية بنسلين مسجلة للمريض!',
     description: 'المريض لديه حساسية مسجلة من مركبات البنسلين ومشتقاتها (قد تسبب صدمة تحسسية Anaphylaxis).',
@@ -16,7 +16,7 @@ export const DRUG_SAFETY_RULES = [
   {
     id: 'nsaids_peptic_ulcer',
     drugKeywords: ['بروفين', 'كتافلام', 'فولتارين', 'كيتوفان', 'باي الكوفان', 'ديكلوفيناك', 'ايبوبروفين', 'ibuprofen', 'cataflam', 'voltaren', 'ketofan', 'diclofenac', 'ketoprofen'],
-    conditionKeywords: ['قرحة معدة', 'التهاب معدة حاد', 'نزيف هضمي', 'peptic ulcer', 'gastritis', 'حموضة وقرحة'],
+    conditionKeywords: ['قرحة معدة', 'التهاب معدة', 'نزيف هضمي', 'peptic ulcer', 'gastritis', 'قرحة'],
     severity: 'warning',
     title: '⚠️ تنبيه: مسكن NSAID مع مريض قرحة معدة',
     description: 'المسكنات غير الستيرويدية (NSAIDs) تزيد من خطر النزيف وتهيج بطانة المعدة.',
@@ -25,7 +25,7 @@ export const DRUG_SAFETY_RULES = [
   {
     id: 'nsaids_renal_disease',
     drugKeywords: ['بروفين', 'كتافلام', 'فولتارين', 'كيتوفان', 'باي الكوفان', 'ديكلوفيناك', 'ايبوبروفين', 'ibuprofen', 'cataflam', 'voltaren', 'diclofenac'],
-    conditionKeywords: ['قصور كلوي', 'فشل كلوي', 'اعتلال الكلى', 'renal impairment', 'kidney disease'],
+    conditionKeywords: ['قصور كلوي', 'فشل كلوي', 'اعتلال الكلى', 'renal', 'kidney'],
     severity: 'danger',
     title: '⚠️ تحذير حرج: مسكن NSAID مع قصور كلوي',
     description: 'مضادات الالتهاب غير الستيرويدية تؤدي لتثبيط البروستاجلاندين وتدهور وظائف الكلى.',
@@ -43,7 +43,7 @@ export const DRUG_SAFETY_RULES = [
   {
     id: 'local_anesthetic_epinephrine_hypertension',
     drugKeywords: ['ادرينالين', 'ارتيكايين مع ادرينالين', 'epinephrine', 'adrenaline', 'articaine with epi', 'septanest'],
-    conditionKeywords: ['ضغط دم غير منضبط', 'ضغط مرتفع حاد', 'جلطة حديثة', 'ذبحة صدرية', 'uncontrolled hypertension'],
+    conditionKeywords: ['ضغط دم غير منضبط', 'ضغط مرتفع', 'جلطة حديثة', 'ذبحة صدرية', 'uncontrolled hypertension', 'hypertension'],
     severity: 'danger',
     title: '⚠️ تنبيه سريري: قابض أوعية (Epinephrine) مع ضغط مرتفع غير منضبط',
     description: 'استخدام المخدر الموضعي المحتوي على مقبضات الأوعية قد يرفع ضغط الدم ويزيد النبض.',
@@ -52,7 +52,7 @@ export const DRUG_SAFETY_RULES = [
   {
     id: 'sulfa_allergy',
     drugKeywords: ['سلفا', 'سبترين', 'سيبتازول', 'sulfamethoxazole', 'bactrim', 'septrin', 'septazole'],
-    conditionKeywords: ['حساسية سلفا', 'sulfa allergy', 'حساسية من السلفا'],
+    conditionKeywords: ['سلفا', 'sulfa'],
     severity: 'danger',
     title: '⚠️ تحذير حرج: حساسية مركبات السلفا',
     description: 'المريض مسجل لديه حساسية معروفة لمركبات السلفوناميد.',

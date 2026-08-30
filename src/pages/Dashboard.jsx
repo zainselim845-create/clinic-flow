@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
   UserPlus, Search, FolderOpen, Share2,
-  CalendarDays, Clock, Stethoscope, Wallet, TrendingUp
+  CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark
 } from 'lucide-react';
 import { getTodayDateStr } from '../utils/timeSlots';
 import WaitingRoomQueue from './dashboard/WaitingRoomQueue';
@@ -13,6 +13,7 @@ import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
 import PrescriptionModal from '../components/PrescriptionModal';
 import ExpensesModal from '../components/ExpensesModal';
 import PatientRecallModal from '../components/PatientRecallModal';
+import ShiftHandoverModal from '../components/ShiftHandoverModal';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import './Dashboard.css';
@@ -30,6 +31,7 @@ const Dashboard = () => {
   const [prescriptionPatient, setPrescriptionPatient] = useState(null);
   const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
   const [isRecallModalOpen, setIsRecallModalOpen] = useState(false);
+  const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [scheduleSearchQuery, setScheduleSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('all');
   const [copiedBookingLink, setCopiedBookingLink] = useState(false);
@@ -261,6 +263,16 @@ const Dashboard = () => {
         </div>
 
         <div className="hero-actions">
+          <button 
+            type="button" 
+            onClick={() => setIsShiftModalOpen(true)} 
+            className="btn-hero-action secondary" 
+            title="تصفية ومطابقة درج الخزينة وتسليم الوردية"
+            style={{ background: '#f8fafc', color: '#1e40af', border: '1px solid #cbd5e1' }}
+          >
+            <Landmark size={16} />
+            <span>تسليم وردية الاستقبال</span>
+          </button>
           <button 
             type="button" 
             onClick={handleCopyBookingLink} 
@@ -599,6 +611,13 @@ const Dashboard = () => {
         <PatientRecallModal
           isOpen={isRecallModalOpen}
           onClose={() => setIsRecallModalOpen(false)}
+        />
+      )}
+
+      {isShiftModalOpen && (
+        <ShiftHandoverModal
+          isOpen={isShiftModalOpen}
+          onClose={() => setIsShiftModalOpen(false)}
         />
       )}
     </div>

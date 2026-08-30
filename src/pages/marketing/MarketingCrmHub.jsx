@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  Users, Sparkles, TrendingUp, RefreshCw, Send,
-  AlertTriangle, Gift, Layers, MessageCircle, 
+  Users, Sparkles, RefreshCw, Send,
+  AlertTriangle, Layers, MessageCircle, 
   Search, CheckCircle2, ChevronRight, UserPlus,
-  DollarSign, Zap, Target, Star, Copy, Check,
-  Cake, Calendar, Activity, Bot, ShieldCheck, HeartHandshake, Smile
+  Zap, Star, Copy, Check,
+  Cake, Activity, Bot, ShieldCheck, HeartHandshake, Smile
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
@@ -46,14 +46,12 @@ import {
   detectUnfinishedTreatmentPlans, 
   generateTreatmentPlanFollowUpMessage 
 } from '../../services/treatmentPlansService';
-import { formatDoctorName } from '../../utils/doctorAgentHelpers';
 import './MarketingCrmHub.css';
 
 export const MarketingCrmHub = () => {
   const { state } = useApp();
   const { clinic } = useAuth();
   const currentClinic = state.clinicInfo || clinic;
-  const doctorName = formatDoctorName(currentClinic?.doctorName || 'طبيب العيادة');
 
   const { patients = [], appointments = [], invoices = [] } = state;
 
@@ -71,12 +69,12 @@ export const MarketingCrmHub = () => {
   const [customOccasionOffer, setCustomOccasionOffer] = useState('خصم حصري 20%');
 
   // AI Campaign Composer State
-  const [composerSegment, setComposerSegment] = useState('DORMANT');
+  const [composerSegment, setComposerSegment] = useState('dormant');
   const [composerGoal, setComposerGoal] = useState('reactivation');
   const [composerOffer, setComposerOffer] = useState('فحص وقائي شامل + تنظيف أسنان بخصم 25%');
 
   // Packages State
-  const [packagesList, setPackagesList] = useState(() => getPatientPackages());
+  const [packagesList, setPackagesList] = useState(() => getPatientPackages() || []);
   const [isAddPackageModalOpen, setIsAddPackageModalOpen] = useState(false);
   const [newPackageData, setNewPackageData] = useState({
     patientId: '',
@@ -88,8 +86,8 @@ export const MarketingCrmHub = () => {
   });
 
   // Drafts & Recovery
-  const [draftsList] = useState(() => getBookingDrafts());
-  const [feedbacksList, setFeedbacksList] = useState(() => getStoredFeedbacks());
+  const [draftsList] = useState(() => getBookingDrafts() || []);
+  const [feedbacksList, setFeedbacksList] = useState(() => getStoredFeedbacks() || []);
 
   const showToast = (text, type = 'success') => {
     setToastMessage({ text, type });
@@ -98,10 +96,22 @@ export const MarketingCrmHub = () => {
 
   // 1. Run Realtime O(1) Segmentation
   const segmentationResult = useMemo(() => {
-    return segmentAllPatients(patients, appointments, invoices, packagesList, []);
+    return segmentAllPatients(patients || [], appointments || [], invoices || [], packagesList || [], []);
   }, [patients, appointments, invoices, packagesList]);
 
-  const { patients: segmentedPatients, stats: crmStats } = segmentationResult;
+  const segmentedPatients = useMemo(() => segmentationResult?.patients || [], [segmentationResult]);
+  
+  const crmStats = useMemo(() => {
+    const s = segmentationResult?.stats || {};
+    return {
+      totalPatients: s.total || (patients || []).length || 0,
+      vipCount: s.vip || 0,
+      dormantCount: s.dormant || 0,
+      newCount: s.new || 0,
+      returningCount: s.returning || 0,
+      activeCount: (s.returning || 0) + (s.loyal || 0) || 0
+    };
+  }, [segmentationResult, patients]);
 
   // 2. Cross-Selling Opportunities
   const crossSellOpportunities = useMemo(() => {
@@ -110,40 +120,40 @@ export const MarketingCrmHub = () => {
 
   // 3. Stalled Packages
   const stalledPackages = useMemo(() => {
-    return detectStalledPackages(packagesList);
+    return detectStalledPackages(packagesList || []);
   }, [packagesList]);
 
   // 4. Abandoned Leads
   const abandonedLeads = useMemo(() => {
-    return draftsList.filter(d => d.status === 'abandoned');
+    return (draftsList || []).filter(d => d && d.status === 'abandoned');
   }, [draftsList]);
 
   // 5. No-Show Appointments
   const noShowAppointments = useMemo(() => {
-    return appointments.filter(a => a.status === 'cancelled' || a.status === 'no_show');
+    return (appointments || []).filter(a => a && (a.status === 'cancelled' || a.status === 'no_show'));
   }, [appointments]);
 
   // 6. Post-Visit 24h Follow-up Patients
   const postVisitPatients = useMemo(() => {
-    return getPostVisitEligiblePatients(appointments);
+    return getPostVisitEligiblePatients(appointments || []);
   }, [appointments]);
 
   // 7. Occasion Candidates
   const occasionCandidates = useMemo(() => {
-    return getOccasionCampaignCandidates(patients, selectedOccasion);
+    return getOccasionCampaignCandidates(patients || [], selectedOccasion);
   }, [patients, selectedOccasion]);
 
   // 8. Unfinished Treatment Plans
   const unfinishedPlans = useMemo(() => {
-    return detectUnfinishedTreatmentPlans();
+    return detectUnfinishedTreatmentPlans() || [];
   }, []);
 
   // Filtered patients for segment explorer
   const filteredPatients = useMemo(() => {
-    let list = filterPatientsBySegment(segmentedPatients, selectedSegment);
-    if (searchQuery.trim()) {
+    let list = filterPatientsBySegment(segmentedPatients, selectedSegment) || [];
+    if (searchQuery && searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
-      list = list.filter(p => (p.name && p.name.toLowerCase().includes(q)) || (p.phone && p.phone.includes(q)));
+      list = list.filter(p => p && ((p.name && p.name.toLowerCase().includes(q)) || (p.phone && p.phone.includes(q))));
     }
     return list;
   }, [segmentedPatients, selectedSegment, searchQuery]);
@@ -175,7 +185,7 @@ export const MarketingCrmHub = () => {
 
   const handleAddPackageSubmit = (e) => {
     e.preventDefault();
-    const p = patients.find(pat => pat.id === newPackageData.patientId);
+    const p = (patients || []).find(pat => pat && pat.id === newPackageData.patientId);
     if (!p) {
       showToast('يرجى اختيار المريض أولاً', 'error');
       return;
@@ -272,7 +282,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('cross_sell')}
           >
             <Zap size={16} />
-            <span>البيع المتقاطع ({crossSellOpportunities.length})</span>
+            <span>البيع المتقاطع ({(crossSellOpportunities || []).length})</span>
           </button>
 
           <button 
@@ -280,7 +290,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('recovery')}
           >
             <AlertTriangle size={16} />
-            <span>استعادة الفرص ({abandonedLeads.length + noShowAppointments.length})</span>
+            <span>استعادة الفرص ({(abandonedLeads || []).length + (noShowAppointments || []).length})</span>
           </button>
 
           <button 
@@ -296,7 +306,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('treatment_plans')}
           >
             <Smile size={16} />
-            <span>الخطط غير المكتملة ({unfinishedPlans.length})</span>
+            <span>الخطط غير المكتملة ({(unfinishedPlans || []).length})</span>
           </button>
 
           <button 
@@ -304,7 +314,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('packages')}
           >
             <Layers size={16} />
-            <span>الباقات والجلسات ({packagesList.length})</span>
+            <span>الباقات والجلسات ({(packagesList || []).length})</span>
           </button>
 
           <button 
@@ -350,7 +360,7 @@ export const MarketingCrmHub = () => {
                 <p>مريض مقسمين تلقائياً</p>
               </div>
               <div className="card-bot">
-                <span>{crmStats.newCount} مريض جديد • {crmStats.vipCount} VIP</span>
+                <span>{crmStats.newCount} جديد • {crmStats.vipCount} VIP</span>
                 <ChevronRight size={16} />
               </div>
             </div>
@@ -376,7 +386,7 @@ export const MarketingCrmHub = () => {
                 <span className="card-tag tag-purple">خطط علاجية</span>
               </div>
               <div className="card-mid">
-                <h3 className="text-purple">{unfinishedPlans.length}</h3>
+                <h3 className="text-purple">{(unfinishedPlans || []).length}</h3>
                 <p>مرضى لديهم خطوات علاجية معلقة</p>
               </div>
               <div className="card-bot">
@@ -391,7 +401,7 @@ export const MarketingCrmHub = () => {
                 <span className="card-tag tag-red">استعادة الحجوزات</span>
               </div>
               <div className="card-mid">
-                <h3 className="text-error">{abandonedLeads.length + noShowAppointments.length}</h3>
+                <h3 className="text-error">{(abandonedLeads || []).length + (noShowAppointments || []).length}</h3>
                 <p>حجوزات لم تكتمل + No-Shows</p>
               </div>
               <div className="card-bot">
@@ -407,10 +417,10 @@ export const MarketingCrmHub = () => {
             <div className="crm-section-box">
               <div className="box-header">
                 <h4><Zap size={18} className="text-primary" /> أهم فرص البيع المتقاطع (Cross-Selling)</h4>
-                <button onClick={() => setActiveTab('cross_sell')} className="btn-link">عرض الكل ({crossSellOpportunities.length})</button>
+                <button onClick={() => setActiveTab('cross_sell')} className="btn-link">عرض الكل ({(crossSellOpportunities || []).length})</button>
               </div>
               <div className="opportunities-mini-list">
-                {crossSellOpportunities.slice(0, 3).map((opp, idx) => (
+                {(crossSellOpportunities || []).slice(0, 3).map((opp, idx) => (
                   <div key={idx} className="opp-mini-card">
                     <div className="opp-meta">
                       <strong>{opp.patientName}</strong>
@@ -436,7 +446,7 @@ export const MarketingCrmHub = () => {
                 <button onClick={() => setActiveTab('feedback')} className="btn-link">فتح البوابة</button>
               </div>
               <div className="feedbacks-mini-list">
-                {feedbacksList.slice(0, 3).map((fb) => (
+                {(feedbacksList || []).slice(0, 3).map((fb) => (
                   <div key={fb.id} className="fb-mini-card">
                     <div className="fb-stars">
                       {'⭐'.repeat(fb.rating)}
@@ -466,11 +476,10 @@ export const MarketingCrmHub = () => {
             <div className="segment-pills">
               {[
                 { id: 'all', label: `الكل (${crmStats.totalPatients})` },
-                { id: 'VIP', label: `VIP كبار العملاء (${crmStats.vipCount})` },
-                { id: 'RETURNING', label: `مرضى دائمون (${crmStats.returningCount})` },
-                { id: 'NEW', label: `جدد (${crmStats.newCount})` },
-                { id: 'ACTIVE', label: `نشطون (${crmStats.activeCount})` },
-                { id: 'DORMANT', label: `خاملون 6+ أشهر (${crmStats.dormantCount})` }
+                { id: 'vip', label: `VIP كبار العملاء (${crmStats.vipCount})` },
+                { id: 'returning', label: `مرضى دائمون (${crmStats.returningCount})` },
+                { id: 'new', label: `جدد (${crmStats.newCount})` },
+                { id: 'dormant', label: `خاملون 6+ أشهر (${crmStats.dormantCount})` }
               ].map(seg => (
                 <button
                   key={seg.id}
@@ -498,15 +507,15 @@ export const MarketingCrmHub = () => {
               <thead>
                 <tr>
                   <th>المريض</th>
-                  <th>الشريحة</th>
+                  <th>الشريحة الحالية</th>
                   <th>عدد الزيارات</th>
-                  <th>إجمالي الإنفاق</th>
+                  <th>إجمالي الإنفاق (LTV)</th>
                   <th>آخر زيارة</th>
                   <th>الإجراء المقترح</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredPatients.length === 0 ? (
+                {(filteredPatients || []).length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-4 text-muted">لا يوجد مرضى في هذه الشريحة حالياً.</td>
                   </tr>
@@ -520,22 +529,18 @@ export const MarketingCrmHub = () => {
                         </div>
                       </td>
                       <td>
-                        <span className={`segment-badge badge-${p.segment}`}>
-                          {p.segment === 'VIP' && '⭐ VIP مريض مميز'}
-                          {p.segment === 'RETURNING' && '🔄 مريض دائم'}
-                          {p.segment === 'NEW' && '✨ مريض جديد'}
-                          {p.segment === 'ACTIVE' && '🟢 نشط'}
-                          {p.segment === 'DORMANT' && '⏳ خامل (يحتاج تنشيط)'}
+                        <span className="segment-badge badge-VIP">
+                          {p.valueTier === 'vip' ? '⭐ VIP مريض مميز' : p.lifecycle === 'new' ? '✨ جديد' : p.lifecycle === 'dormant' ? '⏳ خامل 6+ أشهر' : '🟢 نشط دائم'}
                         </span>
                       </td>
                       <td><strong>{p.visitsCount || 1}</strong> زيارة</td>
-                      <td><strong>{p.totalSpend || 300} ج.م</strong></td>
-                      <td>{p.lastVisit ? `${p.daysSinceLastVisit} يوم مضت` : 'حديث التسجيل'}</td>
+                      <td><strong>{p.ltv || 300} ج.م</strong></td>
+                      <td>{p.daysSinceLastVisit ? `${p.daysSinceLastVisit} يوم مضت` : 'حديث التسجيل'}</td>
                       <td>
                         <button 
                           className="btn-action-primary"
                           onClick={() => {
-                            setComposerSegment(p.segment);
+                            setComposerSegment(p.lifecycle || 'dormant');
                             setActiveTab('ai_composer');
                           }}
                         >
@@ -587,7 +592,7 @@ export const MarketingCrmHub = () => {
                 <h4>رائع! جميع مرضاك نشطون ولا يوجد مرضى خاملون متأخرون عن 6 أشهر.</h4>
               </div>
             ) : (
-              segmentedPatients.filter(p => p.segment === 'DORMANT').map(p => (
+              (segmentedPatients || []).filter(p => p && (p.lifecycle === 'dormant' || p.lifecycle === 'lost')).map(p => (
                 <div key={p.id} className="reactivation-patient-card">
                   <div className="p-header">
                     <div>
@@ -632,7 +637,7 @@ export const MarketingCrmHub = () => {
           </div>
 
           <div className="cross-sell-grid">
-            {crossSellOpportunities.map((opp, idx) => {
+            {(crossSellOpportunities || []).map((opp, idx) => {
               const cleanPhone = (opp.patientPhone || '').replace(/^0/, '20');
               const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(opp.whatsappMessage)}`;
 
@@ -693,7 +698,7 @@ export const MarketingCrmHub = () => {
                 <small>أشخاص كتبوا رقمهم في بوابة الحجز ولم يكملوا الخطوة الثانية</small>
               </div>
 
-              {abandonedLeads.length === 0 ? (
+              {(abandonedLeads || []).length === 0 ? (
                 <div className="empty-sub">لا توجد محاولات حجز متروكة حالياً.</div>
               ) : (
                 abandonedLeads.map((draft, idx) => {
@@ -705,7 +710,7 @@ export const MarketingCrmHub = () => {
                     <div key={draft.id || idx} className="lead-recovery-card">
                       <div className="lead-info">
                         <strong>رقم الهاتف: <span dir="ltr">{draft.phone}</span></strong>
-                        <span>تاريخ المحاولة: {new Date(draft.updatedAt || draft.createdAt).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>تاريخ المحاولة: {new Date(draft.updatedAt || draft.createdAt || Date.now()).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                       <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary">
                         <Send size={14} />
@@ -724,7 +729,7 @@ export const MarketingCrmHub = () => {
                 <small>مرضى حجزوا موعداً ولم يتمكنوا من الحضور</small>
               </div>
 
-              {noShowAppointments.length === 0 ? (
+              {(noShowAppointments || []).length === 0 ? (
                 <div className="empty-sub">لا توجد حالات No-Show مسجلة.</div>
               ) : (
                 noShowAppointments.map((appt) => {
@@ -769,10 +774,10 @@ export const MarketingCrmHub = () => {
             {/* Eligible Visits for Follow-up */}
             <div className="crm-section-box">
               <div className="box-header">
-                <h4><Users size={18} /> زيارات مكتملة بانتظار إرسال استبيان الرضا ({postVisitPatients.length})</h4>
+                <h4><Users size={18} /> زيارات مكتملة بانتظار إرسال استبيان الرضا ({(postVisitPatients || []).length})</h4>
               </div>
               <div className="feedbacks-actions-list">
-                {postVisitPatients.length === 0 ? (
+                {(postVisitPatients || []).length === 0 ? (
                   <p className="text-muted text-center py-3">لا توجد زيارات مكتملة تحتاج متابعة حالياً.</p>
                 ) : (
                   postVisitPatients.map((pv) => {
@@ -809,7 +814,7 @@ export const MarketingCrmHub = () => {
                 <h4><ShieldCheck size={18} className="text-success" /> سجل توجيه التقييمات الذكي</h4>
               </div>
               <div className="feedbacks-ledger">
-                {feedbacksList.map((fb) => (
+                {(feedbacksList || []).map((fb) => (
                   <div key={fb.id} className="ledger-fb-row">
                     <div className="l-top">
                       <strong>{fb.patientName}</strong>
@@ -844,7 +849,7 @@ export const MarketingCrmHub = () => {
           </div>
 
           <div className="plans-cards-grid">
-            {unfinishedPlans.map((plan) => {
+            {(unfinishedPlans || []).map((plan) => {
               const msg = generateTreatmentPlanFollowUpMessage(plan, { name: plan.patientName }, currentClinic);
               const cleanPhone = (plan.patientPhone || '').replace(/^0/, '20');
               const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
@@ -905,7 +910,7 @@ export const MarketingCrmHub = () => {
           </div>
 
           <div className="packages-cards-grid">
-            {packagesList.map((pkg) => {
+            {(packagesList || []).map((pkg) => {
               const progress = Math.round((pkg.completedSessions / pkg.totalSessions) * 100);
               const isStalled = pkg.completedSessions < pkg.totalSessions;
 
@@ -982,7 +987,7 @@ export const MarketingCrmHub = () => {
           </div>
 
           <div className="candidates-grid">
-            {occasionCandidates.map((c) => {
+            {(occasionCandidates || []).map((c) => {
               const msg = generatePersonalizedOccasionMessage(c, selectedOccasion, currentClinic, customOccasionOffer);
               const cleanPhone = (c.patientPhone || '').replace(/^0/, '20');
               const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
@@ -1019,7 +1024,7 @@ export const MarketingCrmHub = () => {
           </div>
 
           <div className="referral-cards-grid">
-            {patients.slice(0, 6).map((p, idx) => {
+            {(patients || []).slice(0, 6).map((p, idx) => {
               const code = getPatientReferralCode(p.id);
               const link = getPatientReferralLink(code);
 
@@ -1040,8 +1045,8 @@ export const MarketingCrmHub = () => {
                     </button>
                   </div>
                   <div className="ref-stats-row">
-                    <span>عدد الإحالات الناجحة: <strong>{(parseInt(p.id.replace(/\D/g, ''), 10) || 1) % 3}</strong></span>
-                    <span>رصيد المكافآت: <strong className="text-success">{((parseInt(p.id.replace(/\D/g, ''), 10) || 1) % 3) * 150} ج.م</strong></span>
+                    <span>عدد الإحالات الناجحة: <strong>{(parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 3}</strong></span>
+                    <span>رصيد المكافآت: <strong className="text-success">{((parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 3) * 150} ج.م</strong></span>
                   </div>
                 </div>
               );
@@ -1063,10 +1068,10 @@ export const MarketingCrmHub = () => {
               <div className="form-group">
                 <label>الشريحة المستهدفة:</label>
                 <select value={composerSegment} onChange={(e) => setComposerSegment(e.target.value)}>
-                  <option value="DORMANT">المرضى الخاملون (6+ أشهر لم يزوروا العيادة)</option>
-                  <option value="VIP">كبار العملاء المميزين (VIP)</option>
-                  <option value="NEW">المرضى الجدد (لتحويلهم لمرضى دائمين)</option>
-                  <option value="ACTIVE">المرضى النشطون دورياً</option>
+                  <option value="dormant">المرضى الخاملون (6+ أشهر لم يزوروا العيادة)</option>
+                  <option value="vip">كبار العملاء المميزين (VIP)</option>
+                  <option value="new">المرضى الجدد (لتحويلهم لمرضى دائمين)</option>
+                  <option value="returning">المرضى الدائمون دورياً</option>
                 </select>
               </div>
 
@@ -1094,8 +1099,8 @@ export const MarketingCrmHub = () => {
               <p className="sub">الرسالة تتغير ديناميكياً لتشمل اسم المريض، آخر خدمة تلقاها، وتاريخ زيارته بدقة.</p>
 
               <div className="generated-templates-list">
-                {segmentedPatients.filter(p => composerSegment === 'all' || p.segment === composerSegment).slice(0, 3).map((p) => {
-                  const patientFirst = p.name.split(' ')[0];
+                {(segmentedPatients || []).filter(p => p && (composerSegment === 'all' || p.lifecycle === composerSegment || p.valueTier === composerSegment)).slice(0, 3).map((p) => {
+                  const patientFirst = (p.name || 'مريضنا العزيز').split(' ')[0];
                   const service = p.diagnosis || 'كشف الأسنان والفحص الدوري';
                   const msg = 
                     `مرحباً يا ${patientFirst} 🌸\n\n` +
@@ -1103,7 +1108,7 @@ export const MarketingCrmHub = () => {
                     `بما أن آخر زيارة لك كانت بخصوص (${service})، أحببنا أن نخصص لك عرضاً حصرياً يناسبك:\n\n` +
                     `✨ ${composerOffer}\n\n` +
                     `يسعدنا تشريفك ويمكنك حجز موعدك مباشرة عبر الرابط:\n` +
-                    `${window.location.origin}/booking\n\n` +
+                    `${typeof window !== 'undefined' ? window.location.origin : ''}/booking\n\n` +
                     `دمت بصحة وابتسامة جميلة! 🦷✨`;
 
                   const cleanPhone = (p.phone || '').replace(/^0/, '20');
@@ -1113,7 +1118,7 @@ export const MarketingCrmHub = () => {
                     <div key={p.id} className="template-preview-card">
                       <div className="t-head">
                         <strong>{p.name} ({p.phone})</strong>
-                        <span className="t-tag">{p.segment}</span>
+                        <span className="t-tag">{p.lifecycle || 'مريض'}</span>
                       </div>
                       <div className="t-body">
                         <p>{msg}</p>
@@ -1149,7 +1154,7 @@ export const MarketingCrmHub = () => {
                   required
                 >
                   <option value="">-- اختر المريض من القائمة --</option>
-                  {patients.map(p => (
+                  {(patients || []).map(p => (
                     <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
                   ))}
                 </select>

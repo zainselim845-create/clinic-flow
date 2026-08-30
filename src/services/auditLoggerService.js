@@ -4,6 +4,7 @@
  */
 
 const AUDIT_STORAGE_KEY = 'clinicflow_audit_log';
+let inMemoryAuditLogs = [];
 
 export const AUDIT_EVENT_TYPES = {
   APPOINTMENT_CREATED: 'APPOINTMENT_CREATED',
@@ -41,14 +42,16 @@ export function recordAuditEvent({
     entityType
   };
 
-  try {
-    const existing = getAuditLogs();
-    existing.unshift(newEntry);
-    // Keep last 10,000 audit records in browser storage
-    const trimmed = existing.slice(0, 10000);
-    localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(trimmed));
-  } catch (err) {
-    console.warn('Could not record audit log to localStorage:', err);
+  inMemoryAuditLogs.unshift(newEntry);
+
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const existing = getAuditLogs();
+      const trimmed = [newEntry, ...existing.filter(e => e.id !== newEntry.id)].slice(0, 10000);
+      localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(trimmed));
+    } catch (err) {
+      console.warn('Could not record audit log to localStorage:', err);
+    }
   }
 
   return newEntry;
@@ -59,14 +62,16 @@ export function recordAuditEvent({
  * @returns {Array} List of audit records
  */
 export function getAuditLogs() {
-  try {
-    const raw = localStorage.getItem(AUDIT_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (_) {
-    return [];
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const raw = localStorage.getItem(AUDIT_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
   }
+  return inMemoryAuditLogs;
 }
 
 /**

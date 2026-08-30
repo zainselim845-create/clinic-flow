@@ -43,8 +43,7 @@ async function auditPages() {
 
   // Doctor Agent & CRM Hub
   await page.goto('https://clinic-flow-lh3g.vercel.app/doctor-agent', { waitUntil: 'networkidle' });
-  await page.waitForSelector('.crm-marketing-hub, .doctor-assistant-page', { timeout: 10000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(2000);
   await page.screenshot({ path: path.join(outDir, 'audit_4_crm.png') });
   console.log('✓ CRM Hub captured');
 

@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useDeferredValue } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
-import { Plus, X, Search, Lock, Unlock, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, X, Search, Lock, Unlock, Download, ChevronLeft, ChevronRight, Armchair, LayoutGrid } from 'lucide-react';
 import AppointmentCard from '../components/AppointmentCard';
+import MultiChairGrid from '../components/appointments/MultiChairGrid';
 import { availableSlots } from '../data/demoData';
 import { getTodayDateStr } from '../utils/timeSlots';
 import * as appointmentsService from '../services/appointmentsService';
@@ -23,6 +24,7 @@ const Appointments = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const deferredQuery = useDeferredValue(searchQuery);
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'chairs'
   const PAGE_SIZE = 18;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBlockerModalOpen, setIsBlockerModalOpen] = useState(false);
@@ -269,6 +271,25 @@ const Appointments = () => {
         </div>
         
         <div className="other-filters">
+          <div className="view-mode-toggle-group" style={{ display: 'flex', background: '#f1f5f9', borderRadius: '8px', padding: '2px', border: '1px solid #cbd5e1' }}>
+            <button 
+              type="button"
+              style={{ padding: '0.35rem 0.65rem', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, background: viewMode === 'grid' ? '#ffffff' : 'transparent', color: viewMode === 'grid' ? '#1e40af' : '#64748b', boxShadow: viewMode === 'grid' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}
+              onClick={() => setViewMode('grid')}
+            >
+              <LayoutGrid size={14} />
+              <span>بطاقات</span>
+            </button>
+            <button 
+              type="button"
+              style={{ padding: '0.35rem 0.65rem', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, background: viewMode === 'chairs' ? '#ffffff' : 'transparent', color: viewMode === 'chairs' ? '#1e40af' : '#64748b', boxShadow: viewMode === 'chairs' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}
+              onClick={() => setViewMode('chairs')}
+            >
+              <Armchair size={14} />
+              <span>الكراسي المتزامنة</span>
+            </button>
+          </div>
+
           <input 
             type="date" 
             className="input-field" 
@@ -288,28 +309,38 @@ const Appointments = () => {
         </div>
       </div>
 
-      <div className="appointments-grid">
-        {paginatedAppointments.length > 0 ? (
-          paginatedAppointments.map(appt => {
-            const patient = patients.find(p => p.id === appt.patientId);
-            return (
-              <AppointmentCard
-                key={appt.id}
-                appointment={appt}
-                patient={patient}
-                onUpdateStatus={handleUpdateStatus}
-              />
-            );
-          })
-        ) : (
-          <div className="empty-state">
-            <p>لا توجد مواعيد مطابقة للبحث.</p>
+      {viewMode === 'chairs' ? (
+        <MultiChairGrid 
+          appointments={filteredAppointments} 
+          selectedDate={filterDate || todayStr} 
+          onAppointmentClick={(appt) => {
+            console.log('Selected chair appt:', appt);
+          }}
+        />
+      ) : (
+        <>
+          <div className="appointments-grid">
+            {paginatedAppointments.length > 0 ? (
+              paginatedAppointments.map(appt => {
+                const patient = patients.find(p => p.id === appt.patientId);
+                return (
+                  <AppointmentCard
+                    key={appt.id}
+                    appointment={appt}
+                    patient={patient}
+                    onUpdateStatus={handleUpdateStatus}
+                  />
+                );
+              })
+            ) : (
+              <div className="empty-state">
+                <p>لا توجد مواعيد مطابقة للبحث.</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* High-Volume Pagination Controls */}
-      {totalPages > 1 && (
+          {/* High-Volume Pagination Controls */}
+          {totalPages > 1 && (
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -350,6 +381,8 @@ const Appointments = () => {
             <ChevronLeft size={16} />
           </button>
         </div>
+      )}
+      </>
       )}
 
       {/* Modal 1: Add Appointment */}
