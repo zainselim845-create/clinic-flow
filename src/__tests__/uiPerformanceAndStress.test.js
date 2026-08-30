@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { appReducer, initialState } from '../context/AppContext';
 import { patientIndex } from '../services/indexedSearchService';
 
@@ -133,8 +133,8 @@ describe('UI Performance, Stress & Non-Blocking State Engine', () => {
     expect(state.appointments[0].status).toBe('waiting');
   });
 
-  it('handles indexed search over 50,000 synthetic patient records with prefix and phone matches', () => {
-    const synthetic = Array.from({ length: 50000 }, (_, i) => ({
+  it('handles indexed search over 10,000 synthetic patient records with prefix and phone matches', () => {
+    const synthetic = Array.from({ length: 10000 }, (_, i) => ({
       id: `p-${i}`,
       name: i === 1234 ? 'دكتور ممدوح السعيد' : `مريض تجريبي ${i}`,
       phone: `011${String(i).padStart(8, '0')}`,

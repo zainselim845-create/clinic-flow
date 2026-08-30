@@ -101,7 +101,7 @@
   box-shadow: 0 4px 14px rgba(0, 113, 227, 0.35);
 }
 
-/* 2. KPI 4-Card Grid (Exact Class Matches for Dashboard.jsx) */
+/* 2. KPI 4-Card Grid */
 .cockpit-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -227,24 +227,36 @@
   justify-content: space-between;
 }
 
-/* 3. Main Split Cockpit */
-.dashboard-main-grid {
+/* 3. 2-Column Responsive High-Density Cockpit Grid */
+.dashboard-cockpit-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 2.2fr 1fr;
   gap: 1.25rem;
 }
 
 @media (max-width: 1024px) {
-  .dashboard-main-grid {
+  .dashboard-cockpit-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.cockpit-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cockpit-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 /* Waiting Room Section */
 .waiting-room-section {
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: 1.25rem;
   box-shadow: var(--shadow-card);
   display: flex;
@@ -297,67 +309,94 @@
   }
 }
 
-.exam-room-card, .waiting-queue-card {
+.exam-room-card, .queue-container-card {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1rem;
+  border-radius: var(--radius-lg);
+  padding: 1.15rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
-.exam-card-header, .queue-card-header {
+.exam-card-header, .queue-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.room-badge, .queue-title {
-  font-size: 0.82rem;
+.room-badge, .queue-header h4 {
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .occupancy-tag {
   font-size: 0.72rem;
   font-weight: 600;
-  padding: 0.15rem 0.5rem;
+  padding: 0.15rem 0.55rem;
   border-radius: var(--radius-full);
 }
 .occupancy-tag.occupied { background: var(--warning-light); color: var(--warning); }
 .occupancy-tag.empty { background: var(--success-light); color: var(--success); }
 
-.empty-room-state, .empty-queue-state {
-  padding: 1.5rem 1rem;
+.vacant-state-box, .empty-queue-box {
+  padding: 1.75rem 1rem;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   color: var(--text-secondary);
 }
 
-.empty-room-state h5 {
+.vacant-state-box h4 {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
-.empty-room-state p, .empty-queue-state p {
+.vacant-state-box p, .empty-queue-box p {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--text-tertiary);
+}
+
+.btn-call-next-patient {
+  margin-top: 0.5rem;
+  background: var(--primary);
+  color: #FFFFFF !important;
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.btn-call-next-patient:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .active-patient-box {
   background: var(--surface);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 0.85rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .active-patient-top {
@@ -367,15 +406,15 @@
 }
 
 .patient-avatar-large {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--primary-light);
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
@@ -415,89 +454,134 @@
   font-weight: 600;
 }
 
-.active-patient-actions {
+/* Exam Action Buttons */
+.exam-actions {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  margin-top: 0.25rem;
 }
 
-/* Revenue & Analytics Card */
-.analytics-sidebar-card {
+.btn-exam-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-exam-action.primary {
+  background: var(--primary);
+  color: #FFFFFF !important;
+}
+.btn-exam-action.primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-exam-action.success {
+  background: var(--success);
+  color: #FFFFFF !important;
+}
+.btn-exam-action.success:hover {
+  background: #28CD41;
+}
+
+.btn-exam-action.outline {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+.btn-exam-action.outline:hover {
   background: var(--surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  box-shadow: var(--shadow-card);
+  border-color: var(--primary);
+}
+
+/* Queue List */
+.queue-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
+  max-height: 260px;
+  overflow-y: auto;
 }
 
-.analytics-header-row {
+.queue-item-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  transition: all var(--transition-fast);
 }
 
-.analytics-header-row h3 {
-  margin: 0;
-  font-size: 0.95rem;
+.queue-item-card:hover {
+  border-color: var(--primary);
+}
+
+.queue-item-card.emergency-priority {
+  border-color: var(--error);
+  background: var(--error-light);
+}
+
+.queue-number {
+  font-size: 0.8rem;
   font-weight: 700;
+  color: var(--text-tertiary);
+  width: 24px;
+}
+
+.queue-item-card .patient-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.name-row {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+.name-row strong {
+  font-size: 0.88rem;
   color: var(--text-primary);
 }
 
-.financial-pills-row {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+.emergency-badge {
+  background: var(--error);
+  color: #FFFFFF;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
 }
 
-.financial-pill {
-  flex: 1;
-  min-width: 80px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 0.45rem 0.6rem;
+.time-details {
   display: flex;
-  flex-direction: column;
-}
-
-.financial-pill .p-label {
-  font-size: 0.68rem;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.74rem;
   color: var(--text-secondary);
 }
 
-.financial-pill .p-val {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text-primary);
+.wait-timer {
+  color: var(--warning);
+  font-weight: 600;
 }
 
-.financial-pill.revenue { border-color: rgba(0, 113, 227, 0.2); }
-.financial-pill.expenses { border-color: rgba(255, 59, 48, 0.2); }
-.financial-pill.net { border-color: rgba(52, 199, 89, 0.2); }
-
-.chart-wrapper {
-  width: 100%;
-  height: 160px;
-  margin-top: 0.5rem;
-}
-
-.quick-actions-box {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-/* Today's Schedule Table */
-.todays-schedule-card {
+/* 4. Schedule Table Card */
+.schedule-table-card {
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   padding: 1.25rem;
   box-shadow: var(--shadow-card);
   display: flex;
@@ -505,7 +589,7 @@
   gap: 1rem;
 }
 
-.schedule-header-row {
+.table-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -513,42 +597,49 @@
   gap: 0.75rem;
 }
 
-.schedule-title-wrap h3 {
+.header-title h3 {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
-.schedule-controls-right {
+.header-tools {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   flex-wrap: wrap;
 }
 
-.schedule-search-input {
+.compact-search {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.schedule-search-input input {
-  padding: 0.45rem 2rem 0.45rem 0.75rem;
+.compact-search input {
+  padding: 0.4rem 2rem 0.4rem 0.75rem;
   font-size: 0.82rem;
   border-radius: 8px;
-  background: var(--bg-primary);
   border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  width: 150px;
+  transition: all var(--transition-fast);
+}
+
+.compact-search input:focus {
+  border-color: var(--primary);
   width: 180px;
 }
 
-.schedule-search-input .s-icon {
+.compact-search svg {
   position: absolute;
-  right: 0.65rem;
+  right: 0.6rem;
   color: var(--text-tertiary);
 }
 
-.schedule-filters-chips {
+.compact-tabs {
   display: flex;
   gap: 2px;
   background: var(--bg-primary);
@@ -557,7 +648,7 @@
   border: 1px solid var(--border-subtle);
 }
 
-.filter-chip-btn {
+.tab-pill {
   background: transparent;
   border: none;
   padding: 0.35rem 0.65rem;
@@ -567,27 +658,28 @@
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
-.filter-chip-btn.active {
+.tab-pill.active {
   background: var(--surface);
   color: var(--primary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.appointments-table-wrap {
+.table-responsive {
   width: 100%;
   overflow-x: auto;
 }
 
-.appointments-table {
+.data-table {
   width: 100%;
   border-collapse: collapse;
   text-align: right;
   font-size: 0.86rem;
 }
 
-.appointments-table th {
+.data-table th {
   padding: 0.65rem 0.85rem;
   font-size: 0.76rem;
   font-weight: 600;
@@ -595,12 +687,167 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.appointments-table td {
+.data-table td {
   padding: 0.75rem 0.85rem;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
 }
 
-.appointments-table tr:hover td {
+.data-table tr:hover td {
   background: var(--bg-hover);
+}
+
+.patient-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.patient-cell strong {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.patient-cell small {
+  font-size: 0.74rem;
+  color: var(--text-tertiary);
+}
+
+.type-chip {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+.status-badge.completed { background: var(--success-light); color: var(--success); }
+.status-badge.in_progress { background: var(--primary-light); color: var(--primary); }
+.status-badge.waiting { background: var(--warning-light); color: var(--warning); }
+.status-badge.booked, .status-badge.upcoming { background: var(--bg-tertiary); color: var(--text-secondary); }
+.status-badge.cancelled { background: var(--error-light); color: var(--error); }
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-action-primary {
+  background: var(--primary);
+  color: #FFFFFF !important;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
+  display: inline-flex;
+  align-items: center;
+}
+.btn-action-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-action-success {
+  background: var(--success);
+  color: #FFFFFF !important;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+}
+.btn-action-success:hover {
+  background: #28CD41;
+}
+
+.btn-action-icon {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+.btn-action-icon:hover {
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* 5. Revenue & Analytics Card (Sidebar) */
+.analytics-overview-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.analytics-header h4 {
+  margin: 0 0 0.2rem 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-primary);
+}
+
+.analytics-header p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.analytics-quick-stats {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.quick-stat-badge {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.quick-stat-badge strong {
+  color: var(--text-primary);
+}
+
+.chart-wrapper {
+  width: 100%;
+  height: 180px;
+  margin-top: 0.5rem;
 }

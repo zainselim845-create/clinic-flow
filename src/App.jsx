@@ -135,9 +135,7 @@ function App() {
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/patients" element={<Patients />} />
           <Route path="/invoices" element={<Invoices />} />
-          <Route path="/labs" element={<Labs />} />
           <Route path="/inventory" element={<Inventory />} />
-          <Route path="/attendance" element={<Attendance />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/doctor-agent" element={
             <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
@@ -148,7 +146,9 @@ function App() {
 
         </Route>
 
-        {/* 3. Legacy / Removed Routes Redirects */}
+        {/* 3. Removed Routes Redirects */}
+        <Route path="/labs" element={<Navigate to="/" replace />} />
+        <Route path="/attendance" element={<Navigate to="/" replace />} />
         <Route path="/insurance" element={<Navigate to="/" replace />} />
 
         {/* 4. Fallback unknown paths */}

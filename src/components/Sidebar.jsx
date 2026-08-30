@@ -49,18 +49,9 @@ const Sidebar = () => {
           <Receipt size={19} />
           <span>الفوترة والتحصيل</span>
         </NavLink>
-        <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Layers size={19} />
-          <span>{isDental ? 'معامل الأسنان والتركيبات' : 'الفحوصات والتحاليل الطبية'}</span>
-        </NavLink>
-
         <NavLink to="/inventory" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
           <Package size={19} />
           <span>المخزون والمستلزمات</span>
-        </NavLink>
-        <NavLink to="/attendance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <UserCheck size={19} />
-          <span>حضور الطاقم</span>
         </NavLink>
         {isDoctor && (
           <NavLink to="/doctor-agent" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>

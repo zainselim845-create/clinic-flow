@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ClinicFlow — Apple-Tier Luxury Patient Booking Portal
+   ClinicFlow — Apple-Tier Luxury Patient Booking Portal (Complete Stylesheet)
    ========================================================================== */
 
 .nebras-booking-page {
@@ -172,7 +172,7 @@
 }
 
 .nebras-card.search-card {
-  max-width: 540px;
+  max-width: 560px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -180,13 +180,13 @@
 .nebras-card-header {
   background: transparent !important;
   color: var(--text-primary) !important;
-  padding: 1.5rem 1.75rem 0.75rem 1.75rem;
+  padding: 1.5rem 1.75rem 0.5rem 1.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.nebras-card-header h3 {
+.nebras-card-header h3, .nebras-card-header p {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
@@ -216,46 +216,58 @@
 
 .nebras-card-body {
   background: var(--surface);
-  padding: 1.25rem 1.75rem 1.75rem 1.75rem;
+  padding: 1.25rem 1.75rem 2rem 1.75rem;
 }
 
-.patient-lookup-intro {
+.search-instruction {
   text-align: center;
   margin-bottom: 1.75rem;
 }
 
-.patient-lookup-intro h3 {
-  font-size: 1.35rem;
+.search-instruction h4 {
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.35rem;
 }
 
-.patient-lookup-intro p {
+.search-instruction p {
   color: var(--text-secondary);
   font-size: 0.88rem;
   line-height: 1.5;
 }
 
-.phone-lookup-form {
+.nebras-search-form {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
 }
 
-.phone-input-wrap {
+.nebras-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.nebras-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.nebras-input-wrap {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.phone-input-icon {
+.nebras-field-icon {
   position: absolute;
   right: 1rem;
   color: var(--text-tertiary);
 }
 
-.phone-input-wrap input {
+.nebras-input {
   width: 100%;
   padding: 0.85rem 2.8rem 0.85rem 1rem;
   font-size: 1.05rem;
@@ -264,112 +276,254 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   transition: all var(--transition-fast);
+  box-sizing: border-box;
 }
 
-.phone-input-wrap input:focus {
+.nebras-input:focus {
   border-color: var(--primary);
   background: var(--surface);
   box-shadow: 0 0 0 3px var(--primary-light);
 }
 
-.btn-lookup-submit {
-  background: var(--primary);
-  color: #FFFFFF;
-  font-size: 0.95rem;
-  font-weight: 600;
-  padding: 0.85rem;
-  border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+.nebras-error-msg {
+  color: var(--error);
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+/* HIGH-CONTRAST PRIMARY ACTION BUTTON */
+.default-custom-btn {
+  background: var(--primary) !important;
+  color: #FFFFFF !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  padding: 0.85rem 1.5rem !important;
+  border-radius: var(--radius-md) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.3) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  transition: all var(--transition-fast) !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  text-decoration: none !important;
+}
+
+.default-custom-btn:hover:not(:disabled) {
+  background: var(--primary-hover) !important;
+  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.default-custom-btn:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+.nebras-privacy-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  transition: all var(--transition-fast);
-  cursor: pointer;
+  gap: 0.45rem;
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  margin-top: 1.25rem;
 }
 
-.btn-lookup-submit:hover {
-  background: var(--primary-hover);
-  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.35);
-}
-
-/* Service & Doctor Selection Grid */
-.services-select-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.85rem;
+/* Sections in Step 2 */
+.nebras-section {
   margin-bottom: 1.5rem;
-}
-
-.service-select-tile {
-  background: var(--bg-primary);
-  border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 1rem;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 0.5rem;
-  transition: all var(--transition-fast);
+  gap: 0.65rem;
 }
 
-.service-select-tile:hover {
-  border-color: var(--primary);
-  background: var(--surface);
-}
-
-.service-select-tile.selected {
-  border-color: var(--primary);
-  background: var(--primary-light);
-}
-
-.tile-name {
+.nebras-section-heading {
+  font-size: 0.95rem;
   font-weight: 700;
-  font-size: 0.92rem;
   color: var(--text-primary);
+  margin: 0;
 }
 
-.tile-price {
-  font-size: 0.85rem;
-  font-weight: 700;
+.nebras-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 600px) {
+  .nebras-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nebras-emergency-banner {
+  background: var(--error-light);
+  border: 1px solid var(--error);
+  color: var(--error);
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nebras-error-banner {
+  background: var(--error-light);
+  color: var(--error);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nebras-textarea {
+  resize: vertical;
+  min-height: 70px;
+  padding: 0.75rem 1rem;
+}
+
+/* Success Confirmation Ticket */
+.nebras-success-icon-wrap {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.text-nebras-orange {
   color: var(--primary);
 }
 
-/* Time Slots Grid */
-.slots-time-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 0.65rem;
-  margin-top: 1rem;
+.success-headline {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.35rem 0;
 }
 
-.slot-btn {
+.success-subtext {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem 0;
+}
+
+.nebras-ticket-box {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 0.65rem;
-  font-size: 0.85rem;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  text-align: right;
+  margin-bottom: 1.5rem;
+}
+
+.nebras-ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.ticket-code-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ticket-code-text {
+  font-size: 1.1rem;
+  color: var(--primary);
+  font-family: monospace;
+}
+
+.nebras-btn-copy {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
-  text-align: center;
 }
 
-.slot-btn:hover {
-  border-color: var(--primary);
-  background: var(--surface);
+.nebras-ticket-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
 }
 
-.slot-btn.selected {
+@media (max-width: 500px) {
+  .nebras-ticket-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ticket-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-lbl {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+.ticket-val {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.nebras-action-btns-grid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nebras-btn-wa {
+  background: #34C759;
+  color: #FFFFFF !important;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nebras-btn-wa:hover {
+  background: #28CD41;
+}
+
+.nebras-btn-cal {
   background: var(--primary);
-  color: #FFFFFF;
-  border-color: var(--primary);
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+  color: #FFFFFF !important;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* 4. Booking Footer */
+/* 4. Footer */
 .nebras-footer {
   text-align: center;
   padding: 1.5rem;
