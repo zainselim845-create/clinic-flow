@@ -23,7 +23,6 @@ const Invoices = () => {
       taxPercentage: 0,
       taxAmount: 0,
       total: 1700,
-      insuranceShare: 0,
       patientShare: 1700,
       paidAmount: 1000,
       remainingBalance: 700,
@@ -43,9 +42,9 @@ const Invoices = () => {
       taxPercentage: 0,
       taxAmount: 0,
       total: 400,
-      insuranceShare: 0,
       patientShare: 400,
       paidAmount: 400,
+
       remainingBalance: 0,
       paymentStatus: 'paid',
       items: [

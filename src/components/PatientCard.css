@@ -14,8 +14,8 @@
 
 .patient-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.08);
-  border-color: var(--primary, #0d9488);
+  box-shadow: 0 10px 24px -5px rgba(15, 41, 66, 0.12);
+  border-color: var(--primary);
 }
 
 .patient-card-header {
@@ -31,7 +31,7 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #0d9488, #14b8a6);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -130,9 +130,9 @@
 }
 
 .diagnosis-pill {
-  background: var(--bg-secondary, #f8fafc);
-  color: var(--primary, #0d9488);
-  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--border-color);
   padding: 0.2rem 0.55rem;
   border-radius: 6px;
   font-size: 0.76rem;

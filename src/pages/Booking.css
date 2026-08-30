@@ -1,102 +1,105 @@
 /* ==========================================================================
-   Nebras Dentalore / Hayat Dent Exact Clone Stylesheet
-   Color Palette:
-     - Header Navy: #012757
-     - Action Orange: #F7931E
-     - Page Background: #F2F2F2
-     - Card Body: #FFFFFF
+   ClinicFlow — Luxury Medical Patient Booking Portal Stylesheet
    ========================================================================== */
 
 .nebras-booking-page {
   width: 100%;
   min-height: 100vh;
-  background-color: #F2F2F2 !important;
-  color: #333333;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   direction: rtl;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Lato, "El Messiri", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: var(--font-family);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  transition: background var(--transition-normal);
 }
 
 /* 1. Nebras Brand Bar */
 .nebras-top-bar {
-  background-color: #FFFFFF;
-  border-bottom: 1px solid #E0E0E0;
-  padding: 12px 30px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(16px);
 }
 
 .nebras-brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.85rem;
 }
 
 .brand-logo-icon {
-  color: #F7931E;
+  color: var(--accent);
+  filter: drop-shadow(0 2px 8px var(--accent-glow));
 }
 
 .brand-title {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 800;
-  color: #012757;
+  color: var(--text-primary);
   display: block;
+  letter-spacing: -0.01em;
 }
 
 .brand-subtitle {
   font-size: 0.8rem;
-  color: #777777;
+  color: var(--text-tertiary);
   display: block;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .nebras-bar-links {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.75rem;
 }
 
 .nebras-nav-btn {
-  background-color: #F7931E;
-  color: #FFFFFF;
-  border: 1px solid #F7931E;
-  padding: 6px 16px;
-  border-radius: 18px;
-  font-size: 0.82rem;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 0.5rem 1.15rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   text-decoration: none;
 }
 
 .nebras-nav-btn:hover {
-  background-color: #e08216;
-  border-color: #e08216;
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(15, 41, 66, 0.15);
 }
 
 .nebras-nav-btn.outline {
-  background-color: transparent;
-  color: #012757;
-  border-color: #012757;
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border-color);
 }
 
 .nebras-nav-btn.outline:hover {
-  background-color: #012757;
-  color: #FFFFFF;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 /* 2. Body Container */
 .nebras-body-container {
   width: 92%;
   max-width: 860px;
-  margin: 25px auto 40px auto;
+  margin: 2rem auto 3.5rem auto;
   flex: 1;
 }
 
@@ -105,95 +108,95 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 24px;
-  background: #FFFFFF;
-  padding: 14px 20px;
-  border-radius: 16px;
-  border: 1px solid #E2E8F0;
-  box-shadow: 0 2px 8px rgba(1, 39, 87, 0.04);
+  margin-bottom: 1.75rem;
+  background: var(--surface);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .stepper-step {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #94A3B8;
-  font-size: 0.82rem;
+  gap: 0.65rem;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
   font-weight: 700;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .stepper-step.active {
-  color: #012757;
+  color: var(--primary);
 }
 
 .stepper-step.completed {
-  color: #10B981;
+  color: var(--success);
 }
 
 .step-num {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: #F1F5F9;
-  color: #64748B;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .stepper-step.active .step-num {
-  background: #012757;
+  background: var(--primary);
   color: #FFFFFF;
-  box-shadow: 0 2px 6px rgba(1, 39, 87, 0.25);
+  box-shadow: 0 4px 10px rgba(15, 41, 66, 0.25);
 }
 
 .stepper-step.completed .step-num {
-  background: #DCFCE7;
-  color: #166534;
+  background: var(--success-light);
+  color: var(--success);
 }
 
 .stepper-line {
   flex: 1;
   height: 2px;
-  background: #E2E8F0;
-  margin: 0 12px;
-  min-width: 20px;
-  max-width: 60px;
-  transition: all 0.2s ease;
+  background: var(--border-color);
+  margin: 0 1rem;
+  min-width: 24px;
+  max-width: 65px;
+  transition: all var(--transition-fast);
 }
 
 .stepper-line.filled {
-  background: #10B981;
+  background: var(--success);
 }
 
 @media (max-width: 600px) {
   .booking-visual-stepper {
-    padding: 10px 12px;
-    gap: 4px;
+    padding: 0.75rem 0.85rem;
+    gap: 0.35rem;
   }
   .stepper-step span.step-title {
     display: none;
   }
   .stepper-line {
-    margin: 0 6px;
+    margin: 0 0.5rem;
     max-width: 30px;
   }
 }
 
-
 /* 3. Nebras Card Structure */
 .nebras-card {
-  background-color: #FFFFFF;
-  border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-  border: 1px solid #E6E6E6;
+  background: var(--surface);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
   overflow: hidden;
-  margin-bottom: 25px;
+  margin-bottom: 1.75rem;
+  animation: fadeIn 0.3s ease;
 }
 
 .nebras-card.search-card {
@@ -203,21 +206,20 @@
 }
 
 .nebras-card-header {
-  background-color: #012757 !important;
+  background: var(--primary) !important;
   color: #FFFFFF !important;
-  padding: 16px 24px;
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
+  padding: 1.15rem 1.75rem;
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .nebras-card-header p,
 .nebras-card-header h3 {
   margin: 0;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 800;
   color: #FFFFFF;
 }
 
@@ -226,17 +228,17 @@
 }
 
 .nebras-header-back-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: #FFFFFF;
-  padding: 4px 12px;
-  border-radius: 14px;
-  font-size: 0.78rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
-  transition: all 0.2s ease;
+  gap: 0.35rem;
+  transition: all var(--transition-fast);
 }
 
 .nebras-header-back-btn:hover {
@@ -244,28 +246,26 @@
 }
 
 .nebras-card-body {
-  background-color: #FFFFFF;
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
-  padding: 28px 32px;
+  background: var(--surface);
+  padding: 2rem 2.25rem;
 }
 
 /* 4. Step 1: Search Form */
 .search-instruction {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 1.75rem;
 }
 
 .search-instruction h4 {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 800;
-  color: #012757;
-  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
 }
 
 .search-instruction p {
-  font-size: 0.9rem;
-  color: #666666;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0 auto;
   max-width: 440px;
@@ -274,20 +274,20 @@
 .nebras-search-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.25rem;
 }
 
 .nebras-input-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.45rem;
   text-align: right;
 }
 
 .nebras-label {
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: #012757;
+  color: var(--text-primary);
 }
 
 .nebras-input-wrap {
@@ -298,76 +298,75 @@
 
 .nebras-input {
   width: 100%;
-  height: 44px;
-  padding: 0 16px 0 42px;
-  border-radius: 15px;
-  background-color: #F2F2F2;
-  border: 1px solid #D9D9D9;
+  height: 50px;
+  padding: 0 1.15rem 0 2.75rem;
+  border-radius: var(--radius-lg);
+  background: var(--bg-tertiary);
+  border: 1.5px solid var(--border-color);
   font-size: 1rem;
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
-  color: #222222;
-  transition: all 0.2s ease;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
 }
 
 .nebras-input:focus {
-  border-color: #F7931E;
-  background-color: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(247, 147, 30, 0.2);
+  border-color: var(--primary);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .nebras-input.error-border {
-  border-color: #EF4444;
-  background-color: rgba(239, 68, 68, 0.03);
+  border-color: var(--error);
+  background: var(--error-light);
 }
 
 .nebras-field-icon {
   position: absolute;
-  left: 14px;
-  color: #888888;
+  left: 1rem;
+  color: var(--text-tertiary);
   pointer-events: none;
 }
 
 .nebras-error-msg {
-  font-size: 0.8rem;
-  color: #EF4444;
+  font-size: 0.82rem;
+  color: var(--error);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.35rem;
   font-weight: 600;
-  margin-top: 4px;
+  margin-top: 0.35rem;
 }
 
 .nebras-btn-wrap {
   display: flex;
   justify-content: center;
+  margin-top: 0.5rem;
 }
 
-/* The exact signature Nebras Button */
+/* The Signature Nebras / ClinicFlow Action Button */
 .default-custom-btn {
-  background: #F7931E !important;
-  background-color: #F7931E !important;
-  border-color: #F7931E !important;
-  border-radius: 12px !important;
+  background: var(--primary) !important;
+  border-radius: var(--radius-lg) !important;
   color: #FFFFFF !important;
   font-size: 1.05rem !important;
-  font-weight: 700 !important;
-  padding: 12px 36px !important;
-  border-width: 0px !important;
+  font-weight: 800 !important;
+  padding: 0.85rem 2.25rem !important;
+  border: none !important;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 10px rgba(247, 147, 30, 0.35);
+  gap: 0.65rem;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 14px rgba(15, 41, 66, 0.25);
 }
 
 .default-custom-btn:hover:not(:disabled) {
-  background-color: #e08216 !important;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(247, 147, 30, 0.45);
+  background: var(--primary-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 41, 66, 0.35);
 }
 
 .default-custom-btn:disabled {
@@ -385,42 +384,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  color: #888888;
-  margin-top: 24px;
-  padding-top: 15px;
-  border-top: 1px dashed #E6E6E6;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-color);
 }
 
 /* 5. Step 2: Recognized Patient Box */
 .nebras-patient-recognized-box {
-  background-color: #F2F8F4;
-  border: 1.5px solid #A3D9B8;
-  border-radius: 15px;
-  padding: 16px 20px;
-  margin-bottom: 25px;
+  background: var(--success-light);
+  border: 1.5px solid var(--success);
+  border-radius: var(--radius-xl);
+  padding: 1.15rem 1.35rem;
+  margin-bottom: 1.75rem;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .recognized-info {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 0.85rem;
 }
 
 .recognized-info h4 {
   font-size: 1.15rem;
   font-weight: 800;
-  color: #012757;
-  margin: 0 0 4px 0;
+  color: var(--primary);
+  margin: 0 0 0.25rem 0;
 }
 
 .recognized-info p {
-  font-size: 0.88rem;
-  color: #333333;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
 }
@@ -428,50 +427,50 @@
 .nebras-family-btn {
   background: none;
   border: none;
-  color: #F7931E;
+  color: var(--primary);
   font-weight: 700;
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   cursor: pointer;
   padding: 0;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.35rem;
   text-decoration: underline;
 }
 
 /* 6. Step 2: New Patient Section */
 .nebras-new-patient-section {
-  background-color: #F7F9FC;
-  border: 1px solid #D5E0EB;
-  border-radius: 15px;
-  padding: 18px 22px;
-  margin-bottom: 25px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .new-patient-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 15px;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
 }
 
 .new-patient-title h5 {
   font-size: 1.05rem;
   font-weight: 800;
-  color: #012757;
+  color: var(--text-primary);
   margin: 0;
 }
 
 .nebras-form-grid {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 1rem;
 }
 
 .nebras-row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 1rem;
 }
 
 .nebras-select {
@@ -481,14 +480,14 @@
 
 .nebras-textarea {
   height: auto !important;
-  padding: 12px 16px !important;
+  padding: 0.85rem 1rem !important;
   resize: vertical;
 }
 
 .nebras-section {
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #EEEEEE;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .nebras-section:last-child {
@@ -498,38 +497,38 @@
 }
 
 .nebras-section-heading {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  color: #012757;
-  margin: 0 0 14px 0;
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
 }
 
 .nebras-emergency-banner {
-  background-color: #FDF2F2;
-  border: 1px solid #F8B4B4;
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-top: 10px;
+  background: var(--error-light);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-top: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #9B1C1C;
-  font-size: 0.84rem;
+  gap: 0.5rem;
+  color: var(--error);
+  font-size: 0.85rem;
   font-weight: 700;
 }
 
 .nebras-error-banner {
-  background-color: #FDF2F2;
-  border: 1px solid #EF4444;
-  color: #B91C1C;
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-top: 15px;
+  background: var(--error-light);
+  border: 1px solid var(--error);
+  color: var(--error);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1.15rem;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.65rem;
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
 }
 
 /* 7. Step 3: Success Confirmation Ticket */
@@ -538,32 +537,32 @@
 }
 
 .nebras-success-icon-wrap {
-  margin: 10px 0 15px 0;
+  margin: 0.75rem 0 1rem 0;
 }
 
 .text-nebras-orange {
-  color: #F7931E !important;
+  color: var(--accent) !important;
 }
 
 .success-headline {
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 800;
-  color: #012757;
-  margin: 0 0 6px 0;
+  color: var(--text-primary);
+  margin: 0 0 0.4rem 0;
 }
 
 .success-subtext {
-  font-size: 0.92rem;
-  color: #666666;
-  margin: 0 0 25px 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.75rem 0;
 }
 
 .nebras-ticket-box {
-  background-color: #F8F9FA;
-  border: 2px dashed #D0D5DD;
-  border-radius: 16px;
-  padding: 20px 24px;
-  margin-bottom: 25px;
+  background: var(--bg-tertiary);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-2xl);
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.75rem;
   text-align: right;
 }
 
@@ -571,156 +570,158 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #E4E7EC;
-  margin-bottom: 14px;
-  font-size: 0.88rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: #012757;
+  color: var(--text-primary);
 }
 
 .ticket-code-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.75rem;
 }
 
 .ticket-code-text {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 900;
-  color: #F7931E;
+  color: var(--primary);
   letter-spacing: 0.05em;
-  font-family: monospace;
+  font-family: inherit;
 }
 
 .nebras-btn-copy {
-  background-color: #FFFFFF;
-  border: 1px solid #CBD5E1;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.78rem;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: #555555;
-  transition: all 0.2s ease;
+  gap: 0.35rem;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
 }
 
 .nebras-btn-copy:hover {
-  border-color: #F7931E;
-  color: #F7931E;
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .nebras-ticket-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .ticket-row {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.2rem;
 }
 
 .ticket-lbl {
-  font-size: 0.76rem;
-  color: #777777;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
   font-weight: 600;
 }
 
 .ticket-val {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 800;
-  color: #012757;
+  color: var(--text-primary);
 }
 
 .nebras-ticket-address {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  color: #666666;
-  padding-top: 12px;
-  border-top: 1px solid #E4E7EC;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border-color);
 }
 
 .nebras-actions-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
 }
 
 .nebras-action-btn {
-  padding: 11px 16px;
-  border-radius: 12px;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-lg);
   font-weight: 700;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   text-decoration: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: all var(--transition-fast);
 }
 
 .nebras-action-btn.whatsapp {
-  background-color: #25D366;
+  background: #25D366;
   color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
 }
 
 .nebras-action-btn.whatsapp:hover {
-  background-color: #1EBE5D;
+  background: #1EBE5D;
+  transform: translateY(-2px);
 }
 
 .nebras-action-btn.calendar {
-  background-color: #FFFFFF;
-  color: #012757;
-  border: 1.5px solid #D0D5DD;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
 }
 
 .nebras-action-btn.calendar:hover {
-  border-color: #012757;
-  background-color: #F8F9FA;
+  border-color: var(--primary);
+  background: var(--bg-tertiary);
 }
 
 .nebras-success-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 15px;
-  border-top: 1px solid #EEEEEE;
+  padding-top: 1.15rem;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .nebras-link-btn {
   background: none;
   border: none;
-  color: #F7931E;
+  color: var(--primary);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.35rem;
 }
 
 .nebras-link-btn.secondary {
-  color: #777777;
+  color: var(--text-tertiary);
   text-decoration: underline;
 }
 
 /* 8. Nebras Footer */
 .nebras-footer {
   text-align: center;
-  padding: 20px 15px;
-  color: #888888;
-  font-size: 0.82rem;
-  border-top: 1px solid #E0E0E0;
-  background-color: #FFFFFF;
+  padding: 1.5rem 1rem;
+  color: var(--text-tertiary);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--surface);
 }
 
 .nebras-footer p {
@@ -731,11 +732,11 @@
 @media (max-width: 768px) {
   .nebras-body-container {
     width: 95%;
-    margin-top: 15px;
+    margin-top: 1rem;
   }
 
   .nebras-card-body {
-    padding: 20px 16px;
+    padding: 1.5rem 1.15rem;
   }
 
   .nebras-row-2 {
@@ -754,3 +755,4 @@
     grid-template-columns: 1fr !important;
   }
 }
+

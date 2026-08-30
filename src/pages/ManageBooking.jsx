@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { generateDynamicSlots, getTodayDateStr, parseLocalDate } from '../utils/timeSlots';
+import { cleanEgyptianPhone } from '../utils/phoneValidation';
 import * as appointmentsService from '../services/appointmentsService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import './ManageBooking.css';
@@ -47,11 +48,12 @@ const ManageBooking = () => {
 
     if (codeParam && (idParam || phoneParam)) {
       const cleanCode = codeParam.trim().toUpperCase().replace('#', '');
-      const cleanPhone = (phoneParam || '').replace(/\D/g, '');
+      const cleanPhone = cleanEgyptianPhone(phoneParam);
 
       const found = (state.appointments || []).find(a => {
         const matchesId = idParam && String(a.id) === String(idParam);
-        const matchesPhone = cleanPhone && a.patientPhone && a.patientPhone.replace(/\D/g, '').includes(cleanPhone);
+        const aPhone = cleanEgyptianPhone(a.patientPhone);
+        const matchesPhone = cleanPhone && aPhone && (aPhone.includes(cleanPhone) || cleanPhone.includes(aPhone));
         const matchesCode = a.bookingCode && a.bookingCode.toUpperCase().replace('#', '') === cleanCode;
         return (matchesId || matchesPhone) && matchesCode;
       });
@@ -78,13 +80,14 @@ const ManageBooking = () => {
       return;
     }
 
-    const cleanDigits = phoneSearch.replace(/\D/g, '');
+    const cleanDigits = cleanEgyptianPhone(phoneSearch);
     const cleanCode = bookingCodeSearch.trim().toUpperCase().replace('#', '');
 
     // Check if phone exists
-    const matchingPhoneAppts = appointments.filter(a => 
-      cleanDigits && a.patientPhone && a.patientPhone.replace(/\D/g, '').includes(cleanDigits)
-    );
+    const matchingPhoneAppts = appointments.filter(a => {
+      const aPhone = cleanEgyptianPhone(a.patientPhone);
+      return cleanDigits && aPhone && (aPhone.includes(cleanDigits) || cleanDigits.includes(aPhone));
+    });
 
     if (matchingPhoneAppts.length === 0) {
       setSelectedAppointment(null);
@@ -114,7 +117,7 @@ const ManageBooking = () => {
   // Zero-Cost Verification via Registered Patient Name Match (التحقق بالاسم المسجل بدون SMS)
   const handleVerifyByName = (e) => {
     e.preventDefault();
-    const cleanDigits = phoneSearch.replace(/\D/g, '');
+    const cleanDigits = cleanEgyptianPhone(phoneSearch);
     const cleanName = verifyPatientName.trim().toLowerCase();
 
     if (!cleanDigits || cleanDigits.length < 10) {
@@ -127,9 +130,10 @@ const ManageBooking = () => {
       return;
     }
 
-    const matchingAppts = appointments.filter(a => 
-      a.patientPhone && a.patientPhone.replace(/\D/g, '').includes(cleanDigits)
-    );
+    const matchingAppts = appointments.filter(a => {
+      const aPhone = cleanEgyptianPhone(a.patientPhone);
+      return aPhone && (aPhone.includes(cleanDigits) || cleanDigits.includes(aPhone));
+    });
 
     if (matchingAppts.length === 0) {
       setVerifyFeedback({ type: 'error', text: 'لم يتم العثور على موعد مسجل بهذا الرقم في العيادة.' });

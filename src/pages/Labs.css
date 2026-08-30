@@ -10,16 +10,24 @@
 }
 
 .lab-metric-card {
-  background: var(--bg-secondary, #FFFFFF);
-  border: 1px solid var(--border-color, #E2E8F0);
-  border-radius: var(--radius-lg, 0.75rem);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
   padding: 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
-.metric-icon-wrap.purple { background: #FAF5FF; color: #9333EA; }
+.lab-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
+}
+
+.metric-icon-wrap.purple { background: rgba(147, 51, 234, 0.12); color: #9333EA; }
 
 .labs-main-table {
   width: 100%;
@@ -29,23 +37,23 @@
 }
 
 .labs-main-table th {
-  background: var(--bg-primary, #F8FAFC);
+  background: var(--bg-primary);
   padding: 0.85rem 1rem;
-  font-weight: 700;
-  color: var(--text-secondary, #475569);
-  border-bottom: 1.5px solid var(--border-color, #CBD5E1);
+  font-weight: 800;
+  color: var(--text-secondary);
+  border-bottom: 1.5px solid var(--border-color);
 }
 
 .labs-main-table td {
   padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--border-subtle, #F1F5F9);
-  color: var(--text-primary, #1E293B);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .shade-badge {
-  background: #FFFBEB;
+  background: var(--warning-light);
   color: #B45309;
-  border: 1px solid #FDE68A;
+  border: 1px solid rgba(245, 158, 11, 0.3);
   padding: 2px 8px;
   border-radius: 6px;
   font-weight: 800;
@@ -56,11 +64,12 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: #F1F5F9;
+  background: var(--bg-tertiary);
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .lab-status-badge {
@@ -72,25 +81,27 @@
 }
 
 .btn-advance-status {
-  background: #012757;
+  background: var(--primary);
   color: #FFFFFF;
   border: none;
   padding: 0.35rem 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  transition: all var(--transition-fast);
 }
 
 .btn-advance-status:hover {
-  background: #093a7a;
+  background: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .completed-check {
-  color: #10B981;
+  color: var(--success);
   font-weight: 800;
   font-size: 0.8rem;
   display: inline-flex;

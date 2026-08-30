@@ -10,69 +10,79 @@
 }
 
 .inv-metric-card {
-  background: var(--bg-secondary, #FFFFFF);
-  border: 1px solid var(--border-color, #E2E8F0);
-  border-radius: var(--radius-lg, 0.75rem);
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
   padding: 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.inv-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary);
 }
 
 .metric-icon-wrap {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-.metric-icon-wrap.blue { background: #EFF6FF; color: #2563EB; }
-.metric-icon-wrap.green { background: #F0FDF4; color: #16A34A; }
-.metric-icon-wrap.red { background: #FEF2F2; color: #DC2626; }
-.metric-icon-wrap.orange { background: #FFF7ED; color: #EA580C; }
+.metric-icon-wrap.blue { background: var(--primary-light); color: var(--primary); }
+.metric-icon-wrap.green { background: var(--success-light); color: var(--success); }
+.metric-icon-wrap.red { background: var(--error-light); color: var(--error); }
+.metric-icon-wrap.orange { background: var(--warning-light); color: var(--warning); }
 
 .metric-lbl {
   display: block;
   font-size: 0.78rem;
   font-weight: 700;
-  color: var(--text-secondary, #64748B);
+  color: var(--text-secondary);
   margin-bottom: 0.2rem;
 }
 
 .metric-val {
   font-size: 1.25rem;
   font-weight: 900;
-  color: var(--text-primary, #0F172A);
+  color: var(--text-primary);
 }
 
 .status-filter-pills {
   display: flex;
   gap: 0.4rem;
-  background: var(--bg-primary, #F8FAFC);
+  background: var(--bg-tertiary);
   padding: 0.3rem;
-  border-radius: 10px;
-  border: 1px solid var(--border-color, #CBD5E1);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
   overflow-x: auto;
 }
 
 .filter-pill {
   border: none;
   background: transparent;
-  padding: 0.4rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
   font-weight: 700;
-  color: var(--text-secondary, #64748B);
+  color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
+  transition: all var(--transition-fast);
 }
 
 .filter-pill.active {
-  background: #012757;
+  background: var(--primary);
   color: #FFFFFF;
+  box-shadow: var(--shadow-sm);
 }
 
 .invoices-main-table {
@@ -83,43 +93,47 @@
 }
 
 .invoices-main-table th {
-  background: var(--bg-primary, #F8FAFC);
+  background: var(--bg-primary);
   padding: 0.85rem 1rem;
-  font-weight: 700;
-  color: var(--text-secondary, #475569);
-  border-bottom: 1.5px solid var(--border-color, #CBD5E1);
+  font-weight: 800;
+  color: var(--text-secondary);
+  border-bottom: 1.5px solid var(--border-color);
 }
 
 .invoices-main-table td {
   padding: 0.85rem 1rem;
-  border-bottom: 1px solid var(--border-subtle, #F1F5F9);
-  color: var(--text-primary, #1E293B);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
 }
 
 .inv-code-badge {
-  background: #F1F5F9;
+  background: var(--bg-tertiary);
   padding: 0.2rem 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-family: monospace;
-  color: #012757;
+  color: var(--primary);
+  font-weight: 700;
+  border: 1px solid var(--border-color);
 }
 
 .btn-table-action {
-  background: #EFF6FF;
-  border: 1px solid #BFDBFE;
-  color: #1D4ED8;
+  background: var(--primary-light);
+  border: 1px solid var(--border-color);
+  color: var(--primary);
   padding: 0.35rem 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  transition: all var(--transition-fast);
 }
 
 .btn-table-action:hover {
-  background: #DBEAFE;
+  background: var(--primary);
+  color: #FFFFFF;
 }
 
 .font-bold { font-weight: 800; }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useDeferredValue } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { Plus, X, Search, Lock, Unlock, Download, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -21,6 +21,7 @@ const Appointments = () => {
   const [filterStatus, setFilterStatus] = useState('all'); // all, upcoming, completed, cancelled
   const [filterDate, setFilterDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredQuery = useDeferredValue(searchQuery);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 18;
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,9 +58,18 @@ const Appointments = () => {
 
 
 
+  const patientMap = useMemo(() => {
+    const map = new Map();
+    for (let i = 0; i < patients.length; i++) {
+      const p = patients[i];
+      if (p && p.id) map.set(p.id, p);
+    }
+    return map;
+  }, [patients]);
+
   const filteredAppointments = useMemo(() => {
+    const query = deferredQuery.trim().toLowerCase();
     return appointments.filter(appt => {
-      const patient = patients.find(p => p.id === appt.patientId);
       let matchesStatus = true;
       if (filterStatus === 'emergency') matchesStatus = appt.isEmergency || appt.type === 'طوارئ' || (appt.type || '').includes('طوارئ');
       else if (filterStatus === 'waiting') matchesStatus = appt.status === 'waiting';
@@ -68,16 +78,19 @@ const Appointments = () => {
       else if (filterStatus === 'completed') matchesStatus = appt.status === 'completed';
       else if (filterStatus === 'cancelled') matchesStatus = appt.status === 'cancelled';
 
-      const matchesDate = !filterDate || appt.date === filterDate;
-      const matchesSearch = !searchQuery || 
-        (patient && patient.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (appt.patientName && appt.patientName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (appt.patientPhone && appt.patientPhone.includes(searchQuery)) ||
-        (appt.bookingCode && appt.bookingCode.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-      return matchesStatus && matchesDate && matchesSearch;
+      if (!matchesStatus) return false;
+      if (filterDate && appt.date !== filterDate) return false;
+      if (!query) return true;
+
+      const patient = patientMap.get(appt.patientId);
+      return (
+        (patient && patient.name && patient.name.toLowerCase().includes(query)) ||
+        (appt.patientName && appt.patientName.toLowerCase().includes(query)) ||
+        (appt.patientPhone && appt.patientPhone.includes(query)) ||
+        (appt.bookingCode && appt.bookingCode.toLowerCase().includes(query))
+      );
     });
-  }, [appointments, patients, filterStatus, filterDate, searchQuery]);
+  }, [appointments, patientMap, filterStatus, filterDate, deferredQuery]);
 
   const totalPages = Math.ceil(filteredAppointments.length / PAGE_SIZE) || 1;
   const paginatedAppointments = useMemo(() => {

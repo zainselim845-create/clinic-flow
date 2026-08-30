@@ -45,9 +45,9 @@
 }
 
 .status-filters button.active {
-  background: var(--primary-color);
+  background: var(--primary);
   color: white;
-  border-color: var(--primary-color);
+  border-color: var(--primary);
 }
 
 .status-filters button.emergency-pill-filter {

@@ -19,9 +19,10 @@
 .view-toggle {
   display: flex;
   gap: 0.25rem;
-  background: var(--bg-hover);
+  background: var(--bg-tertiary);
   padding: 0.25rem;
   border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
 }
 
 .toggle-btn {
@@ -32,13 +33,15 @@
   color: var(--text-secondary);
   cursor: pointer;
   display: flex;
-  transition: all 0.2s;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
 }
 
 .toggle-btn.active {
-  background: var(--card-bg);
-  color: var(--primary-color);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 .full-width {
@@ -67,14 +70,14 @@
 }
 
 .edit-btn {
-  color: var(--info-color);
+  color: var(--primary);
 }
-.edit-btn:hover { background: rgba(14, 165, 233, 0.1); }
+.edit-btn:hover { background: var(--primary-light); }
 
 .delete-btn {
-  color: var(--danger-color);
+  color: var(--error);
 }
-.delete-btn:hover { background: rgba(244, 63, 94, 0.1); }
+.delete-btn:hover { background: var(--error-light); }
 
 .patient-detail-info {
   display: flex;
@@ -154,9 +157,9 @@
   font-weight: 600;
 }
 
-.visit-status[data-status="completed"] { background: rgba(20, 184, 166, 0.1); color: var(--success-color); }
-.visit-status[data-status="upcoming"] { background: rgba(14, 165, 233, 0.1); color: var(--info-color); }
-.visit-status[data-status="cancelled"] { background: rgba(244, 63, 94, 0.1); color: var(--danger-color); }
+.visit-status[data-status="completed"] { background: var(--success-light); color: var(--success); }
+.visit-status[data-status="upcoming"] { background: var(--primary-light); color: var(--primary); }
+.visit-status[data-status="cancelled"] { background: var(--error-light); color: var(--error); }
 
 .no-history {
   color: var(--text-secondary);

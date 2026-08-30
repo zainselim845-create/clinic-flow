@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon, LogOut, UserCheck } from 'lucide-react';
+import { Search, Bell, Sun, Moon, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -33,51 +33,25 @@ const Header = ({ title }) => {
   return (
     <>
       <header className="header">
-        <div className="header-title">
+        <div className="header-title-wrap">
           <h1>{title}</h1>
+          <span className="clinic-status-badge">
+            <span className="live-pulse-dot"></span>
+            <span>{clinic?.name || state.clinicInfo?.name || 'العيادة جاهزة'}</span>
+          </span>
         </div>
 
         <div className="header-actions">
-          {/* Active Logged-in Account Badge */}
-          <div 
-            className="logged-in-user-badge"
-            title={`المستخدم المسجل حالياً: ${displayName} (${displayRole})`}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.4rem 0.85rem',
-              borderRadius: 'var(--radius-full)',
-              border: '1px solid var(--border-color)',
-              background: role === 'doctor' ? 'rgba(37, 99, 235, 0.08)' : 'rgba(16, 185, 129, 0.08)',
-              color: role === 'doctor' ? 'var(--primary)' : 'var(--success)'
-            }}
-          >
-            <UserCheck size={16} />
-            <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>
-              {role === 'doctor' ? '' : ''} {displayName}
-            </span>
-            <span style={{ 
-              fontSize: '0.7rem', 
-              padding: '0.15rem 0.45rem', 
-              borderRadius: '10px', 
-              background: role === 'doctor' ? 'rgba(37, 99, 235, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-              fontWeight: 600
-            }}>
-              {displayRole}
-            </span>
-          </div>
-
           {/* Interactive Global Search Trigger Bar */}
-          <div className="search-bar" onClick={() => setIsSearchOpen(true)} title="بحث سريع (Ctrl + K)">
+          <div className="search-bar" onClick={() => setIsSearchOpen(true)} title="بحث سريع وشامل (Ctrl + K)">
             <Search size={16} className="search-icon" />
             <input 
               type="text" 
-              placeholder="بحث شامل... (مريض، موعد، سكرتير)" 
+              placeholder="بحث شامل... (مريض، موعد، كود)" 
               readOnly 
               style={{ cursor: 'pointer' }}
             />
-            <span className="search-kbd-shortcut">K</span>
+            <span className="search-kbd-shortcut">Ctrl K</span>
           </div>
 
           <button className="theme-header-btn" onClick={toggleTheme} title="تبديل الوضع الليلي / الفاتح">
@@ -85,12 +59,12 @@ const Header = ({ title }) => {
           </button>
 
           <button className="notification-btn" onClick={() => navigate('/notifications')} title="التنبيهات">
-            <Bell size={20} />
+            <Bell size={19} />
             {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
           </button>
 
-          {/* Profile & Logout Action */}
-          <div className="doctor-profile" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          {/* Unified Profile & Account Action */}
+          <div className="doctor-profile">
             <div className="avatar">{initial}</div>
             <div className="doctor-info">
               <span className="doctor-name">{displayName}</span>
@@ -101,22 +75,8 @@ const Header = ({ title }) => {
               className="btn-logout-header"
               onClick={handleLogout}
               title="تسجيل الخروج من الحساب"
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--text-tertiary)',
-                cursor: 'pointer',
-                padding: '0.3rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 'var(--radius-md)',
-                transition: 'color var(--transition-fast)'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#EF4444'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-tertiary)'}
             >
-              <LogOut size={17} />
+              <LogOut size={16} />
             </button>
           </div>
         </div>
@@ -131,4 +91,4 @@ const Header = ({ title }) => {
   );
 };
 
-export default Header;
+export default React.memo(Header);

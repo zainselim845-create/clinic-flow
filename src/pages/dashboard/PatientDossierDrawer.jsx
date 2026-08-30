@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  FolderOpen, Phone, Calendar, Stethoscope, FileText, X, MessageCircle, 
-  Pill, Printer, Send, Clock, User, Sparkles, FileSpreadsheet, Activity
+  FolderOpen, Phone, Calendar, FileText, MessageCircle, 
+  Pill, Sparkles, FileSpreadsheet
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import DentalChart from '../../components/DentalChart';
@@ -63,9 +63,9 @@ export default function PatientDossierDrawer({
       <div className="modal-content dossier-drawer" style={{ maxWidth: '880px', width: '95%' }}>
         
         {/* Drawer Header */}
-        <div className="modal-header" style={{ background: '#012757', color: '#FFFFFF' }}>
+        <div className="modal-header" style={{ background: 'var(--primary)', color: '#FFFFFF' }}>
           <div className="title-row">
-            <FolderOpen className="text-nebras-orange" size={22} />
+            <FolderOpen style={{ color: 'var(--accent)' }} size={22} />
             <div>
               <h3 style={{ color: '#FFFFFF', margin: 0 }}>الملف الطبي السريري: {patientName}</h3>
               <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>رقم الملف: #{patient.fileNumber || patient.id?.slice(0, 8) || 'D-101'}</span>
@@ -75,19 +75,19 @@ export default function PatientDossierDrawer({
         </div>
 
         {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '0.5rem', background: '#F8FAFC', padding: '0.6rem 1.25rem', borderBottom: '1px solid #E2E8F0', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-tertiary)', padding: '0.6rem 1.25rem', borderBottom: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
           <button
             type="button"
             className={`btn-dossier-tab ${activeTab === 'overview' ? 'active' : ''}`}
             onClick={() => setActiveTab('overview')}
             style={{
-              background: activeTab === 'overview' ? '#012757' : '#FFFFFF',
-              color: activeTab === 'overview' ? '#FFFFFF' : '#334155',
-              border: '1px solid #CBD5E1',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '8px',
+              background: activeTab === 'overview' ? 'var(--primary)' : 'var(--surface)',
+              color: activeTab === 'overview' ? '#FFFFFF' : 'var(--text-primary)',
+              border: '1px solid var(--border-color)',
+              padding: '0.45rem 0.95rem',
+              borderRadius: 'var(--radius-md)',
               fontWeight: 700,
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               cursor: 'pointer'
             }}
           >
@@ -100,41 +100,40 @@ export default function PatientDossierDrawer({
               className={`btn-dossier-tab ${activeTab === 'chart' ? 'active' : ''}`}
               onClick={() => setActiveTab('chart')}
               style={{
-                background: activeTab === 'chart' ? '#012757' : '#FFFFFF',
-                color: activeTab === 'chart' ? '#FFFFFF' : '#334155',
-                border: '1px solid #CBD5E1',
-                padding: '0.4rem 0.85rem',
-                borderRadius: '8px',
+                background: activeTab === 'chart' ? 'var(--primary)' : 'var(--surface)',
+                color: activeTab === 'chart' ? '#FFFFFF' : 'var(--text-primary)',
+                border: '1px solid var(--border-color)',
+                padding: '0.45rem 0.95rem',
+                borderRadius: 'var(--radius-md)',
                 fontWeight: 700,
-                fontSize: '0.82rem',
+                fontSize: '0.84rem',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.3rem'
+                gap: '0.35rem'
               }}
             >
-              <Sparkles size={14} className="text-nebras-orange" />
+              <Sparkles size={14} style={{ color: 'var(--accent)' }} />
               <span>مخطط الأسنان FDI ({dentalChartEntries.length})</span>
             </button>
           )}
-
 
           <button
             type="button"
             className={`btn-dossier-tab ${activeTab === 'notes' ? 'active' : ''}`}
             onClick={() => setActiveTab('notes')}
             style={{
-              background: activeTab === 'notes' ? '#012757' : '#FFFFFF',
-              color: activeTab === 'notes' ? '#FFFFFF' : '#334155',
-              border: '1px solid #CBD5E1',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '8px',
+              background: activeTab === 'notes' ? 'var(--primary)' : 'var(--surface)',
+              color: activeTab === 'notes' ? '#FFFFFF' : 'var(--text-primary)',
+              border: '1px solid var(--border-color)',
+              padding: '0.45rem 0.95rem',
+              borderRadius: 'var(--radius-md)',
               fontWeight: 700,
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.3rem'
+              gap: '0.35rem'
             }}
           >
             <FileText size={14} />
@@ -146,17 +145,17 @@ export default function PatientDossierDrawer({
             className={`btn-dossier-tab ${activeTab === 'plans' ? 'active' : ''}`}
             onClick={() => setActiveTab('plans')}
             style={{
-              background: activeTab === 'plans' ? '#012757' : '#FFFFFF',
-              color: activeTab === 'plans' ? '#FFFFFF' : '#334155',
-              border: '1px solid #CBD5E1',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '8px',
+              background: activeTab === 'plans' ? 'var(--primary)' : 'var(--surface)',
+              color: activeTab === 'plans' ? '#FFFFFF' : 'var(--text-primary)',
+              border: '1px solid var(--border-color)',
+              padding: '0.45rem 0.95rem',
+              borderRadius: 'var(--radius-md)',
               fontWeight: 700,
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.3rem'
+              gap: '0.35rem'
             }}
           >
             <FileSpreadsheet size={14} />
@@ -168,21 +167,21 @@ export default function PatientDossierDrawer({
             className={`btn-dossier-tab ${activeTab === 'prescriptions' ? 'active' : ''}`}
             onClick={() => setActiveTab('prescriptions')}
             style={{
-              background: activeTab === 'prescriptions' ? '#012757' : '#FFFFFF',
-              color: activeTab === 'prescriptions' ? '#FFFFFF' : '#334155',
-              border: '1px solid #CBD5E1',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '8px',
+              background: activeTab === 'prescriptions' ? 'var(--primary)' : 'var(--surface)',
+              color: activeTab === 'prescriptions' ? '#FFFFFF' : 'var(--text-primary)',
+              border: '1px solid var(--border-color)',
+              padding: '0.45rem 0.95rem',
+              borderRadius: 'var(--radius-md)',
               fontWeight: 700,
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.3rem'
+              gap: '0.35rem'
             }}
           >
             <Pill size={14} />
-            <span>الروشتات ({patientPrescriptions.length})</span>
+            <span>الروشتات الطبية ({patientPrescriptions.length})</span>
           </button>
         </div>
 
@@ -330,16 +329,16 @@ export default function PatientDossierDrawer({
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {treatmentPlans.map(plan => (
-                    <div key={plan.id} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '1rem' }}>
+                    <div key={plan.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '1.15rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <strong style={{ fontSize: '1rem', color: '#012757' }}>{plan.title}</strong>
-                        <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>
+                        <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{plan.title}</strong>
+                        <span style={{ background: 'var(--success-light)', color: 'var(--success)', padding: '2px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>
                           {plan.status}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.85rem', color: '#475569' }}>
+                      <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                         <span>عدد الإجراءات: <strong>{plan.items?.length || 0}</strong></span>
-                        <span>الصافي المطلوب: <strong style={{ color: '#0D9488' }}>{plan.netCost || plan.totalCost} ج.م</strong></span>
+                        <span>الصافي المطلوب: <strong style={{ color: 'var(--primary)' }}>{plan.netCost || plan.totalCost} ج.م</strong></span>
                         <span>بتاريخ: {new Date(plan.createdAt).toLocaleDateString('ar-EG')}</span>
                       </div>
                     </div>

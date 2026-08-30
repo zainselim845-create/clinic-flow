@@ -26,13 +26,12 @@ const InvoiceModal = ({
   ]);
   const [discount, setDiscount] = useState(invoice?.discount || 0);
   const [taxPercent, setTaxPercent] = useState(invoice?.taxPercentage || 0);
-  const [insuranceShare, setInsuranceShare] = useState(invoice?.insuranceShare || 0);
 
   // Totals calculations
   const subtotal = items.reduce((acc, it) => acc + (Number(it.unitPrice || 0) * Number(it.quantity || 1)), 0);
   const taxAmount = (subtotal - Number(discount)) * (Number(taxPercent) / 100);
   const grandTotal = Math.max(0, subtotal - Number(discount) + taxAmount);
-  const patientShare = Math.max(0, grandTotal - Number(insuranceShare));
+  const patientShare = grandTotal;
 
   const handleAddItem = () => {
     setItems(prev => [...prev, { description: '', quantity: 1, unitPrice: 0, total: 0 }]);
@@ -70,7 +69,6 @@ const InvoiceModal = ({
       taxPercentage: Number(taxPercent),
       taxAmount,
       total: grandTotal,
-      insuranceShare: Number(insuranceShare),
       patientShare,
       paidAmount: 0,
       remainingBalance: patientShare,
@@ -116,7 +114,6 @@ const InvoiceModal = ({
     discount,
     taxAmount,
     total: grandTotal,
-    insuranceShare,
     patientShare,
     paidAmount: 0,
     remainingBalance: patientShare,
@@ -309,12 +306,6 @@ const InvoiceModal = ({
                 <div className="total-line">
                   <span>ضريبة القيمة المضافة ({taxPercent}%):</span>
                   <strong>+{taxAmount} ج.م</strong>
-                </div>
-              )}
-              {Number(insuranceShare) > 0 && (
-                <div className="total-line text-primary">
-                  <span>حصة شركة التأمين:</span>
-                  <strong>-{insuranceShare} ج.م</strong>
                 </div>
               )}
               <div className="total-line grand-line">

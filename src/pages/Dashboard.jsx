@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
-  UserPlus, Search, FolderOpen, Share2
+  UserPlus, Search, FolderOpen, Share2,
+  CalendarDays, Clock, Stethoscope, Wallet, TrendingUp
 } from 'lucide-react';
 import { getTodayDateStr } from '../utils/timeSlots';
 import WaitingRoomQueue from './dashboard/WaitingRoomQueue';
@@ -19,7 +20,6 @@ import './Dashboard.css';
 const Dashboard = () => {
   const { state, dispatch } = useApp();
   
-  const appointments = state.appointments || [];
   const currentClinic = state.clinicInfo || {};
   const today = getTodayDateStr();
 
@@ -43,8 +43,8 @@ const Dashboard = () => {
 
   // Filter today's appointments
   const todaysAppointments = useMemo(() => {
-    return appointments.filter(a => a.date === today);
-  }, [appointments, today]);
+    return (state.appointments || []).filter(a => a.date === today);
+  }, [state.appointments, today]);
 
   // Clinical Lifecycle Segmentation (Memoized)
   const completedToday = useMemo(() => todaysAppointments.filter(a => a.status === 'completed'), [todaysAppointments]);
@@ -83,7 +83,7 @@ const Dashboard = () => {
     const counts = { 'السبت': 0, 'الأحد': 0, 'الإثنين': 0, 'الثلاثاء': 0, 'الأربعاء': 0, 'الخميس': 0, 'الجمعة': 0 };
     const revenues = { 'السبت': 0, 'الأحد': 0, 'الإثنين': 0, 'الثلاثاء': 0, 'الأربعاء': 0, 'الخميس': 0, 'الجمعة': 0 };
 
-    (appointments || []).forEach((appt) => {
+    (state.appointments || []).forEach((appt) => {
       if (appt.date) {
         const d = new Date(appt.date);
         if (!isNaN(d.getDay())) {
@@ -104,7 +104,7 @@ const Dashboard = () => {
       count: counts[day],
       revenue: revenues[day]
     }));
-  }, [appointments]);
+  }, [state.appointments]);
 
   const currentExamPatient = inProgressToday[0] || null;
 
@@ -228,54 +228,183 @@ const Dashboard = () => {
     dispatch({ type: 'ADD_APPOINTMENT', payload: newBooking });
   };
 
-  // Schedule filtering
-  const filteredAppointments = todaysAppointments.filter((a) => {
-    const matchesTab = activeFilterTab === 'all' || a.status === activeFilterTab;
-    const matchesSearch = !scheduleSearchQuery || 
-      a.patientName?.toLowerCase().includes(scheduleSearchQuery.toLowerCase()) ||
-      a.patientPhone?.includes(scheduleSearchQuery);
-    return matchesTab && matchesSearch;
-  });
+  // Schedule filtering (Memoized for high performance)
+  const filteredAppointments = useMemo(() => {
+    const query = scheduleSearchQuery.trim().toLowerCase();
+    return todaysAppointments.filter((a) => {
+      const matchesTab = activeFilterTab === 'all' || a.status === activeFilterTab;
+      if (!matchesTab) return false;
+      if (!query) return true;
+      return (
+        (a.patientName && a.patientName.toLowerCase().includes(query)) ||
+        (a.patientPhone && a.patientPhone.includes(query))
+      );
+    });
+  }, [todaysAppointments, activeFilterTab, scheduleSearchQuery]);
 
   return (
     <div className="dashboard-page">
       
-      {/* 1. Header Banner & Compact KPI Bar */}
-      <div className="dashboard-banner compact-banner">
-        <div className="banner-left-info">
-          <h2>لوحة العمليات السريرية</h2>
-          <span className="banner-date-badge">جدول اليوم: <strong>{today}</strong></span>
+      {/* 1. Executive Operations Hero Banner */}
+      <div className="dashboard-top-hero">
+        <div className="hero-welcome">
+          <div className="hero-title-row">
+            <h2>لوحة العمليات والتحكم السريري</h2>
+            <span className="hero-status-pill">
+              <span className="live-pulse-dot"></span>
+              <span>العيادة تستقبل المرضى الآن</span>
+            </span>
+          </div>
+          <p className="hero-subtitle">
+            جدول اليوم: <strong>{today}</strong> • المتابعة الحية لحركة صالة الانتظار وغرف الكشف ومؤشرات الإيراد
+          </p>
         </div>
 
-        <div className="banner-quick-kpis">
-          <div className="kpi-mini-item">
-            <span className="kpi-label">مواعيد اليوم:</span>
-            <strong className="kpi-val">{todaysAppointments.length}</strong>
+        <div className="hero-actions">
+          <button 
+            type="button" 
+            onClick={handleCopyBookingLink} 
+            className="btn-hero-action secondary" 
+            title="نسخ رابط الحجز المباشر للمرضى"
+          >
+            <Share2 size={16} />
+            <span>{copiedBookingLink ? 'تم نسخ الرابط!' : 'مشاركة رابط الحجز'}</span>
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setIsWalkInModalOpen(true)} 
+            className="btn-hero-action primary"
+          >
+            <UserPlus size={16} />
+            <span>تسجيل حضور مباشر (Walk-in)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Interactive KPI Command Cards (4-Grid with Click-to-Filter) */}
+      <div className="cockpit-stats-grid">
+        
+        {/* Metric 1: Total Appointments */}
+        <div 
+          className={`cockpit-stat-card total-card ${activeFilterTab === 'all' ? 'active-filter-card' : ''}`}
+          onClick={() => setActiveFilterTab('all')}
+          title="انقر لتصفية جدول اليوم لعرض كافة المواعيد"
+        >
+          <div className="stat-card-header">
+            <div className="stat-icon-box total">
+              <CalendarDays size={20} />
+            </div>
+            <span className="stat-card-tag">جدول اليوم</span>
           </div>
-          <div className="kpi-mini-item">
-            <span className="kpi-label">في الانتظار:</span>
-            <strong className="kpi-val text-warning">{waitingToday.length}</strong>
+          <div className="stat-card-body">
+            <h3 className="stat-main-number">{todaysAppointments.length}</h3>
+            <span className="stat-card-label">حالة مسجلة بالأجندة</span>
           </div>
-          <div className="kpi-mini-item">
-            <span className="kpi-label">تم الكشف:</span>
-            <strong className="kpi-val text-success">{completedToday.length} ({attendanceRate}%)</strong>
+          <div className="stat-progress-bar">
+            <div 
+              className="stat-progress-fill" 
+              style={{ width: `${attendanceRate}%`, background: 'var(--primary)' }}
+            ></div>
           </div>
-          <div className="kpi-mini-item">
-            <span className="kpi-label">دخل اليوم:</span>
-            <strong className="kpi-val text-primary">{todayRevenue} ج.م</strong>
+          <div className="stat-card-footer">
+            <span>نسبة الإنجاز: {attendanceRate}%</span>
+            <span>{completedToday.length} تم الكشف</span>
           </div>
         </div>
 
-        <div className="banner-actions">
-          <button type="button" onClick={handleCopyBookingLink} className="btn-compact-share" title="نسخ رابط الحجز">
-            <Share2 size={15} />
-            <span>{copiedBookingLink ? 'تم النسخ!' : 'رابط الحجز'}</span>
-          </button>
-          <button type="button" onClick={() => setIsWalkInModalOpen(true)} className="btn-compact-primary">
-            <UserPlus size={15} />
-            <span>حجز مباشر</span>
-          </button>
+        {/* Metric 2: Live Waiting Queue */}
+        <div 
+          className={`cockpit-stat-card waiting-card ${activeFilterTab === 'waiting' ? 'active-filter-card' : ''}`}
+          onClick={() => setActiveFilterTab('waiting')}
+          title="انقر لتصفية الجدول لعرض حالات صالة الانتظار فقط"
+        >
+          <div className="stat-card-header">
+            <div className="stat-icon-box waiting">
+              <Clock size={20} />
+            </div>
+            <span className="stat-card-tag waiting-tag">
+              <span className="live-pulse-dot" style={{ width: 6, height: 6 }}></span>
+              <span>مباشر بالعيادة</span>
+            </span>
+          </div>
+          <div className="stat-card-body">
+            <h3 className="stat-main-number text-warning">{waitingToday.length}</h3>
+            <span className="stat-card-label">مرضى في صالة الانتظار</span>
+          </div>
+          <div className="stat-progress-bar">
+            <div 
+              className="stat-progress-fill" 
+              style={{ width: `${Math.min(100, waitingToday.length * 20)}%`, background: 'var(--warning)' }}
+            ></div>
+          </div>
+          <div className="stat-card-footer">
+            <span>متوسط الانتظار: ~10 دقيقة</span>
+            <span>أولوية الطوارئ مفعلة</span>
+          </div>
         </div>
+
+        {/* Metric 3: Active Consultation Room */}
+        <div 
+          className={`cockpit-stat-card exam-card ${activeFilterTab === 'in_progress' ? 'active-filter-card' : ''}`}
+          onClick={() => setActiveFilterTab('in_progress')}
+          title="انقر لتصفية الجدول لعرض حالة الكشف الجارية"
+        >
+          <div className="stat-card-header">
+            <div className="stat-icon-box exam">
+              <Stethoscope size={20} />
+            </div>
+            <span className={`stat-card-tag ${currentExamPatient ? 'in-session-tag' : 'vacant-tag'}`}>
+              {currentExamPatient ? 'جاري الفحص' : 'الغرفة شاغرة'}
+            </span>
+          </div>
+          <div className="stat-card-body">
+            <h4 className="stat-patient-name">
+              {currentExamPatient ? currentExamPatient.patientName : 'الغرفة شاغرة ومستعدة'}
+            </h4>
+            <span className="stat-card-label">
+              {currentExamPatient ? `نوع الزيارة: ${currentExamPatient.type || 'كشف عادي'}` : 'جاهزة لاستدعاء الحالة التالية'}
+            </span>
+          </div>
+          <div className="stat-card-footer exam-footer">
+            {currentExamPatient ? (
+              <span className="text-primary font-bold">⏱️ انقر للمعاينة السريعة</span>
+            ) : (
+              <span className="text-success">✅ شاغرة لاستقبال مريض</span>
+            )}
+          </div>
+        </div>
+
+        {/* Metric 4: Daily Net Revenue */}
+        <div 
+          className={`cockpit-stat-card revenue-card ${activeFilterTab === 'completed' ? 'active-filter-card' : ''}`}
+          onClick={() => setActiveFilterTab('completed')}
+          title="انقر لتصفية الجدول لعرض الحالات المسددة والمكتملة"
+        >
+          <div className="stat-card-header">
+            <div className="stat-icon-box revenue">
+              <Wallet size={20} />
+            </div>
+            <span className="stat-card-tag revenue-tag">
+              <TrendingUp size={12} />
+              <span>تحصيل نقدي وفوري</span>
+            </span>
+          </div>
+          <div className="stat-card-body">
+            <h3 className="stat-main-number text-success">{todayRevenue} ج.م</h3>
+            <span className="stat-card-label">إجمالي إيراد الكشوفات اليوم</span>
+          </div>
+          <div className="stat-progress-bar">
+            <div 
+              className="stat-progress-fill" 
+              style={{ width: `${attendanceRate}%`, background: 'var(--success)' }}
+            ></div>
+          </div>
+          <div className="stat-card-footer">
+            <span>{completedToday.length} كشف مسدد</span>
+            <span>الذمم المالية موثقة</span>
+          </div>
+        </div>
+
       </div>
 
       {/* 2. Cockpit Layout: 2-Column Responsive High-Density Grid */}

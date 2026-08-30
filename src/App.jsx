@@ -40,7 +40,6 @@ const DoctorAssistant = lazyWithRetry(() => import('./pages/DoctorAssistant'));
 const Invoices = lazyWithRetry(() => import('./pages/Invoices'));
 const Labs = lazyWithRetry(() => import('./pages/Labs'));
 const Inventory = lazyWithRetry(() => import('./pages/Inventory'));
-const Insurance = lazyWithRetry(() => import('./pages/Insurance'));
 const Attendance = lazyWithRetry(() => import('./pages/Attendance'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
@@ -51,7 +50,6 @@ const pageTitles = {
   '/invoices': 'الفوترة والتحصيلات المالية',
   '/labs': 'إدارة المعامل والتركيبات',
   '/inventory': 'مخزون المستلزمات الطبية',
-  '/insurance': 'التأمين الطبي والتعاقدات',
   '/attendance': 'حضور وانصراف الطاقم',
   '/doctor-agent': 'مساعد الطبيب الذكي',
   '/notifications': 'التنبيهات والإشعارات',
@@ -139,7 +137,6 @@ function App() {
           <Route path="/invoices" element={<Invoices />} />
           <Route path="/labs" element={<Labs />} />
           <Route path="/inventory" element={<Inventory />} />
-          <Route path="/insurance" element={<Insurance />} />
           <Route path="/attendance" element={<Attendance />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/doctor-agent" element={
@@ -151,11 +148,15 @@ function App() {
 
         </Route>
 
-        {/* 3. Fallback unknown paths */}
+        {/* 3. Legacy / Removed Routes Redirects */}
+        <Route path="/insurance" element={<Navigate to="/" replace />} />
+
+        {/* 4. Fallback unknown paths */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
   );
+
 }
 
 export default App;

@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, 
   Stethoscope, LogOut, Smartphone, Bot, Receipt, Layers, 
-  Package, ShieldCheck, UserCheck 
+  Package, UserCheck 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -58,10 +58,6 @@ const Sidebar = () => {
           <Package size={19} />
           <span>المخزون والمستلزمات</span>
         </NavLink>
-        <NavLink to="/insurance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <ShieldCheck size={19} />
-          <span>التأمين الطبي</span>
-        </NavLink>
         <NavLink to="/attendance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
           <UserCheck size={19} />
           <span>حضور الطاقم</span>
@@ -106,5 +102,5 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default React.memo(Sidebar);
 

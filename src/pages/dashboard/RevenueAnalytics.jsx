@@ -11,7 +11,7 @@ import {
   Tooltip as RechartsTooltip
 } from 'recharts';
 
-export default function RevenueAnalytics({
+function RevenueAnalytics({
   weeklyData = [],
   todayRevenue = 0,
   attendanceRate = 0,
@@ -63,14 +63,14 @@ export default function RevenueAnalytics({
             <span>إيراد اليوم: <strong>{todayRevenue} ج.م</strong></span>
           </div>
 
-          <div className="quick-stat-badge" style={{ borderColor: 'rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.05)' }}>
-            <TrendingDown size={16} color="#ef4444" />
-            <span>المصروفات: <strong style={{ color: '#ef4444' }}>{totalExpenses} ج.م</strong></span>
+          <div className="quick-stat-badge" style={{ borderColor: 'var(--error)', background: 'var(--error-light)' }}>
+            <TrendingDown size={16} color="var(--error)" />
+            <span>المصروفات: <strong style={{ color: 'var(--error)' }}>{totalExpenses} ج.م</strong></span>
           </div>
 
-          <div className="quick-stat-badge" style={{ borderColor: 'rgba(16, 185, 129, 0.2)', background: 'rgba(16, 185, 129, 0.05)' }}>
-            <DollarSign size={16} color="#10b981" />
-            <span>صافي الربح: <strong style={{ color: '#10b981' }}>{netProfit} ج.م</strong></span>
+          <div className="quick-stat-badge" style={{ borderColor: 'var(--success)', background: 'var(--success-light)' }}>
+            <DollarSign size={16} color="var(--success)" />
+            <span>صافي الربح: <strong style={{ color: 'var(--success)' }}>{netProfit} ج.م</strong></span>
           </div>
 
           {onOpenExpenses && (
@@ -127,7 +127,7 @@ export default function RevenueAnalytics({
             <Area
               type="monotone"
               dataKey="revenue"
-              stroke="#0d9488"
+              stroke="var(--accent, #0284C7)"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorRevenue)"
@@ -138,3 +138,5 @@ export default function RevenueAnalytics({
     </div>
   );
 }
+
+export default React.memo(RevenueAnalytics);

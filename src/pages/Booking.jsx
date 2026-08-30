@@ -203,14 +203,14 @@ const Booking = () => {
         const newPatientData = {
           id: patientId,
           name: formData.name.trim(),
-          phone: formData.phone,
+          phone: cleanedPhone,
           age: formData.age || 'غير محدد',
           gender: formData.gender || 'ذكر',
           bloodType: 'غير محدد',
           diagnosis: 'مريض جديد أونلاين',
           lastVisit: formData.date,
           visitsCount: 1,
-          notes: isFamilyMemberBooking ? `فرد عائلة برقم ${formData.phone}` : 'حجز عبر البوابة الإلكترونية'
+          notes: isFamilyMemberBooking ? `فرد عائلة برقم ${cleanedPhone}` : 'حجز عبر البوابة الإلكترونية'
         };
 
         if (useSupabase) {
@@ -233,7 +233,7 @@ const Booking = () => {
         id: bookingId,
         patientId: patientId,
         patientName: formData.name.trim(),
-        patientPhone: formData.phone,
+        patientPhone: cleanedPhone,
         patientAge: formData.age || '',
         patientGender: formData.gender || 'ذكر',
         date: formData.date,

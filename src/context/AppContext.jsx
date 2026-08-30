@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import { getInitialData } from '../data/demoData';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import * as patientsService from '../services/patientsService';
@@ -748,7 +748,7 @@ export function AppProvider({ children }) {
     dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
   }, [useSupabase]);
 
-  const value = {
+  const value = useMemo(() => ({
     state,
     dispatch,
     toggleTheme,
@@ -761,7 +761,20 @@ export function AppProvider({ children }) {
     addAppointmentWithNotification,
     sendSmsReminder,
     useSupabase
-  };
+  }), [
+    state,
+    dispatch,
+    toggleTheme,
+    getPatientById,
+    getAppointmentsByPatientId,
+    getAppointmentsByDate,
+    getTodayAppointments,
+    getUpcomingAppointments,
+    getUnreadNotificationsCount,
+    addAppointmentWithNotification,
+    sendSmsReminder,
+    useSupabase
+  ]);
 
   return (
     <AppContext.Provider value={value}>

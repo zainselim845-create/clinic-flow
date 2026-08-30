@@ -1,7 +1,7 @@
 import React from 'react';
-import { Stethoscope, Clock, Check, ArrowRight, UserPlus, FolderOpen, AlertCircle, Pill } from 'lucide-react';
+import { Stethoscope, Clock, Check, ArrowRight, UserPlus, FolderOpen, Pill, Sparkles } from 'lucide-react';
 
-export default function WaitingRoomQueue({
+function WaitingRoomQueue({
   currentExamPatient,
   waitingToday,
   onStartExam,
@@ -22,10 +22,13 @@ export default function WaitingRoomQueue({
         <div className="title-with-badge">
           <Stethoscope className="icon-main text-primary" size={22} />
           <h3>غرفة الكشف وصالة الانتظار الحية</h3>
-          <span className="live-pill">مباشر الآن </span>
+          <span className="live-pill">
+            <span className="live-pulse-dot" style={{ width: 6, height: 6 }}></span>
+            <span>مباشر الآن</span>
+          </span>
         </div>
-        <button type="button" onClick={onOpenWalkInModal} className="btn btn-outline-primary btn-sm">
-          <UserPlus size={16} />
+        <button type="button" onClick={onOpenWalkInModal} className="btn-hero-action secondary btn-sm">
+          <UserPlus size={15} />
           <span>تسجيل حضور مباشر (Walk-in)</span>
         </button>
       </div>
@@ -34,69 +37,86 @@ export default function WaitingRoomQueue({
         {/* 1. Active Examination Room */}
         <div className={`exam-room-card ${currentExamPatient ? 'in-session' : 'vacant'}`}>
           <div className="exam-card-header">
-            <span className="room-badge">غرفة الكشف الرئيسية </span>
+            <span className="room-badge">غرفة الكشف الرئيسية</span>
             <span className={`occupancy-tag ${currentExamPatient ? 'occupied' : 'empty'}`}>
-              {currentExamPatient ? 'جاري الكشف' : 'الغرفة شاغرة'}
+              {currentExamPatient ? 'جاري الكشف' : 'الغرفة شاغرة ومستعدة'}
             </span>
           </div>
 
           {currentExamPatient ? (
             <div className="active-patient-box">
-              <div className="patient-avatar-large">
-                {currentExamPatient.patientName?.charAt(0) || 'م'}
-              </div>
-              <div className="patient-meta">
-                <h4>{currentExamPatient.patientName}</h4>
-                <div className="sub-tags">
-                  <span className="type-tag">{currentExamPatient.type || 'كشف عادي'}</span>
-                  <span className="phone-tag">{currentExamPatient.patientPhone}</span>
+              <div className="active-patient-top">
+                <div className="patient-avatar-large">
+                  {currentExamPatient.patientName?.charAt(0) || 'م'}
                 </div>
-                {currentExamPatient.notes && (
-                  <p className="clinical-notes-preview"> {currentExamPatient.notes}</p>
-                )}
+                <div className="patient-meta">
+                  <h4>{currentExamPatient.patientName}</h4>
+                  <div className="sub-tags">
+                    <span className="type-tag">{currentExamPatient.type || 'كشف عادي'}</span>
+                    <span className="phone-tag">{currentExamPatient.patientPhone}</span>
+                    <span className="wait-badge-timer">
+                      <Clock size={12} />
+                      <span>{calculateWaitMinutes(currentExamPatient.checkedInAt)} دقيقة</span>
+                    </span>
+                  </div>
+                </div>
               </div>
+
+              {currentExamPatient.notes && (
+                <p className="clinical-notes-preview">{currentExamPatient.notes}</p>
+              )}
 
               <div className="exam-actions">
                 <button
                   type="button"
                   onClick={() => onOpenPrescription && onOpenPrescription(currentExamPatient)}
-                  className="btn btn-primary btn-sm"
+                  className="btn-exam-action primary"
                   title="كتابة وطباعة روشتة طبية إلكترونية"
-                  style={{ background: 'var(--primary)', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                 >
-                  <Pill size={16} />
-                  <span>روشتة إلكترونية</span>
+                  <Pill size={15} />
+                  <span>روشتة ذكية</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onOpenFinishModal(currentExamPatient)}
-                  className="btn btn-success btn-finish-exam"
+                  className="btn-exam-action success"
+                  title="إنهاء الكشف واعتماد التشخيص"
                 >
-                  <Check size={18} />
-                  <span>إنهاء الكشف</span>
+                  <Check size={16} />
+                  <span>إنهاء وحفظ الكشف</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => onOpenDossier(currentExamPatient)}
-                  className="btn btn-outline btn-sm"
+                  className="btn-exam-action outline"
+                  title="فتح ملف المريض والسجل التاريخي"
                 >
-                  <FolderOpen size={16} />
-                  <span>السجل الطبي</span>
+                  <FolderOpen size={15} />
+                  <span>الملف الطبي</span>
                 </button>
               </div>
             </div>
           ) : (
             <div className="vacant-state-box">
-              <p>لا يوجد مريض داخل غرفة الكشف حالياً.</p>
+              <div className="vacant-icon-beacon">
+                <Sparkles size={28} className="text-primary" />
+              </div>
+              <h4>غرفة الكشف جاهزة ومستعدة</h4>
+              <p>
+                {waitingToday.length > 0
+                  ? `يوجد ${waitingToday.length} مريض في صالة الانتظار بانتظار الدخول.`
+                  : 'صالة الانتظار فارغة حالياً — بانتظار وصول الحالات.'}
+              </p>
               {waitingToday.length > 0 && (
                 <button
                   type="button"
                   onClick={() => onStartExam(waitingToday[0])}
-                  className="btn btn-primary"
+                  className="btn-call-next-patient"
                 >
                   <ArrowRight size={18} />
-                  <span>إدخال المريض التالي ({waitingToday[0].patientName})</span>
+                  <span>استدعاء المريض التالي فوراً: {waitingToday[0].patientName}</span>
                 </button>
               )}
             </div>
@@ -158,3 +178,5 @@ export default function WaitingRoomQueue({
     </div>
   );
 }
+
+export default React.memo(WaitingRoomQueue);

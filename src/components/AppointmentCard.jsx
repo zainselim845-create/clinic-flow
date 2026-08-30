@@ -87,7 +87,9 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
             className="appt-btn-wa" 
             onClick={() => {
               const cleanPhone = appointment.patientPhone.replace(/^0/, '20').replace(/\D/g, '');
-              const msg = `مرحباً أ/ ${appointment.patientName}، نذكركم بموعدكم في عيادة د. أحمد الشريف يوم ${appointment.date} الساعة ${appointment.time}. نتمنى لكم السلامة! `;
+              const clinicName = state.clinicInfo?.name || 'العيادة';
+              const docName = state.clinicInfo?.doctorName || 'الطبيب المعالج';
+              const msg = `مرحباً أ/ ${appointment.patientName}، نذكركم بموعدكم في ${clinicName} (${docName}) يوم ${appointment.date} الساعة ${appointment.time}. نتمنى لكم دوام الصحة والعافية!`;
               window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
             }} 
             title="تذكير المريض عبر واتساب"
@@ -151,4 +153,4 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
   );
 };
 
-export default AppointmentCard;
+export default React.memo(AppointmentCard);

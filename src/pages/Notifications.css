@@ -9,8 +9,8 @@
 
 .btn-danger {
   background: transparent;
-  color: var(--danger-color);
-  border: 1px solid var(--danger-color);
+  color: var(--error);
+  border: 1px solid var(--error);
   padding: 0.5rem 1rem;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -22,7 +22,7 @@
 }
 
 .btn-danger:hover {
-  background: var(--danger-color);
+  background: var(--error);
   color: white;
 }
 
@@ -61,8 +61,8 @@
   justify-content: center;
 }
 
-.notif-icon.appointment { color: var(--primary-color); }
-.notif-icon.reminder { color: var(--warning-color); }
+.notif-icon.appointment { color: var(--primary); }
+.notif-icon.reminder { color: var(--warning); }
 .notif-icon.default { color: var(--text-secondary); }
 
 .notif-content {
@@ -93,7 +93,7 @@
 .unread-dot {
   width: 10px;
   height: 10px;
-  background: var(--primary-color);
+  background: var(--primary);
   border-radius: 50%;
   position: absolute;
   left: 1.25rem;

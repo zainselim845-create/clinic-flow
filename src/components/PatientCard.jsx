@@ -79,4 +79,4 @@ const PatientCard = ({ patient, onClick }) => {
   );
 };
 
-export default PatientCard;
+export default React.memo(PatientCard);

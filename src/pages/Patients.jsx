@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { 
   Plus, Search, LayoutGrid, List, X, Download, 
@@ -16,8 +16,8 @@ const Patients = () => {
   const { state, dispatch } = useApp();
   const { patients = [], appointments = [], useSupabase } = state;
 
-
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredQuery = useDeferredValue(searchQuery);
   const [viewMode, setViewMode] = useState('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 18;
@@ -33,6 +33,11 @@ const Patients = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  // Sync index with patients pool
+  useEffect(() => {
+    patientIndex.buildIndex(patients);
+  }, [patients]);
+
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -43,10 +48,10 @@ const Patients = () => {
     notes: ''
   });
 
-  // High-performance search for 100k+ records
+  // High-performance search for 100k+ records using deferred non-blocking query
   const searchResult = useMemo(() => {
-    return patientIndex.search(searchQuery, currentPage, PAGE_SIZE, patients);
-  }, [patients, searchQuery, currentPage, PAGE_SIZE]);
+    return patientIndex.search(deferredQuery, currentPage, PAGE_SIZE, patients);
+  }, [patients, deferredQuery, currentPage, PAGE_SIZE]);
 
   const paginatedPatients = searchResult.items;
   const totalPatientsCount = searchResult.total;
