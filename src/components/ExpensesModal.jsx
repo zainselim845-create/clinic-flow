@@ -18,7 +18,6 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
   const [date, setDate] = useState(today);
   const [notes, setNotes] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
-
   const filteredExpenses = useMemo(() => {
     return (state.expenses || []).filter(e => filterCategory === 'all' || e.category === filterCategory);
   }, [state.expenses, filterCategory]);
@@ -61,10 +60,12 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const allExpenses = state.expenses || [];
+
   const handleExportCsv = () => {
-    if (expenses.length === 0) return;
+    if (allExpenses.length === 0) return;
     const headers = ['التاريخ', 'بند الصرف', 'التصنيف', 'المبلغ (ج.م)', 'ملاحظات'];
-    const rows = expenses.map(e => [e.date, `"${e.title}"`, `"${e.category}"`, e.amount, `"${e.notes || ''}"`]);
+    const rows = allExpenses.map(e => [e.date, `"${e.title}"`, `"${e.category}"`, e.amount, `"${e.notes || ''}"`]);
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -102,13 +103,13 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
           </div>
           <div className="exp-stat-pill">
             <span>عدد العمليات:</span>
-            <strong>{expenses.length} عملية</strong>
+            <strong>{allExpenses.length} عملية</strong>
           </div>
           <button 
             type="button" 
             className="btn-export-csv" 
             onClick={handleExportCsv}
-            disabled={expenses.length === 0}
+            disabled={allExpenses.length === 0}
           >
             <Download size={14} />
             <span>تصدير Excel (CSV)</span>

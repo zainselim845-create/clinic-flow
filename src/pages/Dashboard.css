@@ -1,24 +1,24 @@
 /* ==========================================================================
-   ClinicFlow - High-Density Cockpit Dashboard Stylesheet
+   ClinicFlow — Apple-Tier Executive Clinical Dashboard Stylesheet
    ========================================================================== */
 
 .dashboard-page {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding-bottom: 2rem;
+  gap: 1.25rem;
+  padding-bottom: 2.5rem;
 }
 
-/* 1. Executive Operations Hero Banner */
+/* 1. Hero Banner */
 .dashboard-top-hero {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-2xl);
-  padding: 1.25rem 1.75rem;
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-card);
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -26,949 +26,292 @@
 .hero-welcome {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .hero-title-row {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .hero-title-row h2 {
-  font-size: 1.35rem;
-  font-weight: 900;
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin: 0;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
 }
 
 .hero-status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.25rem 0.75rem;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem;
   border-radius: var(--radius-full);
   background: var(--success-light);
   color: var(--success);
-  font-size: 0.78rem;
-  font-weight: 800;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .hero-subtitle {
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   color: var(--text-secondary);
   margin: 0;
-}
-
-.hero-subtitle strong {
-  color: var(--text-primary);
 }
 
 .hero-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .btn-hero-action {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1.25rem;
-  border-radius: var(--radius-lg);
-  font-weight: 800;
-  font-size: 0.88rem;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
   transition: all var(--transition-fast);
-  text-decoration: none;
 }
 
 .btn-hero-action.secondary {
-  background: var(--bg-tertiary);
+  background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
 }
-
 .btn-hero-action.secondary:hover {
   background: var(--surface);
-  border-color: var(--primary);
-  color: var(--primary);
+  border-color: var(--text-tertiary);
 }
 
 .btn-hero-action.primary {
   background: var(--primary);
-  color: #ffffff;
+  color: #FFFFFF;
   border: none;
-  box-shadow: 0 4px 12px rgba(15, 41, 66, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
 }
-
 .btn-hero-action.primary:hover {
   background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(15, 41, 66, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.35);
 }
 
-/* 2. Interactive KPI Command Cards (4-Grid) */
+/* 2. KPI 4-Card Grid (Apple Health Style) */
 .cockpit-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
 }
 
-@media (max-width: 1200px) {
-  .cockpit-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .cockpit-stats-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.cockpit-stat-card {
+.cockpit-kpi-card {
   background: var(--surface);
-  border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
   padding: 1.15rem 1.25rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 0.75rem;
+  transition: all var(--transition-normal);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  position: relative;
-  overflow: hidden;
 }
 
-.cockpit-stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary);
-}
-
-.cockpit-stat-card.active-filter-card {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-glow), var(--shadow-md);
-  background: linear-gradient(180deg, var(--surface) 0%, var(--primary-light) 100%);
-}
-
-.stat-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stat-icon-box {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon-box.total {
-  background: rgba(2, 132, 199, 0.12);
-  color: #0284C7;
-}
-
-.stat-icon-box.waiting {
-  background: rgba(245, 158, 11, 0.12);
-  color: #F59E0B;
-}
-
-.stat-icon-box.exam {
-  background: rgba(15, 41, 66, 0.12);
-  color: var(--primary);
-}
-
-[data-theme="dark"] .stat-icon-box.exam {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38BDF8;
-}
-
-.stat-icon-box.revenue {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10B981;
-}
-
-.stat-card-tag {
-  font-size: 0.75rem;
-  font-weight: 800;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-full);
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.stat-card-tag.waiting-tag {
-  background: var(--warning-light);
-  color: #D97706;
-  border-color: rgba(245, 158, 11, 0.3);
-}
-
-.stat-card-tag.in-session-tag {
-  background: var(--primary-light);
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-.stat-card-tag.vacant-tag {
-  background: var(--success-light);
-  color: var(--success);
-  border-color: rgba(16, 185, 129, 0.3);
-}
-
-.stat-card-tag.revenue-tag {
-  background: var(--success-light);
-  color: var(--success);
-  border-color: rgba(16, 185, 129, 0.3);
-}
-
-.stat-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.stat-main-number {
-  font-size: 1.75rem;
-  font-weight: 900;
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.stat-patient-name {
-  font-size: 1.02rem;
-  font-weight: 900;
-  color: var(--text-primary);
-  margin: 0;
-  line-height: 1.35;
-  min-height: 1.5rem;
-}
-
-.stat-card-label {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.stat-progress-bar {
-  width: 100%;
-  height: 5px;
-  background: var(--bg-tertiary);
-  border-radius: 9999px;
-  overflow: hidden;
-}
-
-.stat-progress-fill {
-  height: 100%;
-  border-radius: 9999px;
-  transition: width 0.4s ease;
-}
-
-.stat-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: var(--text-tertiary);
-  padding-top: 0.5rem;
-  border-top: 1px dashed var(--border-color);
-}
-
-.exam-footer {
-  justify-content: flex-start;
-}
-
-/* 2. Cockpit 2-Column Grid */
-.dashboard-cockpit-grid {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 0.85rem;
-  align-items: start;
-}
-
-@media (max-width: 1180px) {
-  .dashboard-cockpit-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.cockpit-main-column {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.cockpit-side-column {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-/* 3. Clinical Floor Grid (Exam Room & Waiting Queue) */
-.waiting-room-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-}
-
-.section-title-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.title-with-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.title-with-badge h3 {
-  font-size: 0.98rem;
-  font-weight: 800;
-  color: var(--text-primary, #0f172a);
-  margin: 0;
-}
-
-.live-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.25);
-}
-
-.clinic-floor-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 0.75rem;
-}
-
-@media (max-width: 768px) {
-  .clinic-floor-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.exam-room-card,
-.queue-container-card {
-  background: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: var(--radius-lg, 12px);
-  padding: 0.85rem 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  display: flex;
-  flex-direction: column;
-  min-height: 220px;
-}
-
-.exam-card-header,
-.queue-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-color, #f1f5f9);
-}
-
-.room-badge,
-.queue-count-badge {
-  font-size: 0.82rem;
-  font-weight: 800;
-  color: var(--text-primary, #0f172a);
-}
-
-.occupancy-tag {
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: 6px;
-}
-
-.occupancy-tag.occupied {
-  background: var(--primary-light);
-  color: var(--primary);
-}
-
-.occupancy-tag.empty {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-}
-
-.active-patient-box {
-  background: var(--surface);
-  border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: 1.15rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.active-patient-top {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.patient-avatar-large {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  font-weight: 900;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(15, 41, 66, 0.2);
-}
-
-.patient-meta h4 {
-  font-size: 1.05rem;
-  font-weight: 800;
-  margin: 0 0 0.35rem 0;
-  color: var(--text-primary);
-}
-
-.sub-tags {
-  display: flex;
-  gap: 0.45rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.type-tag {
-  font-size: 0.76rem;
-  padding: 0.15rem 0.5rem;
-  background: var(--primary-light);
-  color: var(--primary);
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-}
-
-.phone-tag {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  unicode-bidi: isolate;
-  font-weight: 600;
-}
-
-.wait-badge-timer {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--radius-sm);
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-}
-
-.clinical-notes-preview {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  background: var(--bg-tertiary);
-  padding: 0.65rem 0.85rem;
-  border-radius: var(--radius-md);
-  margin: 0;
-  border-right: 3px solid var(--primary);
-  line-height: 1.5;
-}
-
-.exam-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  padding-top: 0.5rem;
-  border-top: 1px dashed var(--border-color);
-}
-
-.btn-exam-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.55rem 0.95rem;
-  border-radius: var(--radius-md);
-  font-size: 0.82rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  border: none;
-}
-
-.btn-exam-action.primary {
-  background: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(15, 41, 66, 0.2);
-}
-
-.btn-exam-action.primary:hover {
-  background: var(--primary-hover);
-  transform: translateY(-1px);
-}
-
-.btn-exam-action.success {
-  background: var(--success);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
-}
-
-.btn-exam-action.success:hover {
-  background: #059669;
-  transform: translateY(-1px);
-}
-
-.btn-exam-action.outline {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-}
-
-.btn-exam-action.outline:hover {
-  background: var(--surface);
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.vacant-state-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  gap: 0.5rem;
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-  text-align: center;
-  padding: 2rem 1.5rem;
-  background: var(--bg-tertiary);
-  border: 2px dashed var(--border-color);
-  border-radius: var(--radius-xl);
-}
-
-.vacant-icon-beacon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--primary-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.35rem;
-  box-shadow: 0 0 0 8px rgba(15, 41, 66, 0.04);
-}
-
-.vacant-state-box h4 {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.vacant-state-box p {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin: 0 0 0.5rem 0;
-  max-width: 320px;
-}
-
-.btn-call-next-patient {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.75rem 1.35rem;
-  border-radius: var(--radius-lg);
-  background: var(--primary);
-  color: #ffffff;
-  font-size: 0.9rem;
-  font-weight: 800;
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: 0 4px 14px rgba(15, 41, 66, 0.25);
-}
-
-.btn-call-next-patient:hover {
-  background: var(--primary-hover);
+.cockpit-kpi-card:hover {
+  box-shadow: var(--shadow-card-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(15, 41, 66, 0.35);
 }
 
-/* Waiting Queue Items */
-.queue-list {
+.kpi-top-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  max-height: 380px;
-  overflow-y: auto;
-  padding-right: 0.25rem;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.queue-list::-webkit-scrollbar {
-  width: 4px;
-}
-.queue-list::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
-}
-
-.queue-item-card {
+.kpi-header-group {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 0.95rem;
-  border-radius: var(--radius-lg);
-  background: var(--surface);
-  border: 1px solid var(--border-color);
-  transition: all var(--transition-fast);
+  gap: 0.65rem;
 }
 
-.queue-item-card:hover {
-  transform: translateX(-3px);
-  border-color: var(--primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.queue-item-card.emergency-priority {
-  background: var(--error-light);
-  border-color: rgba(239, 68, 68, 0.4);
-}
-
-.queue-number {
-  font-size: 0.85rem;
-  font-weight: 900;
-  color: var(--text-tertiary);
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-tertiary);
+.kpi-icon-square {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.queue-item-card.emergency-priority .queue-number {
-  background: rgba(239, 68, 68, 0.2);
-  color: #DC2626;
-}
+.kpi-icon-square.blue { background: var(--primary-light); color: var(--primary); }
+.kpi-icon-square.emerald { background: var(--success-light); color: var(--success); }
+.kpi-icon-square.amber { background: var(--warning-light); color: var(--warning); }
+.kpi-icon-square.indigo { background: rgba(88, 86, 214, 0.1); color: #5856D6; }
 
-.patient-info {
-  flex: 1;
-  min-width: 0;
+.kpi-title-box {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
 }
 
-.name-row {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
+.kpi-name {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
-.name-row strong {
-  font-size: 0.92rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.emergency-badge {
+.kpi-badge-sub {
   font-size: 0.7rem;
-  font-weight: 800;
-  color: #DC2626;
-  background: rgba(239, 68, 68, 0.15);
-  padding: 0.1rem 0.4rem;
-  border-radius: var(--radius-full);
+  color: var(--text-tertiary);
 }
 
-.time-details {
+.kpi-body-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.kpi-metric-number {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.kpi-bottom-status {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.5rem;
+}
+
+/* 3. Main Split Cockpit */
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left/Right Clinical Modules */
+.clinical-module-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.module-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.76rem;
-  color: var(--text-tertiary);
 }
 
-.wait-timer {
-  color: var(--warning);
-  font-weight: 700;
-}
-
-.item-actions .btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.85rem;
-  border-radius: var(--radius-md);
-  font-size: 0.78rem;
-  font-weight: 800;
-}
-
-.empty-queue-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2.5rem 1rem;
-  color: var(--text-tertiary);
-  font-size: 0.88rem;
-  text-align: center;
-  background: var(--bg-tertiary);
+/* Table Area in Dashboard */
+.todays-schedule-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  border: 1px dashed var(--border-color);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-/* 4. Schedule Table Card */
-.compact-table-card {
-  background: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: var(--radius-lg, 12px);
-  padding: 0.85rem 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-}
-
-.table-card-header {
+.schedule-controls-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  gap: 0.75rem;
 }
 
-.table-card-header h3 {
-  font-size: 0.95rem;
-  font-weight: 800;
-  margin: 0;
-  color: var(--text-primary, #0f172a);
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
 }
 
-.header-tools {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.compact-search {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.compact-search svg {
-  position: absolute;
-  right: 0.5rem;
-  color: var(--text-secondary, #94a3b8);
-  pointer-events: none;
-}
-
-.compact-search input {
-  padding: 0.3rem 1.8rem 0.3rem 0.6rem;
-  border-radius: 6px;
-  border: 1px solid var(--border-color, #e2e8f0);
-  font-size: 0.8rem;
-  width: 140px;
-}
-
-.compact-tabs {
-  display: flex;
-  gap: 0.25rem;
-  background: var(--bg-primary, #f8fafc);
-  padding: 0.2rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-color, #e2e8f0);
-}
-
-.tab-pill {
-  background: transparent;
-  border: none;
-  padding: 0.25rem 0.55rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-secondary, #64748b);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.tab-pill.active {
-  background: var(--surface);
-  color: var(--primary);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-
-.compact-table {
+.apple-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.82rem;
-}
-
-.compact-table th {
   text-align: right;
-  padding: 0.45rem 0.65rem;
-  background: var(--bg-primary, #f8fafc);
-  color: var(--text-secondary, #64748b);
-  font-weight: 700;
-  font-size: 0.75rem;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  font-size: 0.86rem;
 }
 
-.compact-table td {
-  padding: 0.45rem 0.65rem;
-  border-bottom: 1px solid var(--border-color, #f1f5f9);
+.apple-table th {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.patient-cell {
+.apple-table td {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.apple-table tr:hover td {
+  background: var(--bg-hover);
+}
+
+/* Quick Action Tiles */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+}
+
+.quick-action-tile {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 0.85rem;
   display: flex;
   flex-direction: column;
-}
-
-.patient-cell strong {
-  font-size: 0.85rem;
-  color: var(--text-primary, #0f172a);
-}
-
-.patient-cell small {
-  color: var(--text-secondary, #64748b);
-  font-size: 0.75rem;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.15rem 0.45rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.status-badge.completed { background: rgba(16, 185, 129, 0.12); color: #059669; }
-.status-badge.in_progress { background: var(--primary-light); color: var(--primary); }
-.status-badge.waiting { background: rgba(245, 158, 11, 0.12); color: #d97706; }
-.status-badge.booked,
-.status-badge.upcoming { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
-
-.row-actions {
-  display: flex;
   align-items: center;
-  gap: 0.35rem;
-}
-
-.btn-action-primary {
-  background: var(--primary);
-  color: #ffffff;
-  border: none;
-  padding: 0.25rem 0.65rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  gap: 0.4rem;
+  text-align: center;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.btn-action-primary:hover {
-  background: var(--primary-hover);
+.quick-action-tile:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
-.btn-action-success {
-  background: #059669;
-  color: #ffffff;
-  border: none;
-  padding: 0.25rem 0.55rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-action-icon {
-  background: var(--bg-primary, #f8fafc);
-  border: 1px solid var(--border-color, #e2e8f0);
-  color: var(--text-secondary, #64748b);
-  padding: 0.25rem 0.45rem;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 5. Revenue Analytics & Side Column Cards */
-.analytics-overview-card {
-  background: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: var(--radius-lg, 12px);
-  padding: 0.85rem 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.analytics-header h4 {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.92rem;
-  font-weight: 800;
-  color: var(--text-primary, #0f172a);
-  margin: 0 0 0.15rem 0;
-}
-
-.analytics-header p {
-  font-size: 0.75rem;
-  color: var(--text-secondary, #64748b);
-  margin: 0;
-}
-
-.analytics-quick-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin-top: 0.5rem;
-}
-
-.quick-stat-badge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.35rem 0.65rem;
-  border-radius: 8px;
-  background: var(--bg-primary, #f8fafc);
-  border: 1px solid var(--border-color, #e2e8f0);
-  font-size: 0.78rem;
-  font-weight: 700;
+.quick-action-tile span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
