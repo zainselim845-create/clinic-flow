@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stethoscope, Check, CalendarPlus, BellRing, FileText } from 'lucide-react';
+import { Stethoscope, Check, CalendarPlus, BellRing } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 
@@ -11,7 +11,6 @@ export default function ConsultationModal({
   const { dispatch } = useApp();
   const [diagnosis, setDiagnosis] = useState('');
   const [prescription, setPrescription] = useState('');
-  const [consultationNotes, setConsultationNotes] = useState('');
   const [followUpOption, setFollowUpOption] = useState('none'); // 'none' | '7_days' | '14_days'
   const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' | 'card' | 'instapay'
   const [recallInterval, setRecallInterval] = useState('none'); // 'none' | '1_month' | '3_months' | '6_months' | '12_months'
@@ -49,7 +48,7 @@ export default function ConsultationModal({
       patientId: appointment.patientId,
       diagnosis,
       prescription,
-      notes: consultationNotes,
+      notes: prescription,
       followUpOption,
       paymentMethod
     });
