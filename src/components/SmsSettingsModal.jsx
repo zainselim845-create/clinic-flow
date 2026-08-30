@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Smartphone, Send, CheckCircle2, AlertCircle, Key, Link as LinkIcon, Radio, Info, Building2 } from 'lucide-react';
 import { getSmsConfig, saveSmsConfig, sendSMS } from '../services/smsService';
 import './SmsSettingsModal.css';
@@ -16,7 +16,7 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
   });
 
   const [testPhone, setTestPhone] = useState('');
-  const [testMessage, setTestMessage] = useState('تجربة إرسال رسالة SMS من نظام كلينك فلو بنجاح! 🚀');
+  const [testMessage, setTestMessage] = useState('تجربة إرسال رسالة SMS من نظام كلينك فلو بنجاح! ');
   const [isSending, setIsSending] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -41,7 +41,7 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
 
   const handleSendTest = async () => {
     if (!testPhone) {
-      alert('يرجى إدخال رقم الهاتف للتجربة');
+      setTestResult({ success: false, error: 'يرجى إدخال رقم الهاتف للتجربة' });
       return;
     }
 
@@ -97,7 +97,7 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                     onChange={(e) => setConfig({ ...config, provider: e.target.value })}
                   />
                   <div className="provider-info">
-                    <strong>Cequens (رسمي باسم العيادة 🇪🇬)</strong>
+                    <strong>Cequens (رسمي باسم العيادة )</strong>
                     <span>إرسال رسمي باسم المرسل عبر شبكات المحمول المصرية</span>
                   </div>
                 </label>
@@ -147,7 +147,7 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                     onChange={(e) => setConfig({ ...config, cequensApiKey: e.target.value })}
                     dir="ltr"
                   />
-                  <small className="help-text">تحصل عليه من Cequens Console ⬅️ Developer Hub ⬅️ API Keys.</small>
+                  <small className="help-text">تحصل عليه من Cequens Console  Developer Hub  API Keys.</small>
                 </div>
 
                 <div className="form-group">
@@ -280,15 +280,15 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
 
             <div className="modal-actions-row">
               <button type="submit" className="btn btn-primary">
-                💾 حفظ الإعدادات
+                 حفظ الإعدادات
               </button>
-              {saveSuccess && <span className="save-badge">✅ تم الحفظ بنجاح!</span>}
+              {saveSuccess && <span className="save-badge"> تم الحفظ بنجاح!</span>}
             </div>
           </form>
 
           {/* Test Section */}
           <div className="test-section-card">
-            <h4>🧪 تجربة إرسال رسالة فورية حية:</h4>
+            <h4> تجربة إرسال رسالة فورية حية:</h4>
             <div className="test-form-row">
               <input
                 type="tel"
@@ -324,16 +324,16 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                     <div>
                       <strong>تم تنفيذ الإرسال بنجاح! ({testResult.method})</strong>
                       {testResult.method === 'simulation' && (
-                        <p className="sub-msg">⚠️ يعمل في وضع المحاكاة لأن بيانات الـ Gateway لم تُدخل بعد أو فارغة.</p>
+                        <p className="sub-msg"> يعمل في وضع المحاكاة لأن بيانات الـ Gateway لم تُدخل بعد أو فارغة.</p>
                       )}
                       {testResult.method === 'cequens' && (
-                        <p className="sub-msg">🇪🇬 تم إرسال الرسالة بنجاح عبر Cequens وستظهر باسم المرسل المعتمد!</p>
+                        <p className="sub-msg"> تم إرسال الرسالة بنجاح عبر Cequens وستظهر باسم المرسل المعتمد!</p>
                       )}
                       {testResult.method === 'textbee' && (
-                        <p className="sub-msg">🚀 تم إرسال الرسالة فعلياً عبر الهاتف المتصل بـ TextBee!</p>
+                        <p className="sub-msg"> تم إرسال الرسالة فعلياً عبر الهاتف المتصل بـ TextBee!</p>
                       )}
                       {testResult.method === 'android-gateway' && (
-                        <p className="sub-msg">📶 تم إرسال الرسالة مباشرة عبر Android SMS Gateway المحلي!</p>
+                        <p className="sub-msg"> تم إرسال الرسالة مباشرة عبر Android SMS Gateway المحلي!</p>
                       )}
                     </div>
                   </>

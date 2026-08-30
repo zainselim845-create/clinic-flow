@@ -3,8 +3,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Loader2 } from 'lucide-react';
 
-const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, loading, role } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -17,6 +17,12 @@ const ProtectedRoute = ({ children }) => {
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  const effectiveRole = user?.role || role || 'doctor';
+  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(effectiveRole)) {
+    // Role unauthorized — redirect to dashboard
+    return <Navigate to="/" replace />;
   }
 
   return children;

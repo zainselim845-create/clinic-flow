@@ -1,16 +1,131 @@
-# React + Vite
+#  كلينك فلو (ClinicFlow) — منظومة إدارة العيادات الذكية المتقدمة
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+منظومة طبية وسريرية متكاملة مصممة بأحدث تقنيات الويب لإدارة العيادات والمراكز الطبية الخاصة بكفاءة وسرعة فائقة، مع دعم الحجز الإلكتروني الذكي، طابور الانتظار اللحظي، مساعد الطبيب بالذكاء الاصطناعي، والمزامنة السحابية الفورية.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+##  أبرز مميزات النظام
 
-## React Compiler
+- ** لوحة تحكم الطبيب السريرية (Doctor Clinical Dashboard):**
+  - إدارة طابور الانتظار وغرفة الكشف لحظياً.
+  - إتمام الكشوفات وتسجيل التشخيصات والروشتات بضغطة زر.
+  - رسوم بيانية تفاعلية للإيرادات وتوزيع أنواع الكشوفات.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- ** بوابة الحجز الذاتي للمرضى (Public Booking Portal):**
+  - جدول مواعيد تفاعلي يراعي إجازات الطبيب والمواعيد المغلقة.
+  - حجز فوري للمرضى مع توليد كود حجز فريد (#CF-XXXX).
+  - دعم الحالات الطارئة ذات الأولوية وتنبيه العيادة فوراً.
+  - تدقيق ذكي لأرقام الهواتف المصرية ومعالجة الأرقام العربية والدولية.
 
-## Expanding the Oxlint configuration
+- ** بوابة إدارة الحجز المؤمنة (Self-Service Manage Booking):**
+  - تمكين المريض من مراجعة أو تعديل أو إلغاء موعده بأمان تام بدون أي تكاليف SMS، باستخدام كود الحجز أو التحقق بالاسم المسجل.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- ** مساعد الطبيب الذكي لمتابعة المرضى (AI Clinical Assistant):**
+  - استعلام فوري وتحليل سجلات المرضى باللغة العربية (مرضى الضغط، السكر، الحساسية).
+  - تنفيذ أوامر الطبيب الصوتية والنصية (حظر المواعيد، الإجازات، إلغاء الحظر) وتحديث قاعدة البيانات مباشرة.
+
+- ** إدارة السكرتارية وفريق العمل (Staff Management):**
+  - إضافة وتعديل حسابات الاستقبال، تحديد الورديات والصلاحيات، وإمكانية تجميد الحسابات مؤقتاً.
+
+- ** بوابة دخول مؤمنة ومحمية من الهجمات (Hardened Security Gateway):**
+  - حظر تلقائي للمحاولات الخاطئة المتكررة (Brute-Force Rate Limiting).
+  - حماية المسارات وعزل الإعدادات الحساسة بحساب الطبيب فقط (`Role Guards`).
+
+- ** مزامنة سحابية لحظية (Supabase Realtime Sync):**
+  - ربط كامل مع قاعدة بيانات PostgreSQL مع تحديث شاشات كافة الأجهزة فورياً عبر WebSockets.
+  - دعم العمل التلقائي بدون اتصال (Offline/Demo Fallback) في حال عدم توفر الإنترنت.
+
+---
+
+##  المتطلبات الأساسية (Prerequisites)
+
+- **Node.js**: إصدار `18.0.0` أو أحدث.
+- **npm** أو **pnpm** أو **yarn**.
+- *(اختياري)* حساب مجاني على [Supabase](https://supabase.com) لقاعدة البيانات السحابية.
+- *(اختياري)* مفتاح مجاني من [OpenRouter](https://openrouter.ai) لمساعد الطبيب الذكي.
+- *(اختياري)* محرك [Docker](https://www.docker.com) للنشر المستقل على السيرفرات.
+
+---
+
+##  التشغيل المحلي السريع (Quick Local Setup)
+
+### 1. تثبيت الحزم والمكتبات:
+```bash
+npm install
+```
+
+### 2. إعداد متغيرات البيئة:
+قم بنسخ ملف `.env.example` إلى `.env`:
+```bash
+cp .env.example .env
+```
+
+### 3. تشغيل خادم التطوير:
+```bash
+npm run dev
+```
+سيعمل التطبيق مباشرة على: `http://localhost:5173`
+
+---
+
+##  إعداد قاعدة بيانات Supabase (خطوة بخطوة)
+
+1. أنشئ مشروعاً جديداً مجانياً على [Supabase](https://supabase.com).
+2. ادخل إلى قسم **SQL Editor** من القائمة الجانبية.
+3. انسخ محتوى الملف `supabase/migrations/001_initial_schema.sql` والصقه في الـ SQL Editor ثم اضغط **Run**.
+4. ادخل إلى **Project Settings -> API** وانسخ:
+   - `Project URL`
+   - `Project API anon key`
+5. ضع القيم في ملف `.env` أو أدخلها مباشرة من شاشة `الإعدادات -> السحابة والنسخ الاحتياطي` داخل النظام.
+
+---
+
+##  تشغيل الاختبارات الآلية (Automated Testing)
+
+يحتوي المشروع على منظومة اختبارات شاملة تغطي كافة المسارات والـ Reducers والـ Services والمساعد الذكي:
+
+```bash
+# تشغيل كامل الاختبارات
+npm test
+
+# فحص كود المشروع
+npm run lint
+
+# بناء نسخة الإنتاج
+npm run build
+```
+
+---
+
+##  دليل النشر في بيئة الإنتاج (Production Deployment)
+
+### الخيار 1: النشر على Vercel (موصى به - بضغطة زر)
+1. اربط مستودع GitHub بحسابك على [Vercel](https://vercel.com).
+2. سيقوم Vercel باكتشاف المشروع تلقائياً وتطبيق إعدادات `vercel.json`.
+3. أضف متغيرات البيئة (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_OPENROUTER_API_KEY`).
+4. اضغط **Deploy**.
+
+### الخيار 2: النشر عبر Docker على أي سيرفر أو VPS
+تم تجهيز `Dockerfile` متعدد المراحل عالي الكفاءة مع خادم `Nginx` مضغوط ومؤمن:
+
+```bash
+# بناء صورة الدوكر
+docker build -t clinicflow:latest .
+
+# تشغيل الحاوية على المنفذ 80
+docker run -d -p 80:80 --name clinicflow_app clinicflow:latest
+```
+
+---
+
+##  الحسابات والبيانات الافتراضية للتجربة السريعة
+
+| الحساب | المعرف / البريد | كلمة المرور | الصلاحيات |
+|---|---|---|---|
+| **الطبيب (مدير العيادة)** | `doctor@clinicflow.com` | `admin` | إدارة كاملة، الإعدادات، المساعد الذكي، الطاقم |
+| **السكرتارية (الاستقبال)** | `sara.reception@clinic.com` | `123` | المواعيد، المرضى، صالة الانتظار، الواتساب |
+
+---
+
+##  الترخيص (License)
+مرخص بموجب رخصة MIT — متاح للاستخدام والتطوير الحر.

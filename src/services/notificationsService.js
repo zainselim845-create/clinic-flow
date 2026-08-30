@@ -1,10 +1,43 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
+const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
+
+export function fromDbNotification(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    clinicId: row.clinic_id || row.clinicId,
+    type: row.type || 'appointment',
+    title: row.title,
+    message: row.message,
+    read: row.read ?? false,
+    relatedId: row.related_id || row.relatedId,
+    timestamp: row.created_at || row.timestamp || new Date().toISOString()
+  };
+}
+
+export function toDbNotification(data) {
+  if (!data) return {};
+  const payload = {};
+
+  if (data.id && typeof data.id === 'string' && data.id.includes('-') && data.id.length > 20) {
+    payload.id = data.id;
+  }
+  if (data.clinicId !== undefined) payload.clinic_id = data.clinicId;
+  if (data.type !== undefined) payload.type = data.type;
+  if (data.title !== undefined) payload.title = data.title;
+  if (data.message !== undefined) payload.message = data.message;
+  if (data.read !== undefined) payload.read = data.read;
+  if (data.relatedId !== undefined) payload.related_id = data.relatedId;
+
+  return payload;
+}
+
 /**
  * Fetch all notifications, ordered by created_at DESC
  */
 export async function getNotifications(clinicId) {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
   try {
     let query = supabase
@@ -19,7 +52,7 @@ export async function getNotifications(clinicId) {
     const { data, error } = await query;
 
     if (error) throw error;
-    return { data, error: null };
+    return { data: (data || []).map(fromDbNotification), error: null };
   } catch (error) {
     console.error('Error fetching notifications:', error);
     return { data: null, error };
@@ -30,17 +63,18 @@ export async function getNotifications(clinicId) {
  * Add a new notification
  */
 export async function addNotification(notification) {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
   try {
+    const dbPayload = toDbNotification(notification);
     const { data, error } = await supabase
       .from('notifications')
-      .insert([notification])
+      .insert([dbPayload])
       .select()
       .single();
 
     if (error) throw error;
-    return { data, error: null };
+    return { data: fromDbNotification(data), error: null };
   } catch (error) {
     console.error('Error adding notification:', error);
     return { data: null, error };
@@ -51,7 +85,7 @@ export async function addNotification(notification) {
  * Mark a single notification as read
  */
 export async function markAsRead(id) {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
   try {
     const { data, error } = await supabase
@@ -62,7 +96,7 @@ export async function markAsRead(id) {
       .single();
 
     if (error) throw error;
-    return { data, error: null };
+    return { data: fromDbNotification(data), error: null };
   } catch (error) {
     console.error('Error marking notification as read:', error);
     return { data: null, error };
@@ -73,7 +107,7 @@ export async function markAsRead(id) {
  * Mark all notifications as read for a clinic
  */
 export async function markAllAsRead(clinicId) {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
   try {
     let query = supabase
@@ -99,27 +133,27 @@ export async function markAllAsRead(clinicId) {
  * Delete a single notification
  */
 export async function deleteNotification(id) {
-  if (!isSupabaseConfigured()) return null;
+  if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('notifications')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
-    return { data, error: null };
+    return { error: null };
   } catch (error) {
     console.error('Error deleting notification:', error);
-    return { data: null, error };
+    return { error };
   }
 }
 
 /**
  * Delete all notifications for a clinic
  */
-export async function clearAll(clinicId) {
-  if (!isSupabaseConfigured()) return null;
+export async function clearAllNotifications(clinicId) {
+  if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
   try {
     let query = supabase
@@ -129,41 +163,15 @@ export async function clearAll(clinicId) {
     if (clinicId) {
       query = query.eq('clinic_id', clinicId);
     } else {
-      query = query.neq('id', '00000000-0000-0000-0000-000000000000'); // delete all
+      query = query.neq('id', '00000000-0000-0000-0000-000000000000');
     }
 
-    const { data, error } = await query;
+    const { error } = await query;
 
     if (error) throw error;
-    return { data, error: null };
+    return { error: null };
   } catch (error) {
     console.error('Error clearing notifications:', error);
-    return { data: null, error };
-  }
-}
-
-/**
- * Get count of unread notifications
- */
-export async function getUnreadCount(clinicId) {
-  if (!isSupabaseConfigured()) return null;
-
-  try {
-    let query = supabase
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('read', false);
-
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
-
-    const { count, error } = await query;
-
-    if (error) throw error;
-    return { data: count, error: null };
-  } catch (error) {
-    console.error('Error getting unread notification count:', error);
-    return { data: null, error };
+    return { error };
   }
 }

@@ -1,14 +1,19 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, Stethoscope, LogOut, Smartphone } from 'lucide-react';
+import { 
+  LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, 
+  Stethoscope, LogOut, Smartphone, Bot, Receipt, Layers, 
+  Package, ShieldCheck, UserCheck 
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const { state, toggleTheme } = useApp();
-  const { signOut, user } = useAuth();
+  const { signOut, user, role } = useAuth();
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
+  const isDoctor = (user?.role || role || 'doctor') === 'doctor';
 
   const handleSignOut = async () => {
     await signOut();
@@ -17,37 +22,68 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <Stethoscope size={28} className="logo-icon" />
-        <h2>كلينك فلو</h2>
+        <div className="logo-icon-wrap">
+          <Stethoscope size={22} />
+        </div>
+        <h2>كلينك فلو دنتال</h2>
       </div>
 
       <nav className="sidebar-nav">
         <NavLink to="/" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'} end>
-          <LayoutDashboard size={20} />
+          <LayoutDashboard size={19} />
           <span>لوحة التحكم</span>
         </NavLink>
         <NavLink to="/appointments" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <CalendarDays size={20} />
-          <span>المواعيد</span>
+          <CalendarDays size={19} />
+          <span>المواعيد والتقويم</span>
         </NavLink>
         <NavLink to="/patients" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Users size={20} />
-          <span>المرضى</span>
+          <Users size={19} />
+          <span>سجلات المرضى</span>
         </NavLink>
+        <NavLink to="/invoices" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+          <Receipt size={19} />
+          <span>الفوترة والتحصيل</span>
+        </NavLink>
+        <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+          <Layers size={19} />
+          <span>المعامل والتركيبات</span>
+        </NavLink>
+        <NavLink to="/inventory" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+          <Package size={19} />
+          <span>المخزون والمستلزمات</span>
+        </NavLink>
+        <NavLink to="/insurance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+          <ShieldCheck size={19} />
+          <span>التأمين الطبي</span>
+        </NavLink>
+        <NavLink to="/attendance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+          <UserCheck size={19} />
+          <span>حضور الطاقم</span>
+        </NavLink>
+        {isDoctor && (
+          <NavLink to="/doctor-agent" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Bot size={19} />
+            <span>مساعد الطبيب الذكي</span>
+          </NavLink>
+        )}
         <NavLink to="/notifications" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Bell size={20} />
+          <Bell size={19} />
           <span>التنبيهات</span>
           {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
         </NavLink>
-        <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Smartphone size={20} />
-          <span>إعدادات SMS والربط</span>
-        </NavLink>
-        <NavLink to="/booking" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Globe size={20} />
-          <span>صفحة الحجز</span>
-        </NavLink>
+        {isDoctor && (
+          <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Smartphone size={19} />
+            <span>إدارة وإعدادات العيادة</span>
+          </NavLink>
+        )}
+        <a href="/booking" target="_blank" rel="noreferrer" className="nav-item" title="معاينة وفتح صفحة الحجز العامة للمرضى في نافذة جديدة">
+          <Globe size={19} />
+          <span>بوابة الحجز (للمرضى)</span>
+        </a>
       </nav>
+
 
       <div className="sidebar-footer">
         <button className="theme-toggle" onClick={toggleTheme}>

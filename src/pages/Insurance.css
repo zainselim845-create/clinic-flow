@@ -1,0 +1,201 @@
+.insurance-page {
+  direction: rtl;
+}
+
+.insurance-calculator-card {
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+}
+
+.calc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #F1F5F9;
+  margin-bottom: 1.25rem;
+}
+
+.calc-header h4 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #012757;
+  margin: 0 0 0.2rem 0;
+}
+
+.calc-header p {
+  font-size: 0.82rem;
+  color: #64748B;
+  margin: 0;
+}
+
+.calc-body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.2fr;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+.calc-input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.calc-input-box label {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.calc-num-input,
+.calc-select {
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid #CBD5E1;
+  font-size: 0.92rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.calc-num-input:focus,
+.calc-select:focus {
+  border-color: #F7931E;
+}
+
+.calc-result-box {
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.res-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.86rem;
+}
+
+.res-item.grand {
+  border-top: 1px solid #CBD5E1;
+  padding-top: 0.4rem;
+  margin-top: 0.2rem;
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.text-orange { color: #EA580C; }
+
+.companies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.company-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.comp-card-top {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #F1F5F9;
+  margin-bottom: 1rem;
+}
+
+.comp-badge-icon {
+  background: #EFF6FF;
+  color: #2563EB;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.comp-card-top h5 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #012757;
+  margin: 0 0 0.2rem 0;
+}
+
+.contact-person {
+  display: block;
+  font-size: 0.78rem;
+  color: #64748B;
+  margin-bottom: 0.25rem;
+}
+
+.comp-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: #0D9488;
+  text-decoration: none;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.plans-lbl {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.comp-plans-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plan-chip {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.plan-name-flex {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.coverage-badge {
+  background: #DCFCE7;
+  color: #166534;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+}
+
+@media (max-width: 768px) {
+  .calc-body-grid {
+    grid-template-columns: 1fr;
+  }
+}

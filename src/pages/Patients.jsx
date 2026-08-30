@@ -1,20 +1,40 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Plus, Search, LayoutGrid, List, X, Trash2, Edit2, Pill } from 'lucide-react';
+import { 
+  Plus, Search, LayoutGrid, List, X, Trash2, Edit2, 
+  FileText, Image as ImageIcon, Download, Upload, Calendar,
+  ChevronLeft, ChevronRight, Pill, Printer, Send, BellRing
+} from 'lucide-react';
 import PatientCard from '../components/PatientCard';
 import PrescriptionModal from '../components/PrescriptionModal';
+import PatientRecallModal from '../components/PatientRecallModal';
+import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
+import * as patientsService from '../services/patientsService';
 import './Patients.css';
 
+
 const Patients = () => {
+  const navigate = useNavigate();
   const { state, dispatch } = useApp();
-  const { patients = [], appointments = [] } = state;
+  const { patients = [], appointments = [], useSupabase } = state;
+
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 18;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isPrescriptionOpen, setIsPrescriptionOpen] = useState(false);
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
+  const [isRecallModalOpen, setIsRecallModalOpen] = useState(false);
+
+  const [toastMessage, setToastMessage] = useState(null);
+  const showToast = (text, type = 'info') => {
+    setToastMessage({ text, type });
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -26,20 +46,37 @@ const Patients = () => {
     notes: ''
   });
 
-  const filteredPatients = patients.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.phone.includes(searchQuery)
-  );
+  const filteredPatients = useMemo(() => {
+    return patients.filter(p => 
+      (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
+      (p.phone && p.phone.includes(searchQuery)) ||
+      (p.diagnosis && p.diagnosis.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [patients, searchQuery]);
+
+  const totalPages = Math.ceil(filteredPatients.length / PAGE_SIZE) || 1;
+  const paginatedPatients = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredPatients.slice(start, start + PAGE_SIZE);
+  }, [filteredPatients, currentPage, PAGE_SIZE]);
 
   const handleOpenDetail = (patient) => {
     setSelectedPatient(patient);
     setIsDetailModalOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('هل أنت متأكد من حذف هذا المريض؟')) {
+      if (useSupabase) {
+        try {
+          await patientsService.deletePatient(id);
+        } catch (err) {
+          console.error('Failed to delete patient from Supabase:', err);
+        }
+      }
       dispatch({ type: 'DELETE_PATIENT', payload: id });
       setIsDetailModalOpen(false);
+      showToast('تم حذف المريض من السجل بنجاح ', 'success');
     }
   };
 
@@ -49,13 +86,22 @@ const Patients = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedPatient) {
+      const updatedPayload = { ...formData, id: selectedPatient.id };
+      if (useSupabase) {
+        try {
+          await patientsService.updatePatient(selectedPatient.id, updatedPayload);
+        } catch (err) {
+          console.error('Failed to update patient in Supabase:', err);
+        }
+      }
       dispatch({ 
         type: 'UPDATE_PATIENT', 
-        payload: { ...formData, id: selectedPatient.id } 
+        payload: updatedPayload 
       });
+      showToast('تم تعديل بيانات المريض بنجاح ', 'success');
     } else {
       const newPatient = {
         id: Date.now().toString(),
@@ -63,7 +109,15 @@ const Patients = () => {
         visitsCount: 0,
         lastVisit: null
       };
+      if (useSupabase) {
+        try {
+          await patientsService.addPatient(newPatient);
+        } catch (err) {
+          console.error('Failed to add patient to Supabase:', err);
+        }
+      }
       dispatch({ type: 'ADD_PATIENT', payload: newPatient });
+      showToast('تم إضافة المريض الجديد بنجاح ', 'success');
     }
     
     setIsModalOpen(false);
@@ -75,18 +129,73 @@ const Patients = () => {
     return appointments.filter(a => a.patientId === patientId).sort((a, b) => new Date(b.date) - new Date(a.date));
   };
 
+  const handleExportCSV = () => {
+    if (!patients || patients.length === 0) {
+      showToast('لا توجد بيانات مرضى للتصدير', 'info');
+      return;
+    }
+
+    const headers = ['الاسم', 'العمر', 'الجنس', 'الهاتف', 'فصيلة الدم', 'التشخيص', 'عدد الزيارات', 'آخر زيارة', 'ملاحظات'];
+    const rows = patients.map(p => [
+      p.name || '',
+      p.age || '',
+      p.gender || '',
+      p.phone || '',
+      p.bloodType || '',
+      p.diagnosis || '',
+      p.visitsCount || 0,
+      p.lastVisit || '',
+      `"${(p.notes || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `clinicflow_patients_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('تم تصدير ملف المرضى (CSV) بنجاح ', 'success');
+  };
+
   return (
     <div className="patients-page">
+      {toastMessage && (
+        <div className={`patients-toast-banner ${toastMessage.type}`} style={{
+          background: toastMessage.type === 'warning' ? '#fef3c7' : toastMessage.type === 'success' ? '#dcfce7' : '#e0f2fe',
+          border: `1px solid ${toastMessage.type === 'warning' ? '#fcd34d' : toastMessage.type === 'success' ? '#86efac' : '#7dd3fc'}`,
+          color: toastMessage.type === 'warning' ? '#92400e' : toastMessage.type === 'success' ? '#166534' : '#0369a1',
+          padding: '0.75rem 1.25rem',
+          borderRadius: '8px',
+          marginBottom: '1rem',
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          <span>{toastMessage.text}</span>
+        </div>
+      )}
+
       <div className="page-header">
         <h2>إدارة المرضى</h2>
-        <button className="btn-primary" onClick={() => {
-          setSelectedPatient(null);
-          setFormData({ name: '', age: '', gender: 'ذكر', phone: '', bloodType: '', diagnosis: '', notes: '' });
-          setIsModalOpen(true);
-        }}>
-          <Plus size={20} />
-          إضافة مريض
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button className="btn-secondary" onClick={handleExportCSV} title="تصدير قائمة المرضى لملف إكسيل">
+            <Download size={18} />
+            <span>تصدير إكسيل (CSV)</span>
+          </button>
+          <button className="btn-primary" onClick={() => {
+            setSelectedPatient(null);
+            setFormData({ name: '', age: '', gender: 'ذكر', phone: '', bloodType: '', diagnosis: '', notes: '' });
+            setIsModalOpen(true);
+          }}>
+            <Plus size={20} />
+            إضافة مريض
+          </button>
+        </div>
       </div>
 
       <div className="filters-bar glass-card">
@@ -117,8 +226,8 @@ const Patients = () => {
       </div>
 
       <div className={`patients-${viewMode}`}>
-        {filteredPatients.length > 0 ? (
-          filteredPatients.map(patient => (
+        {paginatedPatients.length > 0 ? (
+          paginatedPatients.map(patient => (
             <div key={patient.id} onClick={() => handleOpenDetail(patient)}>
               <PatientCard patient={patient} />
             </div>
@@ -129,6 +238,50 @@ const Patients = () => {
           </div>
         )}
       </div>
+
+      {/* High-Volume Pagination Controls */}
+      {totalPages > 1 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '1rem',
+          margin: '2rem 0',
+          padding: '0.75rem 1.5rem',
+          background: 'var(--bg-secondary)',
+          borderRadius: 'var(--radius-xl)',
+          border: '1px solid var(--border-color)',
+          width: 'fit-content',
+          marginLeft: 'auto',
+          marginRight: 'auto'
+        }}>
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={currentPage <= 1}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            style={{ padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <ChevronRight size={16} />
+            <span>السابق</span>
+          </button>
+          
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+            صفحة {currentPage} من {totalPages} ({filteredPatients.length} مريض إجمالي)
+          </span>
+
+          <button
+            type="button"
+            className="btn-secondary"
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            style={{ padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <span>التالي</span>
+            <ChevronLeft size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
@@ -208,24 +361,37 @@ const Patients = () => {
               </div>
 
               <div className="form-group">
-                <label>التشخيص</label>
+                <label>التشخيص والشكوى المبدئية</label>
                 <input 
                   type="text" 
                   className="input-field"
+                  placeholder="مثال: ألم في الأسنان، فحص دوري..."
                   value={formData.diagnosis || ''}
                   onChange={(e) => setFormData({...formData, diagnosis: e.target.value})}
                 />
               </div>
 
               <div className="form-group">
-                <label>ملاحظات</label>
+                <label style={{ color: '#DC2626', fontWeight: 800 }}>تنبيهات طبية وحساسيات (Medical Alerts)</label>
+                <input 
+                  type="text" 
+                  className="input-field"
+                  placeholder="مثال: حساسية بنسلين، ضغط، سكري، أدوية سيولة..."
+                  value={formData.medicalAlerts || ''}
+                  onChange={(e) => setFormData({...formData, medicalAlerts: e.target.value})}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>ملاحظات إضافية</label>
                 <textarea 
                   className="input-field"
-                  rows="3"
+                  rows="2"
                   value={formData.notes || ''}
                   onChange={(e) => setFormData({...formData, notes: e.target.value})}
                 ></textarea>
               </div>
+
 
               <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>إلغاء</button>
@@ -236,74 +402,27 @@ const Patients = () => {
         </div>
       )}
 
-      {/* Patient Detail Modal */}
+      {/* Patient Full Clinical Dossier (Dental Chart, Notes, Treatment Plans, Rx) */}
       {isDetailModalOpen && selectedPatient && (
-        <div className="modal-overlay">
-          <div className="modal-content glass-card detail-modal">
-            <div className="modal-header">
-              <h3>ملف المريض</h3>
-              <div className="header-actions">
-                <button 
-                  className="icon-btn rx-btn" 
-                  onClick={() => setIsPrescriptionOpen(true)} 
-                  title="تحرير وطباعة روشتة طبية لهذا المريض"
-                  style={{ background: 'rgba(27, 111, 227, 0.1)', color: '#1B6FE3', borderRadius: '6px', padding: '0.4rem 0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', border: '1px solid rgba(27,111,227,0.2)', fontWeight: 'bold' }}
-                >
-                  <Pill size={16} />
-                  <span>روشتة طبية (Rx)</span>
-                </button>
-                <button className="icon-btn edit-btn" onClick={() => { setIsDetailModalOpen(false); handleEdit(selectedPatient); }}>
-                  <Edit2 size={18} />
-                </button>
-                <button className="icon-btn delete-btn" onClick={() => handleDelete(selectedPatient.id)}>
-                  <Trash2 size={18} />
-                </button>
-                <button className="close-btn" onClick={() => setIsDetailModalOpen(false)}>
-                  <X size={24} />
-                </button>
-              </div>
-            </div>
-            
-            <div className="patient-detail-info">
-              <div className="info-block">
-                <h4>{selectedPatient.name}</h4>
-                <div className="info-grid">
-                  <div className="info-item"><span>العمر:</span> {selectedPatient.age}</div>
-                  <div className="info-item"><span>الجنس:</span> {selectedPatient.gender}</div>
-                  <div className="info-item"><span>الهاتف:</span> {selectedPatient.phone}</div>
-                  <div className="info-item"><span>فصيلة الدم:</span> {selectedPatient.bloodType || 'غير محدد'}</div>
-                  <div className="info-item full"><span>التشخيص:</span> {selectedPatient.diagnosis || 'لا يوجد'}</div>
-                  <div className="info-item full"><span>ملاحظات:</span> {selectedPatient.notes || 'لا يوجد'}</div>
-                </div>
-              </div>
-
-              <div className="history-block">
-                <h4>سجل الزيارات</h4>
-                {getPatientAppointments(selectedPatient.id).length > 0 ? (
-                  <ul className="visit-history">
-                    {getPatientAppointments(selectedPatient.id).map(appt => (
-                      <li key={appt.id}>
-                        <div className="visit-date">{appt.date} - {appt.time}</div>
-                        <div className="visit-type">{appt.type}</div>
-                        <div className="visit-status" data-status={appt.status}>
-                          {appt.status === 'completed' ? 'مكتمل' : appt.status === 'upcoming' ? 'قادم' : 'ملغي'}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="no-history">لا يوجد سجل زيارات.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <PatientDossierDrawer
+          patient={selectedPatient}
+          patientAppointments={getPatientAppointments(selectedPatient.id)}
+          onClose={() => setIsDetailModalOpen(false)}
+          onIssuePrescription={() => setIsPrescriptionModalOpen(true)}
+        />
       )}
-      {/* Prescription Modal */}
+
+
       <PrescriptionModal
-        isOpen={isPrescriptionOpen}
-        onClose={() => setIsPrescriptionOpen(false)}
+        isOpen={isPrescriptionModalOpen}
+        onClose={() => setIsPrescriptionModalOpen(false)}
         patient={selectedPatient}
+      />
+
+      <PatientRecallModal
+        isOpen={isRecallModalOpen}
+        onClose={() => setIsRecallModalOpen(false)}
+        initialPatient={selectedPatient}
       />
     </div>
   );

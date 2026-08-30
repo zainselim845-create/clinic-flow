@@ -1,0 +1,432 @@
+.modern-booking-calendar-wrapper {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+  width: 100%;
+}
+
+/* 1. Calendar Card */
+.calendar-card {
+  padding: 1.5rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-card);
+}
+
+.calendar-nav-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.month-year-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cal-icon {
+  color: var(--primary);
+}
+
+.month-year-title h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.nav-arrows {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.nav-arrow-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.nav-arrow-btn:hover {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+/* Weekdays */
+.weekdays-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  margin-bottom: 0.65rem;
+}
+
+.weekday-cell {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 0.35rem 0;
+}
+
+.weekday-cell.friday {
+  color: #EF4444;
+}
+
+/* Days Grid */
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.45rem;
+}
+
+.day-cell {
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid transparent;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0.35rem 0.2rem;
+}
+
+.day-cell.empty {
+  background: transparent;
+  cursor: default;
+}
+
+.day-cell.past {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: transparent;
+}
+
+.day-cell.holiday {
+  background: rgba(239, 68, 68, 0.05);
+  color: #EF4444;
+  cursor: not-allowed;
+  border-color: rgba(239, 68, 68, 0.15);
+}
+
+.day-cell.blocked {
+  background: rgba(245, 158, 11, 0.08);
+  color: #D97706;
+  cursor: not-allowed;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.day-cell.available:hover {
+  background: rgba(247, 147, 30, 0.1);
+  color: #F7931E;
+  border-color: #F7931E;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(247, 147, 30, 0.2);
+}
+
+.day-cell.selected {
+  background: #F7931E !important;
+  color: #FFFFFF !important;
+  border-color: #F7931E !important;
+  box-shadow: 0 4px 14px rgba(247, 147, 30, 0.4);
+  transform: scale(1.05);
+}
+
+.day-cell.selected .day-badge-text {
+  background: rgba(255, 255, 255, 0.3) !important;
+  color: #FFFFFF !important;
+}
+
+.day-cell.today {
+  border: 1.5px dashed #012757;
+}
+
+
+.day-number {
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.day-badge-text {
+  font-size: 0.62rem;
+  font-weight: 700;
+  margin-top: 2px;
+  padding: 0.08rem 0.3rem;
+  border-radius: 4px;
+}
+
+.day-badge-text.available {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.day-badge-text.holiday {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.day-badge-text.blocked {
+  color: #D97706;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.day-badge-text.full {
+  color: #64748B;
+  background: rgba(100, 116, 139, 0.12);
+}
+
+/* Legend */
+.calendar-legend-bar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-color);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-dot.available { background: #10B981; }
+.legend-dot.holiday { background: #EF4444; }
+.legend-dot.selected { background: var(--primary); }
+.legend-dot.full { background: #64748B; }
+
+/* 2. Modern Time Slots Picker */
+.time-slots-container {
+  padding: 1.5rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+}
+
+.slots-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.slots-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.slots-title h4 {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.slots-selected-hint {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+[data-theme="dark"] .slots-selected-hint {
+  background: rgba(37, 99, 235, 0.2);
+  color: #93C5FD;
+}
+
+.interactive-time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+  gap: 0.75rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 0.25rem;
+}
+
+.modern-slot-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-height: 58px;
+  padding: 0.65rem 0.5rem;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.modern-slot-btn .slot-time {
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.modern-slot-btn.available:hover {
+  background: rgba(247, 147, 30, 0.08);
+  color: #F7931E;
+  border-color: #F7931E;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(247, 147, 30, 0.2);
+}
+
+.modern-slot-btn.selected {
+  background: #F7931E !important;
+  color: #FFFFFF !important;
+  border-color: #F7931E !important;
+  box-shadow: 0 4px 14px rgba(247, 147, 30, 0.4);
+  transform: scale(1.03);
+}
+
+.modern-slot-btn.selected .slot-check-icon {
+  color: #FFFFFF;
+}
+
+
+.modern-slot-btn.booked {
+  opacity: 0.55;
+  background: var(--bg-tertiary);
+  cursor: not-allowed;
+  border-color: transparent;
+}
+
+.modern-slot-btn.booked .slot-time {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.modern-slot-btn.blocked {
+  opacity: 0.55;
+  background: rgba(245, 158, 11, 0.08);
+  color: #D97706;
+  cursor: not-allowed;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.slot-status-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+}
+
+.slot-status-tag.booked {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+}
+
+.slot-status-tag.blocked {
+  background: rgba(245, 158, 11, 0.15);
+  color: #D97706;
+}
+
+.day-off-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #DC2626;
+}
+
+.day-off-alert strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.day-off-alert p {
+  font-size: 0.85rem;
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 900px) {
+  .modern-booking-calendar-wrapper {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-card, .time-slots-container {
+    padding: 1rem 0.75rem;
+    border-radius: var(--radius-lg);
+  }
+  .month-year-title h3 {
+    font-size: 1rem;
+  }
+  .weekday-cell {
+    font-size: 0.7rem;
+    padding: 0.2rem 0;
+  }
+  .day-cell {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.1rem;
+    min-height: 44px;
+  }
+  .day-badge-text {
+    font-size: 0.55rem;
+  }
+  .interactive-time-slots-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  .modern-slot-btn {
+    min-height: 48px;
+    padding: 0.45rem 0.3rem;
+  }
+  .modern-slot-btn .slot-time {
+    font-size: 0.82rem;
+  }
+  .calendar-legend-bar {
+    gap: 0.5rem;
+    font-size: 0.7rem;
+  }
+}

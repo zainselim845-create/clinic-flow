@@ -1,28 +1,38 @@
-import React, { createContext, useReducer, useEffect, useContext, useRef, useCallback } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef } from 'react';
 import { getInitialData } from '../data/demoData';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import * as patientsService from '../services/patientsService';
 import * as appointmentsService from '../services/appointmentsService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
 import * as notificationsService from '../services/notificationsService';
+import * as staffService from '../services/staffService';
+import * as clinicsService from '../services/clinicsService';
+import * as prescriptionsService from '../services/prescriptionsService';
+import * as expensesService from '../services/expensesService';
+import * as recallsService from '../services/recallsService';
 import { sendReminder } from '../services/smsService';
 
 const AppContext = createContext(null);
 
-const initialState = {
+export const initialState = {
   patients: [],
   appointments: [],
   notifications: [],
   blockedSlots: [],
+  prescriptions: [],
+  expenses: [],
+  recalls: [],
+  staffMembers: [],
+  clinicInfo: null,
   theme: 'light',
   searchQuery: '',
   isLoading: true,
-  useSupabase: false // سيتم تحديده عند التحميل
+  useSupabase: false
 };
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-function appReducer(state, action) {
+export function appReducer(state, action) {
   switch (action.type) {
     // Initialization
     case 'INIT_DATA':
@@ -38,7 +48,26 @@ function appReducer(state, action) {
         ...state, 
         patients: state.patients.map(p => p.id === action.payload.id ? action.payload : p) 
       };
+    case 'UPDATE_PATIENT_MEDICAL_HISTORY': {
+      const { patientId, diagnosis, prescription, notes, lastVisit } = action.payload;
+      return {
+        ...state,
+        patients: state.patients.map(p => {
+          if (p.id === patientId) {
+            return {
+              ...p,
+              ...(diagnosis !== undefined ? { diagnosis } : {}),
+              ...(prescription !== undefined ? { prescription } : {}),
+              ...(notes !== undefined ? { notes } : {}),
+              ...(lastVisit !== undefined ? { lastVisit } : {})
+            };
+          }
+          return p;
+        })
+      };
+    }
     case 'DELETE_PATIENT':
+
       return {
         ...state,
         patients: state.patients.filter(p => p.id !== action.payload),
@@ -48,8 +77,22 @@ function appReducer(state, action) {
       return { ...state, patients: action.payload };
 
     // Appointments
-    case 'ADD_APPOINTMENT':
-      return { ...state, appointments: [...state.appointments, action.payload] };
+    case 'ADD_APPOINTMENT': {
+      const newNotif = {
+        id: 'notif-' + Date.now(),
+        type: 'appointment',
+        title: 'حجز موعد جديد',
+        message: `تم حجز موعد للمريض ${action.payload.patientName || 'مريض'} يوم ${action.payload.date} الساعة ${action.payload.time}`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        relatedId: action.payload.id
+      };
+      return { 
+        ...state, 
+        appointments: [...state.appointments, action.payload],
+        notifications: [newNotif, ...(state.notifications || [])].slice(0, 100)
+      };
+    }
     case 'UPDATE_APPOINTMENT':
       return {
         ...state,
@@ -60,12 +103,62 @@ function appReducer(state, action) {
         ...state,
         appointments: state.appointments.filter(a => a.id !== action.payload)
       };
-    case 'UPDATE_APPOINTMENT_STATUS':
+    case 'UPDATE_APPOINTMENT_STATUS': {
+      const { id, status } = action.payload;
+      const targetAppt = state.appointments.find(a => a.id === id);
+
+      let updatedPatients = state.patients;
+      let newNotifs = state.notifications || [];
+
+      if (status === 'completed' && targetAppt) {
+        // Increment patient visits and update lastVisit
+        if (targetAppt.patientId) {
+          updatedPatients = state.patients.map(p => {
+            if (p.id === targetAppt.patientId) {
+              const count = (p.totalVisits || p.visitsCount || 0) + 1;
+              return {
+                ...p,
+                lastVisit: targetAppt.date || new Date().toISOString().split('T')[0],
+                totalVisits: count,
+                visitsCount: count
+              };
+            }
+            return p;
+          });
+        }
+        // Add completion notification
+        newNotifs = [
+          {
+            id: 'notif-' + Date.now(),
+            type: 'completed',
+            title: 'إتمام كشف ',
+            message: `تم الانتهاء من كشف المريض ${targetAppt.patientName || 'مريض'} وحفظ السجل`,
+            timestamp: new Date().toISOString(),
+            read: false,
+            relatedId: id
+          },
+          ...newNotifs
+        ].slice(0, 100);
+      }
+
       return {
         ...state,
+        patients: updatedPatients,
+        notifications: newNotifs,
         appointments: state.appointments.map(a => 
-          a.id === action.payload.id ? { ...a, status: action.payload.status } : a
+          a.id === id ? { 
+            ...a, 
+            status,
+            ...(status === 'waiting' && !a.checkedInAt ? { checkedInAt: new Date().toISOString() } : {}),
+            ...(status === 'in_progress' && !a.consultationStartedAt ? { consultationStartedAt: new Date().toISOString() } : {})
+          } : a
         )
+      };
+    }
+    case 'UPDATE_CLINIC_INFO':
+      return {
+        ...state,
+        clinicInfo: { ...(state.clinicInfo || {}), ...action.payload }
       };
     case 'SET_APPOINTMENTS':
       return { ...state, appointments: action.payload };
@@ -85,6 +178,21 @@ function appReducer(state, action) {
           blockedSlots: [...state.blockedSlots, { date, time, reason }]
         };
       }
+    }
+    case 'BLOCK_FULL_DAY': {
+      const { date, reason = 'إجازة الطبيب / عطلة العيادة' } = action.payload;
+      const cleanList = state.blockedSlots.filter(b => b.date !== date);
+      return {
+        ...state,
+        blockedSlots: [...cleanList, { date, time: 'FULL_DAY', isFullDay: true, reason }]
+      };
+    }
+    case 'UNBLOCK_FULL_DAY': {
+      const { date } = action.payload;
+      return {
+        ...state,
+        blockedSlots: state.blockedSlots.filter(b => b.date !== date)
+      };
     }
     case 'SET_BLOCKED_SLOTS':
       return { ...state, blockedSlots: action.payload };
@@ -111,14 +219,169 @@ function appReducer(state, action) {
       };
     case 'CLEAR_ALL_NOTIFICATIONS':
       return { ...state, notifications: [] };
-    case 'SET_NOTIFICATIONS':
-      return { ...state, notifications: action.payload };
+    // Staff & Team Management (Doctor / Admin)
+    case 'ADD_STAFF':
+      return { 
+        ...state, 
+        staffMembers: [action.payload, ...(state.staffMembers || [])],
+        notifications: [
+          {
+            id: 'notif-' + Date.now(),
+            type: 'staff',
+            title: 'إضافة موظف جديد ',
+            message: `تم إضافة ${action.payload.name} (${action.payload.role}) إلى فريق العيادة`,
+            timestamp: new Date().toISOString(),
+            read: false
+          },
+          ...(state.notifications || [])
+        ].slice(0, 100)
+      };
+    case 'UPDATE_STAFF':
+      return {
+        ...state,
+        staffMembers: (state.staffMembers || []).map(s => s.id === action.payload.id ? action.payload : s)
+      };
+    case 'DELETE_STAFF':
+      return {
+        ...state,
+        staffMembers: (state.staffMembers || []).filter(s => s.id !== action.payload)
+      };
+    case 'TOGGLE_STAFF_STATUS':
+      return {
+        ...state,
+        staffMembers: (state.staffMembers || []).map(s => 
+          s.id === action.payload 
+            ? { ...s, status: s.status === 'active' ? 'inactive' : 'active' } 
+            : s
+        )
+      };
+
+    // Prescriptions (E-Prescription & Rx System)
+    case 'ADD_PRESCRIPTION':
+      return {
+        ...state,
+        prescriptions: [action.payload, ...(state.prescriptions || [])],
+        notifications: [
+          {
+            id: 'notif-' + Date.now(),
+            type: 'prescription',
+            title: 'إصدار روشتة طبية',
+            message: `تم إصدار روشتة إلكترونية للمريض ${action.payload.patientName}`,
+            timestamp: new Date().toISOString(),
+            read: false
+          },
+          ...(state.notifications || [])
+        ].slice(0, 100)
+      };
+    case 'DELETE_PRESCRIPTION':
+      return {
+        ...state,
+        prescriptions: (state.prescriptions || []).filter(p => p.id !== action.payload)
+      };
+
+    // Services Catalog
+    case 'ADD_SERVICE': {
+      const existingServices = state.clinicInfo?.services || [];
+      const newServices = [...existingServices, action.payload];
+      return {
+        ...state,
+        clinicInfo: { ...(state.clinicInfo || {}), services: newServices }
+      };
+    }
+    case 'UPDATE_SERVICE': {
+      const existingServices = state.clinicInfo?.services || [];
+      const newServices = existingServices.map(s => s.id === action.payload.id ? action.payload : s);
+      return {
+        ...state,
+        clinicInfo: { ...(state.clinicInfo || {}), services: newServices }
+      };
+    }
+    case 'DELETE_SERVICE': {
+      const existingServices = state.clinicInfo?.services || [];
+      const newServices = existingServices.filter(s => s.id !== action.payload);
+      return {
+        ...state,
+        clinicInfo: { ...(state.clinicInfo || {}), services: newServices }
+      };
+    }
+
+    // Expenses & Petty Cash Ledger
+    case 'ADD_EXPENSE':
+      return {
+        ...state,
+        expenses: [action.payload, ...(state.expenses || [])],
+        notifications: [
+          {
+            id: 'notif-' + Date.now(),
+            type: 'expense',
+            title: 'تسجيل مصروف جديد',
+            message: `تم تسجيل مصروف بقيمة ${action.payload.amount} ج.م [${action.payload.title}]`,
+            timestamp: new Date().toISOString(),
+            read: false
+          },
+          ...(state.notifications || [])
+        ].slice(0, 100)
+      };
+    case 'UPDATE_EXPENSE':
+      return {
+        ...state,
+        expenses: (state.expenses || []).map(e => e.id === action.payload.id ? action.payload : e)
+      };
+    case 'DELETE_EXPENSE':
+      return {
+        ...state,
+        expenses: (state.expenses || []).filter(e => e.id !== action.payload)
+      };
+
+    // Patient Recall System
+    case 'ADD_RECALL':
+      return {
+        ...state,
+        recalls: [action.payload, ...(state.recalls || [])],
+        notifications: [
+          {
+            id: 'notif-' + Date.now(),
+            type: 'recall',
+            title: 'جدولة استدعاء مريض',
+            message: `تمت جدولة استدعاء دوري للمريض ${action.payload.patientName} (${action.payload.reason})`,
+            timestamp: new Date().toISOString(),
+            read: false
+          },
+          ...(state.notifications || [])
+        ].slice(0, 100)
+      };
+    case 'UPDATE_RECALL_STATUS':
+      return {
+        ...state,
+        recalls: (state.recalls || []).map(r => r.id === action.payload.id ? { ...r, ...action.payload } : r)
+      };
+    case 'DELETE_RECALL':
+      return {
+        ...state,
+        recalls: (state.recalls || []).filter(r => r.id !== action.payload)
+      };
 
     // UI Settings
     case 'SET_THEME':
       return { ...state, theme: action.payload };
     case 'SET_SEARCH_QUERY':
       return { ...state, searchQuery: action.payload };
+
+    case 'RESET_ALL_DATA': {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('clinicflow_data');
+      }
+      return {
+        ...state,
+        patients: [],
+        appointments: [],
+        notifications: [],
+        blockedSlots: [],
+        prescriptions: [],
+        expenses: [],
+        recalls: []
+      };
+    }
 
     default:
       return state;
@@ -142,12 +405,29 @@ export function AppProvider({ children }) {
       if (useSupabase) {
         try {
           // جلب البيانات من Supabase
-          const [patientsRes, apptsRes, blockedRes, notifsRes] = await Promise.all([
+          const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, rxList, expensesRes, recallsRes] = await Promise.all([
             patientsService.getPatients(),
             appointmentsService.getAppointments(),
             blockedSlotsService.getBlockedSlots(),
-            notificationsService.getNotifications()
+            notificationsService.getNotifications(),
+            staffService.getStaffMembers(),
+            clinicsService.getClinicInfo(),
+            prescriptionsService.getPrescriptions(),
+            expensesService.getExpenses(),
+            recallsService.getRecalls()
           ]);
+
+          // Fallback to local storage for expenses/recalls if remote is still empty
+          let fallbackExpenses = [];
+          let fallbackRecalls = [];
+          try {
+            const stored = localStorage.getItem('clinicflow_data');
+            if (stored) {
+              const p = JSON.parse(stored);
+              fallbackExpenses = p.expenses || [];
+              fallbackRecalls = p.recalls || [];
+            }
+          } catch (_) {}
 
           dispatch({
             type: 'INIT_DATA',
@@ -156,6 +436,11 @@ export function AppProvider({ children }) {
               appointments: apptsRes?.data || [],
               blockedSlots: blockedRes?.data || [],
               notifications: notifsRes?.data || [],
+              staffMembers: staffRes?.data && staffRes.data.length > 0 ? staffRes.data : [],
+              clinicInfo: clinicRes?.data || null,
+              prescriptions: rxList || [],
+              expenses: (expensesRes?.data && expensesRes.data.length > 0) ? expensesRes.data : fallbackExpenses,
+              recalls: (recallsRes?.data && recallsRes.data.length > 0) ? recallsRes.data : fallbackRecalls,
               useSupabase: true
             }
           });
@@ -171,7 +456,28 @@ export function AppProvider({ children }) {
     const loadFromLocalStorage = () => {
       const savedData = localStorage.getItem('clinicflow_data');
       if (savedData) {
-        dispatch({ type: 'INIT_DATA', payload: { ...JSON.parse(savedData), useSupabase: false } });
+        try {
+          const parsed = JSON.parse(savedData);
+          dispatch({ 
+            type: 'INIT_DATA', 
+            payload: { 
+              patients: parsed.patients || [],
+              appointments: parsed.appointments || [],
+              notifications: parsed.notifications || [],
+              blockedSlots: parsed.blockedSlots || [],
+              prescriptions: parsed.prescriptions || [],
+              expenses: parsed.expenses || [],
+              recalls: parsed.recalls || [],
+              staffMembers: parsed.staffMembers || [],
+              clinicInfo: parsed.clinicInfo || null,
+              useSupabase: false 
+            } 
+          });
+        } catch (err) {
+          console.error('Error loading localStorage:', err);
+          const initial = getInitialData();
+          dispatch({ type: 'INIT_DATA', payload: { ...initial, useSupabase: false } });
+        }
       } else {
         const initial = getInitialData();
         dispatch({ type: 'INIT_DATA', payload: { ...initial, useSupabase: false } });
@@ -182,13 +488,74 @@ export function AppProvider({ children }) {
   }, [useSupabase]);
 
   // ==========================================
-  // حفظ في localStorage (وضع تجريبي فقط)
+  // حفظ في localStorage آمن وبدون تجميد (Debounced & Quota-Protected)
   // ==========================================
+  const saveTimeoutRef = useRef(null);
+
   useEffect(() => {
-    if (!useSupabase && !state.isLoading && (state.patients.length > 0 || state.appointments.length > 0)) {
-      localStorage.setItem('clinicflow_data', JSON.stringify(state));
+    if (state.isLoading) return;
+    if (state.patients.length === 0 && state.appointments.length === 0) return;
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
-  }, [state, useSupabase]);
+
+    saveTimeoutRef.current = setTimeout(() => {
+      try {
+        const payload = JSON.stringify({
+          patients: state.patients,
+          appointments: state.appointments,
+          blockedSlots: state.blockedSlots,
+          notifications: state.notifications,
+          staffMembers: state.staffMembers,
+          clinicInfo: state.clinicInfo,
+          prescriptions: state.prescriptions,
+          expenses: state.expenses,
+          recalls: state.recalls
+        });
+        localStorage.setItem('clinicflow_data', payload);
+      } catch (err) {
+        console.warn('LocalStorage quota warning, executing smart compaction:', err);
+        try {
+          // Smart Compaction: prune notifications and archive old completed visits
+          const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+          const compactedState = {
+            patients: state.patients,
+            notifications: (state.notifications || []).slice(0, 50),
+            appointments: (state.appointments || []).filter(a => a.status !== 'completed' || a.date >= thirtyDaysAgo),
+            blockedSlots: state.blockedSlots,
+            staffMembers: state.staffMembers,
+            clinicInfo: state.clinicInfo,
+            prescriptions: state.prescriptions,
+            expenses: state.expenses,
+            recalls: state.recalls
+          };
+          localStorage.setItem('clinicflow_data', JSON.stringify(compactedState));
+        } catch (compactErr) {
+          console.error('Fatal LocalStorage quota exceeded, keeping in-memory state:', compactErr);
+        }
+      }
+    }, 600);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [
+    state.patients, 
+    state.appointments, 
+    state.blockedSlots, 
+    state.notifications, 
+    state.staffMembers, 
+    state.clinicInfo, 
+    state.prescriptions, 
+    state.expenses, 
+    state.recalls, 
+    useSupabase, 
+    state.isLoading
+  ]);
+
 
   // ==========================================
   // Supabase Realtime Subscriptions
@@ -200,23 +567,37 @@ export function AppProvider({ children }) {
       .channel('clinic-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, (payload) => {
         if (payload.eventType === 'INSERT') {
-          dispatch({ type: 'ADD_APPOINTMENT', payload: payload.new });
+          dispatch({ type: 'ADD_APPOINTMENT', payload: appointmentsService.fromDbAppointment(payload.new) });
         } else if (payload.eventType === 'UPDATE') {
-          dispatch({ type: 'UPDATE_APPOINTMENT', payload: payload.new });
+          dispatch({ type: 'UPDATE_APPOINTMENT', payload: appointmentsService.fromDbAppointment(payload.new) });
         } else if (payload.eventType === 'DELETE') {
           dispatch({ type: 'DELETE_APPOINTMENT', payload: payload.old.id });
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, (payload) => {
         if (payload.eventType === 'INSERT') {
-          dispatch({ type: 'ADD_NOTIFICATION', payload: payload.new });
+          dispatch({ type: 'ADD_NOTIFICATION', payload: notificationsService.fromDbNotification(payload.new) });
         }
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, (payload) => {
         if (payload.eventType === 'INSERT') {
-          dispatch({ type: 'ADD_PATIENT', payload: payload.new });
+          dispatch({ type: 'ADD_PATIENT', payload: patientsService.fromDbPatient(payload.new) });
         } else if (payload.eventType === 'UPDATE') {
-          dispatch({ type: 'UPDATE_PATIENT', payload: payload.new });
+          dispatch({ type: 'UPDATE_PATIENT', payload: patientsService.fromDbPatient(payload.new) });
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'staff_members' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          dispatch({ type: 'ADD_STAFF', payload: staffService.fromDbStaff(payload.new) });
+        } else if (payload.eventType === 'UPDATE') {
+          dispatch({ type: 'UPDATE_STAFF', payload: staffService.fromDbStaff(payload.new) });
+        } else if (payload.eventType === 'DELETE') {
+          dispatch({ type: 'DELETE_STAFF', payload: payload.old.id });
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'blocked_slots' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: blockedSlotsService.fromDbBlockedSlot(payload.new) });
         }
       })
       .subscribe();

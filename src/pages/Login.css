@@ -1,21 +1,25 @@
 .login-container {
   min-height: 100vh;
-  display: flex;
+  width: 100%;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   background-color: var(--bg-primary);
   background-image: radial-gradient(circle at top right, var(--primary-light), transparent 40%),
                     radial-gradient(circle at bottom left, var(--accent-light), transparent 40%);
-  padding: var(--spacing-md);
+  padding: var(--spacing-xl) var(--spacing-md);
   direction: rtl;
+  margin: 0 auto;
 }
 
 .login-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
+  margin: 0 auto !important;
   padding: var(--spacing-2xl) var(--spacing-xl);
   animation: slideUp 0.6s ease-out forwards;
 }
+
 
 .login-header {
   text-align: center;
@@ -140,17 +144,109 @@
 .contact-link {
   color: var(--primary);
   font-weight: var(--font-weight-600);
-  text-decoration: none;
-  transition: color var(--transition-fast);
 }
 
 .contact-link:hover {
-  color: var(--primary-dark);
   text-decoration: underline;
 }
+
+/* Quick Login Presets & Booking Link */
+.quick-login-presets {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.presets-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.presets-buttons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.presets-buttons-grid button {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.presets-buttons-grid button:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.public-booking-redirect {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.public-booking-redirect a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.public-booking-redirect a:hover {
+  text-decoration: underline;
+}
+
+.text-emerald {
+  color: #059669;
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.logo-icon {
+  color: var(--primary);
+}
+
+.relative {
+  position: relative;
+}
+
+.demo-sandbox-helper summary::-webkit-details-marker {
+  display: none;
+}
+
+.demo-sandbox-helper summary {
+  list-style: none;
+}
+
+.lockout-alert {
+  animation: shake 0.5s ease-in-out;
+}
+
+
 
 @media (max-width: 480px) {
   .login-card {
     padding: var(--spacing-lg);
   }
 }
+

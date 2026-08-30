@@ -1,0 +1,498 @@
+/* ==========================================================================
+   Interactive FDI Dental Chart Styles (ClinicFlow Dental Engine)
+   ========================================================================== */
+
+.dental-chart-container {
+  background: var(--bg-secondary, #FFFFFF);
+  border: 1.5px solid var(--border-color, #E2E8F0);
+  border-radius: var(--radius-xl, 1rem);
+  padding: 1.5rem;
+  direction: rtl;
+  margin-bottom: 1.5rem;
+}
+
+.chart-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-subtle, #F1F5F9);
+  margin-bottom: 1.5rem;
+}
+
+.chart-title-group h4 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary, #0F172A);
+  margin: 0 0 0.25rem 0;
+}
+
+.chart-title-group p {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #64748B);
+  margin: 0;
+}
+
+.chart-toggle-pills {
+  display: flex;
+  background: var(--bg-primary, #F8FAFC);
+  padding: 0.25rem;
+  border-radius: var(--radius-full, 9999px);
+  border: 1px solid var(--border-color, #CBD5E1);
+  gap: 0.25rem;
+}
+
+.toggle-pill {
+  border: none;
+  background: transparent;
+  padding: 0.4rem 0.95rem;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary, #64748B);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toggle-pill.active {
+  background: #012757;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(1, 39, 87, 0.25);
+}
+
+/* Dental Arch Stage */
+.dental-arch-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.jaw-section {
+  background: var(--bg-primary, #F8FAFC);
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: var(--radius-lg, 0.75rem);
+  padding: 1.25rem 1rem;
+  text-align: center;
+}
+
+.jaw-label {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #012757;
+  background: rgba(1, 39, 87, 0.08);
+  padding: 0.2rem 0.75rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.jaw-teeth-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.quadrant-group {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.jaw-midline {
+  width: 2px;
+  height: 55px;
+  background: #CBD5E1;
+  border-radius: 1px;
+}
+
+/* Individual Tooth Cell */
+.tooth-cell {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: 8px;
+  transition: transform 0.15s ease;
+}
+
+.tooth-cell:hover {
+  transform: translateY(-3px);
+}
+
+.tooth-cell.is-selected {
+  outline: 2px solid #F7931E;
+  border-radius: 10px;
+}
+
+.tooth-num-badge {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #012757;
+  font-family: monospace;
+}
+
+.tooth-graphic-wrap {
+  width: 38px;
+  height: 38px;
+  position: relative;
+}
+
+.tooth-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.tooth-surface {
+  fill: #FFFFFF;
+  stroke: #E2E8F0;
+  stroke-width: 0.75;
+  transition: fill 0.15s ease;
+}
+
+.tooth-surface:hover {
+  fill: rgba(247, 147, 30, 0.3);
+}
+
+.tooth-status-pill {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  padding: 1px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Occlusal Plane */
+.arch-occlusal-plane {
+  text-align: center;
+  position: relative;
+  margin: 0.25rem 0;
+}
+
+.arch-occlusal-plane span {
+  background: var(--bg-secondary, #FFFFFF);
+  padding: 0 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary, #94A3B8);
+  position: relative;
+  z-index: 1;
+}
+
+.arch-occlusal-plane::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #E2E8F0;
+}
+
+/* Legend */
+.chart-legend-box {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.legend-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #012757;
+  margin-bottom: 0.6rem;
+}
+
+.legend-items-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #334155;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 16px;
+}
+
+.chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Tooth Inspector Modal Overlay */
+.tooth-inspector-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.tooth-inspector-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.2s ease;
+}
+
+.inspector-header {
+  background: #012757;
+  color: #FFFFFF;
+  padding: 1.25rem 1.5rem;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.inspector-header h3 {
+  font-size: 1.25rem;
+  font-weight: 900;
+  margin: 0 0 0.2rem 0;
+}
+
+.inspector-subtitle {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.btn-close-inspector {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #FFFFFF;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inspector-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.field-lbl {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #012757;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.sub-lbl {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.inspector-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.85rem;
+}
+
+.inspector-select,
+.inspector-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1.5px solid #CBD5E1;
+  background: #F8FAFC;
+  font-size: 0.92rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.inspector-select:focus,
+.inspector-input:focus {
+  border-color: #F7931E;
+  background: #FFFFFF;
+}
+
+.surfaces-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.4rem;
+}
+
+.surface-btn {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.surface-btn.active {
+  background: #012757;
+  color: #FFFFFF;
+  border-color: #012757;
+}
+
+.status-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.status-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.status-radio.active {
+  background: rgba(247, 147, 30, 0.08);
+  border-color: #F7931E;
+  color: #C2410C;
+}
+
+.recorded-entries-block {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.recorded-entry-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+}
+
+.entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.entry-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.entry-surface-tag {
+  color: #64748B;
+  font-size: 0.75rem;
+}
+
+.entry-status-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.entry-status-badge.completed { background: #DCFCE7; color: #166534; }
+.entry-status-badge.planned { background: #FEF3C7; color: #92400E; }
+.entry-status-badge.existing { background: #F1F5F9; color: #475569; }
+
+.btn-delete-entry {
+  background: none;
+  border: none;
+  color: #EF4444;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.inspector-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #E2E8F0;
+}
+
+.btn-cancel-inspector {
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #475569;
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-save-inspector {
+  background: #F7931E;
+  border: none;
+  color: #FFFFFF;
+  padding: 0.65rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-save-inspector:hover {
+  background: #e08216;
+}

@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { CheckCheck, Trash2, Bell, Calendar, Clock, Smartphone } from 'lucide-react';
-import SmsSettingsModal from '../components/SmsSettingsModal';
 import './Notifications.css';
 
 const Notifications = () => {
+  const navigate = useNavigate();
   const { state, dispatch } = useApp();
   const { notifications = [] } = state;
   const [filter, setFilter] = useState('all'); // all, unread, appointment, reminder
-  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
 
   const filteredNotifications = notifications.filter(n => {
     if (filter === 'unread') return !n.read;
@@ -49,7 +49,7 @@ const Notifications = () => {
       <div className="page-header">
         <h2>الإشعارات</h2>
         <div className="header-actions">
-          <button className="btn-primary" onClick={() => setIsSmsModalOpen(true)} title="إعداد وتجربة إرسال رسائل SMS المفتوحة المصدر">
+          <button className="btn-primary" onClick={() => navigate('/settings')} title="إعداد وتجربة إرسال رسائل SMS المفتوحة المصدر">
             <Smartphone size={18} />
             إعدادات بوابة SMS
           </button>
@@ -99,12 +99,6 @@ const Notifications = () => {
           </div>
         )}
       </div>
-
-      {/* SMS Gateway Settings Modal */}
-      <SmsSettingsModal
-        isOpen={isSmsModalOpen}
-        onClose={() => setIsSmsModalOpen(false)}
-      />
     </div>
   );
 };

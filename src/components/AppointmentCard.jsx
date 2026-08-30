@@ -1,97 +1,151 @@
 import React from 'react';
-import { CheckCircle, XCircle, Edit3, Calendar, Clock, User, MessageCircle } from 'lucide-react';
+import { XCircle, Clock, MessageCircle, Check, Stethoscope, UserPlus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './AppointmentCard.css';
 
-const AppointmentCard = ({ appointment, onEdit }) => {
+const AppointmentCard = ({ appointment, onUpdateStatus }) => {
   const { dispatch } = useApp();
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'upcoming': return 'var(--color-primary)';
-      case 'completed': return 'var(--color-success)';
-      case 'cancelled': return 'var(--color-error)';
-      default: return 'var(--color-border)';
-    }
-  };
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'upcoming': return 'قادم';
-      case 'completed': return 'مكتمل';
-      case 'cancelled': return 'ملغى';
+      case 'in_progress': return 'في الكشف ';
+      case 'waiting': return 'في صالة الانتظار ';
+      case 'booked':
+      case 'upcoming': return 'محجوز ';
+      case 'completed': return 'تم الكشف ';
+      case 'cancelled': return 'ملغى ';
       default: return status;
     }
   };
 
-  const handleComplete = () => {
-    dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: { id: appointment.id, status: 'completed' } });
+  const handleStatusChange = (newStatus) => {
+    if (onUpdateStatus) {
+      onUpdateStatus(appointment.id, newStatus);
+    } else {
+      dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: { id: appointment.id, status: newStatus } });
+    }
   };
 
   const handleCancel = () => {
-    dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: { id: appointment.id, status: 'cancelled' } });
+    if (window.confirm('هل أنت متأكد من إلغاء هذا الموعد؟')) {
+      handleStatusChange('cancelled');
+    }
   };
 
+  // Generate clean initials for patient avatar
+  const initials = (appointment.patientName || 'م')
+    .split(' ')
+    .slice(0, 2)
+    .map(w => w[0])
+    .join('');
+
+  const isEmergency = appointment.isEmergency || appointment.type === 'طوارئ' || (appointment.type || '').includes('طوارئ');
+
   return (
-    <div className="appointment-card" style={{ '--status-color': getStatusColor(appointment.status) }}>
-      <div className="appointment-header">
-        <div className="patient-name">
-          <User size={18} />
-          <span>{appointment.patientName}</span>
+    <div className={`modern-appointment-card glass-card ${appointment.status} ${isEmergency ? 'emergency-card' : ''}`}>
+      <div className="appt-card-top">
+        <div className="appt-patient-avatar" style={isEmergency ? { background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', color: '#FFF' } : {}}>
+          {initials}
         </div>
-        <span className={`status-badge ${appointment.status}`}>
+        <div className="appt-patient-details">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <h4 className="appt-patient-name">{appointment.patientName}</h4>
+            {appointment.bookingCode && <span className="appt-code-pill">{appointment.bookingCode}</span>}
+            {isEmergency && <span className="appt-emergency-badge"> طوارئ</span>}
+          </div>
+          <span className="appt-patient-phone">{appointment.patientPhone || 'بدون هاتف'}</span>
+        </div>
+        <span className={`appt-status-pill ${appointment.status}`}>
+          {appointment.status === 'completed' && <Check size={12} />}
           {getStatusText(appointment.status)}
         </span>
       </div>
 
-      <div className="appointment-details">
-        <div className="detail-item">
-          <span className="label">نوع الزيارة:</span>
-          <span>{appointment.type}</span>
+      <div className="appt-meta-chips-row">
+        <div className="appt-chip time-chip">
+          <Clock size={13} />
+          <span>{appointment.date} • {appointment.time}</span>
         </div>
-        <div className="detail-item">
-          <Calendar size={16} />
-          <span>{appointment.date}</span>
+        <div className="appt-chip type-chip">
+          <span>{appointment.type || 'كشف عادي'}</span>
         </div>
-        <div className="detail-item">
-          <Clock size={16} />
-          <span>{appointment.time}</span>
-        </div>
-        <div className="detail-item fee-tag" style={{ color: '#10b981', fontWeight: 'bold' }}>
+        <div className="appt-chip fee-chip">
           <span>{appointment.fee || '300 ج.م'}</span>
         </div>
       </div>
 
-      <div className="appointment-actions">
+      {appointment.notes && (
+        <div className="appt-notes-box">
+          <p>{appointment.notes}</p>
+        </div>
+      )}
+
+      <div className="appt-card-bottom-actions">
         {appointment.patientPhone && (
           <button 
-            className="action-btn whatsapp" 
+            type="button"
+            className="appt-btn-wa" 
             onClick={() => {
               const cleanPhone = appointment.patientPhone.replace(/^0/, '20').replace(/\D/g, '');
-              const msg = `مرحباً ${appointment.patientName}، نذكركم بموعدكم في العيادة يوم ${appointment.date} الساعة ${appointment.time}. نتمنى لكم السلامة! ✨`;
+              const msg = `مرحباً أ/ ${appointment.patientName}، نذكركم بموعدكم في عيادة د. أحمد الشريف يوم ${appointment.date} الساعة ${appointment.time}. نتمنى لكم السلامة! `;
               window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
             }} 
             title="تذكير المريض عبر واتساب"
-            style={{ color: '#25D366' }}
           >
-            <MessageCircle size={18} />
+            <MessageCircle size={15} />
+            <span>واتساب</span>
           </button>
         )}
-        {appointment.status === 'upcoming' && (
-          <>
-            <button className="action-btn success" onClick={handleComplete} title="إكمال">
-              <CheckCircle size={18} />
+
+        <div className="appt-actions-right">
+          {/* Quick Lifecycle Progress Action */}
+          {(appointment.status === 'booked' || appointment.status === 'upcoming') && (
+            <button 
+              type="button"
+              className="btn-status-advance checkin"
+              onClick={() => handleStatusChange('waiting')}
+              title="تسجيل حضور المريض"
+            >
+              <UserPlus size={13} />
+              <span>تسجيل وصول </span>
             </button>
-            <button className="action-btn error" onClick={handleCancel} title="إلغاء">
-              <XCircle size={18} />
+          )}
+
+          {appointment.status === 'waiting' && (
+            <button 
+              type="button"
+              className="btn-status-advance inexam"
+              onClick={() => handleStatusChange('in_progress')}
+              title="إدخال لغرفة الكشف"
+            >
+              <Stethoscope size={13} />
+              <span>دخول الكشف </span>
             </button>
-            {onEdit && (
-              <button className="action-btn primary" onClick={() => onEdit(appointment)} title="تعديل">
-                <Edit3 size={18} />
-              </button>
-            )}
-          </>
-        )}
+          )}
+
+          {appointment.status === 'in_progress' && (
+            <button 
+              type="button"
+              className="btn-status-advance finish"
+              onClick={() => handleStatusChange('completed')}
+              title="إنهاء الكشف وتسجيل الزيارة"
+            >
+              <Check size={13} />
+              <span>إتمام الكشف </span>
+            </button>
+          )}
+
+          {appointment.status !== 'completed' && appointment.status !== 'cancelled' && (
+            <button 
+              type="button"
+              className="appt-action-icon-btn cancel-btn" 
+              onClick={handleCancel} 
+              title="إلغاء الموعد"
+            >
+              <XCircle size={16} />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
