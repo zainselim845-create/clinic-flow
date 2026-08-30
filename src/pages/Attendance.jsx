@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  UserCheck, LogIn, LogOut, Clock, Calendar, 
-  Users, CheckCircle2, AlertCircle 
+  LogIn, LogOut, Clock 
 } from 'lucide-react';
+
 import { useApp } from '../context/AppContext';
 import { 
   getStaffAttendance, recordCheckIn, recordCheckOut 
@@ -38,11 +38,20 @@ const Attendance = () => {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('ar-EG'));
 
   useEffect(() => {
+    async function loadAttendance() {
+      const { data } = await getStaffAttendance();
+      if (data && data.length > 0) {
+        setAttendanceRecords(data);
+      }
+    }
+    loadAttendance();
+
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString('ar-EG'));
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
 
   const handleCheckInClick = async () => {
     const staff = staffList.find(s => s.id === selectedStaffId) || { name: 'عضو الفريق' };

@@ -31,21 +31,22 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
   }, [intervalMonths, customDueDate]);
 
   const targetPatient = useMemo(() => {
-    return patients.find(p => p.id === selectedPatientId) || initialPatient || null;
-  }, [patients, selectedPatientId, initialPatient]);
+    return (state?.patients || []).find(p => p.id === selectedPatientId) || initialPatient || null;
+  }, [state?.patients, selectedPatientId, initialPatient]);
 
   const filteredRecalls = useMemo(() => {
-    return recalls.filter(r => {
+    return (state?.recalls || []).filter(r => {
       if (filterStatus === 'all') return true;
       if (filterStatus === 'due') return r.dueDate <= today && r.status !== 'completed';
       if (filterStatus === 'upcoming') return r.dueDate > today && r.status !== 'completed';
       return r.status === filterStatus;
     });
-  }, [recalls, filterStatus, today]);
+  }, [state?.recalls, filterStatus, today]);
 
   const dueCount = useMemo(() => {
-    return recalls.filter(r => r.dueDate <= today && r.status !== 'completed').length;
-  }, [recalls, today]);
+    return (state?.recalls || []).filter(r => r.dueDate <= today && r.status !== 'completed').length;
+  }, [state?.recalls, today]);
+
 
   if (!isOpen) return null;
 

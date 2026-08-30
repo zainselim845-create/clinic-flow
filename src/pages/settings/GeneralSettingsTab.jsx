@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { 
   Building2, Save, CheckCircle2, Phone, Mail, Clock, KeyRound, 
-  CalendarDays, ArrowLeft, Plus, Trash2, Edit3, Stethoscope, Sparkles, DollarSign
+  CalendarDays, ArrowLeft, Plus, Trash2, Stethoscope
 } from 'lucide-react';
+
 import { defaultServices } from '../../data/demoData';
 import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
 

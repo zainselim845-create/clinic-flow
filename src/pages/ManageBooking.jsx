@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { 
   Calendar, Clock, CheckCircle2, XCircle, AlertCircle, 
-  ArrowRight, Phone, Stethoscope, RefreshCw, CalendarDays, ShieldCheck,
-  KeyRound, Lock, Unlock, MessageSquare, UserCheck, HelpCircle, Copy, Check
+  Phone, Stethoscope, RefreshCw, ShieldCheck,
+  KeyRound, Lock, Unlock, MessageSquare, UserCheck, HelpCircle
 } from 'lucide-react';
+
 import { useApp } from '../context/AppContext';
 import { generateDynamicSlots, getTodayDateStr, parseLocalDate } from '../utils/timeSlots';
 import { cleanEgyptianPhone } from '../utils/phoneValidation';

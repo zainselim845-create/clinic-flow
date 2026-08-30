@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Star, X, CheckCircle2, MessageSquare } from 'lucide-react';
+import { Star, X, CheckCircle2 } from 'lucide-react';
 import { addPatientFeedback } from '../services/feedbackService';
+
 import './FeedbackModal.css';
 
 const FeedbackModal = ({ isOpen, onClose, appointment, patient }) => {

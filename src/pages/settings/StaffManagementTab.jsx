@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Users, UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import * as staffService from '../../services/staffService';
+
 import { isSupabaseConfigured } from '../../lib/supabase';
 
 export default function StaffManagementTab({ staffMembers, dispatch }) {

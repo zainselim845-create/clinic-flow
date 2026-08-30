@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { 
   Search, User, Calendar, Clock, ArrowLeft, X, 
-  Smartphone, Users, Plus, CheckCircle2, AlertCircle
+  Smartphone, Users, Plus, CheckCircle2, AlertCircle, ShieldCheck
 } from 'lucide-react';
+
 import './GlobalSearchModal.css';
 
 const GlobalSearchModal = ({ isOpen, onClose }) => {

@@ -141,10 +141,11 @@ export async function deletePatient(id) {
   }
 
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('patients')
       .delete()
       .eq('id', id);
+
 
     if (error) throw error;
     return { data: null, error: null };

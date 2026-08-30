@@ -6,10 +6,11 @@ import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import { 
   MapPin, Phone, Stethoscope, 
-  Calendar, MessageCircle, Copy, Check, CalendarPlus, AlertCircle,
+  MessageCircle, Copy, Check, CalendarPlus, AlertCircle,
   AlertTriangle, Sparkles, Users, UserPlus, Loader2,
   RefreshCw, CheckCircle, ArrowRight, ShieldCheck, ChevronLeft
 } from 'lucide-react';
+
 
 
 import BookingCalendar from '../components/BookingCalendar';

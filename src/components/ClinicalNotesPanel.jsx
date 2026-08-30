@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { addClinicalNote, deleteClinicalNote } from '../services/clinicalNotesService';
-import { Plus, Trash2, Calendar, FileText, CheckCircle2, User, Clock } from 'lucide-react';
+import { Plus, Trash2, FileText, CheckCircle2, User, Clock } from 'lucide-react';
+
 import './ClinicalNotesPanel.css';
 
 const ClinicalNotesPanel = ({ patientId, doctorName = 'د. أحمد الشريف', notes = [], onNotesUpdate }) => {

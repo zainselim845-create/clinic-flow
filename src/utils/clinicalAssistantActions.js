@@ -1,4 +1,4 @@
-import { formatLocalDate, getTodayDateStr, parseLocalDate } from './timeSlots';
+import { formatLocalDate, getTodayDateStr } from './timeSlots';
 
 /**
  * Clinical Assistant Action Engine for ClinicFlow
@@ -46,16 +46,17 @@ export function resolveDateFromText(text) {
   const clean = text.trim().replace(/\s+/g, ' ');
 
   // 1. Explicit YYYY-MM-DD or YYYY/MM/DD
-  const isoMatch = clean.match(/202[4-9][\-\/](?:1[0-2]|0?[1-9])[\-\/](?:3[01]|[12][0-9]|0?[1-9])\b/);
+  const isoMatch = clean.match(/202[4-9][/-](?:1[0-2]|0?[1-9])[/-](?:3[01]|[12][0-9]|0?[1-9])\b/);
   if (isoMatch) {
-    const parts = isoMatch[0].split(/[\-\/]/).map(Number);
+    const parts = isoMatch[0].split(/[/-]/).map(Number);
     return formatLocalDate(parts[0], parts[1] - 1, parts[2]);
   }
 
   // 2. Format DD/MM or DD-MM (e.g. 30/8, 30/08, 31/8, 30-8, 30 / 8, 30 /8)
-  const ddmMatch = clean.match(/(?:3[01]|[12][0-9]|0?[1-9])\s*[\/\-]\s*(?:1[0-2]|0?[1-9])(?:\s*[\/\-]\s*(202[4-9]))?\b/);
+  const ddmMatch = clean.match(/(?:3[01]|[12][0-9]|0?[1-9])\s*[/-\s]\s*(?:1[0-2]|0?[1-9])(?:\s*[/-\s]\s*(202[4-9]))?\b/);
   if (ddmMatch) {
-    const parts = ddmMatch[0].split(/[\/\-]/).map(s => parseInt(s.trim(), 10));
+    const parts = ddmMatch[0].split(/[/-]/).map(s => parseInt(s.trim(), 10));
+
     const day = parts[0];
     const month = parts[1] - 1;
     const currentYear = parts[2] || new Date().getFullYear();

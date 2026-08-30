@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  X, Plus, Trash2, DollarSign, Calendar, Tag, FileText, 
-  TrendingDown, Wallet, Download, CheckCircle2, AlertCircle, Printer
+  X, Plus, Trash2, Wallet, Download 
 } from 'lucide-react';
+
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { expenseCategories } from '../data/demoData';
@@ -19,19 +19,18 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
   const [notes, setNotes] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
 
-  const expenses = state.expenses || [];
-
   const filteredExpenses = useMemo(() => {
-    return expenses.filter(e => filterCategory === 'all' || e.category === filterCategory);
-  }, [expenses, filterCategory]);
+    return (state.expenses || []).filter(e => filterCategory === 'all' || e.category === filterCategory);
+  }, [state.expenses, filterCategory]);
 
   const totalAmount = useMemo(() => {
-    return expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  }, [expenses]);
+    return (state.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  }, [state.expenses]);
 
   const todayAmount = useMemo(() => {
-    return expenses.filter(e => e.date === today).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  }, [expenses, today]);
+    return (state.expenses || []).filter(e => e.date === today).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  }, [state.expenses, today]);
+
 
   if (!isOpen) return null;
 

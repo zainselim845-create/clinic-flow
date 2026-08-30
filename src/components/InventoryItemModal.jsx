@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { INVENTORY_CATEGORIES } from '../services/inventoryService';
-import { Package, X, CheckCircle2, Calendar, AlertTriangle } from 'lucide-react';
+import { Package, X, CheckCircle2 } from 'lucide-react';
 import './InventoryItemModal.css';
+
 
 const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
   const [name, setName] = useState('');

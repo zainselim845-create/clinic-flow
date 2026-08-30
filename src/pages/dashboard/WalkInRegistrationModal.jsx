@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { UserPlus, X, AlertCircle } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../../utils/phoneValidation';
+
 import { getTodayDateStr } from '../../utils/timeSlots';
 
 export default function WalkInRegistrationModal({

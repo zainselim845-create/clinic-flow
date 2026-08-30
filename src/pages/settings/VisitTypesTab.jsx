@@ -3,9 +3,10 @@ import {
   DEFAULT_DENTAL_VISIT_TYPES, addVisitType, updateVisitType, deleteVisitType 
 } from '../../services/visitTypesService';
 import { 
-  Stethoscope, Plus, Trash2, Edit2, CheckCircle2, Clock, 
+  Plus, Trash2, Edit2, CheckCircle2, Clock, 
   DollarSign, Globe, Check, X 
 } from 'lucide-react';
+
 import './VisitTypesTab.css';
 
 const normalizeTypes = (list) => {

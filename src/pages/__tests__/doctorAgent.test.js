@@ -3,7 +3,8 @@ import {
   personalizeMessage, 
   filterTargetPatients, 
   CAMPAIGN_TEMPLATES 
-} from '../DoctorAssistant';
+} from '../../utils/doctorAgentHelpers';
+
 
 describe('Doctor AI Agent & Follow-up Engine', () => {
   const sampleClinic = {

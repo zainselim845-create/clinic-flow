@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TrendingUp, Wallet, CheckCircle2, Users, TrendingDown, DollarSign, BellRing } from 'lucide-react';
+import { TrendingUp, Wallet, TrendingDown, DollarSign, BellRing } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import {
   ResponsiveContainer,
@@ -14,11 +14,10 @@ import {
 function RevenueAnalytics({
   weeklyData = [],
   todayRevenue = 0,
-  attendanceRate = 0,
-  completedCount = 0,
   onOpenExpenses,
   onOpenRecalls
 }) {
+
   const { state } = useApp();
 
   const totalExpenses = useMemo(() => {

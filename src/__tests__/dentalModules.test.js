@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { 
-  ADULT_TEETH, PEDIATRIC_TEETH, TOOTH_SURFACES, CLINICAL_CONDITIONS,
+  ADULT_TEETH, PEDIATRIC_TEETH,
   toDbDentalChart, fromDbDentalChart
 } from '../services/dentalChartService';
-import { toDbInvoice, fromDbInvoice } from '../services/invoicesService';
-import { toDbTreatmentPlan, fromDbTreatmentPlan } from '../services/treatmentPlansService';
-import { toDbLabOrder, fromDbLabOrder } from '../services/labsService';
+import { toDbInvoice } from '../services/invoicesService';
+import { toDbTreatmentPlan } from '../services/treatmentPlansService';
+import { toDbLabOrder } from '../services/labsService';
+
 
 describe('Dental Clinical & Operations Domain Behavior', () => {
 

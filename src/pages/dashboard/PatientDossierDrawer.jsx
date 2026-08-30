@@ -351,11 +351,25 @@ export default function PatientDossierDrawer({
           {/* TAB 5: PRESCRIPTIONS */}
           {activeTab === 'prescriptions' && (
             <div className="prescriptions-archive-section">
+              {onIssuePrescription && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => onIssuePrescription(patient)}
+                    className="btn btn-primary btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700 }}
+                  >
+                    <Pill size={14} />
+                    <span>إصدار روشتة إلكترونية جديدة لهذا المريض</span>
+                  </button>
+                </div>
+              )}
               {patientPrescriptions.length === 0 ? (
                 <div style={{ background: 'var(--bg-secondary)', padding: '2rem', borderRadius: 'var(--radius-md)', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
                   لا توجد روشتات إلكترونية مسجلة لهذا المريض بعد.
                 </div>
               ) : (
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {patientPrescriptions.map((rx) => (
                     <div key={rx.id} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>

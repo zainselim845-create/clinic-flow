@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Stethoscope, Check, X, CalendarPlus, FileText, AlertCircle, CreditCard, BellRing } from 'lucide-react';
+import { Stethoscope, Check, CalendarPlus, BellRing, FileText } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+
 
 export default function ConsultationModal({
   appointment,

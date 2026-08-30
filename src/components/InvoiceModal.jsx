@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  FileText, Printer, MessageCircle, DollarSign, Plus, Trash2, 
-  CheckCircle2, X, AlertCircle, Building2, MapPin, Phone 
+  FileText, Printer, MessageCircle, Plus, Trash2, 
+  CheckCircle2, X, MapPin, Phone 
 } from 'lucide-react';
 import { recordPayment } from '../services/invoicesService';
+
 import './InvoiceModal.css';
 
 const InvoiceModal = ({ 
