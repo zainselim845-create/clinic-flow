@@ -217,8 +217,11 @@
   align-items: center;
   gap: 0.35rem;
   animation: fadeIn 0.2s ease;
+}
+
 /* Specialty Filters & Cards Grid */
 .specialty-filter-tabs {
+
   display: flex;
   gap: 0.5rem;
   margin-top: 0.25rem;
