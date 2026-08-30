@@ -10,6 +10,7 @@ import PatientCard from '../components/PatientCard';
 import PrescriptionModal from '../components/PrescriptionModal';
 import PatientRecallModal from '../components/PatientRecallModal';
 import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
+import { patientIndex } from '../services/indexedSearchService';
 import * as patientsService from '../services/patientsService';
 import './Patients.css';
 
@@ -46,19 +47,15 @@ const Patients = () => {
     notes: ''
   });
 
-  const filteredPatients = useMemo(() => {
-    return patients.filter(p => 
-      (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) || 
-      (p.phone && p.phone.includes(searchQuery)) ||
-      (p.diagnosis && p.diagnosis.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  }, [patients, searchQuery]);
+  // High-performance search for 100k+ records
+  const searchResult = useMemo(() => {
+    return patientIndex.search(searchQuery, currentPage, PAGE_SIZE, patients);
+  }, [patients, searchQuery, currentPage, PAGE_SIZE]);
 
-  const totalPages = Math.ceil(filteredPatients.length / PAGE_SIZE) || 1;
-  const paginatedPatients = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filteredPatients.slice(start, start + PAGE_SIZE);
-  }, [filteredPatients, currentPage, PAGE_SIZE]);
+  const paginatedPatients = searchResult.items;
+  const totalPatientsCount = searchResult.total;
+  const totalPages = searchResult.totalPages;
+
 
   const handleOpenDetail = (patient) => {
     setSelectedPatient(patient);
@@ -267,8 +264,9 @@ const Patients = () => {
           </button>
           
           <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-            صفحة {currentPage} من {totalPages} ({filteredPatients.length} مريض إجمالي)
+            صفحة {currentPage} من {totalPages} ({totalPatientsCount} مريض إجمالي)
           </span>
+
 
           <button
             type="button"

@@ -14,7 +14,9 @@ import {
 
 import BookingCalendar from '../components/BookingCalendar';
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../utils/phoneValidation';
+import { patientIndex } from '../services/indexedSearchService';
 import { getTodayDateStr } from '../utils/timeSlots';
+
 import './Booking.css';
 
 const Booking = () => {
@@ -71,15 +73,15 @@ const Booking = () => {
     try {
       let foundPatient = null;
 
-      // 1. Check local state patients (instant)
-      const localMatch = patients.find(p => {
-        const pClean = cleanEgyptianPhone(p.phone || '');
-        return pClean === clean || p.phone === formData.phone;
-      });
-
-      if (localMatch) {
-        foundPatient = localMatch;
+      // 1. O(1) Instantaneous Index Lookup (Optimized for 100,000+ patients)
+      if (!patientIndex.isIndexed || patientIndex.patientCount !== patients.length) {
+        patientIndex.buildIndex(patients);
       }
+      const indexedMatch = patientIndex.findByPhone(clean);
+      if (indexedMatch) {
+        foundPatient = indexedMatch;
+      }
+
 
       // 2. Check previous appointments in local state
       if (!foundPatient) {

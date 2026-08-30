@@ -30,12 +30,15 @@ export const cleanEgyptianPhone = (phone) => {
   if (!phone || typeof phone !== 'string') return '';
   const normalized = normalizeArabicNumerals(phone);
   let digits = normalized.replace(/\D/g, '');
-  // If formatted as +201xxxxxxxxx or 201xxxxxxxxx, convert to 01xxxxxxxxx
-  if (digits.startsWith('201') && digits.length === 12) {
+  // If formatted as 00201xxxxxxxxx, +201xxxxxxxxx or 201xxxxxxxxx, convert to 01xxxxxxxxx
+  if (digits.startsWith('00201') && digits.length === 14) {
+    digits = '0' + digits.slice(4);
+  } else if (digits.startsWith('201') && digits.length === 12) {
     digits = '0' + digits.slice(2);
   }
   return digits;
 };
+
 
 /**
  * Validates whether a given phone string is a valid Egyptian mobile number.

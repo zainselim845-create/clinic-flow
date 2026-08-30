@@ -1,6 +1,5 @@
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/supabase';
 
-const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
 /**
  * Format DB snake_case record to client camelCase model
@@ -187,4 +186,49 @@ export async function findPatientByPhone(clinicId, phone) {
     return { data: null, error };
   }
 }
+
+/**
+ * Get paginated patients with server-side range for large databases (100k+ records)
+ */
+export async function getPatientsPaginated({ clinicId, page = 1, pageSize = 25, searchQuery = '' } = {}) {
+  if (!isSupabaseConfigured()) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: NOT_CONFIGURED_ERROR };
+  }
+
+  try {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from('patients')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+
+    if (searchQuery && searchQuery.trim()) {
+      const q = searchQuery.trim();
+      query = query.or(`name.ilike.%${q}%,phone.ilike.%${q}%,diagnosis.ilike.%${q}%`);
+    }
+
+    const { data, count, error } = await query;
+    if (error) throw error;
+
+    return {
+      data: (data || []).map(fromDbPatient),
+      total: count || 0,
+      page,
+      pageSize,
+      totalPages: Math.ceil((count || 0) / pageSize) || 1,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error fetching paginated patients:', error);
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error };
+  }
+}
+
 
