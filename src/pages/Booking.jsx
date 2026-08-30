@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { clinicInfo, availableSlots } from '../data/demoData';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
+import { saveBookingDraft, completeBookingDraft, getBookingDrafts } from '../services/leadRecoveryService';
+import { recordReferral } from '../services/referralService';
 import { 
   MapPin, Phone, Stethoscope, 
   MessageCircle, Copy, Check, CalendarPlus, AlertCircle,
   AlertTriangle, Sparkles, Users, UserPlus, Loader2,
   RefreshCw, CheckCircle, ArrowRight, ShieldCheck, ChevronLeft
 } from 'lucide-react';
-
-
 
 import BookingCalendar from '../components/BookingCalendar';
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../utils/phoneValidation';
@@ -22,6 +22,10 @@ import './Booking.css';
 
 const Booking = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const resumeId = searchParams.get('resume');
+  const refCode = searchParams.get('ref');
+
   const { state, dispatch, useSupabase } = useApp();
   const { appointments = [], patients = [], blockedSlots = [] } = state;
 
@@ -41,6 +45,24 @@ const Booking = () => {
     type: currentClinic.services?.[0]?.name || 'كشف عادي',
     notes: ''
   });
+
+  // Resume abandoned draft if param present
+  useEffect(() => {
+    if (resumeId) {
+      const drafts = getBookingDrafts();
+      const match = drafts.find(d => d.id === resumeId);
+      if (match) {
+        setFormData(prev => ({
+          ...prev,
+          phone: match.phone || prev.phone,
+          name: match.name || prev.name,
+          type: match.service || prev.type
+        }));
+        setCurrentStep('appointment_details');
+      }
+    }
+  }, [resumeId]);
+
 
 
   const [phoneError, setPhoneError] = useState('');
@@ -135,7 +157,17 @@ const Booking = () => {
         }));
       }
 
+      // Save initial draft for lead recovery
+      saveBookingDraft({
+        phone: clean,
+        name: foundPatient?.name || formData.name,
+        service: formData.type,
+        date: formData.date,
+        step: 2
+      });
+
       setCurrentStep('appointment_details');
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (err) {
@@ -257,8 +289,17 @@ const Booking = () => {
 
       dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
 
+      // Complete lead recovery draft
+      completeBookingDraft(cleanedPhone);
+
+      // Record referral if ref code present
+      if (refCode) {
+        recordReferral(refCode, formData.name.trim(), cleanedPhone);
+      }
+
       setCreatedBooking(newAppointment);
       setCurrentStep('success');
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (err) {

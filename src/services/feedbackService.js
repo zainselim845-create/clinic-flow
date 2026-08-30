@@ -1,22 +1,15 @@
-import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/supabase';
+/**
+ * Smart Post-Visit NPS & Google Reviews Funnel
+ * 5-Star ratings -> Directed to Google Maps Review URL
+ * Low ratings -> Directed to Private Clinic Management Inbox
+ */
 
-export async function addPatientFeedback(feedback) {
-  if (!isSupabaseConfigured()) {
-    return { data: feedback, error: NOT_CONFIGURED_ERROR };
-  }
+export function generatePostVisitFeedbackMessage(patient, appointment, clinicInfo) {
+  const patientFirstName = (patient?.name || appointment?.patientName || 'مريضنا العزيز').split(' ')[0];
+  const clinicName = clinicInfo?.name || 'العيادة';
+  const googleReviewUrl = clinicInfo?.googleReviewUrl || 'https://maps.google.com';
+  
+  const text = `مرحباً ${patientFirstName} 🌸\nشكراً لزيارتك لـ ${clinicName} بالأمس. صحتك ورضاك هما أولويتنا دائماً.\n\nرأيك يهمنا جداً! كيف تقيم تجربتك معنا اليوم؟\n\n⭐️⭐️⭐️⭐️⭐️ (ممتازة جداً): شاركنا رأيك على جوجل لمساعدتنا في خدمة مرضى آخرين:\n${googleReviewUrl}\n\n📝 إذا كان لديك أي ملاحظة أو استفسار، يسعدنا تواصلك المباشر معنا لنقدم لك الأفضل دائماً!`;
 
-  try {
-    const { data, error } = await supabase.from('patient_feedback').insert({
-      patient_id: feedback.patientId || null,
-      appointment_id: feedback.appointmentId || null,
-      rating: Number(feedback.rating || 5),
-      comment: feedback.comment || ''
-    }).select().single();
-
-    if (error) throw error;
-    return { data, error: null };
-  } catch (error) {
-    console.error('Error recording patient feedback:', error);
-    return { data: feedback, error };
-  }
+  return text;
 }

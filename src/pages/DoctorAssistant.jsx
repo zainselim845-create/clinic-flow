@@ -15,7 +15,9 @@ import {
   personalizeMessage, 
   filterTargetPatients 
 } from '../utils/doctorAgentHelpers';
+import MarketingCrmHub from './marketing/MarketingCrmHub';
 import './DoctorAssistant.css';
+
 
 
 const CHAT_HISTORY_STORAGE_KEY = 'clinicflow_doctor_chat_history';
@@ -52,6 +54,9 @@ const DoctorAssistant = () => {
       }
     ];
   });
+
+  const [viewMode, setViewMode] = useState('crm'); // 'crm' | 'chat'
+
 
   // Automatically save chat history across tab switches & page navigation
   useEffect(() => {
@@ -344,35 +349,62 @@ const DoctorAssistant = () => {
   return (
     <div className="doctor-assistant-page">
       
-      {/* 1. Header Banner */}
-      <div className="assistant-hero-card glass-card">
-        <div className="hero-content-row">
-          <div className="hero-badge">
-            <div className="bot-icon">
-              <Bot size={24} />
-            </div>
-            <div>
-              <h2>مساعد الطبيب السريري الذكي (AI Patient Care Agent)</h2>
-              <p>تواصل مع وكيلك الذكي لتحديد شرائح المرضى وإرسال رسائل الرعاية والمتابعة الطبية المخصصة بنقرة واحدة</p>
-            </div>
-          </div>
-          <div className="hero-stats-pill">
-            <Users size={16} />
-            <span>إجمالي المرضى بالسجل: <strong>{patients.length}</strong></span>
-          </div>
-        </div>
+      {/* Mode Switcher */}
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+        <button 
+          type="button"
+          className={`btn ${viewMode === 'crm' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setViewMode('crm')}
+          style={{ padding: '0.75rem 1.25rem', fontWeight: 800 }}
+        >
+          <Sparkles size={18} />
+          <span>مركز الـ CRM والتسويق ونمو العيادة (Marketing & Retention Engine)</span>
+        </button>
+        <button 
+          type="button"
+          className={`btn ${viewMode === 'chat' ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => setViewMode('chat')}
+          style={{ padding: '0.75rem 1.25rem', fontWeight: 800 }}
+        >
+          <Bot size={18} />
+          <span>المحادثة السريرية مع الذكاء الاصطناعي (AI Clinical Agent)</span>
+        </button>
       </div>
 
-      {/* 2. Main Two-Column Layout: Chat Console & Action Hub */}
-      <div className="assistant-split-layout">
-        
-        {/* Left Column: Interactive Chat Console */}
-        <div className="chat-console-card glass-card">
-          <div className="console-header">
-            <div className="console-title">
-              <Sparkles size={18} className="text-primary" />
-              <span>محادثة الوكيل السريري الذكي</span>
+      {viewMode === 'crm' ? (
+        <MarketingCrmHub />
+      ) : (
+        <>
+          {/* 1. Header Banner */}
+          <div className="assistant-hero-card glass-card">
+            <div className="hero-content-row">
+              <div className="hero-badge">
+                <div className="bot-icon">
+                  <Bot size={24} />
+                </div>
+                <div>
+                  <h2>مساعد الطبيب السريري الذكي (AI Patient Care Agent)</h2>
+                  <p>تواصل مع وكيلك الذكي لتحديد شرائح المرضى وإرسال رسائل الرعاية والمتابعة الطبية المخصصة بنقرة واحدة</p>
+                </div>
+              </div>
+              <div className="hero-stats-pill">
+                <Users size={16} />
+                <span>إجمالي المرضى بالسجل: <strong>{patients.length}</strong></span>
+              </div>
             </div>
+          </div>
+
+          {/* 2. Main Two-Column Layout: Chat Console & Action Hub */}
+          <div className="assistant-split-layout">
+            
+            {/* Left Column: Interactive Chat Console */}
+            <div className="chat-console-card glass-card">
+              <div className="console-header">
+                <div className="console-title">
+                  <Sparkles size={18} className="text-primary" />
+                  <span>محادثة الوكيل السريري الذكي</span>
+                </div>
+
             <div className="console-header-actions">
               <span className="live-status-dot">متصل بالعيادة </span>
               <button 
@@ -658,9 +690,12 @@ const DoctorAssistant = () => {
         </div>
 
       </div>
+      </>
+      )}
 
     </div>
   );
 };
+
 
 export default DoctorAssistant;
