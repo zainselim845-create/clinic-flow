@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { addTreatmentPlan, updateTreatmentPlanStatus, deleteTreatmentPlan } from '../services/treatmentPlansService';
+import { addInvoice } from '../services/invoicesService';
 import { 
   FileSpreadsheet, Plus, Trash2, CheckCircle2, 
-  Calendar, Clock, DollarSign, Edit3, X, ChevronDown 
+  Calendar, Clock, DollarSign, Edit3, X, ChevronDown, Receipt 
 } from 'lucide-react';
 import './TreatmentPlanModal.css';
 
 const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) => {
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [invoiceNotice, setInvoiceNotice] = useState(null);
   const [planTitle, setPlanTitle] = useState('خطة علاج وتأهيل الأسنان الشاملة');
   const [planNotes, setPlanNotes] = useState('');
   const [items, setItems] = useState([
@@ -16,6 +18,41 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
     { toothNumber: '24', surface: 'MOD', procedureName: 'حشو تجميلي كومبوزيت مركب', fee: 500, discount: 0 }
   ]);
   const [isSaving, setIsSaving] = useState(false);
+
+  const handleConvertToInvoice = async (plan) => {
+    const invoiceNum = 'INV-' + Math.floor(1000 + Math.random() * 9000);
+    const invoiceData = {
+      id: 'inv_' + Date.now(),
+      patientId: plan.patientId || patientId,
+      invoiceNumber: invoiceNum,
+      subtotal: Number(plan.totalCost || 0),
+      discount: Number(plan.discount || 0),
+      taxPercentage: 0,
+      taxAmount: 0,
+      total: Number(plan.netCost || plan.totalCost || 0),
+      patientShare: Number(plan.netCost || plan.totalCost || 0),
+      paidAmount: 0,
+      remainingBalance: Number(plan.netCost || plan.totalCost || 0),
+      paymentStatus: 'unpaid',
+      notes: `مُصدرة آلياً من خطة علاج: ${plan.title}`,
+      items: (plan.items || []).map((it, idx) => ({
+        id: `it_${Date.now()}_${idx}`,
+        name: `${it.procedureName} (سن #${it.toothNumber || 'عام'})`,
+        price: Number(it.fee || 0),
+        discount: Number(it.discount || 0)
+      })),
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      await addInvoice(invoiceData);
+      setInvoiceNotice(`تم إنشاء الفاتورة (${invoiceNum}) بنجاح وتحويلها للتحصيل!`);
+      setTimeout(() => setInvoiceNotice(null), 4000);
+    } catch (err) {
+      console.error('Error converting plan to invoice:', err);
+    }
+  };
+
 
   // Common quick procedures
   const quickProcedures = [
@@ -130,6 +167,14 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
           
           {!isCreatingNew ? (
             <div className="plans-list-view">
+              {invoiceNotice && (
+                <div className="plan-invoice-alert">
+                  <CheckCircle2 size={16} className="text-success" />
+                  <span>{invoiceNotice}</span>
+                </div>
+              )}
+
+
               <div className="plans-top-actions">
                 <button
                   type="button"
@@ -140,6 +185,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                   <span>إنشاء خطة علاج جديدة للمريض</span>
                 </button>
               </div>
+
 
               {plans.length === 0 ? (
                 <div className="empty-plans-state">
@@ -216,15 +262,28 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
 
                       {/* Financial Footer */}
                       <div className="plan-financial-strip">
-                        <span>إجمالي البنود: <strong>{plan.items?.length || 0} إجراءات</strong></span>
-                        <div className="price-summary-pills">
-                          <span className="price-pill subtotal">الإجمالي: {plan.totalCost} ج.م</span>
-                          {plan.discount > 0 && (
-                            <span className="price-pill discount">الخصم: -{plan.discount} ج.م</span>
-                          )}
-                          <span className="price-pill net">الصافي المطلوب: {plan.netCost} ج.م</span>
+                        <div className="strip-info-group">
+                          <span>إجمالي البنود: <strong>{plan.items?.length || 0} إجراءات</strong></span>
+                          <div className="price-summary-pills">
+                            <span className="price-pill subtotal">الإجمالي: {plan.totalCost} ج.م</span>
+                            {plan.discount > 0 && (
+                              <span className="price-pill discount">الخصم: -{plan.discount} ج.م</span>
+                            )}
+                            <span className="price-pill net">الصافي: {plan.netCost} ج.م</span>
+                          </div>
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleConvertToInvoice(plan)}
+                          className="btn-convert-invoice"
+                          title="تحويل خطة العلاج إلى فاتورة تحصيل رسمية"
+                        >
+                          <Receipt size={14} />
+                          <span>تحويل لفاتورة تحصيل</span>
+                        </button>
                       </div>
+
 
                     </div>
                   ))}

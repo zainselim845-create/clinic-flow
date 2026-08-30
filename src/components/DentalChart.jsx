@@ -11,6 +11,12 @@ import './DentalChart.css';
 
 const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
   const [isPediatric, setIsPediatric] = useState(false);
+  const [isPanoramic, setIsPanoramic] = useState(false);
+  
+  // Quick-Stamp Tool Palette ('select', 'caries', 'composite', 'rct', 'crown', 'missing', 'implant', 'veneer')
+  const [activeTool, setActiveTool] = useState('select');
+  const [stampFeedback, setStampFeedback] = useState(null);
+
   const [selectedTooth, setSelectedTooth] = useState(null);
   const [selectedSurface, setSelectedSurface] = useState('WHOLE');
   const [selectedCondition, setSelectedCondition] = useState('caries');
@@ -19,6 +25,12 @@ const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
   const [isSaving, setIsSaving] = useState(false);
 
   const teethArch = isPediatric ? PEDIATRIC_TEETH : ADULT_TEETH;
+
+  // Show quick feedback banner
+  const showFeedback = (msg) => {
+    setStampFeedback(msg);
+    setTimeout(() => setStampFeedback(null), 2500);
+  };
 
   // Get conditions for a specific tooth
   const getToothEntries = (toothNum) => {
@@ -46,8 +58,35 @@ const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
     };
   };
 
-  // Open inspection modal for a tooth
-  const handleToothClick = (toothNum) => {
+  // 1-Click Quick Stamp or Open Modal
+  const handleToothClick = async (toothNum) => {
+    // If a stamping tool is active, record immediately in 1 click!
+    if (activeTool !== 'select') {
+      const condition = CLINICAL_CONDITIONS.find(c => c.code === activeTool);
+      const newEntry = {
+        id: 'stamp_' + Date.now(),
+        patientId,
+        toothNumber: toothNum,
+        surface: 'WHOLE',
+        conditionCode: activeTool,
+        status: 'planned',
+        notes: `تسجيل سريع بالأداة: ${condition?.nameAr || activeTool}`,
+        createdAt: new Date().toISOString()
+      };
+
+      try {
+        await saveToothCondition(newEntry);
+        if (onChartUpdate) {
+          onChartUpdate([...chartEntries, newEntry]);
+        }
+        showFeedback(`تم تسجيل [${condition?.nameAr || activeTool}] فوراً على سن #${toothNum}`);
+      } catch (err) {
+        console.error('Error stamping tooth condition:', err);
+      }
+      return;
+    }
+
+    // Default 'select' mode: open full inspector modal
     setSelectedTooth(toothNum);
     const existing = getToothEntries(toothNum);
     if (existing.length > 0) {
@@ -63,6 +102,7 @@ const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
       setEntryNotes('');
     }
   };
+
 
   // Save condition
   const handleSaveCondition = async () => {
@@ -161,35 +201,85 @@ const DentalChart = ({ patientId, chartEntries = [], onChartUpdate }) => {
   };
 
   return (
-    <div className="dental-chart-container">
+    <div className={`dental-chart-container ${isPanoramic ? 'is-panoramic' : ''}`}>
       
       {/* Chart Header & Controls */}
       <div className="chart-header-bar">
         <div className="chart-title-group">
-          <h4>مخطط الأسنان التفاعلي (3D Dental Charting)</h4>
-          <p>ترقيم الأسنان العالمي FDI — حدد السن لتسجيل التشخيص والإجراءات السريرية</p>
+          <div className="chart-title-flex">
+            <h4>مخطط الأسنان التفاعلي (FDI Dental Charting)</h4>
+            {stampFeedback && (
+              <span className="stamp-feedback-pill">
+                <CheckCircle2 size={13} />
+                <span>{stampFeedback}</span>
+              </span>
+            )}
+          </div>
+          <p>اختر الأداة السريرية من الشريط واضغط على أي سن للتوثيق المباشر بنقرة واحدة</p>
         </div>
 
-        <div className="chart-toggle-pills">
+        <div className="chart-header-actions">
+          <div className="chart-toggle-pills">
+            <button
+              type="button"
+              className={`toggle-pill ${!isPediatric ? 'active' : ''}`}
+              onClick={() => setIsPediatric(false)}
+            >
+              أسنان البالغين (32 سن)
+            </button>
+            <button
+              type="button"
+              className={`toggle-pill ${isPediatric ? 'active' : ''}`}
+              onClick={() => setIsPediatric(true)}
+            >
+              أسنان الأطفال (20 سن)
+            </button>
+          </div>
+
           <button
             type="button"
-            className={`toggle-pill ${!isPediatric ? 'active' : ''}`}
-            onClick={() => setIsPediatric(false)}
+            className="btn-panoramic-toggle"
+            onClick={() => setIsPanoramic(!isPanoramic)}
+            title={isPanoramic ? 'تصغير مساحة المخطط' : 'تكبير المخطط للوضع البانورامي الشامل'}
           >
-            أسنان البالغين (32 سن)
+            <span>{isPanoramic ? 'إغلاق الوضع البانورامي' : 'العرض البانورامي الشامل'}</span>
           </button>
+        </div>
+      </div>
+
+      {/* QUICK-STAMP CLINICAL TOOL PALETTE (1-CLICK STAMPING) */}
+      <div className="quick-stamp-palette">
+        <span className="palette-label">شريط الختم السريع (1-Click Stamping):</span>
+        <div className="palette-buttons-track">
           <button
             type="button"
-            className={`toggle-pill ${isPediatric ? 'active' : ''}`}
-            onClick={() => setIsPediatric(true)}
+            className={`stamp-tool-btn ${activeTool === 'select' ? 'active' : ''}`}
+            onClick={() => setActiveTool('select')}
           >
-            أسنان الأطفال (20 سن)
+            <span>تحديد وتفاصيل</span>
           </button>
+
+          {CLINICAL_CONDITIONS.map(cond => (
+            <button
+              key={cond.code}
+              type="button"
+              className={`stamp-tool-btn ${activeTool === cond.code ? 'active' : ''}`}
+              onClick={() => setActiveTool(cond.code)}
+              style={{
+                borderColor: activeTool === cond.code ? cond.color : 'transparent',
+                backgroundColor: activeTool === cond.code ? `${cond.color}15` : 'transparent'
+              }}
+            >
+              <span className="tool-indicator-dot" style={{ backgroundColor: cond.color }}></span>
+              <span>{cond.nameAr}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Anatomical Dental Arches */}
       <div className="dental-arch-stage">
+
         
         {/* UPPER JAW (الفك العلوي) */}
         <div className="jaw-section upper-jaw">

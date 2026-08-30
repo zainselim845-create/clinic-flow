@@ -71,17 +71,18 @@ button {
   --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   
-  /* Vibrant Clinical Brand Colors */
-  --primary: #0D9488;
-  --primary-hover: #0F766E;
-  --primary-dark: #115E59;
-  --primary-light: #F0FDFA;
-  --primary-glow: rgba(13, 148, 136, 0.2);
-  --gradient-primary: linear-gradient(135deg, #0D9488 0%, #0284C7 100%);
-  --gradient-emerald: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  /* Nebras DentaLore Luxury Medical Brand Colors */
+  --primary: #012757;
+  --primary-hover: #06397D;
+  --primary-dark: #001A3D;
+  --primary-light: rgba(1, 39, 87, 0.06);
+  --primary-glow: rgba(1, 39, 87, 0.18);
+  --gradient-primary: linear-gradient(135deg, #012757 0%, #0A458E 100%);
   
-  --accent: #0284C7;
-  --accent-light: #F0F9FF;
+  --accent: #F7931E;
+  --accent-hover: #E08216;
+  --accent-light: #FFF7ED;
+  --accent-glow: rgba(247, 147, 30, 0.25);
   
   --warning: #F59E0B;
   --warning-light: #FEF3C7;
@@ -90,6 +91,7 @@ button {
   --success: #10B981;
   --success-light: #D1FAE5;
 }
+
 
 [data-theme="light"], :root {
   --bg-primary: #F8FAFC;

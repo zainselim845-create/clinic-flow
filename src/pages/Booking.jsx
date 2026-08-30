@@ -333,10 +333,29 @@ const Booking = () => {
 
         <div className="nebras-body-container" style={{ maxWidth: '650px' }}>
           
+          {/* Visual Progress Stepper (Success State) */}
+          <div className="booking-visual-stepper">
+            <div className="stepper-step completed">
+              <span className="step-num"><Check size={14} /></span>
+              <span className="step-title">التحقق من الهاتف</span>
+            </div>
+            <div className="stepper-line filled"></div>
+            <div className="stepper-step completed">
+              <span className="step-num"><Check size={14} /></span>
+              <span className="step-title">اختيار الخدمة والموعد</span>
+            </div>
+            <div className="stepper-line filled"></div>
+            <div className="stepper-step active">
+              <span className="step-num"><Check size={14} /></span>
+              <span className="step-title">تأكيد وتذكرة الحجز</span>
+            </div>
+          </div>
+
           <div className="nebras-card">
             <div className="nebras-card-header">
               <h3>تم تأكيد حجز موعدك بنجاح</h3>
             </div>
+
 
             <div className="nebras-card-body text-center">
               <div className="nebras-success-icon-wrap">
@@ -469,10 +488,29 @@ const Booking = () => {
       {/* Main Content Area */}
       <div className="nebras-body-container">
 
+        {/* Visual Progress Stepper */}
+        <div className="booking-visual-stepper">
+          <div className={`stepper-step ${currentStep === 'phone_check' ? 'active' : 'completed'}`}>
+            <span className="step-num">{currentStep !== 'phone_check' ? <Check size={14} /> : '1'}</span>
+            <span className="step-title">التحقق من الهاتف</span>
+          </div>
+          <div className={`stepper-line ${currentStep !== 'phone_check' ? 'filled' : ''}`}></div>
+          <div className={`stepper-step ${currentStep === 'appointment_details' ? 'active' : ''}`}>
+            <span className="step-num">2</span>
+            <span className="step-title">اختيار الخدمة والموعد</span>
+          </div>
+          <div className="stepper-line"></div>
+          <div className="stepper-step">
+            <span className="step-num">3</span>
+            <span className="step-title">تأكيد وتذكرة الحجز</span>
+          </div>
+        </div>
+
         {/* ================================================================= */}
         {/* STEP 1: PHONE SEARCH CARD (SEARCH PATIENT)                         */}
         {/* ================================================================= */}
         {currentStep === 'phone_check' && (
+
           <div className="nebras-card search-card">
             
             {/* Dark Navy Header */}

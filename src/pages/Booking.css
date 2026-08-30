@@ -96,9 +96,95 @@
 .nebras-body-container {
   width: 92%;
   max-width: 860px;
-  margin: 30px auto 40px auto;
+  margin: 25px auto 40px auto;
   flex: 1;
 }
+
+/* 2.1 Visual Progress Stepper */
+.booking-visual-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  background: #FFFFFF;
+  padding: 14px 20px;
+  border-radius: 16px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(1, 39, 87, 0.04);
+}
+
+.stepper-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #94A3B8;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.stepper-step.active {
+  color: #012757;
+}
+
+.stepper-step.completed {
+  color: #10B981;
+}
+
+.step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #F1F5F9;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  transition: all 0.2s ease;
+}
+
+.stepper-step.active .step-num {
+  background: #012757;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(1, 39, 87, 0.25);
+}
+
+.stepper-step.completed .step-num {
+  background: #DCFCE7;
+  color: #166534;
+}
+
+.stepper-line {
+  flex: 1;
+  height: 2px;
+  background: #E2E8F0;
+  margin: 0 12px;
+  min-width: 20px;
+  max-width: 60px;
+  transition: all 0.2s ease;
+}
+
+.stepper-line.filled {
+  background: #10B981;
+}
+
+@media (max-width: 600px) {
+  .booking-visual-stepper {
+    padding: 10px 12px;
+    gap: 4px;
+  }
+  .stepper-step span.step-title {
+    display: none;
+  }
+  .stepper-line {
+    margin: 0 6px;
+    max-width: 30px;
+  }
+}
+
 
 /* 3. Nebras Card Structure */
 .nebras-card {

@@ -220,6 +220,21 @@
 .item-badge.completed { background: #DCFCE7; color: #166534; }
 .item-badge.pending { background: #FEF3C7; color: #92400E; }
 
+.plan-invoice-alert {
+  background: #ECFDF5;
+  border: 1.5px solid #A7F3D0;
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  color: #065F46;
+  font-size: 0.88rem;
+  font-weight: 800;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeIn 0.2s ease;
+}
+
 .plan-financial-strip {
   background: #F8FAFC;
   padding: 0.75rem 1.25rem;
@@ -230,6 +245,32 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   font-size: 0.85rem;
+}
+
+.strip-info-group {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.btn-convert-invoice {
+  background: #012757;
+  color: #FFFFFF;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+}
+
+.btn-convert-invoice:hover {
+  background: #F7931E;
 }
 
 .price-summary-pills {
@@ -247,6 +288,7 @@
 .price-pill.subtotal { background: #F1F5F9; color: #475569; }
 .price-pill.discount { background: #FEE2E2; color: #991B1B; }
 .price-pill.net { background: #DCFCE7; color: #166534; font-size: 0.95rem; }
+
 
 /* Creation Form */
 .create-plan-form {
