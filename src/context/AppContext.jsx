@@ -34,11 +34,53 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 
 export function appReducer(state, action) {
   switch (action.type) {
-    // Initialization
+    // Initialization & Fresh Start
     case 'INIT_DATA':
       return { ...state, ...action.payload, isLoading: false };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
+    case 'RESET_TO_FRESH_START': {
+      const fresh = getInitialData();
+      try {
+        localStorage.setItem('clinicflow_data', JSON.stringify(fresh));
+      } catch (_) {}
+      return {
+        ...state,
+        ...fresh,
+        isLoading: false
+      };
+    }
+    case 'WIPE_ALL_DATA_CLEAN': {
+      const initial = getInitialData();
+      const cleanEmpty = {
+        patients: [],
+        appointments: [],
+        prescriptions: [],
+        expenses: [],
+        recalls: [],
+        notifications: [
+          {
+            id: 'notif-fresh-start',
+            type: 'system',
+            title: 'بدء تشغيل العيادة',
+            message: 'تم مسح البيانات القديمة وإعادة تهيئة النظام بحالة نظيفة جاهزة لاستقبال المرضى.',
+            timestamp: new Date().toISOString(),
+            read: false
+          }
+        ],
+        blockedSlots: [],
+        staffMembers: (state.staffMembers && state.staffMembers.length > 0) ? state.staffMembers : initial.staffMembers,
+        clinicInfo: state.clinicInfo || initial.clinicInfo
+      };
+      try {
+        localStorage.setItem('clinicflow_data', JSON.stringify(cleanEmpty));
+      } catch (_) {}
+      return {
+        ...state,
+        ...cleanEmpty,
+        isLoading: false
+      };
+    }
 
     // Patients
     case 'ADD_PATIENT':

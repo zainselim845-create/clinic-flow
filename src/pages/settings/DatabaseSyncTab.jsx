@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, Server, HardDrive, Copy, Check, RefreshCw, CheckCircle2, AlertCircle, Download, KeyRound, Eye, EyeOff, Save } from 'lucide-react';
+import { Database, Server, HardDrive, Copy, Check, RefreshCw, CheckCircle2, AlertCircle, Download, KeyRound, Eye, EyeOff, Save, Trash2 } from 'lucide-react';
 import { getSupabaseConfig, saveSupabaseConfig, supabase } from '../../lib/supabase';
 
 export default function DatabaseSyncTab({ state, dispatch }) {
@@ -246,6 +246,47 @@ CREATE TABLE IF NOT EXISTS blocked_slots (
             <span>استعادة من ملف نسخة احتياطية</span>
             <input type="file" accept=".json" onChange={handleImportBackup} style={{ display: 'none' }} />
           </label>
+        </div>
+      </div>
+
+      {/* 3. Factory Reset & Fresh Start */}
+      <div className="backup-section-card reset-section-card" style={{ marginTop: '1.5rem', border: '1.5px solid rgba(239, 68, 68, 0.25)', background: 'rgba(239, 68, 68, 0.02)' }}>
+        <h4 style={{ color: '#DC2626' }}>
+          <Trash2 size={18} />
+          <span>إعادة ضبط البيانات وبدء تشغيل العيادة من الصفر</span>
+        </h4>
+        <p>يمكنك مسح كافة بيانات التجارب السابقة وبدء تشغيل العيادة نظيفة تماماً، أو إعادة تحميل البيانات السريرية النموذجية المضبوطة.</p>
+
+        <div className="backup-buttons" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <button 
+            type="button" 
+            onClick={() => {
+              if (window.confirm('هل أنت متأكد من مسح كافة بيانات التجارب السابقة وبدء تشغيل العيادة نظيفة تماماً من الصفر؟')) {
+                dispatch({ type: 'WIPE_ALL_DATA_CLEAN' });
+                setDbTestResult({ success: true, message: 'تم مسح كافة البيانات السابقة بنجاح! النظام جاهز ونظيف للعمل الفعلي.' });
+              }
+            }} 
+            className="btn btn-danger"
+            style={{ background: '#DC2626', color: 'white', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <Trash2 size={16} />
+            <span>مسح بيانات الديمو وبدء العيادة فارغة من الصفر</span>
+          </button>
+
+          <button 
+            type="button" 
+            onClick={() => {
+              if (window.confirm('هل تريد إعادة تعيين وتحميل البيانات السريرية النموذجية المنظمة (10 مرضى، 8 مواعيد، 9 خدمات)؟')) {
+                dispatch({ type: 'RESET_TO_FRESH_START' });
+                setDbTestResult({ success: true, message: 'تم تحميل وتعيين البيانات السريرية النموذجية المنظمة بنجاح 100%!' });
+              }
+            }} 
+            className="btn btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <RefreshCw size={16} />
+            <span>إعادة تهيئة البيانات السريرية النموذجية المنظمة</span>
+          </button>
         </div>
       </div>
     </div>
