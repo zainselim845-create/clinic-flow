@@ -751,13 +751,19 @@ const Booking = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
                     >
                       {(currentClinic.services && currentClinic.services.length > 0 ? currentClinic.services : [
-                        { id: '1', name: 'كشف عادي', price: currentClinic.regularFee || '300 ج.م', duration: 30 },
-                        { id: '2', name: 'استشارة', price: currentClinic.consultationFee || '150 ج.م', duration: 20 },
-                        { id: '3', name: 'متابعة', price: currentClinic.consultationFee || '150 ج.م', duration: 20 },
-                        { id: '4', name: 'طوارئ', price: currentClinic.emergencyFee || '400 ج.م', duration: 30 }
+                        { id: '1', name: 'كشف وفحص تشخيصي شامل للأسنان', price: currentClinic.regularFee || '300 ج.م' },
+                        { id: '2', name: 'استشارة ومتابعة بعد العلاج', price: currentClinic.consultationFee || '150 ج.م' },
+                        { id: '3', name: 'جلسة تنظيف وتلميع وإزالة جير الأسنان', price: '400 ج.م' },
+                        { id: '4', name: 'حشو تجميلي كومبوزيت ليزر', price: '500 ج.م' },
+                        { id: '5', name: 'علاج جذور وعصب السن (RCT)', price: '900 ج.م' },
+                        { id: '6', name: 'خلع ضرس عادي أو مخلخل', price: '400 ج.م' },
+                        { id: '7', name: 'طربوش / تاج زيركون تجميلي عالي الدقة', price: '1800 ج.م' },
+                        { id: '8', name: 'تبييض أسنان احترافي بالعيادة (Laser/LED)', price: '2000 ج.م' },
+                        { id: '9', name: 'زراعة سن تيتانيوم ألماني فوري', price: '6500 ج.م' },
+                        { id: '10', name: 'حالة طارئة ومستعجلة', price: currentClinic.emergencyFee || '400 ج.م' }
                       ]).map(s => (
                         <option key={s.id} value={s.name}>
-                          {s.name} — ({s.price}) {s.duration ? `[مدة ${s.duration} دقيقة]` : ''}
+                          {s.name} — ({s.price})
                         </option>
                       ))}
                     </select>

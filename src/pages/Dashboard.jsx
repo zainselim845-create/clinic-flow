@@ -205,7 +205,20 @@ const Dashboard = () => {
       date: walkInData.date,
       time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
       type: walkInData.type,
-      fee: walkInData.type === 'طوارئ' ? '400 ج.م' : (currentClinic.regularFee || '300 ج.م'),
+      fee: (() => {
+        const match = (currentClinic.services || []).find(s => s.name === walkInData.type || (walkInData.type && s.name.includes(walkInData.type)));
+        if (match?.price) return match.price;
+        if (walkInData.type === 'استشارة') return currentClinic.consultationFee || '150 ج.م';
+        if (walkInData.type === 'طوارئ') return currentClinic.emergencyFee || '400 ج.م';
+        if (walkInData.type === 'تنظيف وتلميع أسنان') return '400 ج.م';
+        if (walkInData.type === 'حشو تجميلي كومبوزيت') return '500 ج.م';
+        if (walkInData.type === 'علاج جذور وعصب') return '900 ج.م';
+        if (walkInData.type === 'خلع أسنان') return '400 ج.م';
+        if (walkInData.type === 'طربوش زيركون') return '1800 ج.م';
+        if (walkInData.type === 'تبييض أسنان') return '2000 ج.م';
+        if (walkInData.type === 'زراعة أسنان') return '6500 ج.م';
+        return currentClinic.regularFee || '300 ج.م';
+      })(),
       isEmergency: walkInData.isEmergency,
       status: 'waiting',
       checkedInAt: new Date().toISOString(),

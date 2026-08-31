@@ -1,13 +1,16 @@
 import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/supabase';
 
 export const DEFAULT_DENTAL_VISIT_TYPES = [
-  { id: 'vt-1', nameAr: 'كشف واستشارة أسنان', nameEn: 'Dental Consultation', durationMin: 30, standardFee: 300, colorCode: '#0D9488', isDefault: true, isOnline: true },
-  { id: 'vt-2', nameAr: 'تنظيف جير وتلميع أسنان', nameEn: 'Scaling & Polishing', durationMin: 30, standardFee: 400, colorCode: '#3B82F6', isDefault: false, isOnline: true },
-  { id: 'vt-3', nameAr: 'حشو تجميلي كومبوزيت', nameEn: 'Composite Restoration', durationMin: 45, standardFee: 500, colorCode: '#8B5CF6', isDefault: false, isOnline: true },
-  { id: 'vt-4', nameAr: 'علاج جذور وعصب (RCT)', nameEn: 'Root Canal Treatment', durationMin: 60, standardFee: 900, colorCode: '#EC4899', isDefault: false, isOnline: true },
-  { id: 'vt-5', nameAr: 'طوارئ وألم حاد', nameEn: 'Dental Emergency', durationMin: 30, standardFee: 450, colorCode: '#EF4444', isDefault: false, isOnline: true },
-  { id: 'vt-6', nameAr: 'جلسة مقاسات وتركيبات', nameEn: 'Impression & Prosthetics', durationMin: 30, standardFee: 350, colorCode: '#F59E0B', isDefault: false, isOnline: false },
-  { id: 'vt-7', nameAr: 'خلع جراحي / بسيط', nameEn: 'Extraction', durationMin: 45, standardFee: 600, colorCode: '#DC2626', isDefault: false, isOnline: false }
+  { id: 'vt-1', nameAr: 'كشف وفحص تشخيصي شامل للأسنان', nameEn: 'General Dental Examination', standardFee: 300, colorCode: '#0D9488', isDefault: true, isOnline: true },
+  { id: 'vt-2', nameAr: 'استشارة ومتابعة بعد العلاج', nameEn: 'Follow-up Consultation', standardFee: 150, colorCode: '#3B82F6', isDefault: false, isOnline: true },
+  { id: 'vt-3', nameAr: 'جلسة تنظيف وتلميع وإزالة جير', nameEn: 'Scaling & Polishing', standardFee: 400, colorCode: '#10B981', isDefault: false, isOnline: true },
+  { id: 'vt-4', nameAr: 'حشو تجميلي كومبوزيت ليزر', nameEn: 'Composite Restoration', standardFee: 500, colorCode: '#8B5CF6', isDefault: false, isOnline: true },
+  { id: 'vt-5', nameAr: 'علاج جذور وعصب السن (RCT)', nameEn: 'Root Canal Treatment', standardFee: 900, colorCode: '#EC4899', isDefault: false, isOnline: true },
+  { id: 'vt-6', nameAr: 'خلع ضرس عادي أو مخلخل', nameEn: 'Simple Extraction', standardFee: 400, colorCode: '#F59E0B', isDefault: false, isOnline: true },
+  { id: 'vt-7', nameAr: 'طربوش / تاج زيركون تجميلي', nameEn: 'Zirconia Crown', standardFee: 1800, colorCode: '#6366F1', isDefault: false, isOnline: false },
+  { id: 'vt-8', nameAr: 'تبييض أسنان احترافي بالعيادة', nameEn: 'In-Office Teeth Whitening', standardFee: 2000, colorCode: '#06B6D4', isDefault: false, isOnline: true },
+  { id: 'vt-9', nameAr: 'زراعة سن تيتانيوم ألماني', nameEn: 'Dental Implant', standardFee: 6500, colorCode: '#D97706', isDefault: false, isOnline: false },
+  { id: 'vt-10', nameAr: 'حالة طارئة ومستعجلة', nameEn: 'Dental Emergency', standardFee: 400, colorCode: '#EF4444', isDefault: false, isOnline: true }
 ];
 
 export function fromDbVisitType(row) {

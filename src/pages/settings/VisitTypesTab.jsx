@@ -141,12 +141,8 @@ const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitT
 
             <div className="type-meta-details">
               <div className="type-meta-item">
-                <Clock size={14} className="text-muted" />
-                <span>المدة: <strong>{vt.durationMin} دقيقة</strong></span>
-              </div>
-              <div className="type-meta-item">
                 <DollarSign size={14} className="text-muted" />
-                <span>الرسوم: <strong className="text-fee">{vt.standardFee} ج.م</strong></span>
+                <span>الرسوم المعتمدة: <strong className="text-fee">{vt.standardFee} ج.م</strong></span>
               </div>
             </div>
 
@@ -171,7 +167,7 @@ const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitT
           <div className="types-modal-box">
             
             <div className="types-modal-header">
-              <h5>{editingType ? 'تعديل نوع الزيارة' : 'إضافة نوع زيارة جديد'}</h5>
+              <h5>{editingType ? 'تعديل نوع الخدمة / الكشف' : 'إضافة خدمة أو نوع كشف جديد'}</h5>
               <button onClick={() => setShowAddModal(false)} className="btn-modal-x">
                 <X size={16} />
               </button>
@@ -201,38 +197,28 @@ const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitT
                 </div>
               </div>
 
-              <div className="form-row-3">
+              <div className="form-row-2">
                 <div className="field-box">
-                  <label>المدة (بالدقائق) *</label>
-                  <input
-                    type="number"
-                    min="10"
-                    max="180"
-                    step="5"
-                    required
-                    value={formData.durationMin}
-                    onChange={(e) => setFormData(prev => ({ ...prev, durationMin: Number(e.target.value) }))}
-                  />
-                </div>
-                <div className="field-box">
-                  <label>الرسوم التقديرية (ج.م) *</label>
+                  <label>الرسوم المعتمدة (ج.م) *</label>
                   <input
                     type="number"
                     min="0"
-                    step="10"
+                    step="50"
                     required
                     value={formData.standardFee}
                     onChange={(e) => setFormData(prev => ({ ...prev, standardFee: Number(e.target.value) }))}
                   />
                 </div>
                 <div className="field-box">
-                  <label>لون التقويم</label>
-                  <input
-                    type="color"
-                    className="color-picker-input"
-                    value={formData.colorCode}
-                    onChange={(e) => setFormData(prev => ({ ...prev, colorCode: e.target.value }))}
-                  />
+                  <label>اللون المميز بالتقويم</label>
+                  <div className="color-picker-row">
+                    <input
+                      type="color"
+                      value={formData.colorCode}
+                      onChange={(e) => setFormData(prev => ({ ...prev, colorCode: e.target.value }))}
+                    />
+                    <span className="color-hex-text">{formData.colorCode}</span>
+                  </div>
                 </div>
               </div>
 
