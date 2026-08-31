@@ -49,7 +49,7 @@ const DoctorAssistant = () => {
       {
         id: 'msg-welcome',
         sender: 'agent',
-        text: `مرحباً ${doctorTitle}! \nأنا مساعدك السريري الذكي المدعوم بنماذج OpenRouter. يمكنك التحدث معي مباشرة وطلب البحث عن المرضى الذين أجروا خدمة معينة (مثل: كشف عادي، استشارة، أو متابعات)، واقتراح رسائل الرعاية وإرسالها فوراً عبر واتساب و SMS! `,
+        text: `مرحباً ${doctorTitle}! \nأنا مساعدك السريري الذكي المدعوم بنماذج OpenRouter. يمكنك التحدث معي مباشرة وطلب البحث عن المرضى الذين أجروا خدمة معينة (مثل: كشف عادي، استشارة، أو متابعات)، واقتراح رسائل الرعاية وإرسالها فوراً عبر رسائل SMS! `,
         timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
       }
     ];
@@ -562,8 +562,8 @@ const DoctorAssistant = () => {
                 {targetPatients.map(patient => {
                   const isSelected = selectedPatientIds.has(patient.id);
                   const patientMsg = personalizeMessage(customMessage, patient, currentClinic);
-                  const waUrl = patient.phone 
-                    ? `https://wa.me/${patient.phone.replace(/\D/g, '').replace(/^0/, '20')}?text=${encodeURIComponent(patientMsg)}`
+                  const smsUrl = patient.phone 
+                    ? `sms:+${patient.phone.replace(/\D/g, '').replace(/^0/, '20')}?body=${encodeURIComponent(patientMsg)}`
                     : null;
 
                   return (
@@ -581,18 +581,16 @@ const DoctorAssistant = () => {
                         {patient.diagnosis && <p className="diag-line"> {patient.diagnosis}</p>}
                       </div>
 
-                      {/* Direct WhatsApp 1-Click Action */}
+                      {/* Direct SMS 1-Click Action */}
                       <div className="patient-direct-actions">
-                        {waUrl ? (
+                        {smsUrl ? (
                           <a 
-                            href={waUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                            href={smsUrl}
                             className="btn-single-wa"
-                            title="إرسال رسالة رعاية عبر واتساب مباشرة لهذا المريض"
+                            title="إرسال رسالة رعاية عبر SMS مباشرة لهذا المريض"
                           >
                             <MessageCircle size={15} />
-                            <span>واتساب </span>
+                            <span>SMS </span>
                           </a>
                         ) : (
                           <span className="no-phone-tag">لا يوجد هاتف</span>

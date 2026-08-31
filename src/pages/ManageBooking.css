@@ -149,6 +149,7 @@
 
 .otp-actions-row .btn-primary,
 .otp-actions-row .btn-secondary,
+.otp-actions-row .btn-sms-help,
 .otp-actions-row .btn-whatsapp-help,
 .otp-actions-row .btn-call-help {
   display: inline-flex;
@@ -165,15 +166,17 @@
   transition: all 0.2s ease;
 }
 
+.btn-sms-help,
 .btn-whatsapp-help {
-  background: #25D366;
+  background: var(--primary, #0071E3);
   color: #FFFFFF !important;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
+.btn-sms-help:hover,
 .btn-whatsapp-help:hover {
-  background: #1EBE5D;
+  background: var(--primary-hover, #005bb5);
   transform: translateY(-1px);
 }
 

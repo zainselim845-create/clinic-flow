@@ -93,14 +93,15 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
     }
   };
 
-  const generateWhatsAppRecallUrl = (recall) => {
+  const generateSmsRecallUrl = (recall) => {
     const clinicName = state.clinicInfo?.name || 'عيادة د. أحمد الشريف';
     const doctorPhone = state.clinicInfo?.phone || '01006285031';
     const cleanPhone = (recall.patientPhone || '').replace(/\D/g, '');
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow.com';
     
-    const message = `مرحباً أستاذ/ة ${recall.patientName}،\nنود تذكيركم بموعدكم الدوري لمتابعة [${recall.reason}] لدى ${clinicName}.\n\nللحجز وتأكيد الموعد المناسب لكم، يرجى زيارة الرابط:\nhttps://clinic-flow-ten-sigma.vercel.app/booking\n\nأو الاتصال المباشر على:\n${doctorPhone}\n\nنتمنى لكم دوام الصحة والعافية.`;
+    const message = `مرحباً أستاذ/ة ${recall.patientName}،\nنود تذكيركم بموعدكم الدوري لمتابعة [${recall.reason}] لدى ${clinicName}.\n\nللحجز وتأكيد الموعد المناسب لكم: ${origin}/booking\nأو الاتصال على: ${doctorPhone}\nنتمنى لكم دوام الصحة والعافية.`;
     
-    return `https://wa.me/2${cleanPhone}?text=${encodeURIComponent(message)}`;
+    return `sms:+2${cleanPhone}?body=${encodeURIComponent(message)}`;
   };
 
   return (
@@ -258,7 +259,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                       <th>سبب الاستدعاء</th>
                       <th>تاريخ الاستحقاق</th>
                       <th>الحالة</th>
-                      <th style={{ textAlign: 'center' }}>تذكير واتساب</th>
+                      <th style={{ textAlign: 'center' }}>تذكير SMS</th>
                       <th style={{ textAlign: 'center' }}>إجراء</th>
                     </tr>
                   </thead>
@@ -290,15 +291,13 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                           </td>
                           <td style={{ textAlign: 'center' }}>
                             <a 
-                              href={generateWhatsAppRecallUrl(rec)}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="btn-send-whatsapp-recall"
+                              href={generateSmsRecallUrl(rec)}
+                              className="btn-send-sms-recall"
                               onClick={() => handleUpdateStatus(rec.id, 'contacted')}
-                              title="إرسال رسالة تذكير مخصصة على واتساب"
+                              title="إرسال رسالة تذكير مخصصة عبر SMS"
                             >
                               <MessageCircle size={15} />
-                              <span>واتساب</span>
+                              <span>SMS</span>
                             </a>
                           </td>
                           <td style={{ textAlign: 'center' }}>

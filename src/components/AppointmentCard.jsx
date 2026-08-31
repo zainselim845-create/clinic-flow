@@ -84,18 +84,18 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
         {appointment.patientPhone && (
           <button 
             type="button"
-            className="appt-btn-wa" 
+            className="appt-btn-sms" 
             onClick={() => {
               const cleanPhone = appointment.patientPhone.replace(/^0/, '20').replace(/\D/g, '');
               const clinicName = state.clinicInfo?.name || 'العيادة';
               const docName = state.clinicInfo?.doctorName || 'الطبيب المعالج';
               const msg = `مرحباً أ/ ${appointment.patientName}، نذكركم بموعدكم في ${clinicName} (${docName}) يوم ${appointment.date} الساعة ${appointment.time}. نتمنى لكم دوام الصحة والعافية!`;
-              window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+              window.open(`sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`, '_self');
             }} 
-            title="تذكير المريض عبر واتساب"
+            title="تذكير المريض عبر رسالة SMS"
           >
             <MessageCircle size={15} />
-            <span>واتساب</span>
+            <span>SMS</span>
           </button>
         )}
 

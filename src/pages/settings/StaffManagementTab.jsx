@@ -17,7 +17,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     role: 'سكرتير أول',
     shift: 'مسائي (04:00 م - 10:00 م)',
     status: 'active',
-    permissions: ['appointments', 'patients', 'whatsapp']
+    permissions: ['appointments', 'patients', 'sms']
   });
 
   const useSupabase = isSupabaseConfigured();
@@ -33,7 +33,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
       role: 'سكرتير أول',
       shift: 'مسائي (04:00 م - 10:00 م)',
       status: 'active',
-      permissions: ['appointments', 'patients', 'whatsapp']
+      permissions: ['appointments', 'patients', 'sms']
     });
     setIsStaffModalOpen(true);
   };

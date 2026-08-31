@@ -67,15 +67,23 @@ export function completeBookingDraft(phone) {
 }
 
 /**
- * Generate 1-Click WhatsApp Lead Recovery Link
+ * Generate 1-Click SMS Lead Recovery Message & Link
  */
-export function generateLeadRecoveryWhatsAppMessage(draft, clinicInfo) {
+export function generateLeadRecoverySmsMessage(draft, clinicInfo) {
   const patientName = draft.name || 'عزيزنا المريض';
   const clinicName = clinicInfo?.name || 'العيادة';
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow.com';
   const resumeUrl = `${origin}/booking?resume=${draft.id}`;
 
-  const text = `مرحباً ${patientName} 🌸\nلاحظنا أنك بدأت حجز موعد في ${clinicName} ولم تكمل الخطوة الأخيرة.\n\nيسعدنا مساعدتك لإتمام حجزك بضغطة زر وبدون انتظار عبر الرابط التالي: \n${resumeUrl}\n\nنحن بانتظارك ونتشرف بخدمتك دائماً!`;
-
-  return `https://wa.me/2${draft.phone}?text=${encodeURIComponent(text)}`;
+  return `مرحباً ${patientName} 🌸\nلاحظنا أنك بدأت حجز موعد في ${clinicName} ولم تكمل الخطوة الأخيرة.\n\nيسعدنا مساعدتك لإتمام حجزك بضغطة زر وبدون انتظار عبر الرابط التالي: \n${resumeUrl}\n\nنحن بانتظارك ونتشرف بخدمتك دائماً!`;
 }
+
+export function generateLeadRecoverySmsUrl(draft, clinicInfo) {
+  const text = generateLeadRecoverySmsMessage(draft, clinicInfo);
+  const cleanPhone = (draft.phone || '').replace(/^0/, '20').replace(/\D/g, '');
+  return `sms:+${cleanPhone}?body=${encodeURIComponent(text)}`;
+}
+
+// Backward compatibility alias
+export const generateLeadRecoveryWhatsAppMessage = generateLeadRecoverySmsUrl;
+

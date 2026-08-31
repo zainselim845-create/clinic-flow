@@ -300,11 +300,12 @@
   transform: translateY(-1px);
 }
 
+.btn-sms-action,
 .btn-whatsapp-action {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  background: #25D366;
+  background: var(--primary, #0071E3);
   color: #fff;
   border: none;
   padding: 0.7rem 1.2rem;
@@ -315,8 +316,9 @@
   transition: all 0.2s;
 }
 
+.btn-sms-action:hover,
 .btn-whatsapp-action:hover {
-  background: #1EBE5D;
+  background: var(--primary-hover, #005bb5);
   transform: translateY(-1px);
 }
 

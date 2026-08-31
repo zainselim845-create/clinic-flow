@@ -200,13 +200,14 @@
   margin-top: 0.25rem;
 }
 
+.appt-btn-sms,
 .appt-btn-wa {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: #166534;
-  background: #DCFCE7;
-  border: 1px solid rgba(37, 211, 102, 0.3);
+  color: var(--primary, #0071E3);
+  background: var(--primary-light, rgba(0, 113, 227, 0.1));
+  border: 1px solid var(--primary-subtle, rgba(0, 113, 227, 0.25));
   padding: 0.35rem 0.65rem;
   border-radius: var(--radius-md);
   font-size: 0.76rem;
@@ -215,8 +216,9 @@
   transition: all var(--transition-fast);
 }
 
+.appt-btn-sms:hover,
 .appt-btn-wa:hover {
-  background: #25D366;
+  background: var(--primary, #0071E3);
   color: #FFFFFF;
 }
 

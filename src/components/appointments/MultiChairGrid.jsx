@@ -1,8 +1,5 @@
-﻿import React, { useState, useMemo } from 'react';
-import { 
-  Armchair, User, Clock, Stethoscope, CheckCircle2, 
-  AlertCircle, ArrowRightLeft, Sparkles 
-} from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Armchair, Clock } from 'lucide-react';
 import './MultiChairGrid.css';
 
 const DEFAULT_CLINIC_CHAIRS = [
@@ -15,10 +12,8 @@ const DEFAULT_CLINIC_CHAIRS = [
 export default function MultiChairGrid({
   appointments = [],
   selectedDate,
-  onAppointmentClick,
-  onReassignChair
+  onAppointmentClick
 }) {
-  const [activeChairFilter, setActiveChairFilter] = useState('all');
 
   // Distribute appointments to chairs (assign deterministically if not explicitly set)
   const appointmentsByChair = useMemo(() => {

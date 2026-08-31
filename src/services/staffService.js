@@ -14,7 +14,7 @@ export function fromDbStaff(row) {
     role: row.role || 'سكرتير أول',
     shift: row.shift || 'مسائي (04:00 م - 10:00 م)',
     status: row.status || 'active',
-    permissions: row.permissions || ['appointments', 'patients', 'whatsapp'],
+    permissions: row.permissions || ['appointments', 'patients', 'sms'],
     createdAt: row.created_at
   };
 }

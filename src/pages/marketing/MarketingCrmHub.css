@@ -479,8 +479,9 @@
   gap: 0.5rem;
 }
 
+.btn-stage-sms,
 .btn-stage-wa {
-  background: #34C759;
+  background: var(--primary, #0071E3);
   color: #FFFFFF !important;
   font-size: 0.78rem;
   font-weight: 600;
@@ -494,8 +495,9 @@
   transition: all var(--transition-fast);
 }
 
+.btn-stage-sms:hover,
 .btn-stage-wa:hover {
-  background: #28CD41;
+  background: var(--primary-hover, #005bb5);
 }
 
 /* 7. Treatment Plans Tracker */

@@ -22,7 +22,8 @@ import {
   saveBookingDraft, 
   getBookingDrafts, 
   completeBookingDraft, 
-  generateLeadRecoveryWhatsAppMessage 
+  generateLeadRecoverySmsUrl,
+  generateLeadRecoverySmsMessage 
 } from '../leadRecoveryService';
 import { 
   getPatientReferralCode, 
@@ -133,7 +134,7 @@ describe('Medical CRM & Retention Growth Engine Test Suite (test-guard compliant
       safeStorage.clear();
     });
 
-    it('captures lead draft and recovers with WhatsApp resume link', () => {
+    it('captures lead draft and recovers with SMS resume link', () => {
       const draft = saveBookingDraft({
         phone: '01099887766',
         name: 'عميل حجز لم يكتمل',
@@ -146,9 +147,9 @@ describe('Medical CRM & Retention Growth Engine Test Suite (test-guard compliant
       const drafts = getBookingDrafts();
       expect(drafts.length).toBe(1);
 
-      const waMsg = generateLeadRecoveryWhatsAppMessage(draft, { name: 'مركز النخبة' });
-      expect(waMsg).toContain('https://wa.me/201099887766');
-      expect(decodeURIComponent(waMsg)).toContain('booking?resume=');
+      const smsUrl = generateLeadRecoverySmsUrl(draft, { name: 'مركز النخبة' });
+      expect(smsUrl).toContain('sms:+201099887766');
+      expect(decodeURIComponent(smsUrl)).toContain('booking?resume=');
 
       completeBookingDraft('01099887766');
       const updatedDrafts = getBookingDrafts();

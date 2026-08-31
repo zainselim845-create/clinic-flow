@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   X, Plus, Trash2, Printer, Send, FileText, CheckCircle2, 
-  Stethoscope, Calendar, User, Phone, Pill, AlertTriangle, ShieldAlert
+  Stethoscope, Calendar, User, Phone, Pill, ShieldAlert
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
@@ -114,37 +114,28 @@ export const PrescriptionModal = ({ isOpen, onClose, patient, appointment }) => 
     window.print();
   };
 
-  const handleSendWhatsApp = () => {
+  const handleSendSms = () => {
     if (!patientPhone) {
-      setErrorMessage('رقم هاتف المريض غير متوفر لإرسال الروشتة عبر واتساب.');
+      setErrorMessage('رقم هاتف المريض غير متوفر لإرسال الروشتة عبر SMS.');
       setTimeout(() => setErrorMessage(''), 4000);
       return;
     }
 
     const medsText = medications
       .filter(m => m.name.trim())
-      .map((m, idx) => `${idx + 1}. *${m.name}* (${m.dose})\n   - التكرار: ${m.freq} | المدة: ${m.duration} ${m.notes ? `(${m.notes})` : ''}`)
-      .join('\n\n');
+      .map((m, idx) => `${idx + 1}. ${m.name} (${m.dose}) - ${m.freq} (${m.duration})`)
+      .join('\n');
 
-    const msg = `*الروشتة الطبية الإلكترونية — ${clinicInfo.name || 'عيادة كلينك فلو'}*
-*الطبيب المعالج:* ${clinicInfo.doctorName || 'د. أحمد الشريف'} (${clinicInfo.specialty || 'استشاري'})
------------------------------------------
-*المريض:* ${patientName} | *التاريخ:* ${today}
-*التشخيص:* ${diagnosis || 'فحص سريري ومتابعة'}
------------------------------------------
-*العلاج الدوائي (Rx):*
-${medsText || 'لا توجد أدوية محددة.'}
-
-${labTests ? `*الفحوصات والتحاليل المطلوبة:*\n- ${labTests}\n` : ''}
-${followUpDate ? `*موعد الاستشارة القادم:* ${followUpDate}\n` : ''}
-*تعليمات عامة:* ${generalAdvice}
------------------------------------------
-*العنوان:* ${clinicInfo.address || 'مصر الجديدة'}
-*للطوارئ:* ${clinicInfo.phone || '01006285031'}`;
+    const msg = `الروشتة الطبية — ${clinicInfo.name || 'العيادة'}\n` +
+      `المريض: ${patientName} | التاريخ: ${today}\n` +
+      `التشخيص: ${diagnosis || 'كشف ومتابعة'}\n` +
+      `العلاج:\n${medsText || 'لا توجد أدوية.'}\n` +
+      (followUpDate ? `الاستشارة: ${followUpDate}\n` : '') +
+      `العنوان: ${clinicInfo.address || 'العيادة'}`;
 
     const cleanPhone = patientPhone.replace(/\D/g, '');
-    const url = `https://wa.me/2${cleanPhone}?text=${encodeURIComponent(msg)}`;
-    window.open(url, '_blank');
+    const url = `sms:+2${cleanPhone}?body=${encodeURIComponent(msg)}`;
+    window.open(url, '_self');
   };
 
   return (
@@ -483,11 +474,11 @@ ${followUpDate ? `*موعد الاستشارة القادم:* ${followUpDate}\n`
 
           <button 
             type="button" 
-            className="btn-whatsapp-action" 
-            onClick={handleSendWhatsApp}
+            className="btn-sms-action" 
+            onClick={handleSendSms}
           >
             <Send size={16} />
-            <span>إرسال عبر واتساب المريض</span>
+            <span>إرسال الروشتة عبر SMS</span>
           </button>
 
           <button 

@@ -349,14 +349,14 @@ const Booking = () => {
   if (currentStep === 'success' && createdBooking) {
     const cleanPhone = (createdBooking.patientPhone || '').replace(/^0/, '20').replace(/\D/g, '');
     const clinicPhoneClean = (currentClinic.phone || '').replace(/^0/, '20').replace(/\D/g, '');
-    const whatsappMsg = encodeURIComponent(
+    const smsMsg = encodeURIComponent(
       `مرحباً، تم حجز موعد كشف باسم: ${createdBooking.patientName}\n` +
       `كود الحجز: ${createdBooking.bookingCode}\n` +
       `الموعد: ${createdBooking.date} الساعة ${createdBooking.time}\n` +
       `الخدمة: ${createdBooking.type}\n` +
       `العنوان: ${currentClinic.address}`
     );
-    const whatsappUrl = `https://wa.me/${clinicPhoneClean || cleanPhone}?text=${whatsappMsg}`;
+    const smsUrl = `sms:+${clinicPhoneClean || cleanPhone}?body=${smsMsg}`;
 
     return (
       <div className="nebras-booking-page">
@@ -459,9 +459,9 @@ const Booking = () => {
 
               {/* Action Buttons */}
               <div className="nebras-actions-row">
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="nebras-action-btn whatsapp">
+                <a href={smsUrl} className="nebras-action-btn sms">
                   <MessageCircle size={18} />
-                  <span>إرسال تفاصيل الموعد للواتساب</span>
+                  <span>إرسال تفاصيل الموعد عبر SMS</span>
                 </a>
                 <a href={getGoogleCalendarUrl(createdBooking)} target="_blank" rel="noopener noreferrer" className="nebras-action-btn calendar">
                   <CalendarPlus size={18} />

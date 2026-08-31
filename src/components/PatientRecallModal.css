@@ -119,11 +119,12 @@
   color: var(--text-primary);
 }
 
+.btn-send-sms-recall,
 .btn-send-whatsapp-recall {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: #25D366;
+  background: var(--primary, #0071E3);
   color: #ffffff;
   padding: 0.35rem 0.7rem;
   border-radius: var(--radius-md);
@@ -133,6 +134,7 @@
   transition: opacity 0.15s;
 }
 
+.btn-send-sms-recall:hover,
 .btn-send-whatsapp-recall:hover {
   opacity: 0.9;
 }

@@ -62,6 +62,16 @@ export function saveSmsConfig(config) {
 }
 
 /**
+ * Generate native SMS URI (sms:+2010... or sms:010... on mobile/desktop)
+ */
+export function getSmsUri(phone, message = '') {
+  if (!phone) return '';
+  const clean = phone.replace(/[\s\-()]/g, '');
+  const target = clean.startsWith('+') ? clean : clean.startsWith('0') ? '+2' + clean : '+20' + clean;
+  return `sms:${target}?body=${encodeURIComponent(message)}`;
+}
+
+/**
  * Format Egyptian phone number to international E.164 format (+201xxxxxxxxx)
  */
 export function formatEgyptianPhone(phone) {

@@ -172,7 +172,7 @@ export const AuthProvider = ({ children }) => {
           phone: matchedStaff.phone,
           role: 'staff',
           jobTitle: matchedStaff.role || 'سكرتارية واستقبال العيادة',
-          permissions: matchedStaff.permissions || ['appointments', 'patients', 'whatsapp'],
+          permissions: matchedStaff.permissions || ['appointments', 'patients', 'sms'],
           authenticatedAt: new Date().toISOString()
         };
         sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(staffUser));

@@ -203,13 +203,11 @@ export default function PatientDossierDrawer({
                       <span dir="ltr">{patientPhone}</span>
                     </a>
                     <a
-                      href={`https://wa.me/2${patientPhone.replace(/\D/g, '')}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn-contact whatsapp"
+                      href={`sms:+2${patientPhone.replace(/\D/g, '')}`}
+                      className="btn-contact sms"
                     >
                       <MessageCircle size={14} />
-                      <span>محادثة واتساب</span>
+                      <span>إرسال SMS</span>
                     </a>
                   </div>
                 </div>

@@ -123,14 +123,13 @@ const InvoiceModal = ({
   };
 
   const cleanPhone = (currentInv.patientPhone || '').replace(/\D/g, '');
-  const whatsappReceipt = encodeURIComponent(
+  const smsReceipt = 
     `فاتورة علاجية من: ${clinicInfo.name || 'العيادة'}\n` +
     `رقم الفاتورة: ${currentInv.invoiceNumber}\n` +
     `المريض: ${currentInv.patientName}\n` +
     `الإجمالي: ${currentInv.patientShare} ج.م\n` +
     `المدفوع: ${currentInv.paidAmount} ج.م\n` +
-    `المتبقي: ${currentInv.remainingBalance} ج.م`
-  );
+    `المتبقي: ${currentInv.remainingBalance} ج.م`;
 
   if (!isOpen) return null;
 
@@ -151,13 +150,11 @@ const InvoiceModal = ({
             </button>
             {cleanPhone && (
               <a
-                href={`https://wa.me/2${cleanPhone}?text=${whatsappReceipt}`}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-inv-action whatsapp"
+                href={`sms:+2${cleanPhone}?body=${encodeURIComponent(smsReceipt)}`}
+                className="btn-inv-action sms"
               >
-                <MessageCircle size={16} />
-                <span>إرسال عبر الواتساب</span>
+                <Send size={16} />
+                <span>إرسال إيصال SMS</span>
               </a>
             )}
           </div>

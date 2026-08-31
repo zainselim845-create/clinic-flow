@@ -106,7 +106,7 @@ export function detectUnfinishedTreatmentPlans(plans = []) {
 }
 
 /**
- * Generate Treatment Plan Follow-up WhatsApp Message
+ * Generate Treatment Plan Follow-up SMS Message
  */
 export function generateTreatmentPlanFollowUpMessage(plan, patient, clinicInfo) {
   const patientFirstName = (patient?.name || plan?.patientName || 'مريضنا العزيز').split(' ')[0];

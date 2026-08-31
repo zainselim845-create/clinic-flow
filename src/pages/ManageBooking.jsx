@@ -157,7 +157,7 @@ const ManageBooking = () => {
     } else {
       setVerifyFeedback({ 
         type: 'error', 
-        text: 'اسم المريض غير متطابق مع المسجل لهذا الرقم. يرجى التأكد من كتابة الاسم المسجل بالحجز أو التواصل مع العيادة عبر واتساب.' 
+        text: 'اسم المريض غير متطابق مع المسجل لهذا الرقم. يرجى التأكد من كتابة الاسم المسجل بالحجز أو التواصل مع العيادة عبر SMS.' 
       });
     }
   };
@@ -253,7 +253,7 @@ const ManageBooking = () => {
   };
 
   const clinicPhoneClean = (clinicInfo.phone || '01006285031').replace(/\D/g, '');
-  const whatsappHelpUrl = `https://wa.me/2${clinicPhoneClean}?text=${encodeURIComponent(`مرحباً، أنا المريض المسجل برقم (${phoneSearch || '...'}) وأرغب في المساعدة باسترجاع كود الحجز المرجعي الخاص بي لإدارة موعدي.`)}`;
+  const smsHelpUrl = `sms:+2${clinicPhoneClean}?body=${encodeURIComponent(`مرحباً، أنا المريض المسجل برقم (${phoneSearch || '...'}) وأرغب في المساعدة باسترجاع كود الحجز المرجعي الخاص بي لإدارة موعدي.`)}`;
 
   return (
     <div className="manage-booking-page">
@@ -379,14 +379,12 @@ const ManageBooking = () => {
                 </button>
 
                 <a 
-                  href={whatsappHelpUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn-whatsapp-help"
-                  title="مراسلة واتساب العيادة لاسترجاع الكود"
+                  href={smsHelpUrl} 
+                  className="btn-sms-help"
+                  title="مراسلة SMS للعيادة لاسترجاع الكود"
                 >
                   <MessageSquare size={16} />
-                  <span>طلب الكود عبر واتساب </span>
+                  <span>طلب الكود عبر SMS</span>
                 </a>
 
                 <a 
@@ -503,7 +501,7 @@ const ManageBooking = () => {
               <div>
                 <strong>عنوان العيادة:</strong>
                 <p>{clinicInfo.address || 'مصر الجديدة — شارع الأهرام، برج الأطباء، الدور الرابع.'}</p>
-                <span className="clinic-phone"> للاستفسارات والواتساب: {clinicInfo.phone || '01006285031'}</span>
+                <span className="clinic-phone"> للاستفسارات ورسائل SMS: {clinicInfo.phone || '01006285031'}</span>
               </div>
             </div>
           </div>

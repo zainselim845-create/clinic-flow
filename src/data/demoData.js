@@ -66,7 +66,7 @@ export const staffMembers = [
     role: 'سكرتير أول',
     shift: 'مسائي (04:00 م - 10:00 م)',
     status: 'active',
-    permissions: ['appointments', 'patients', 'whatsapp', 'exports'],
+    permissions: ['appointments', 'patients', 'sms', 'exports'],
     createdAt: '2026-01-15'
   }
 ];

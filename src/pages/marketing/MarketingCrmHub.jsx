@@ -19,7 +19,8 @@ import {
 } from '../../services/reactivationService';
 import { 
   getBookingDrafts, 
-  generateLeadRecoveryWhatsAppMessage 
+  generateLeadRecoverySmsMessage,
+  generateLeadRecoverySmsUrl 
 } from '../../services/leadRecoveryService';
 import { 
   getPatientPackages, 
@@ -427,13 +428,11 @@ export const MarketingCrmHub = () => {
                       <span>خدمته السابقة: {opp.primaryService} ⬅️ المقترح: <strong className="text-primary">{opp.suggestedService}</strong></span>
                     </div>
                     <a 
-                      href={`https://wa.me/${(opp.patientPhone || '').replace(/^0/, '20')}?text=${encodeURIComponent(opp.whatsappMessage)}`}
-                      target="_blank" 
-                      rel="noreferrer"
+                      href={`sms:+${(opp.patientPhone || '').replace(/^0/, '20')}?body=${encodeURIComponent(opp.smsMessage || opp.whatsappMessage)}`}
                       className="btn-action-primary"
                     >
                       <MessageCircle size={14} />
-                      <span>واتساب</span>
+                      <span>SMS</span>
                     </a>
                   </div>
                 ))}
@@ -606,14 +605,14 @@ export const MarketingCrmHub = () => {
                     {REACTIVATION_STAGES.map(stage => {
                       const msg = generateReactivationMessage(p, stage.stage, currentClinic);
                       const cleanPhone = (p.phone || '').replace(/^0/, '20');
-                      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+                      const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 
                       return (
                         <div key={stage.stage} className="stage-action-box">
                           <span className="s-title">{stage.name}</span>
-                          <a href={waUrl} target="_blank" rel="noreferrer" className="btn-stage-wa">
+                          <a href={smsUrl} className="btn-stage-sms">
                             <MessageCircle size={14} />
-                            <span>إرسال ({stage.discount ? 'مع خصم' : 'تذكير'})</span>
+                            <span>إرسال SMS ({stage.discount ? 'مع خصم' : 'تذكير'})</span>
                           </a>
                         </div>
                       );
@@ -639,7 +638,8 @@ export const MarketingCrmHub = () => {
           <div className="cross-sell-grid">
             {(crossSellOpportunities || []).map((opp, idx) => {
               const cleanPhone = (opp.patientPhone || '').replace(/^0/, '20');
-              const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(opp.whatsappMessage)}`;
+              const messageText = opp.smsMessage || opp.whatsappMessage;
+              const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(messageText)}`;
 
               return (
                 <div key={idx} className="cross-sell-card">
@@ -666,14 +666,14 @@ export const MarketingCrmHub = () => {
                   <p className="cs-reason">{opp.reason}</p>
 
                   <div className="cs-msg-preview">
-                    <small>نص رسالة الواتساب:</small>
-                    <p>{opp.whatsappMessage}</p>
+                    <small>نص رسالة الـ SMS:</small>
+                    <p>{messageText}</p>
                   </div>
 
                   <div className="cs-card-footer">
-                    <a href={waUrl} target="_blank" rel="noreferrer" className="default-custom-btn">
+                    <a href={smsUrl} className="default-custom-btn">
                       <MessageCircle size={16} />
-                      <span>إرسال العرض المقترح للمريض</span>
+                      <span>إرسال العرض المقترح عبر SMS</span>
                     </a>
                   </div>
                 </div>
@@ -702,9 +702,9 @@ export const MarketingCrmHub = () => {
                 <div className="empty-sub">لا توجد محاولات حجز متروكة حالياً.</div>
               ) : (
                 abandonedLeads.map((draft, idx) => {
-                  const msg = generateLeadRecoveryWhatsAppMessage(draft, currentClinic);
+                  const msg = generateLeadRecoverySmsMessage(draft, currentClinic);
                   const cleanPhone = (draft.phone || '').replace(/^0/, '20');
-                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+                  const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 
                   return (
                     <div key={draft.id || idx} className="lead-recovery-card">
@@ -712,9 +712,9 @@ export const MarketingCrmHub = () => {
                         <strong>رقم الهاتف: <span dir="ltr">{draft.phone}</span></strong>
                         <span>تاريخ المحاولة: {new Date(draft.updatedAt || draft.createdAt || Date.now()).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
-                      <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary">
+                      <a href={smsUrl} className="btn-action-primary">
                         <Send size={14} />
-                        <span>إرسال رابط الإكمال المباشر</span>
+                        <span>إرسال رابط الإكمال عبر SMS</span>
                       </a>
                     </div>
                   );
@@ -735,7 +735,7 @@ export const MarketingCrmHub = () => {
                 noShowAppointments.map((appt) => {
                   const msg = generateNoShowRecoveryMessage(appt, currentClinic);
                   const cleanPhone = (appt.patientPhone || '').replace(/^0/, '20');
-                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+                  const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 
                   return (
                     <div key={appt.id} className="lead-recovery-card">
@@ -743,9 +743,9 @@ export const MarketingCrmHub = () => {
                         <strong>{appt.patientName}</strong>
                         <span>الموعد الأصلي: {appt.date} ({appt.time})</span>
                       </div>
-                      <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-success">
+                      <a href={smsUrl} className="btn-action-success">
                         <MessageCircle size={14} />
-                        <span>إعادة جدولة مع كود خصم</span>
+                        <span>إعادة جدولة عبر SMS مع كود خصم</span>
                       </a>
                     </div>
                   );
@@ -783,7 +783,7 @@ export const MarketingCrmHub = () => {
                   postVisitPatients.map((pv) => {
                     const msg = generatePostVisitFeedbackMessage({ name: pv.patientName }, pv, currentClinic);
                     const cleanPhone = (pv.patientPhone || '').replace(/^0/, '20');
-                    const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+                    const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 
                     return (
                       <div key={pv.appointmentId} className="post-visit-item">
@@ -792,9 +792,9 @@ export const MarketingCrmHub = () => {
                           <small>كشف {pv.type} — {pv.date}</small>
                         </div>
                         <div className="pv-actions">
-                          <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary">
+                          <a href={smsUrl} className="btn-action-primary">
                             <Send size={13} />
-                            <span>إرسال استبيان الرضا</span>
+                            <span>إرسال استبيان الرضا عبر SMS</span>
                           </a>
                           <div className="simulate-ratings">
                             <button onClick={() => handleSimulateFeedbackRating(pv.patientName, 5)} title="محاكاة 5 نجوم (تحويل لجوجل)">⭐ 5</button>
@@ -852,7 +852,7 @@ export const MarketingCrmHub = () => {
             {(unfinishedPlans || []).map((plan) => {
               const msg = generateTreatmentPlanFollowUpMessage(plan, { name: plan.patientName }, currentClinic);
               const cleanPhone = (plan.patientPhone || '').replace(/^0/, '20');
-              const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+              const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 
               return (
                 <div key={plan.id} className="treatment-plan-card">
@@ -880,9 +880,9 @@ export const MarketingCrmHub = () => {
                   </div>
 
                   <div className="tp-footer">
-                    <a href={waUrl} target="_blank" rel="noreferrer" className="default-custom-btn">
+                    <a href={smsUrl} className="default-custom-btn">
                       <MessageCircle size={16} />
-                      <span>تذكير المريض باستكمال الخطة</span>
+                      <span>تذكير المريض عبر SMS لاستكمال الخطة</span>
                     </a>
                   </div>
                 </div>
@@ -938,13 +938,11 @@ export const MarketingCrmHub = () => {
                     <span className="pkg-remaining">المتبقي: <strong>{pkg.totalSessions - pkg.completedSessions} جلسات</strong></span>
                     {isStalled && (
                       <a 
-                        href={`https://wa.me/${(pkg.patientPhone || '').replace(/^0/, '20')}?text=${encodeURIComponent(`مرحباً يا ${pkg.patientName.split(' ')[0]} 🌸\nنود تذكيرك من ${currentClinic?.name || 'العيادة'} بموعد جلستك القادمة في ${pkg.packageName}. متبقي لك (${pkg.totalSessions - pkg.completedSessions}) جلسات.`)}`}
-                        target="_blank" 
-                        rel="noreferrer"
+                        href={`sms:+${(pkg.patientPhone || '').replace(/^0/, '20')}?body=${encodeURIComponent(`مرحباً يا ${pkg.patientName.split(' ')[0]} 🌸\nنود تذكيرك من ${currentClinic?.name || 'العيادة'} بموعد جلستك القادمة في ${pkg.packageName}. متبقي لك (${pkg.totalSessions - pkg.completedSessions}) جلسات.`)}`}
                         className="btn-action-primary"
                       >
                         <MessageCircle size={14} />
-                        <span>تذكير بالجلسة القادمة</span>
+                        <span>تذكير بالجلسة عبر SMS</span>
                       </a>
                     )}
                   </div>
@@ -990,7 +988,7 @@ export const MarketingCrmHub = () => {
             {(occasionCandidates || []).map((c) => {
               const msg = generatePersonalizedOccasionMessage(c, selectedOccasion, currentClinic, customOccasionOffer);
               const cleanPhone = (c.patientPhone || '').replace(/^0/, '20');
-              const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+              const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 
               return (
                 <div key={c.patientId} className="candidate-card">
@@ -1001,9 +999,9 @@ export const MarketingCrmHub = () => {
                   <div className="c-msg-preview">
                     <p>{msg}</p>
                   </div>
-                  <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary full-width">
+                  <a href={smsUrl} className="btn-action-primary full-width">
                     <Send size={15} />
-                    <span>إرسال التهنئة والعرض المخصص</span>
+                    <span>إرسال التهنئة والعرض عبر SMS</span>
                   </a>
                 </div>
               );
@@ -1112,7 +1110,7 @@ export const MarketingCrmHub = () => {
                     `دمت بصحة وابتسامة جميلة! 🦷✨`;
 
                   const cleanPhone = (p.phone || '').replace(/^0/, '20');
-                  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+                  const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 
                   return (
                     <div key={p.id} className="template-preview-card">
@@ -1123,9 +1121,9 @@ export const MarketingCrmHub = () => {
                       <div className="t-body">
                         <p>{msg}</p>
                       </div>
-                      <a href={waUrl} target="_blank" rel="noreferrer" className="btn-action-primary">
+                      <a href={smsUrl} className="btn-action-primary">
                         <Send size={15} />
-                        <span>إرسال الحملة عبر WhatsApp</span>
+                        <span>إرسال الحملة عبر SMS</span>
                       </a>
                     </div>
                   );

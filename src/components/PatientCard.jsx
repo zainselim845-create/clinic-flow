@@ -14,11 +14,11 @@ const PatientCard = ({ patient, onClick }) => {
   const name = patient.name || 'مريض بدون اسم';
   const initials = name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('') || 'م';
 
-  const handleWhatsApp = (e) => {
+  const handleSendSms = (e) => {
     e.stopPropagation();
     if (!patient.phone) return;
     const cleanPhone = (patient.phone || '').replace(/^0/, '20').replace(/\D/g, '');
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(`مرحباً أ/ ${name}، نتواصل معك من عيادة د. أحمد الشريف`)}`, '_blank');
+    window.open(`sms:+${cleanPhone}?body=${encodeURIComponent(`مرحباً أ/ ${name}، نتواصل معك من عيادة د. أحمد الشريف`)}`, '_self');
   };
 
   return (
@@ -37,9 +37,9 @@ const PatientCard = ({ patient, onClick }) => {
         {patient.phone && (
           <button 
             type="button"
-            className="patient-card-wa-btn"
-            onClick={handleWhatsApp}
-            title="محادثة واتساب سريعة"
+            className="patient-card-sms-btn"
+            onClick={handleSendSms}
+            title="إرسال رسالة SMS سريعة"
           >
             <MessageCircle size={15} />
           </button>
