@@ -189,13 +189,13 @@ const Login = () => {
             <button 
               type="button" 
               className={`preset-btn ${identifier.includes('sara') ? 'active' : ''}`}
-              onClick={() => handleQuickPreset('sara.reception@clinic.com', '123')}
+              onClick={() => handleQuickPreset('sara@clinic.com', '123')}
               disabled={isLocked}
             >
               <UserCheck size={16} className="text-emerald" />
               <div>
-                <strong>حساب الاستقبال </strong>
-                <span>sara.reception@clinic.com</span>
+                <strong>حساب السكرتارية (سارة كمال)</strong>
+                <span>sara@clinic.com</span>
               </div>
             </button>
           </div>

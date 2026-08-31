@@ -455,31 +455,30 @@ export function AppProvider({ children }) {
 
     const loadFromLocalStorage = () => {
       const savedData = localStorage.getItem('clinicflow_data');
+      const initial = getInitialData();
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
           dispatch({ 
             type: 'INIT_DATA', 
             payload: { 
-              patients: parsed.patients || [],
-              appointments: parsed.appointments || [],
-              notifications: parsed.notifications || [],
-              blockedSlots: parsed.blockedSlots || [],
-              prescriptions: parsed.prescriptions || [],
-              expenses: parsed.expenses || [],
-              recalls: parsed.recalls || [],
-              staffMembers: parsed.staffMembers || [],
-              clinicInfo: parsed.clinicInfo || null,
+              patients: (parsed.patients && parsed.patients.length > 0) ? parsed.patients : initial.patients,
+              appointments: (parsed.appointments && parsed.appointments.length > 0) ? parsed.appointments : initial.appointments,
+              notifications: (parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : initial.notifications,
+              blockedSlots: parsed.blockedSlots || initial.blockedSlots,
+              prescriptions: (parsed.prescriptions && parsed.prescriptions.length > 0) ? parsed.prescriptions : initial.prescriptions,
+              expenses: (parsed.expenses && parsed.expenses.length > 0) ? parsed.expenses : initial.expenses,
+              recalls: (parsed.recalls && parsed.recalls.length > 0) ? parsed.recalls : initial.recalls,
+              staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : initial.staffMembers,
+              clinicInfo: parsed.clinicInfo || initial.clinicInfo,
               useSupabase: false 
             } 
           });
         } catch (err) {
           console.error('Error loading localStorage:', err);
-          const initial = getInitialData();
           dispatch({ type: 'INIT_DATA', payload: { ...initial, useSupabase: false } });
         }
       } else {
-        const initial = getInitialData();
         dispatch({ type: 'INIT_DATA', payload: { ...initial, useSupabase: false } });
       }
     };

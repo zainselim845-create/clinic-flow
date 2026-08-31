@@ -144,7 +144,7 @@ export const AuthProvider = ({ children }) => {
           email: doctorEmail,
           phone: currentClinic.phone,
           role: 'doctor',
-          jobTitle: currentClinic.specialty || 'المدير الطبي / استشاري الباطنة',
+          jobTitle: currentClinic.specialty || 'المدير الطبي / استشاري طب وجراحة وتجميل الأسنان',
           authenticatedAt: new Date().toISOString()
         };
         sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(doctorUser));
@@ -155,7 +155,12 @@ export const AuthProvider = ({ children }) => {
       }
 
       // 2. Check Staff Login
-      const matchedStaff = currentStaff.find(s => {
+      const allStaff = [
+        ...(Array.isArray(currentStaff) ? currentStaff : []),
+        ...(Array.isArray(defaultStaffMembers) ? defaultStaffMembers : [])
+      ];
+
+      const matchedStaff = allStaff.find(s => {
         const staffEmail = (s.email || '').toLowerCase();
         const staffPhone = (s.phone || '').replace(/\D/g, '');
         return (cleanId === staffEmail || (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === staffPhone)) && s.password === cleanPass;

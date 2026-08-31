@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import * as staffService from '../../services/staffService';
-
+import { SYSTEM_PERMISSIONS } from '../../utils/permissions';
 import { isSupabaseConfigured } from '../../lib/supabase';
 
 export default function StaffManagementTab({ staffMembers, dispatch }) {
@@ -159,6 +159,28 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
                 <ShieldCheck size={16} />
                 <span>وردية: {member.shift}</span>
               </div>
+
+              <div className="staff-perms-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.5rem' }}>
+                {(member.permissions || []).map(pId => {
+                  const permDef = SYSTEM_PERMISSIONS.find(sp => sp.id === pId);
+                  return (
+                    <span 
+                      key={pId} 
+                      style={{ 
+                        fontSize: '0.72rem', 
+                        fontWeight: 700, 
+                        background: 'rgba(0, 113, 227, 0.08)', 
+                        color: 'var(--primary, #0071E3)', 
+                        padding: '0.2rem 0.5rem', 
+                        borderRadius: '4px',
+                        border: '1px solid rgba(0, 113, 227, 0.15)'
+                      }}
+                    >
+                      {permDef ? permDef.name : pId}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="staff-actions">
@@ -280,6 +302,45 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
                   <option value="مسائي (04:00 م - 10:00 م)">مسائي (04:00 م - 10:00 م)</option>
                   <option value="كامل (09:00 ص - 10:00 م)">يوم كامل</option>
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label>صلاحيات الوصول الممنوحة للموظف:</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.65rem', marginTop: '0.45rem' }}>
+                  {SYSTEM_PERMISSIONS.map((perm) => {
+                    const isChecked = (staffForm.permissions || []).includes(perm.id);
+                    return (
+                      <label 
+                        key={perm.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.45rem',
+                          background: isChecked ? 'rgba(0, 113, 227, 0.08)' : 'var(--bg-secondary)',
+                          border: `1.5px solid ${isChecked ? 'var(--primary, #0071E3)' : 'var(--border-color)'}`,
+                          padding: '0.5rem 0.75rem',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          fontSize: '0.82rem',
+                          fontWeight: 600
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const current = staffForm.permissions || [];
+                            const updated = e.target.checked
+                              ? [...current, perm.id]
+                              : current.filter(p => p !== perm.id);
+                            setStaffForm({ ...staffForm, permissions: updated });
+                          }}
+                        />
+                        <span>{perm.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="modal-actions">

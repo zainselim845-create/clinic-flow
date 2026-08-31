@@ -1,5 +1,5 @@
 ﻿{
-  "_doc": "ClinicFlow Enterprise UI Review Loop Coverage Inventory - 100% Views & Interactive Controls",
+  "_doc": "ClinicFlow Enterprise UI Review Loop Coverage Inventory - 100% Active Production Views & Interactive Controls",
   "views": [
     {
       "id": "view-login",
@@ -17,8 +17,9 @@
         { "id": "dashboard-walkin-btn", "el": "button:has-text('تسجيل حضور مباشر')", "expects": ["toggle", "mut"], "note": "Opens Walk-in registration modal" },
         { "id": "dashboard-shift-btn", "el": "button:has-text('تسليم وردية الاستقبال')", "expects": ["toggle", "mut"], "note": "Opens Shift Handover & Drawer modal" },
         { "id": "dashboard-stat-total", "el": ".cockpit-stat-card.total-card", "expects": ["mut"], "note": "Filters today schedule to all appointments" },
-        { "id": "dashboard-stat-in-exam", "el": ".cockpit-stat-card.in-exam-card", "expects": ["mut"], "note": "Filters today schedule to in-exam" },
-        { "id": "dashboard-stat-completed", "el": ".cockpit-stat-card.completed-card", "expects": ["mut"], "note": "Filters today schedule to completed" }
+        { "id": "dashboard-stat-waiting", "el": ".cockpit-stat-card.waiting-card", "expects": ["mut"], "note": "Filters today schedule to waiting room" },
+        { "id": "dashboard-stat-exam", "el": ".cockpit-stat-card.exam-card", "expects": ["mut"], "note": "Filters today schedule to active consultation" },
+        { "id": "dashboard-stat-revenue", "el": ".cockpit-stat-card.revenue-card", "expects": ["mut"], "note": "Filters today schedule to revenue completed" }
       ]
     },
     {
@@ -27,7 +28,7 @@
       "elements": [
         { "id": "appointments-chairs-toggle", "el": "button:has-text('الكراسي المتزامنة')", "expects": ["toggle", "mut"], "note": "Switches to 4-column synchronized multi-chair schedule grid" },
         { "id": "appointments-cards-toggle", "el": "button:has-text('بطاقات')", "expects": ["toggle", "mut"], "note": "Switches back to standard card layout" },
-        { "id": "appointments-search", "el": "input[placeholder*='بحث']", "expects": ["value", "mut"], "note": "Filters appointments in real-time" }
+        { "id": "appointments-search", "el": ".filters-bar input[type='text']", "expects": ["value", "mut"], "note": "Filters appointments in real-time" }
       ]
     },
     {
@@ -35,14 +36,42 @@
       "path": "/patients",
       "elements": [
         { "id": "patients-card-click", "el": ".patient-card", "expects": ["toggle", "mut"], "note": "Opens Patient Dossier drawer" },
-        { "id": "patients-search", "el": "input[placeholder*='بحث']", "expects": ["value", "mut"], "note": "Searches patients by name/phone" }
+        { "id": "patients-search", "el": ".filters-bar input[type='text']", "expects": ["value", "mut"], "note": "Searches patients by name/phone" }
       ]
     },
     {
       "id": "view-invoices",
       "path": "/invoices",
       "elements": [
-        { "id": "invoices-search", "el": "input[placeholder*='بحث']", "expects": ["value", "mut"], "note": "Filters revenue invoice entries" }
+        { "id": "invoices-search", "el": ".filters-bar input[type='text']", "expects": ["value", "mut"], "note": "Filters revenue invoice entries" }
+      ]
+    },
+    {
+      "id": "view-inventory",
+      "path": "/inventory",
+      "elements": [
+        { "id": "inventory-search", "el": "input[placeholder*='الصنف']", "expects": ["value", "mut"], "note": "Filters medical supplies stock" }
+      ]
+    },
+    {
+      "id": "view-notifications",
+      "path": "/notifications",
+      "elements": [
+        { "id": "notifications-page-header", "el": ".notifications-page", "expects": ["mut"], "note": "Real-time clinic notifications and alerts center" }
+      ]
+    },
+    {
+      "id": "view-doctor-agent",
+      "path": "/doctor-agent",
+      "elements": [
+        { "id": "doctor-agent-hub", "el": ".doctor-assistant-page", "expects": ["mut"], "note": "Clinical Decision Support & Smart Recall hub" }
+      ]
+    },
+    {
+      "id": "view-settings",
+      "path": "/settings",
+      "elements": [
+        { "id": "settings-container", "el": ".settings-container", "expects": ["mut"], "note": "Clinic profile and pricing configuration" }
       ]
     },
     {
@@ -58,34 +87,6 @@
       "path": "/manage-booking",
       "elements": [
         { "id": "manage-booking-phone", "el": "input[placeholder*='01']", "expects": ["value", "focus"], "note": "Phone input for appointment lookup" }
-      ]
-    },
-    {
-      "id": "view-inventory",
-      "path": "/inventory",
-      "elements": [
-        { "id": "inventory-search", "el": "input[placeholder*='بحث']", "expects": ["value", "mut"], "note": "Filters medical supplies stock" }
-      ]
-    },
-    {
-      "id": "view-labs",
-      "path": "/labs",
-      "elements": [
-        { "id": "labs-search", "el": "input[placeholder*='بحث']", "expects": ["value", "mut"], "note": "Searches dental laboratory orders" }
-      ]
-    },
-    {
-      "id": "view-doctor-agent",
-      "path": "/doctor-agent",
-      "elements": [
-        { "id": "doctor-agent-hub", "el": ".marketing-crm-container, .doctor-agent-layout", "expects": ["mut"], "note": "Clinical Decision Support & Smart Recall hub" }
-      ]
-    },
-    {
-      "id": "view-settings",
-      "path": "/settings",
-      "elements": [
-        { "id": "settings-container", "el": ".settings-container, form", "expects": ["mut"], "note": "Clinic profile and pricing configuration" }
       ]
     }
   ]

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { hasPermission } from '../utils/permissions';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -37,22 +38,30 @@ const Sidebar = () => {
           <LayoutDashboard size={19} />
           <span>لوحة التحكم</span>
         </NavLink>
-        <NavLink to="/appointments" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <CalendarDays size={19} />
-          <span>المواعيد والتقويم</span>
-        </NavLink>
-        <NavLink to="/patients" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Users size={19} />
-          <span>سجلات المرضى</span>
-        </NavLink>
-        <NavLink to="/invoices" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Receipt size={19} />
-          <span>الفوترة والتحصيل</span>
-        </NavLink>
-        <NavLink to="/inventory" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Package size={19} />
-          <span>المخزون والمستلزمات</span>
-        </NavLink>
+        {hasPermission(user, 'appointments') && (
+          <NavLink to="/appointments" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <CalendarDays size={19} />
+            <span>المواعيد والتقويم</span>
+          </NavLink>
+        )}
+        {hasPermission(user, 'patients') && (
+          <NavLink to="/patients" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Users size={19} />
+            <span>سجلات المرضى</span>
+          </NavLink>
+        )}
+        {hasPermission(user, 'invoices') && (
+          <NavLink to="/invoices" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Receipt size={19} />
+            <span>الفوترة والتحصيل</span>
+          </NavLink>
+        )}
+        {hasPermission(user, 'inventory') && (
+          <NavLink to="/inventory" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Package size={19} />
+            <span>المخزون والمستلزمات</span>
+          </NavLink>
+        )}
         {isDoctor && (
           <NavLink to="/doctor-agent" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Bot size={19} />

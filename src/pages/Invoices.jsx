@@ -6,53 +6,23 @@ import {
 import { useApp } from '../context/AppContext';
 import InvoiceModal from '../components/InvoiceModal';
 import { getInvoices, addInvoice } from '../services/invoicesService';
+import { invoices as defaultInvoices } from '../data/demoData';
 import './Invoices.css';
 
 const Invoices = () => {
   const { state } = useApp();
   const currentClinic = state.clinicInfo || {};
 
-  const [invoicesList, setInvoicesList] = useState([
-    {
-      id: 'inv-101',
-      invoiceNumber: 'INV-5510',
-      patientName: 'أحمد محمود سليمان',
-      patientPhone: '01012345678',
-      subtotal: 1800,
-      discount: 100,
-      taxPercentage: 0,
-      taxAmount: 0,
-      total: 1700,
-      patientShare: 1700,
-      paidAmount: 1000,
-      remainingBalance: 700,
-      paymentStatus: 'partial',
-      items: [
-        { description: 'طربوش زيركون الماني', quantity: 1, unitPrice: 1800, total: 1800 }
-      ],
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'inv-102',
-      invoiceNumber: 'INV-5511',
-      patientName: 'مريم علي عبد الله',
-      patientPhone: '01122334455',
-      subtotal: 400,
-      discount: 0,
-      taxPercentage: 0,
-      taxAmount: 0,
-      total: 400,
-      patientShare: 400,
-      paidAmount: 400,
-
-      remainingBalance: 0,
-      paymentStatus: 'paid',
-      items: [
-        { description: 'تنظيف جير وتلميع أسنان', quantity: 1, unitPrice: 400, total: 400 }
-      ],
-      createdAt: new Date(Date.now() - 86400000).toISOString()
-    }
-  ]);
+  const [invoicesList, setInvoicesList] = useState(() => {
+    try {
+      const stored = localStorage.getItem('clinicflow_invoices');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return defaultInvoices || [];
+  });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all, unpaid, partial, paid
@@ -68,6 +38,13 @@ const Invoices = () => {
     }
     load();
   }, []);
+
+  // Save to localStorage when list changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('clinicflow_invoices', JSON.stringify(invoicesList));
+    } catch (_) {}
+  }, [invoicesList]);
 
   const filteredInvoices = useMemo(() => {
     return invoicesList.filter(inv => {

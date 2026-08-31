@@ -132,10 +132,18 @@ function App() {
           </ProtectedRoute>
         }>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/patients" element={<Patients />} />
-          <Route path="/invoices" element={<Invoices />} />
-          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/appointments" element={
+            <ProtectedRoute requiredPermission="appointments"><Appointments /></ProtectedRoute>
+          } />
+          <Route path="/patients" element={
+            <ProtectedRoute requiredPermission="patients"><Patients /></ProtectedRoute>
+          } />
+          <Route path="/invoices" element={
+            <ProtectedRoute requiredPermission="invoices"><Invoices /></ProtectedRoute>
+          } />
+          <Route path="/inventory" element={
+            <ProtectedRoute requiredPermission="inventory"><Inventory /></ProtectedRoute>
+          } />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/doctor-agent" element={
             <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
@@ -143,7 +151,6 @@ function App() {
           <Route path="/settings" element={
             <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>
           } />
-
         </Route>
 
         {/* 3. Removed Routes Redirects */}

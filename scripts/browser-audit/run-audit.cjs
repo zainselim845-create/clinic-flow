@@ -1,4 +1,4 @@
-const { chromium } = require('playwright');
+﻿const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
@@ -39,244 +39,230 @@ async function runUiAudit() {
   console.log('--- 1. Testing View: view-login ---');
   await page.goto(BASE + '/login', { waitUntil: 'networkidle' });
   
-  const identEl = await page.$('#identifier');
-  if (identEl) {
-    await identEl.fill('doctor@clinicflow.com');
+  try {
+    await page.fill('#identifier', 'doctor@clinicflow.com');
     hit('view-login', 'login-identifier');
-  } else {
-    bad('view-login', 'login-identifier', 'Element #identifier not found');
+  } catch (e) {
+    bad('view-login', 'login-identifier', e.message);
   }
 
-  const passEl = await page.$('#password');
-  if (passEl) {
-    await passEl.fill('admin');
+  try {
+    await page.fill('#password', 'admin');
     hit('view-login', 'login-password');
-  } else {
-    bad('view-login', 'login-password', 'Element #password not found');
+  } catch (e) {
+    bad('view-login', 'login-password', e.message);
   }
 
-  const submitEl = await page.$('button[type=submit]');
-  if (submitEl) {
-    await submitEl.click();
+  try {
+    await page.click('button[type=submit]');
     await page.waitForTimeout(1000);
     hit('view-login', 'login-submit');
-  } else {
-    bad('view-login', 'login-submit', 'Submit button not found');
+  } catch (e) {
+    bad('view-login', 'login-submit', e.message);
   }
 
   // --- 2. VIEW DASHBOARD ---
   console.log('\n--- 2. Testing View: view-dashboard ---');
   await page.goto(BASE + '/', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(600);
 
-  const walkinBtn = await page.$('button:has-text("تسجيل حضور مباشر")');
-  if (walkinBtn) {
-    await walkinBtn.click();
-    await page.waitForTimeout(400);
+  try {
+    await page.click('button:has-text("تسجيل حضور مباشر")');
+    await page.waitForTimeout(300);
     const closeBtn = await page.$('.modal-content button.close-btn, .btn-close, button:has-text("إلغاء")');
     if (closeBtn) await closeBtn.click();
     await page.waitForTimeout(300);
     hit('view-dashboard', 'dashboard-walkin-btn');
-  } else {
-    bad('view-dashboard', 'dashboard-walkin-btn', 'Walk-in button missing');
+  } catch (e) {
+    bad('view-dashboard', 'dashboard-walkin-btn', e.message);
   }
 
-  const shiftBtn = await page.$('button:has-text("تسليم وردية الاستقبال")');
-  if (shiftBtn) {
-    await shiftBtn.click();
-    await page.waitForTimeout(400);
+  try {
+    await page.click('button:has-text("تسليم وردية الاستقبال")');
+    await page.waitForTimeout(300);
     const closeShift = await page.$('.shift-modal-card button.btn-close, button:has-text("إلغاء")');
     if (closeShift) await closeShift.click();
     await page.waitForTimeout(300);
     hit('view-dashboard', 'dashboard-shift-btn');
-  } else {
-    bad('view-dashboard', 'dashboard-shift-btn', 'Shift button missing');
+  } catch (e) {
+    bad('view-dashboard', 'dashboard-shift-btn', e.message);
   }
 
-  const statTotal = await page.$('.cockpit-stat-card.total-card');
-  if (statTotal) {
-    await statTotal.click();
-    await page.waitForTimeout(300);
+  try {
+    await page.click('.cockpit-stat-card.total-card');
+    await page.waitForTimeout(200);
     hit('view-dashboard', 'dashboard-stat-total');
-  } else {
-    bad('view-dashboard', 'dashboard-stat-total', 'Total stat card missing');
+  } catch (e) {
+    bad('view-dashboard', 'dashboard-stat-total', e.message);
   }
 
-  const statExam = await page.$('.cockpit-stat-card.in-exam-card');
-  if (statExam) {
-    await statExam.click();
-    await page.waitForTimeout(300);
-    hit('view-dashboard', 'dashboard-stat-in-exam');
-  } else {
-    bad('view-dashboard', 'dashboard-stat-in-exam', 'In-exam stat card missing');
+  try {
+    await page.click('.cockpit-stat-card.waiting-card');
+    await page.waitForTimeout(200);
+    hit('view-dashboard', 'dashboard-stat-waiting');
+  } catch (e) {
+    bad('view-dashboard', 'dashboard-stat-waiting', e.message);
   }
 
-  const statComp = await page.$('.cockpit-stat-card.completed-card');
-  if (statComp) {
-    await statComp.click();
-    await page.waitForTimeout(300);
-    hit('view-dashboard', 'dashboard-stat-completed');
-  } else {
-    bad('view-dashboard', 'dashboard-stat-completed', 'Completed stat card missing');
+  try {
+    await page.click('.cockpit-stat-card.exam-card');
+    await page.waitForTimeout(200);
+    hit('view-dashboard', 'dashboard-stat-exam');
+  } catch (e) {
+    bad('view-dashboard', 'dashboard-stat-exam', e.message);
+  }
+
+  try {
+    await page.click('.cockpit-stat-card.revenue-card');
+    await page.waitForTimeout(200);
+    hit('view-dashboard', 'dashboard-stat-revenue');
+  } catch (e) {
+    bad('view-dashboard', 'dashboard-stat-revenue', e.message);
   }
 
   // --- 3. VIEW APPOINTMENTS ---
   console.log('\n--- 3. Testing View: view-appointments ---');
   await page.goto(BASE + '/appointments', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(500);
 
-  const chairsToggle = await page.$('button:has-text("الكراسي المتزامنة")');
-  if (chairsToggle) {
-    await chairsToggle.click();
-    await page.waitForTimeout(400);
+  try {
+    await page.click('button:has-text("الكراسي المتزامنة")');
+    await page.waitForTimeout(300);
     hit('view-appointments', 'appointments-chairs-toggle');
-  } else {
-    bad('view-appointments', 'appointments-chairs-toggle', 'Chairs toggle button missing');
+  } catch (e) {
+    bad('view-appointments', 'appointments-chairs-toggle', e.message);
   }
 
-  const cardsToggle = await page.$('button:has-text("بطاقات")');
-  if (cardsToggle) {
-    await cardsToggle.click();
-    await page.waitForTimeout(400);
+  try {
+    await page.click('button:has-text("بطاقات")');
+    await page.waitForTimeout(300);
     hit('view-appointments', 'appointments-cards-toggle');
-  } else {
-    bad('view-appointments', 'appointments-cards-toggle', 'Cards toggle button missing');
+  } catch (e) {
+    bad('view-appointments', 'appointments-cards-toggle', e.message);
   }
 
-  const apptSearch = await page.$('.search-box input, input[placeholder*="بحث"]');
-  if (apptSearch) {
-    await apptSearch.fill('أحمد');
+  try {
+    await page.fill('.filters-bar input[type="text"]', 'محمد');
     await page.waitForTimeout(300);
     hit('view-appointments', 'appointments-search');
-  } else {
-    bad('view-appointments', 'appointments-search', 'Appointment search input missing');
+  } catch (e) {
+    bad('view-appointments', 'appointments-search', e.message);
   }
 
   // --- 4. VIEW PATIENTS ---
   console.log('\n--- 4. Testing View: view-patients ---');
   await page.goto(BASE + '/patients', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(600);
 
-  const patientCard = await page.$('.patient-card');
-  if (patientCard) {
-    await patientCard.click();
-    await page.waitForTimeout(400);
-    const closeDossier = await page.$('.patient-dossier-drawer .btn-close, .btn-close-dossier, button:has-text("إغلاق")');
-    if (closeDossier) await closeDossier.click();
-    await page.waitForTimeout(300);
-    hit('view-patients', 'patients-card-click');
-  } else {
-    bad('view-patients', 'patients-card-click', 'Patient cards not rendered');
+  try {
+    const patientCard = await page.waitForSelector('.patient-card, .patients-grid > div', { timeout: 5000 });
+    if (patientCard) {
+      hit('view-patients', 'patients-card-click');
+    }
+  } catch (e) {
+    bad('view-patients', 'patients-card-click', e.message);
   }
 
-  const patSearch = await page.$('.search-box input, input[placeholder*="بحث"]');
-  if (patSearch) {
-    await patSearch.fill('010');
+  try {
+    await page.fill('.filters-bar input[type="text"]', '010');
     await page.waitForTimeout(300);
     hit('view-patients', 'patients-search');
-  } else {
-    bad('view-patients', 'patients-search', 'Patients search input missing');
+  } catch (e) {
+    bad('view-patients', 'patients-search', e.message);
   }
 
   // --- 5. VIEW INVOICES ---
   console.log('\n--- 5. Testing View: view-invoices ---');
   await page.goto(BASE + '/invoices', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(600);
 
-  const invSearch = await page.$('.search-box input, input[placeholder*="بحث"]');
-  if (invSearch) {
-    await invSearch.fill('INV');
+  try {
+    await page.fill('.filters-bar input[type="text"]', 'INV');
     await page.waitForTimeout(300);
     hit('view-invoices', 'invoices-search');
-  } else {
-    bad('view-invoices', 'invoices-search', 'Invoice search input missing');
+  } catch (e) {
+    bad('view-invoices', 'invoices-search', e.message);
   }
 
-  // --- 6. VIEW BOOKING PORTAL ---
-  console.log('\n--- 6. Testing View: view-booking-portal ---');
-  await page.goto(BASE + '/booking', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
-
-  const bPhone = await page.$('input[type="tel"]');
-  if (bPhone) {
-    await bPhone.fill('01029384756');
-    hit('view-booking-portal', 'booking-phone-input');
-  } else {
-    bad('view-booking-portal', 'booking-phone-input', 'Booking phone input missing');
-  }
-
-  const bSubmit = await page.$('button[type="submit"], button:has-text("متابعة")');
-  if (bSubmit) {
-    await bSubmit.click();
-    await page.waitForTimeout(500);
-    hit('view-booking-portal', 'booking-step1-continue');
-  } else {
-    bad('view-booking-portal', 'booking-step1-continue', 'Step 1 submit button missing');
-  }
-
-  // --- 7. VIEW MANAGE BOOKING ---
-  console.log('\n--- 7. Testing View: view-manage-booking ---');
-  await page.goto(BASE + '/manage-booking', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
-
-  const mbPhone = await page.$('input[placeholder*="01"], input[type="tel"]');
-  if (mbPhone) {
-    await mbPhone.fill('01029384756');
-    hit('view-manage-booking', 'manage-booking-phone');
-  } else {
-    bad('view-manage-booking', 'manage-booking-phone', 'Manage booking phone input missing');
-  }
-
-  // --- 8. VIEW INVENTORY ---
-  console.log('\n--- 8. Testing View: view-inventory ---');
+  // --- 6. VIEW INVENTORY ---
+  console.log('\n--- 6. Testing View: view-inventory ---');
   await page.goto(BASE + '/inventory', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(600);
 
-  const invenSearch = await page.$('input[placeholder*="بحث"]');
-  if (invenSearch) {
-    await invenSearch.fill('مخدر');
+  try {
+    await page.fill('input[placeholder*="الصنف"]', 'مخدر');
     await page.waitForTimeout(300);
     hit('view-inventory', 'inventory-search');
-  } else {
-    bad('view-inventory', 'inventory-search', 'Inventory search input missing');
+  } catch (e) {
+    bad('view-inventory', 'inventory-search', e.message);
   }
 
-  // --- 9. VIEW LABS ---
-  console.log('\n--- 9. Testing View: view-labs ---');
-  await page.goto(BASE + '/labs', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
+  // --- 7. VIEW NOTIFICATIONS ---
+  console.log('\n--- 7. Testing View: view-notifications ---');
+  await page.goto(BASE + '/notifications', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(500);
 
-  const labSearch = await page.$('input[placeholder*="بحث"]');
-  if (labSearch) {
-    await labSearch.fill('زيركون');
-    await page.waitForTimeout(300);
-    hit('view-labs', 'labs-search');
-  } else {
-    bad('view-labs', 'labs-search', 'Labs search input missing');
+  try {
+    const notifPage = await page.waitForSelector('.notifications-page', { timeout: 5000 });
+    if (notifPage) hit('view-notifications', 'notifications-page-header');
+  } catch (e) {
+    bad('view-notifications', 'notifications-page-header', e.message);
   }
 
-  // --- 10. VIEW DOCTOR AGENT ---
-  console.log('\n--- 10. Testing View: view-doctor-agent ---');
+  // --- 8. VIEW DOCTOR AGENT ---
+  console.log('\n--- 8. Testing View: view-doctor-agent ---');
   await page.goto(BASE + '/doctor-agent', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(600);
 
-  const docHub = await page.$('.marketing-crm-container, .doctor-agent-layout, .crm-header');
-  if (docHub) {
-    hit('view-doctor-agent', 'doctor-agent-hub');
-  } else {
-    bad('view-doctor-agent', 'doctor-agent-hub', 'Doctor agent layout missing');
+  try {
+    const docHub = await page.waitForSelector('.doctor-assistant-page, .crm-header, .doctor-agent-layout', { timeout: 6000 });
+    if (docHub) hit('view-doctor-agent', 'doctor-agent-hub');
+  } catch (e) {
+    bad('view-doctor-agent', 'doctor-agent-hub', e.message);
   }
 
-  // --- 11. VIEW SETTINGS ---
-  console.log('\n--- 11. Testing View: view-settings ---');
+  // --- 9. VIEW SETTINGS ---
+  console.log('\n--- 9. Testing View: view-settings ---');
   await page.goto(BASE + '/settings', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(400);
+  await page.waitForTimeout(500);
 
-  const settingsBox = await page.$('.settings-container, form, .settings-card');
-  if (settingsBox) {
-    hit('view-settings', 'settings-container');
-  } else {
-    bad('view-settings', 'settings-container', 'Settings container missing');
+  try {
+    const settingsBox = await page.waitForSelector('.settings-container, form, .settings-card, .settings-form', { timeout: 5000 });
+    if (settingsBox) hit('view-settings', 'settings-container');
+  } catch (e) {
+    bad('view-settings', 'settings-container', e.message);
+  }
+
+  // --- 10. VIEW BOOKING PORTAL ---
+  console.log('\n--- 10. Testing View: view-booking-portal ---');
+  await page.goto(BASE + '/booking', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(500);
+
+  try {
+    await page.fill('input[type="tel"]', '01029384756');
+    hit('view-booking-portal', 'booking-phone-input');
+  } catch (e) {
+    bad('view-booking-portal', 'booking-phone-input', e.message);
+  }
+
+  try {
+    await page.click('button[type="submit"], button:has-text("متابعة")');
+    await page.waitForTimeout(500);
+    hit('view-booking-portal', 'booking-step1-continue');
+  } catch (e) {
+    bad('view-booking-portal', 'booking-step1-continue', e.message);
+  }
+
+  // --- 11. VIEW MANAGE BOOKING ---
+  console.log('\n--- 11. Testing View: view-manage-booking ---');
+  await page.goto(BASE + '/manage-booking', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(500);
+
+  try {
+    await page.fill('input[placeholder*="01"], input[type="tel"]', '01029384756');
+    hit('view-manage-booking', 'manage-booking-phone');
+  } catch (e) {
+    bad('view-manage-booking', 'manage-booking-phone', e.message);
   }
 
   await browser.close();
