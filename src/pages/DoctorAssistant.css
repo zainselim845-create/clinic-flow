@@ -5,6 +5,9 @@
   padding-bottom: 3rem;
   animation: fadeIn 0.3s ease;
   font-family: var(--font-family);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* 1. Header Banner */

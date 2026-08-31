@@ -7,6 +7,9 @@
   flex-direction: column;
   gap: 1.25rem;
   padding-bottom: 3rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* 1. Header Hero */

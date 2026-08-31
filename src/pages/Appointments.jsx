@@ -242,19 +242,19 @@ const Appointments = () => {
       <div className="page-header">
         <h2>إدارة المواعيد (لوحة السكرتير والأطباء)</h2>
         <div className="header-actions-btns">
-          <button className="btn-secondary" onClick={handleExportAppointmentsCSV} title="تصدير المواعيد لملف إكسيل">
-            <Download size={18} />
+          <button className="btn btn-secondary" onClick={handleExportAppointmentsCSV} title="تصدير المواعيد لملف إكسيل">
+            <Download size={16} />
             <span>تصدير إكسيل (CSV)</span>
           </button>
           {isDoctor && (
-            <button className="btn-secondary" onClick={() => setIsBlockerModalOpen(true)} title="إغلاق/فتح مواعيد العيادة (مخصص للطبيب فقط)">
-              <Lock size={18} />
-              <span>إغلاق / حظر مواعيد </span>
+            <button className="btn btn-secondary" onClick={() => setIsBlockerModalOpen(true)} title="إغلاق/فتح مواعيد العيادة (مخصص للطبيب فقط)">
+              <Lock size={16} />
+              <span>إغلاق / حظر مواعيد</span>
             </button>
           )}
-          <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={20} />
-            موعد جديد
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={18} />
+            <span>موعد جديد</span>
           </button>
         </div>
       </div>

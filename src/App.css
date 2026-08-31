@@ -32,8 +32,43 @@
 
 .page-content {
   flex: 1;
-  padding: 0.9rem 1.25rem 2rem 1.25rem;
+  padding: 1rem 1.5rem 2.5rem 1.5rem;
   animation: fadeIn 0.3s ease;
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Symmetrical Centering & Container Alignment Utilities */
+.dashboard-page,
+.appointments-page,
+.patients-page,
+.invoices-page,
+.inventory-page,
+.notifications-page,
+.settings-container,
+.doctor-assistant-page,
+.labs-page,
+.attendance-page {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.center-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 /* Responsive */
@@ -45,5 +80,6 @@
 
   .page-content {
     padding: 0.75rem;
+    max-width: 100%;
   }
 }

@@ -112,11 +112,11 @@ const Invoices = () => {
           <p>إدارة الفواتير العلاجية، سندات القبض، المدفوعات الجزئية، والخصومات المعتمدة</p>
         </div>
         <div className="header-actions-btns">
-          <button onClick={handleExportCSV} className="btn-secondary">
+          <button onClick={handleExportCSV} className="btn btn-secondary">
             <Download size={16} />
             <span>تصدير إكسيل (CSV)</span>
           </button>
-          <button onClick={handleOpenNew} className="btn-primary">
+          <button onClick={handleOpenNew} className="btn btn-primary">
             <Plus size={18} />
             <span>إصدار فاتورة جديدة</span>
           </button>
