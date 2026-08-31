@@ -121,7 +121,7 @@ const Inventory = () => {
           <h2>مخزون المستلزمات الطبية (Dental Materials & Inventory)</h2>
           <p>متابعة كميات الكومبوزيت، البنج، مواد الطبعات، والتعقيم مع إنذارات النقص والصلاحية</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div className="header-actions-btns">
           <button onClick={() => setIsModalOpen(true)} className="btn-primary">
             <Plus size={18} />
             <span>إضافة صنف جديد</span>

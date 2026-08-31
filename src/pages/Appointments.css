@@ -5,8 +5,24 @@
 .appointments-page {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  padding-bottom: 2.5rem;
+  gap: 1rem;
+  padding-bottom: 2rem;
+}
+
+.appointments-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.appointments-page .header-actions-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
 /* 1. Header Toolbar */

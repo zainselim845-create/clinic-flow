@@ -270,11 +270,11 @@ const Appointments = () => {
           <button className={filterStatus === 'cancelled' ? 'active' : ''} onClick={() => { setFilterStatus('cancelled'); setCurrentPage(1); }}>ملغي ({appointments.filter(a => a.status === 'cancelled').length})</button>
         </div>
         
-        <div className="other-filters">
-          <div className="view-mode-toggle-group" style={{ display: 'flex', background: '#f1f5f9', borderRadius: '8px', padding: '2px', border: '1px solid #cbd5e1' }}>
+        <div className="other-filters" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <div className="view-mode-toggle-group" style={{ display: 'flex', background: 'var(--bg-primary)', borderRadius: '8px', padding: '2px', border: '1px solid var(--border-color)' }}>
             <button 
               type="button"
-              style={{ padding: '0.35rem 0.65rem', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, background: viewMode === 'grid' ? '#ffffff' : 'transparent', color: viewMode === 'grid' ? '#1e40af' : '#64748b', boxShadow: viewMode === 'grid' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}
+              style={{ padding: '0.35rem 0.65rem', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, background: viewMode === 'grid' ? 'var(--surface)' : 'transparent', color: viewMode === 'grid' ? 'var(--primary)' : 'var(--text-secondary)', boxShadow: viewMode === 'grid' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none' }}
               onClick={() => setViewMode('grid')}
             >
               <LayoutGrid size={14} />
@@ -282,7 +282,7 @@ const Appointments = () => {
             </button>
             <button 
               type="button"
-              style={{ padding: '0.35rem 0.65rem', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, background: viewMode === 'chairs' ? '#ffffff' : 'transparent', color: viewMode === 'chairs' ? '#1e40af' : '#64748b', boxShadow: viewMode === 'chairs' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none' }}
+              style={{ padding: '0.35rem 0.65rem', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, background: viewMode === 'chairs' ? 'var(--surface)' : 'transparent', color: viewMode === 'chairs' ? 'var(--primary)' : 'var(--text-secondary)', boxShadow: viewMode === 'chairs' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none' }}
               onClick={() => setViewMode('chairs')}
             >
               <Armchair size={14} />
@@ -293,6 +293,7 @@ const Appointments = () => {
           <input 
             type="date" 
             className="input-field" 
+            style={{ width: 'auto', minWidth: '135px', padding: '0.45rem 0.75rem' }}
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
           />

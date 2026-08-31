@@ -1,5 +1,17 @@
 .inventory-page {
   direction: rtl;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inventory-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  width: 100%;
 }
 
 .inv-metrics-row {

@@ -350,24 +350,24 @@ const DoctorAssistant = () => {
     <div className="doctor-assistant-page">
       
       {/* Mode Switcher */}
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+      <div className="segmented-control" style={{ marginBottom: '1rem', width: 'fit-content' }}>
         <button 
           type="button"
-          className={`btn ${viewMode === 'crm' ? 'btn-primary' : 'btn-secondary'}`}
+          className={`segmented-control-item ${viewMode === 'crm' ? 'active' : ''}`}
           onClick={() => setViewMode('crm')}
-          style={{ padding: '0.75rem 1.25rem', fontWeight: 800 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }}
         >
-          <Sparkles size={18} />
-          <span>مركز الـ CRM والتسويق ونمو العيادة (Marketing & Retention Engine)</span>
+          <Sparkles size={16} />
+          <span>مركز التسويق ونمو العيادة (CRM Engine)</span>
         </button>
         <button 
           type="button"
-          className={`btn ${viewMode === 'chat' ? 'btn-primary' : 'btn-secondary'}`}
+          className={`segmented-control-item ${viewMode === 'chat' ? 'active' : ''}`}
           onClick={() => setViewMode('chat')}
-          style={{ padding: '0.75rem 1.25rem', fontWeight: 800 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }}
         >
-          <Bot size={18} />
-          <span>المحادثة السريرية مع الذكاء الاصطناعي (AI Clinical Agent)</span>
+          <Bot size={16} />
+          <span>المساعد السريري الذكي (AI Agent)</span>
         </button>
       </div>
 

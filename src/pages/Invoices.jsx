@@ -59,9 +59,9 @@ const Invoices = () => {
   }, [invoicesList, searchQuery, statusFilter]);
 
   // Metric Aggregates
-  const totalBilled = invoicesList.reduce((acc, i) => acc + Number(i.total || 0), 0);
-  const totalCollected = invoicesList.reduce((acc, i) => acc + Number(i.paidAmount || 0), 0);
-  const totalOutstanding = invoicesList.reduce((acc, i) => acc + Number(i.remainingBalance || 0), 0);
+  const totalBilled = invoicesList.reduce((acc, i) => acc + Number(i.total || i.totalAmount || i.amount || ((Number(i.paidAmount || 0) + Number(i.remainingBalance || 0))) || 0), 0);
+  const totalCollected = invoicesList.reduce((acc, i) => acc + Number(i.paidAmount || i.paid || 0), 0);
+  const totalOutstanding = invoicesList.reduce((acc, i) => acc + Number(i.remainingBalance != null ? i.remainingBalance : Math.max(0, (Number(i.total || i.totalAmount || 0) - Number(i.paidAmount || i.paid || 0)))), 0);
 
   const handleOpenNew = () => {
     setSelectedInvoice(null);
@@ -84,9 +84,9 @@ const Invoices = () => {
       inv.invoiceNumber,
       inv.patientName,
       inv.patientPhone,
-      inv.total,
-      inv.paidAmount,
-      inv.remainingBalance,
+      inv.total || inv.totalAmount || (Number(inv.paidAmount || 0) + Number(inv.remainingBalance || 0)),
+      inv.paidAmount || inv.paid || 0,
+      inv.remainingBalance != null ? inv.remainingBalance : Math.max(0, (Number(inv.total || inv.totalAmount || 0) - Number(inv.paidAmount || inv.paid || 0))),
       inv.paymentStatus,
       new Date(inv.createdAt).toLocaleDateString('ar-EG')
     ]);
@@ -111,7 +111,7 @@ const Invoices = () => {
           <h2>الفوترة والتحصيلات المالية (Invoices & Billing)</h2>
           <p>إدارة الفواتير العلاجية، سندات القبض، المدفوعات الجزئية، والخصومات المعتمدة</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div className="header-actions-btns">
           <button onClick={handleExportCSV} className="btn-secondary">
             <Download size={16} />
             <span>تصدير إكسيل (CSV)</span>
@@ -233,10 +233,10 @@ const Invoices = () => {
                   <td><strong>{inv.patientName}</strong></td>
                   <td dir="ltr">{inv.patientPhone || '—'}</td>
                   <td>{new Date(inv.createdAt).toLocaleDateString('ar-EG')}</td>
-                  <td><strong>{inv.total} ج.م</strong></td>
-                  <td className="text-success">{inv.paidAmount} ج.م</td>
-                  <td className={inv.remainingBalance > 0 ? 'text-danger font-bold' : ''}>
-                    {inv.remainingBalance} ج.م
+                  <td><strong>{(Number(inv.total || inv.totalAmount || inv.amount || ((Number(inv.paidAmount || 0) + Number(inv.remainingBalance || 0))))).toLocaleString()} ج.م</strong></td>
+                  <td className="text-success">{(Number(inv.paidAmount || inv.paid || 0)).toLocaleString()} ج.م</td>
+                  <td className={((inv.remainingBalance != null ? Number(inv.remainingBalance) : Math.max(0, Number(inv.total || 0) - Number(inv.paidAmount || 0))) > 0) ? 'text-danger font-bold' : ''}>
+                    {(inv.remainingBalance != null ? Number(inv.remainingBalance) : Math.max(0, Number(inv.total || 0) - Number(inv.paidAmount || 0))).toLocaleString()} ج.م
                   </td>
                   <td>
                     <span className={`status-pill ${inv.paymentStatus}`}>
