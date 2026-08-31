@@ -36,7 +36,7 @@ export default function ConsultationModal({
         intervalMonths: months,
         dueDate,
         status: 'pending',
-        notes: consultationNotes || '',
+        notes: prescription || diagnosis || 'متابعة وفحص دوري',
         createdAt: new Date().toISOString(),
         lastContactedAt: null
       };
