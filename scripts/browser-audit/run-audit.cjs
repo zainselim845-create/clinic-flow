@@ -1,4 +1,4 @@
-﻿const { chromium } = require('playwright');
+const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
@@ -199,11 +199,15 @@ async function runUiAudit() {
 
   // --- 7. VIEW NOTIFICATIONS ---
   console.log('\n--- 7. Testing View: view-notifications ---');
-  await page.goto(BASE + '/notifications', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(500);
-
   try {
-    const notifPage = await page.waitForSelector('.notifications-page', { timeout: 5000 });
+    const notifBtn = await page.$('button.notification-btn');
+    if (notifBtn) {
+      await notifBtn.click();
+    } else {
+      await page.goto(BASE + '/notifications', { waitUntil: 'networkidle' });
+    }
+    await page.waitForTimeout(500);
+    const notifPage = await page.waitForSelector('.notifications-page, h2:has-text("الإشعارات")', { timeout: 5000 });
     if (notifPage) hit('view-notifications', 'notifications-page-header');
   } catch (e) {
     bad('view-notifications', 'notifications-page-header', e.message);

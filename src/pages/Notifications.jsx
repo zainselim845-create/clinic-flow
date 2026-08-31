@@ -38,10 +38,16 @@ const Notifications = () => {
   };
 
   const formatTime = (isoString) => {
+    if (!isoString) return 'الآن';
     const date = new Date(isoString);
-    return new Intl.DateTimeFormat('ar-EG', { 
-      month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' 
-    }).format(date);
+    if (isNaN(date.getTime())) return String(isoString);
+    try {
+      return new Intl.DateTimeFormat('ar-EG', { 
+        month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' 
+      }).format(date);
+    } catch {
+      return 'الآن';
+    }
   };
 
   return (
