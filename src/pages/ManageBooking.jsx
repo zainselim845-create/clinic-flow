@@ -284,7 +284,7 @@ const ManageBooking = () => {
                   <input
                     type="tel"
                     className="input-field"
-                    placeholder="مثال: 01006285031"
+                    placeholder="01012345678"
                     value={phoneSearch}
                     onChange={(e) => setPhoneSearch(e.target.value)}
                     dir="ltr"
@@ -299,7 +299,7 @@ const ManageBooking = () => {
                   <input
                     type="text"
                     className="input-field"
-                    placeholder="مثال: #CF-3531 أو 3531"
+                    placeholder="#CF-8101"
                     value={bookingCodeSearch}
                     onChange={(e) => setBookingCodeSearch(e.target.value)}
                     dir="ltr"
@@ -309,9 +309,9 @@ const ManageBooking = () => {
               </div>
 
               <div className="search-actions-bar">
-                <button type="submit" className="btn-primary search-btn">
+                <button type="submit" className="btn btn-primary search-btn">
                   <Lock size={16} />
-                  <span>التحقق وعرض تفاصيل الموعد </span>
+                  <span>التحقق وعرض تفاصيل الموعد</span>
                 </button>
 
                 <button 

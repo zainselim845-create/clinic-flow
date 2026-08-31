@@ -122,7 +122,7 @@ const Inventory = () => {
           <p>متابعة كميات الكومبوزيت، البنج، مواد الطبعات، والتعقيم مع إنذارات النقص والصلاحية</p>
         </div>
         <div className="header-actions-btns">
-          <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
             <Plus size={18} />
             <span>إضافة صنف جديد</span>
           </button>
