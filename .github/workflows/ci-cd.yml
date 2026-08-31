@@ -1,0 +1,118 @@
+﻿name: ClinicFlow Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===============================================================
+  # 1. Continuous Integration (Lint, Tests, Typecheck & Build)
+  # ===============================================================
+  ci-quality-gate:
+    name: 🛡️ Code Quality, Tests & Build Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔍 Static Code Linting (Oxlint)
+        run: npm run lint
+
+      - name: 🧪 Run Automated Test Suite (159 Vitest Specs)
+        run: npm test
+
+      - name: ⚡ Production Bundle Build (Vite)
+        run: npm run build
+
+      - name: 📤 Upload Production Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-dist
+          path: dist/
+          retention-days: 7
+
+  # ===============================================================
+  # 2. UI Review Loop & DOM Dynamics E2E Audit
+  # ===============================================================
+  e2e-ui-audit:
+    name: 🌐 100% UI Review Loop & E2E Verification
+    needs: ci-quality-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🎭 Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: 🚀 Start Vite Preview Server & Execute 100% UI Audit Sweep
+        run: |
+          npm run build
+          npx vite preview --port 5173 --host &
+          sleep 3
+          node scripts/browser-audit/run-audit.cjs
+
+  # ===============================================================
+  # 3. Continuous Deployment (Vercel Production)
+  # ===============================================================
+  cd-deploy-production:
+    name: 🚀 Deploy to Vercel Production
+    needs: [ci-quality-gate, e2e-ui-audit]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📦 Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: 🚀 Deploy to Vercel Production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID || 'team_niMSMl98JqdAuv5qC5eoHt9V' }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID || 'prj_ehMDfcVqdaTx9uVN2TFNmkN4t9W8' }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+            vercel build --prod --token=$VERCEL_TOKEN
+            vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+          else
+            echo "ℹ️ VERCEL_TOKEN secret not set in repository; skipped direct CLI step (Vercel Git Integration handles automatic zero-config deployments on push)."
+          fi
