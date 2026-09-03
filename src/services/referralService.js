@@ -25,7 +25,8 @@ export function getPatientReferralLink(patientId) {
 export function getReferralsLedger() {
   try {
     const data = safeStorage.getItem(REFERRALS_STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    return typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
   } catch (e) {
     console.error('Failed to get referrals', e);
     return [];

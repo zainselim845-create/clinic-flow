@@ -45,7 +45,8 @@ export function saveBookingDraft(draftData) {
 export function getBookingDrafts() {
   try {
     const data = safeStorage.getItem(DRAFTS_STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    return typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
   } catch (e) {
     console.error('Failed to get booking drafts', e);
     return [];

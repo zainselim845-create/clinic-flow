@@ -9,10 +9,7 @@ import { safeStorage } from '../utils/safeStorage';
 const FEEDBACK_STORAGE_KEY = 'clinicflow_feedbacks';
 
 export function getStoredFeedbacks() {
-  return safeStorage.getItem(FEEDBACK_STORAGE_KEY, [
-    { id: 'f-1', patientName: 'سارة إبراهيم', rating: 5, status: 'google_review_posted', comment: 'عيادة ممتازة ودكتور شاطر جداً', date: '2026-08-28' },
-    { id: 'f-2', patientName: 'محمود عبد الفتاح', rating: 3, status: 'management_investigating', comment: 'الانتظار كان طويل شوية', date: '2026-08-29' }
-  ]);
+  return safeStorage.getItem(FEEDBACK_STORAGE_KEY, []);
 }
 
 export function saveFeedback(feedback) {

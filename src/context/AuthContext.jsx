@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { clinicInfo as defaultClinicInfo, staffMembers as defaultStaffMembers } from '../data/demoData';
+import { fromDbClinic } from '../services/clinicsService';
 
 const AuthContext = createContext({});
 
@@ -58,29 +59,40 @@ export const AuthProvider = ({ children }) => {
     }
 
     // Get initial Supabase session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user || null);
-      if (session?.user) {
-        fetchClinic(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
+    if (supabase?.auth?.getSession) {
+      supabase.auth.getSession()
+        .then(({ data: { session } = {} }) => {
+          setSession(session);
+          setUser(session?.user || null);
+          if (session?.user) {
+            fetchClinic(session.user.id);
+          } else {
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to get Supabase session:', err);
+          setLoading(false);
+        });
+    }
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user || null);
-      if (session?.user) {
-        fetchClinic(session.user.id);
-      } else {
-        setClinic(null);
-        setLoading(false);
-      }
-    });
+    let subscription = null;
+    if (supabase?.auth?.onAuthStateChange) {
+      const authListener = supabase.auth.onAuthStateChange((_event, session) => {
+        setSession(session);
+        setUser(session?.user || null);
+        if (session?.user) {
+          fetchClinic(session.user.id);
+        } else {
+          setClinic(null);
+          setLoading(false);
+        }
+      });
+      subscription = authListener?.data?.subscription;
+    }
 
-    return () => subscription.unsubscribe();
+    return () => subscription?.unsubscribe?.();
   }, [isDemoMode]);
 
   const fetchClinic = async (userId) => {
@@ -92,7 +104,7 @@ export const AuthProvider = ({ children }) => {
         .single();
         
       if (error) throw error;
-      setClinic(data);
+      setClinic(fromDbClinic(data));
     } catch (error) {
       console.error('Error fetching clinic:', error);
     } finally {

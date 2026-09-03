@@ -10,7 +10,8 @@ const PACKAGES_STORAGE_KEY = 'clinicflow_patient_packages';
 export function getPatientPackages() {
   try {
     const data = safeStorage.getItem(PACKAGES_STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    return typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
   } catch (e) {
     console.error('Failed to get packages', e);
     return [];

@@ -1,61 +1,75 @@
 const memoryStore = new Map();
 
+function parseStoredValue(val, defaultValue) {
+  if (val === null || val === undefined) return defaultValue;
+  if (defaultValue !== null && typeof defaultValue === 'object') {
+    if (typeof val !== 'string') return val;
+    try {
+      const parsed = JSON.parse(val);
+      return parsed !== null && parsed !== undefined ? parsed : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  }
+  return val;
+}
+
 export const safeStorage = {
   getItem: (key, defaultValue = null) => {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
         const val = localStorage.getItem(key);
-        if (val === null || val === undefined) return defaultValue;
-        if (defaultValue !== null && typeof defaultValue === 'object') {
-          try {
-            const parsed = JSON.parse(val);
-            return parsed ?? defaultValue;
-          } catch {
-            return defaultValue;
-          }
+        if (val !== null && val !== undefined) {
+          return parseStoredValue(val, defaultValue);
         }
-        return val;
       } catch {
-        return memoryStore.get(key) ?? defaultValue;
+        // Fall through to memoryStore
       }
     }
-    return memoryStore.get(key) ?? defaultValue;
+    const memVal = memoryStore.get(key);
+    return parseStoredValue(memVal, defaultValue);
   },
+
   setItem: (key, value) => {
+    if (value === undefined) {
+      safeStorage.removeItem(key);
+      return;
+    }
     const stringVal = (value !== null && typeof value === 'object') 
       ? JSON.stringify(value) 
       : String(value);
 
+    memoryStore.set(key, stringVal);
+
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
         localStorage.setItem(key, stringVal);
-        return;
       } catch {
-        // fallback to memoryStore
+        // Keep memoryStore value as fallback
       }
     }
-    memoryStore.set(key, stringVal);
   },
+
   removeItem: (key) => {
+    memoryStore.delete(key);
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
         localStorage.removeItem(key);
-        return;
       } catch {
-        // fallback
+        // Ignored
       }
     }
-    memoryStore.delete(key);
   },
+
   clear: () => {
+    memoryStore.clear();
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
         localStorage.clear();
-        return;
       } catch {
-        // fallback
+        // Ignored
       }
     }
-    memoryStore.clear();
   }
 };
+

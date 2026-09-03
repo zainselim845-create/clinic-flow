@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { safeStorage } from '../utils/safeStorage';
 
 export const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
 export const getSupabaseConfig = () => {
-
-  const storedUrl = typeof window !== 'undefined' ? localStorage.getItem('clinicflow_supabase_url') : null;
-  const storedKey = typeof window !== 'undefined' ? localStorage.getItem('clinicflow_supabase_key') : null;
+  const storedUrl = safeStorage.getItem('clinicflow_supabase_url', null);
+  const storedKey = safeStorage.getItem('clinicflow_supabase_key', null);
 
   const url = storedUrl || import.meta.env.VITE_SUPABASE_URL || 'https://rogkodgqeowiylpckspi.supabase.co';
   const key = storedKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -14,10 +14,18 @@ export const getSupabaseConfig = () => {
 };
 
 export const saveSupabaseConfig = (url, key) => {
-  if (typeof window !== 'undefined') {
-    if (url) localStorage.setItem('clinicflow_supabase_url', url);
-    if (key) localStorage.setItem('clinicflow_supabase_key', key);
+  if (url) {
+    safeStorage.setItem('clinicflow_supabase_url', url);
+  } else {
+    safeStorage.removeItem('clinicflow_supabase_url');
   }
+
+  if (key) {
+    safeStorage.setItem('clinicflow_supabase_key', key);
+  } else {
+    safeStorage.removeItem('clinicflow_supabase_key');
+  }
+
   clientInstance = null;
 };
 

@@ -16,7 +16,6 @@ export default function GeneralSettingsTab({
 }) {
   const [newServiceName, setNewServiceName] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('');
-  const [newServiceDuration, setNewServiceDuration] = useState('30');
   const [newServiceDesc, setNewServiceDesc] = useState('');
   const [isAddingService, setIsAddingService] = useState(false);
   const [activeCategoryFilter, setActiveCategoryFilter] = useState('all');
@@ -52,7 +51,6 @@ export default function GeneralSettingsTab({
       id: 'srv-' + Date.now(),
       name: newServiceName.trim(),
       price: formattedPrice,
-      duration: Number(newServiceDuration) || 30,
       description: newServiceDesc.trim() || 'خدمة طبية تخصصية'
     };
 
@@ -63,7 +61,6 @@ export default function GeneralSettingsTab({
 
     setNewServiceName('');
     setNewServicePrice('');
-    setNewServiceDuration('30');
     setNewServiceDesc('');
     setIsAddingService(false);
   };
@@ -335,20 +332,6 @@ export default function GeneralSettingsTab({
                   required
                 />
               </div>
-              <div className="form-group">
-                <label>المدة التقديرية (بالدقائق)</label>
-                <select 
-                  className="input-field"
-                  value={newServiceDuration}
-                  onChange={(e) => setNewServiceDuration(e.target.value)}
-                >
-                  <option value={15}>15 دقيقة</option>
-                  <option value={20}>20 دقيقة</option>
-                  <option value={30}>30 دقيقة</option>
-                  <option value={45}>45 دقيقة</option>
-                  <option value={60}>60 دقيقة</option>
-                </select>
-              </div>
               <div className="form-group full-width">
                 <label>وصف توضيحي للخدمة للمريض</label>
                 <input 
@@ -386,7 +369,6 @@ export default function GeneralSettingsTab({
               <tr style={{ background: 'var(--bg-secondary)', textAlign: 'right' }}>
                 <th style={{ padding: '0.75rem 1rem' }}>اسم الخدمة الطبية</th>
                 <th style={{ padding: '0.75rem 1rem' }}>السعر</th>
-                <th style={{ padding: '0.75rem 1rem' }}>المدة</th>
                 <th style={{ padding: '0.75rem 1rem' }}>الوصف</th>
                 <th style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>إجراءات</th>
               </tr>
@@ -399,7 +381,6 @@ export default function GeneralSettingsTab({
                     <span>{s.name}</span>
                   </td>
                   <td style={{ padding: '0.75rem 1rem', color: '#059669', fontWeight: 700 }}>{s.price}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}>{s.duration} دقيقة</td>
                   <td style={{ padding: '0.75rem 1rem', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>{s.description}</td>
                   <td style={{ padding: '0.75rem 1rem', textAlign: 'center' }}>
                     <button 

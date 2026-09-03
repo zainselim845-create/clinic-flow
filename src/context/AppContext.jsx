@@ -11,6 +11,7 @@ import * as prescriptionsService from '../services/prescriptionsService';
 import * as expensesService from '../services/expensesService';
 import * as recallsService from '../services/recallsService';
 import { sendReminder } from '../services/smsService';
+import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
 
 const AppContext = createContext(null);
 
@@ -41,12 +42,10 @@ export function appReducer(state, action) {
       return { ...state, isLoading: action.payload };
     case 'RESET_TO_FRESH_START': {
       const fresh = getInitialData();
-      try {
-        localStorage.setItem('clinicflow_data', JSON.stringify(fresh));
-      } catch (_) {}
       return {
         ...state,
         ...fresh,
+        _freshReset: Date.now(),
         isLoading: false
       };
     }
@@ -58,6 +57,7 @@ export function appReducer(state, action) {
         prescriptions: [],
         expenses: [],
         recalls: [],
+        invoices: [],
         notifications: [
           {
             id: 'notif-fresh-start',
@@ -72,12 +72,10 @@ export function appReducer(state, action) {
         staffMembers: (state.staffMembers && state.staffMembers.length > 0) ? state.staffMembers : initial.staffMembers,
         clinicInfo: state.clinicInfo || initial.clinicInfo
       };
-      try {
-        localStorage.setItem('clinicflow_data', JSON.stringify(cleanEmpty));
-      } catch (_) {}
       return {
         ...state,
         ...cleanEmpty,
+        _freshReset: Date.now(),
         isLoading: false
       };
     }
@@ -113,7 +111,10 @@ export function appReducer(state, action) {
       return {
         ...state,
         patients: state.patients.filter(p => p.id !== action.payload),
-        appointments: state.appointments.filter(a => a.patientId !== action.payload)
+        appointments: state.appointments.filter(a => a.patientId !== action.payload),
+        prescriptions: (state.prescriptions || []).filter(rx => rx.patientId !== action.payload),
+        recalls: (state.recalls || []).filter(r => r.patientId !== action.payload),
+        invoices: (state.invoices || []).filter(inv => inv.patientId !== action.payload)
       };
     case 'SET_PATIENTS':
       return { ...state, patients: action.payload };
@@ -152,7 +153,7 @@ export function appReducer(state, action) {
       let updatedPatients = state.patients;
       let newNotifs = state.notifications || [];
 
-      if (status === 'completed' && targetAppt) {
+      if (status === 'completed' && targetAppt && targetAppt.status !== 'completed') {
         // Increment patient visits and update lastVisit
         if (targetAppt.patientId) {
           updatedPatients = state.patients.map(p => {
@@ -535,7 +536,7 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     if (state.isLoading) return;
-    if (state.patients.length === 0 && state.appointments.length === 0) return;
+    if (state.patients.length === 0 && state.appointments.length === 0 && !state._freshReset) return;
 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -686,9 +687,10 @@ export function AppProvider({ children }) {
 
       currentState.appointments.forEach(app => {
         if (app.status === 'upcoming' && !app.reminderSent && app.date === todayStr) {
-          const [hours, minutes] = app.time.split(':').map(Number);
+          const parsed = parseArabicTime(app.time);
+          if (!parsed) return;
           const appTime = new Date(now);
-          appTime.setHours(hours, minutes, 0, 0);
+          appTime.setHours(parsed.hours, parsed.minutes, 0, 0);
 
           const timeDiffMs = appTime.getTime() - now.getTime();
           const timeDiffMinutes = Math.floor(timeDiffMs / 60000);
@@ -751,8 +753,8 @@ export function AppProvider({ children }) {
 
   const getUpcomingAppointments = useCallback(() => {
     return state.appointments.filter(a => a.status === 'upcoming').sort((a, b) => {
-      const dateA = new Date(`${a.date}T${a.time}`);
-      const dateB = new Date(`${b.date}T${b.time}`);
+      const dateA = arabicTimeToDate(a.date, a.time);
+      const dateB = arabicTimeToDate(b.date, b.time);
       return dateA - dateB;
     });
   }, [state.appointments]);

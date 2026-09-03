@@ -593,7 +593,7 @@ const Dashboard = () => {
           isOpen={!!finishExamAppt}
           appointment={finishExamAppt}
           onClose={() => setFinishExamAppt(null)}
-          onSubmit={handleFinishConsultation}
+          onComplete={handleFinishConsultation}
         />
       )}
 

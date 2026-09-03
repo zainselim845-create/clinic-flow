@@ -3,7 +3,7 @@ import {
   DEFAULT_DENTAL_VISIT_TYPES, addVisitType, updateVisitType, deleteVisitType 
 } from '../../services/visitTypesService';
 import { 
-  Plus, Trash2, Edit2, CheckCircle2, Clock, 
+  Plus, Trash2, Edit2, CheckCircle2, 
   DollarSign, Globe, Check, X 
 } from 'lucide-react';
 
@@ -15,7 +15,6 @@ const normalizeTypes = (list) => {
     id: vt.id || 'vt_' + Math.random().toString(36).substring(2, 9),
     nameAr: vt.nameAr || vt.name || 'زيارة طبية',
     nameEn: vt.nameEn || '',
-    durationMin: Number(vt.durationMin || vt.duration || 30),
     standardFee: Number(vt.standardFee !== undefined ? vt.standardFee : (vt.price ? parseInt(vt.price.toString().replace(/\D/g, '')) || 300 : 300)),
     colorCode: vt.colorCode || '#0D9488',
     isOnline: vt.isOnline !== undefined ? vt.isOnline : true,
@@ -36,7 +35,6 @@ const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitT
   const [formData, setFormData] = useState({
     nameAr: '',
     nameEn: '',
-    durationMin: 30,
     standardFee: 300,
     colorCode: '#0D9488',
     isOnline: true,
@@ -48,7 +46,6 @@ const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitT
     setFormData({
       nameAr: '',
       nameEn: '',
-      durationMin: 30,
       standardFee: 300,
       colorCode: '#0D9488',
       isOnline: true,
@@ -62,7 +59,6 @@ const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitT
     setFormData({
       nameAr: vt.nameAr,
       nameEn: vt.nameEn || '',
-      durationMin: vt.durationMin || 30,
       standardFee: vt.standardFee || 0,
       colorCode: vt.colorCode || '#0D9488',
       isOnline: vt.isOnline !== undefined ? vt.isOnline : true,
