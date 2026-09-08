@@ -1,0 +1,230 @@
+/* ======================================================== */
+/* Custom Domain & SSL Tab Styles - Dub.co / Vercel Pattern */
+/* ======================================================== */
+
+.custom-domain-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.domain-status-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-xl);
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.domain-status-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.domain-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.domain-status-badge.active {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.domain-status-badge.pending_dns {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.domain-status-badge.verifying {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.domain-status-badge.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.domain-status-badge.unconfigured {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+.domain-input-box {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.domain-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+}
+
+.domain-input-prefix {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  pointer-events: none;
+  direction: ltr;
+}
+
+.domain-input-field {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 4.5rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: monospace;
+  direction: ltr;
+  text-align: left;
+  transition: border-color 0.2s;
+}
+
+.domain-input-field:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.domain-actions-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* DNS Records Table */
+.dns-table-container {
+  overflow-x: auto;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
+  margin-top: 1rem;
+}
+
+.dns-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.dns-table th {
+  padding: 0.9rem 1.25rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 700;
+  border-bottom: 1.5px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.dns-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.dns-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dns-record-tag {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--primary);
+}
+
+.dns-value-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  direction: ltr;
+  font-family: monospace;
+  font-size: 0.88rem;
+  justify-content: flex-end;
+}
+
+.copy-dns-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.copy-dns-btn:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--primary);
+}
+
+.copy-dns-btn.copied {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border-color: #059669;
+}
+
+.dns-guide-box {
+  background: var(--bg-secondary);
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dns-guide-box h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dns-guide-steps {
+  margin: 0;
+  padding-right: 1.25rem;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Building2, Users, CalendarDays, Smartphone, Bot, Database, Stethoscope
+  Building2, Users, CalendarDays, Smartphone, Bot, Database, Stethoscope, Globe
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
@@ -14,6 +14,7 @@ import StaffManagementTab from './settings/StaffManagementTab';
 import SmsConfigTab from './settings/SmsConfigTab';
 import AiAssistantConfigTab from './settings/AiAssistantConfigTab';
 import DatabaseSyncTab from './settings/DatabaseSyncTab';
+import CustomDomainTab from './settings/CustomDomainTab';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
 import './Settings.css';
@@ -149,6 +150,15 @@ const Settings = () => {
           <Database size={18} />
           <span>السحابة والنسخ الاحتياطي</span>
         </button>
+
+        <button 
+          type="button"
+          className={`tab-btn ${activeTab === 'customDomain' ? 'active' : ''}`}
+          onClick={() => setActiveTab('customDomain')}
+        >
+          <Globe size={18} />
+          <span>الدومين والـ SSL</span>
+        </button>
       </div>
 
       <div className="settings-content-wrapper">
@@ -204,6 +214,10 @@ const Settings = () => {
             state={state}
             dispatch={dispatch}
           />
+        )}
+
+        {activeTab === 'customDomain' && (
+          <CustomDomainTab />
         )}
       </div>
     </div>

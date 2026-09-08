@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { getInitialData, getInitialDataForTenant } from '../data/demoData';
 import TenantContext from './TenantContext';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
@@ -12,6 +12,7 @@ import * as expensesService from '../services/expensesService';
 import * as recallsService from '../services/recallsService';
 import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
+import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
 
 const AppContext = createContext(null);
 
@@ -427,6 +428,8 @@ export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const stateRef = useRef(state);
   const useSupabase = isSupabaseConfigured();
+  const [realtimeStatus, setRealtimeStatus] = useState(REALTIME_STATUS.DISCONNECTED);
+  const realtimeManagerRef = useRef(null);
 
   // Resolve active tenant from TenantContext
   const tenantContext = useContext(TenantContext);
@@ -631,52 +634,48 @@ export function AppProvider({ children }) {
   // Supabase Realtime Subscriptions معزولة بمفتاح العيادة فقط
   // ==========================================
   useEffect(() => {
-    if (!useSupabase || !supabase) return;
-    const currentClinicId = tenantId;
+    if (!useSupabase || !supabase) {
+      setRealtimeStatus(REALTIME_STATUS.DISCONNECTED);
+      return;
+    }
 
-    const channel = supabase
-      .channel(`clinic-realtime-${currentClinicId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          dispatch({ type: 'ADD_APPOINTMENT', payload: appointmentsService.fromDbAppointment(payload.new) });
-        } else if (payload.eventType === 'UPDATE') {
-          dispatch({ type: 'UPDATE_APPOINTMENT', payload: appointmentsService.fromDbAppointment(payload.new) });
-        } else if (payload.eventType === 'DELETE') {
-          dispatch({ type: 'DELETE_APPOINTMENT', payload: payload.old.id });
+    const currentClinicId = tenantId;
+    const manager = createClinicRealtimeManager({
+      supabaseClient: supabase,
+      clinicId: currentClinicId,
+      onDispatch: (action) => dispatch(action),
+      onStatusChange: (status) => setRealtimeStatus(status),
+      onBroadcast: (payload) => {
+        if (payload?.message) {
+          dispatch({
+            type: 'ADD_NOTIFICATION',
+            payload: {
+              id: 'rt-notif-' + Date.now(),
+              type: 'system',
+              title: payload.eventType === BROADCAST_EVENTS.PATIENT_ARRIVED ? 'وصول مريض' : 'تنبيه عيادة',
+              message: payload.message,
+              timestamp: new Date().toISOString(),
+              read: false
+            }
+          });
         }
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          dispatch({ type: 'ADD_NOTIFICATION', payload: notificationsService.fromDbNotification(payload.new) });
-        }
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          dispatch({ type: 'ADD_PATIENT', payload: patientsService.fromDbPatient(payload.new) });
-        } else if (payload.eventType === 'UPDATE') {
-          dispatch({ type: 'UPDATE_PATIENT', payload: patientsService.fromDbPatient(payload.new) });
-        }
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'staff_members', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          dispatch({ type: 'ADD_STAFF', payload: staffService.fromDbStaff(payload.new) });
-        } else if (payload.eventType === 'UPDATE') {
-          dispatch({ type: 'UPDATE_STAFF', payload: staffService.fromDbStaff(payload.new) });
-        } else if (payload.eventType === 'DELETE') {
-          dispatch({ type: 'DELETE_STAFF', payload: payload.old.id });
-        }
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'blocked_slots', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: blockedSlotsService.fromDbBlockedSlot(payload.new) });
-        }
-      })
-      .subscribe();
+      }
+    });
+
+    realtimeManagerRef.current = manager;
 
     return () => {
-      supabase.removeChannel(channel);
+      manager.unsubscribe();
+      realtimeManagerRef.current = null;
     };
   }, [useSupabase, tenantId]);
+
+  const broadcastClinicEvent = useCallback((eventType, data) => {
+    if (realtimeManagerRef.current) {
+      return realtimeManagerRef.current.broadcast(eventType, data);
+    }
+    return Promise.resolve(false);
+  }, []);
 
   // Theme Management
   useEffect(() => {
@@ -833,7 +832,10 @@ export function AppProvider({ children }) {
     getUnreadNotificationsCount,
     addAppointmentWithNotification,
     sendSmsReminder,
-    useSupabase
+    useSupabase,
+    realtimeStatus,
+    broadcastClinicEvent,
+    BROADCAST_EVENTS
   }), [
     state,
     dispatch,
@@ -846,7 +848,9 @@ export function AppProvider({ children }) {
     getUnreadNotificationsCount,
     addAppointmentWithNotification,
     sendSmsReminder,
-    useSupabase
+    useSupabase,
+    realtimeStatus,
+    broadcastClinicEvent
   ]);
 
   return (
