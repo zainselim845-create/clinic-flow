@@ -39,19 +39,16 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
     .map(w => w[0])
     .join('');
 
-  const isEmergency = appointment.isEmergency || appointment.type === 'طوارئ' || (appointment.type || '').includes('طوارئ');
-
   return (
-    <div className={`modern-appointment-card glass-card ${appointment.status} ${isEmergency ? 'emergency-card' : ''}`}>
+    <div className={`modern-appointment-card glass-card ${appointment.status}`}>
       <div className="appt-card-top">
-        <div className="appt-patient-avatar" style={isEmergency ? { background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)', color: '#FFF' } : {}}>
+        <div className="appt-patient-avatar">
           {initials}
         </div>
         <div className="appt-patient-details">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
             <h4 className="appt-patient-name">{appointment.patientName}</h4>
             {appointment.bookingCode && <span className="appt-code-pill">{appointment.bookingCode}</span>}
-            {isEmergency && <span className="appt-emergency-badge"> طوارئ</span>}
           </div>
           <span className="appt-patient-phone">{appointment.patientPhone || 'بدون هاتف'}</span>
         </div>

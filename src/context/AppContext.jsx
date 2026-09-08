@@ -7,7 +7,6 @@ import * as blockedSlotsService from '../services/blockedSlotsService';
 import * as notificationsService from '../services/notificationsService';
 import * as staffService from '../services/staffService';
 import * as clinicsService from '../services/clinicsService';
-import * as prescriptionsService from '../services/prescriptionsService';
 import * as expensesService from '../services/expensesService';
 import * as recallsService from '../services/recallsService';
 import { sendReminder } from '../services/smsService';
@@ -20,7 +19,6 @@ export const initialState = {
   appointments: [],
   notifications: [],
   blockedSlots: [],
-  prescriptions: [],
   expenses: [],
   recalls: [],
   staffMembers: [],
@@ -54,7 +52,6 @@ export function appReducer(state, action) {
       const cleanEmpty = {
         patients: [],
         appointments: [],
-        prescriptions: [],
         expenses: [],
         recalls: [],
         invoices: [],
@@ -89,7 +86,7 @@ export function appReducer(state, action) {
         patients: state.patients.map(p => p.id === action.payload.id ? action.payload : p) 
       };
     case 'UPDATE_PATIENT_MEDICAL_HISTORY': {
-      const { patientId, diagnosis, prescription, notes, lastVisit } = action.payload;
+      const { patientId, diagnosis, notes, lastVisit } = action.payload;
       return {
         ...state,
         patients: state.patients.map(p => {
@@ -97,7 +94,6 @@ export function appReducer(state, action) {
             return {
               ...p,
               ...(diagnosis !== undefined ? { diagnosis } : {}),
-              ...(prescription !== undefined ? { prescription } : {}),
               ...(notes !== undefined ? { notes } : {}),
               ...(lastVisit !== undefined ? { lastVisit } : {})
             };
@@ -112,7 +108,6 @@ export function appReducer(state, action) {
         ...state,
         patients: state.patients.filter(p => p.id !== action.payload),
         appointments: state.appointments.filter(a => a.patientId !== action.payload),
-        prescriptions: (state.prescriptions || []).filter(rx => rx.patientId !== action.payload),
         recalls: (state.recalls || []).filter(r => r.patientId !== action.payload),
         invoices: (state.invoices || []).filter(inv => inv.patientId !== action.payload)
       };
@@ -299,29 +294,6 @@ export function appReducer(state, action) {
         )
       };
 
-    // Prescriptions (E-Prescription & Rx System)
-    case 'ADD_PRESCRIPTION':
-      return {
-        ...state,
-        prescriptions: [action.payload, ...(state.prescriptions || [])],
-        notifications: [
-          {
-            id: 'notif-' + Date.now(),
-            type: 'prescription',
-            title: 'إصدار روشتة طبية',
-            message: `تم إصدار روشتة إلكترونية للمريض ${action.payload.patientName}`,
-            timestamp: new Date().toISOString(),
-            read: false
-          },
-          ...(state.notifications || [])
-        ].slice(0, 100)
-      };
-    case 'DELETE_PRESCRIPTION':
-      return {
-        ...state,
-        prescriptions: (state.prescriptions || []).filter(p => p.id !== action.payload)
-      };
-
     // Services Catalog
     case 'ADD_SERVICE': {
       const existingServices = state.clinicInfo?.services || [];
@@ -420,7 +392,6 @@ export function appReducer(state, action) {
         appointments: [],
         notifications: [],
         blockedSlots: [],
-        prescriptions: [],
         expenses: [],
         recalls: []
       };
@@ -448,14 +419,13 @@ export function AppProvider({ children }) {
       if (useSupabase) {
         try {
           // جلب البيانات من Supabase
-          const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, rxList, expensesRes, recallsRes] = await Promise.all([
+          const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, expensesRes, recallsRes] = await Promise.all([
             patientsService.getPatients(),
             appointmentsService.getAppointments(),
             blockedSlotsService.getBlockedSlots(),
             notificationsService.getNotifications(),
             staffService.getStaffMembers(),
             clinicsService.getClinicInfo(),
-            prescriptionsService.getPrescriptions(),
             expensesService.getExpenses(),
             recallsService.getRecalls()
           ]);
@@ -481,7 +451,6 @@ export function AppProvider({ children }) {
               notifications: notifsRes?.data || [],
               staffMembers: staffRes?.data && staffRes.data.length > 0 ? staffRes.data : [],
               clinicInfo: clinicRes?.data || null,
-              prescriptions: rxList || [],
               expenses: (expensesRes?.data && expensesRes.data.length > 0) ? expensesRes.data : fallbackExpenses,
               recalls: (recallsRes?.data && recallsRes.data.length > 0) ? recallsRes.data : fallbackRecalls,
               useSupabase: true
@@ -509,7 +478,6 @@ export function AppProvider({ children }) {
               appointments: (parsed.appointments && parsed.appointments.length > 0) ? parsed.appointments : initial.appointments,
               notifications: (parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : initial.notifications,
               blockedSlots: parsed.blockedSlots || initial.blockedSlots,
-              prescriptions: (parsed.prescriptions && parsed.prescriptions.length > 0) ? parsed.prescriptions : initial.prescriptions,
               expenses: (parsed.expenses && parsed.expenses.length > 0) ? parsed.expenses : initial.expenses,
               recalls: (parsed.recalls && parsed.recalls.length > 0) ? parsed.recalls : initial.recalls,
               staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : initial.staffMembers,
@@ -551,7 +519,6 @@ export function AppProvider({ children }) {
           notifications: state.notifications,
           staffMembers: state.staffMembers,
           clinicInfo: state.clinicInfo,
-          prescriptions: state.prescriptions,
           expenses: state.expenses,
           recalls: state.recalls
         });
@@ -568,7 +535,6 @@ export function AppProvider({ children }) {
             blockedSlots: state.blockedSlots,
             staffMembers: state.staffMembers,
             clinicInfo: state.clinicInfo,
-            prescriptions: state.prescriptions,
             expenses: state.expenses,
             recalls: state.recalls
           };
@@ -591,7 +557,6 @@ export function AppProvider({ children }) {
     state.notifications, 
     state.staffMembers, 
     state.clinicInfo, 
-    state.prescriptions, 
     state.expenses, 
     state.recalls, 
     useSupabase, 

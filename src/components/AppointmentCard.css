@@ -19,52 +19,6 @@
   border-color: var(--primary);
 }
 
-.modern-appointment-card.emergency-card {
-  border: 1.5px solid rgba(239, 68, 68, 0.45);
-  background: linear-gradient(135deg, var(--error-light) 0%, var(--surface) 100%);
-  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.12);
-}
-
-.modern-appointment-card.completed {
-  border-inline-start: 4px solid var(--success);
-}
-
-.modern-appointment-card.waiting {
-  border-inline-start: 4px solid var(--warning);
-}
-
-.modern-appointment-card.in_progress {
-  border-inline-start: 4px solid var(--accent);
-}
-
-.modern-appointment-card.upcoming,
-.modern-appointment-card.booked {
-  border-inline-start: 4px solid var(--primary);
-}
-
-.modern-appointment-card.cancelled {
-  border-inline-start: 4px solid var(--error);
-  opacity: 0.75;
-}
-
-.appt-emergency-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  padding: 0.15rem 0.45rem;
-  border-radius: var(--radius-full);
-  background: var(--error-light);
-  color: var(--error);
-  font-size: 0.7rem;
-  font-weight: 800;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  animation: emergencyPulse 2s infinite;
-}
-
-@keyframes emergencyPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.85; transform: scale(1.03); }
-}
 
 .appt-card-top {
   display: flex;

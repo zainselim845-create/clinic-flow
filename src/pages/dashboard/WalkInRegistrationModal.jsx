@@ -12,7 +12,6 @@ export default function WalkInRegistrationModal({
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [type, setType] = useState('كشف عادي');
-  const [isEmergency, setIsEmergency] = useState(false);
   const [notes, setNotes] = useState('');
   const [phoneError, setPhoneError] = useState('');
 
@@ -31,8 +30,7 @@ export default function WalkInRegistrationModal({
     onSubmit({
       name: name.trim(),
       phone: cleanedPhone,
-      type: isEmergency ? 'طوارئ' : type,
-      isEmergency,
+      type,
       notes: notes.trim(),
       date: getTodayDateStr()
     });
@@ -80,7 +78,7 @@ export default function WalkInRegistrationModal({
 
           <div className="form-group">
             <label>نوع الكشف أو الخدمة</label>
-            <select value={type} onChange={(e) => setType(e.target.value)} disabled={isEmergency}>
+            <select value={type} onChange={(e) => setType(e.target.value)}>
               <option value="كشف عادي">كشف وفحص تشخيصي شامل (300 ج.م)</option>
               <option value="استشارة">استشارة ومتابعة بعد العلاج (150 ج.م)</option>
               <option value="تنظيف وتلميع أسنان">تنظيف وتلميع وإزالة جير (400 ج.م)</option>
@@ -90,22 +88,7 @@ export default function WalkInRegistrationModal({
               <option value="طربوش زيركون">طربوش / تاج زيركون تجميلي (1800 ج.م)</option>
               <option value="تبييض أسنان">تبييض أسنان احترافي بالعيادة (2000 ج.م)</option>
               <option value="زراعة أسنان">زراعة سن تيتانيوم ألماني (6500 ج.م)</option>
-              <option value="طوارئ">حالة طارئة ومستعجلة (400 ج.م)</option>
             </select>
-          </div>
-
-          <div className="emergency-checkbox-card">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={isEmergency}
-                onChange={(e) => setIsEmergency(e.target.checked)}
-              />
-              <div>
-                <strong> حالة طارئة ومستعجلة (Emergency Priority)</strong>
-                <p>سيتم رفع المريض لأعلى قائمة الانتظار فوراً ليدخل للكشف أولاً</p>
-              </div>
-            </label>
           </div>
 
           <div className="form-group">

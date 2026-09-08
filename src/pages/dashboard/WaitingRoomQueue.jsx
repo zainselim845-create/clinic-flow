@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stethoscope, Clock, Check, ArrowRight, UserPlus, FolderOpen, Pill, Sparkles } from 'lucide-react';
+import { Stethoscope, Clock, Check, ArrowRight, UserPlus, FolderOpen, Sparkles } from 'lucide-react';
 
 function WaitingRoomQueue({
   currentExamPatient,
@@ -7,8 +7,7 @@ function WaitingRoomQueue({
   onStartExam,
   onOpenFinishModal,
   onOpenDossier,
-  onOpenWalkInModal,
-  onOpenPrescription
+  onOpenWalkInModal
 }) {
   const calculateWaitMinutes = (checkedInAt) => {
     if (!checkedInAt) return 0;
@@ -69,16 +68,6 @@ function WaitingRoomQueue({
               <div className="exam-actions">
                 <button
                   type="button"
-                  onClick={() => onOpenPrescription && onOpenPrescription(currentExamPatient)}
-                  className="btn-exam-action primary"
-                  title="كتابة وطباعة روشتة طبية إلكترونية"
-                >
-                  <Pill size={15} />
-                  <span>روشتة ذكية</span>
-                </button>
-
-                <button
-                  type="button"
                   onClick={() => onOpenFinishModal(currentExamPatient)}
                   className="btn-exam-action success"
                   title="إنهاء الكشف واعتماد التشخيص"
@@ -130,7 +119,7 @@ function WaitingRoomQueue({
               <Clock size={18} />
               <span>قائمة الانتظار بالعيادة ({waitingToday.length})</span>
             </h4>
-            <small>مرتبة بأولوية الحالات الطارئة ثم أسبقية الوصول</small>
+            <small>مرتبة حسب أسبقية الحضور ووقت الحجز</small>
           </div>
 
           {waitingToday.length === 0 ? (
@@ -141,15 +130,13 @@ function WaitingRoomQueue({
             <div className="queue-list">
               {waitingToday.map((appt, idx) => {
                 const waitMins = calculateWaitMinutes(appt.checkedInAt);
-                const isEmergency = appt.isEmergency || appt.type === 'طوارئ' || (appt.type || '').includes('طوارئ');
 
                 return (
-                  <div key={appt.id || idx} className={`queue-item-card ${isEmergency ? 'emergency-priority' : ''}`}>
+                  <div key={appt.id || idx} className="queue-item-card">
                     <div className="queue-number">#{idx + 1}</div>
                     <div className="patient-info">
                       <div className="name-row">
                         <strong>{appt.patientName}</strong>
-                        {isEmergency && <span className="emergency-badge"> طوارئ</span>}
                       </div>
                       <div className="time-details">
                         <span>{appt.time}</span>

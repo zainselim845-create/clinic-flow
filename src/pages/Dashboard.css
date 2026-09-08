@@ -526,10 +526,6 @@
   border-color: var(--primary);
 }
 
-.queue-item-card.emergency-priority {
-  border-color: var(--error);
-  background: var(--error-light);
-}
 
 .queue-number {
   font-size: 0.8rem;
@@ -555,14 +551,7 @@
   color: var(--text-primary);
 }
 
-.emergency-badge {
-  background: var(--error);
-  color: #FFFFFF;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-}
+
 
 .time-details {
   display: flex;

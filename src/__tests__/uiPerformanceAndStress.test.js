@@ -51,7 +51,7 @@ describe('UI Performance, Stress & Non-Blocking State Engine', () => {
       patientPhone: `0100000${String(i).padStart(4, '0')}`,
       status: i % 4 === 0 ? 'completed' : i % 4 === 1 ? 'waiting' : i % 4 === 2 ? 'in_progress' : 'booked',
       date: '2026-08-30',
-      type: i % 10 === 0 ? 'طوارئ' : 'كشف عادي'
+      type: i % 10 === 0 ? 'استشارة' : 'كشف عادي'
     }));
 
     const startTime = performance.now();
@@ -68,28 +68,24 @@ describe('UI Performance, Stress & Non-Blocking State Engine', () => {
     expect(elapsed).toBeLessThan(50);
   });
 
-  it('maintains emergency patients at the front of the waiting queue regardless of insertion order', () => {
+  it('maintains waiting queue fairly by check-in time (FIFO / arrival order) without emergency preference', () => {
     const queue = [
-      { id: '1', patientName: 'خالد عادي', checkedInAt: '2026-08-30T10:00:00Z', isEmergency: false },
-      { id: '2', patientName: 'طارق عادي', checkedInAt: '2026-08-30T10:05:00Z', isEmergency: false },
-      { id: '3', patientName: 'علي طوارئ حاد', checkedInAt: '2026-08-30T10:15:00Z', isEmergency: true },
-      { id: '4', patientName: 'فاطمة عادي', checkedInAt: '2026-08-30T10:02:00Z', isEmergency: false },
-      { id: '5', patientName: 'سارة نزيف طارئ', checkedInAt: '2026-08-30T10:20:00Z', isEmergency: true }
+      { id: '1', patientName: 'خالد عادي', checkedInAt: '2026-08-30T10:00:00Z' },
+      { id: '2', patientName: 'طارق عادي', checkedInAt: '2026-08-30T10:05:00Z' },
+      { id: '3', patientName: 'علي كمال', checkedInAt: '2026-08-30T10:15:00Z' },
+      { id: '4', patientName: 'فاطمة عادي', checkedInAt: '2026-08-30T10:02:00Z' },
+      { id: '5', patientName: 'سارة إبراهيم', checkedInAt: '2026-08-30T10:20:00Z' }
     ];
 
     const sortedQueue = [...queue].sort((a, b) => {
-      const aIsEmergency = a.isEmergency || a.type === 'طوارئ';
-      const bIsEmergency = b.isEmergency || b.type === 'طوارئ';
-      if (aIsEmergency && !bIsEmergency) return -1;
-      if (!aIsEmergency && bIsEmergency) return 1;
       return new Date(a.checkedInAt) - new Date(b.checkedInAt);
     });
 
-    expect(sortedQueue[0].patientName).toBe('علي طوارئ حاد');
-    expect(sortedQueue[1].patientName).toBe('سارة نزيف طارئ');
-    expect(sortedQueue[2].patientName).toBe('خالد عادي');
-    expect(sortedQueue[3].patientName).toBe('فاطمة عادي');
-    expect(sortedQueue[4].patientName).toBe('طارق عادي');
+    expect(sortedQueue[0].patientName).toBe('خالد عادي');
+    expect(sortedQueue[1].patientName).toBe('فاطمة عادي');
+    expect(sortedQueue[2].patientName).toBe('طارق عادي');
+    expect(sortedQueue[3].patientName).toBe('علي كمال');
+    expect(sortedQueue[4].patientName).toBe('سارة إبراهيم');
   });
 
   it('accurately computes daily revenue and attendance percentage in microsecond scale', () => {

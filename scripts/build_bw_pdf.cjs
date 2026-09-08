@@ -1,4 +1,4 @@
-﻿const { chromium } = require('playwright');
+const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
@@ -171,8 +171,6 @@ async function generateBwPdf() {
           <li><span class="feature-title">حجز أونلاين برقم الموبايل فقط:</span> المريض يحجز كشفه في 30 ثانية دون الحاجة لتحميل أي تطبيق أو إنشاء كلمة مرور.</li>
           <li><span class="feature-title">إلغاء وتعديل الموعد أونلاين:</span> إمكانية تعديل وقت الموعد أو إلغائه ذاتياً من الهاتف في أي وقت وبكل سهولة.</li>
           <li><span class="feature-title">تذكرة حجز إلكترونية (كود مرجعي):</span> إصدار تذكرة رقمية رسمية تتضمن بيانات الموعد والعيادة قابلة للطباعة والحفظ.</li>
-          <li><span class="feature-title">عرض الرسوم والخدمات مسبقاً:</span> إظهار سعر كل كشف أو خدمة طبية والمدة المقررة بوضوح قبل تأكيد الحجز.</li>
-          <li><span class="feature-title">تحديد الحالات الطارئة:</span> خاصية مخصصة للحالات المستعجلة تنبه الاستقبال فوراً وتضع المريض في أولوية الدور.</li>
           <li><span class="feature-title">التعرف التلقائي على المريض السابق:</span> استرجاع بيانات المريض وملفه فور كتابة رقم الهاتف دون تكرار الإدخال.</li>
         </ul>
       </div>
@@ -223,11 +221,9 @@ async function generateBwPdf() {
 
       <!-- Section 4 -->
       <div class="section-block">
-        <h2 class="section-title">4. الكشف والملفات الطبية والروشتة</h2>
+        <h2 class="section-title">4. الكشف والملفات الطبية</h2>
         <ul class="features-list">
           <li><span class="feature-title">ملف طبي إلكتروني شامل (EMR):</span> سجل تاريخي متكامل يضم الزيارات، التشخيصات السابقة، الأدوية، والأشعة المرفقة.</li>
-          <li><span class="feature-title">روشتة إلكترونية للطباعة:</span> كتابة الأدوية والجرعات وطباعة روشتة معتمدة وتحديد ميعاد الاستشارة فورياً.</li>
-          <li><span class="feature-title">مخطط أسنان تفاعلي (FDI Chart):</span> رسم توضيحي لـ 32 سناً لعيادات الأسنان لتسجيل الحشوات، الجذور، والزراعة بلمسة واحدة.</li>
           <li><span class="feature-title">مساعد طبي بالذكاء الاصطناعي:</span> نظام أوامر بالصوت والكتابة باللغة العربية للبحث في السجلات وإدارة جدول المواعيد.</li>
           <li><span class="feature-title">كاشف تعارض الأدوية:</span> تنبيه سريري آلي يحذر الطبيب في حال تعارض الدواء الموصوف مع حالة المريض الصحية.</li>
         </ul>

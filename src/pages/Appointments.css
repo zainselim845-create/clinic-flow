@@ -81,14 +81,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.status-filters button.emergency-pill-filter {
-  color: var(--error);
-}
 
-.status-filters button.emergency-pill-filter.active {
-  background: var(--error);
-  color: #FFFFFF;
-}
 
 .other-filters {
   display: flex;

@@ -73,8 +73,7 @@ const Appointments = () => {
     const query = deferredQuery.trim().toLowerCase();
     return appointments.filter(appt => {
       let matchesStatus = true;
-      if (filterStatus === 'emergency') matchesStatus = appt.isEmergency || appt.type === 'طوارئ' || (appt.type || '').includes('طوارئ');
-      else if (filterStatus === 'waiting') matchesStatus = appt.status === 'waiting';
+      if (filterStatus === 'waiting') matchesStatus = appt.status === 'waiting';
       else if (filterStatus === 'in_progress') matchesStatus = appt.status === 'in_progress';
       else if (filterStatus === 'booked') matchesStatus = appt.status === 'booked' || appt.status === 'upcoming';
       else if (filterStatus === 'completed') matchesStatus = appt.status === 'completed';
@@ -110,8 +109,6 @@ const Appointments = () => {
     const determinedFee = serviceMatch?.price || (
       formData.type === 'استشارة' || formData.type === 'متابعة' 
         ? (currentClinic.consultationFee || '150 ج.م')
-        : formData.type === 'طوارئ'
-        ? (currentClinic.emergencyFee || '400 ج.م')
         : formData.type === 'تنظيف وتلميع أسنان'
         ? '400 ج.م'
         : formData.type === 'حشو تجميلي كومبوزيت'
@@ -279,7 +276,6 @@ const Appointments = () => {
       <div className="filters-bar glass-card">
         <div className="status-filters">
           <button className={filterStatus === 'all' ? 'active' : ''} onClick={() => { setFilterStatus('all'); setCurrentPage(1); }}>الكل ({appointments.length})</button>
-          <button className={`emergency-pill-filter ${filterStatus === 'emergency' ? 'active' : ''}`} onClick={() => { setFilterStatus('emergency'); setCurrentPage(1); }}> طوارئ ({appointments.filter(a => a.isEmergency || a.type === 'طوارئ' || (a.type || '').includes('طوارئ')).length})</button>
           <button className={filterStatus === 'waiting' ? 'active' : ''} onClick={() => { setFilterStatus('waiting'); setCurrentPage(1); }}>في الانتظار ({appointments.filter(a => a.status === 'waiting').length})</button>
           <button className={filterStatus === 'in_progress' ? 'active' : ''} onClick={() => { setFilterStatus('in_progress'); setCurrentPage(1); }}>في الكشف ({appointments.filter(a => a.status === 'in_progress').length})</button>
           <button className={filterStatus === 'booked' ? 'active' : ''} onClick={() => { setFilterStatus('booked'); setCurrentPage(1); }}>محجوز ({appointments.filter(a => a.status === 'booked' || a.status === 'upcoming').length})</button>
@@ -481,7 +477,6 @@ const Appointments = () => {
                   <option value="طربوش زيركون">طربوش / تاج زيركون تجميلي (1800 ج.م)</option>
                   <option value="تبييض أسنان">تبييض أسنان احترافي بالعيادة (2000 ج.م)</option>
                   <option value="زراعة أسنان">زراعة سن تيتانيوم ألماني (6500 ج.م)</option>
-                  <option value="طوارئ">حالة طارئة ومستعجلة (400 ج.م)</option>
                 </select>
               </div>
 

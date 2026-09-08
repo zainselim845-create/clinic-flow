@@ -35,9 +35,9 @@ export const SYSTEM_PERMISSIONS = [
     badgeColor: '#0284C7'
   },
   {
-    id: 'prescriptions',
-    name: 'الروشتات والعلاج الإلكتروني',
-    description: 'إنشاء وطباعة ومشاركة الروشتات الطبية للمرضى',
+    id: 'labs',
+    name: 'المعامل والتركيبات الطبية',
+    description: 'متابعة أوامر المعامل والتركيبات وحالات التسليم',
     badgeColor: '#EC4899'
   }
 ];
@@ -47,6 +47,7 @@ export const ROUTE_PERMISSION_MAP = {
   '/patients': 'patients',
   '/invoices': 'invoices',
   '/inventory': 'inventory',
+  '/labs': 'labs',
   '/doctor-agent': 'doctor_only',
   '/settings': 'doctor_only',
   '/notifications': null // available to all authenticated users

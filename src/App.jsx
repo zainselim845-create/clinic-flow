@@ -41,6 +41,7 @@ const Invoices = lazyWithRetry(() => import('./pages/Invoices'));
 const Labs = lazyWithRetry(() => import('./pages/Labs'));
 const Inventory = lazyWithRetry(() => import('./pages/Inventory'));
 const Attendance = lazyWithRetry(() => import('./pages/Attendance'));
+const SuperAdminDashboard = lazyWithRetry(() => import('./pages/superadmin/SuperAdminDashboard'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 const pageTitles = {
@@ -124,6 +125,16 @@ function App() {
         <Route path="/manage-booking" element={
           <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
         } />
+        {/* Multi-Tenant Public Pages & Tenant Slugs */}
+        <Route path="/c/:clinicSlug/booking" element={
+          <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
+        } />
+        <Route path="/c/:clinicSlug/manage-booking" element={
+          <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
+        } />
+
+        {/* Super Admin Control Plane */}
+        <Route path="/super-admin" element={<SuperAdminDashboard />} />
 
         {/* 2. Admin Protected Routes with Sidebar & Header Layout */}
         <Route element={

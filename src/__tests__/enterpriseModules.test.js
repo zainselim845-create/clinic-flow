@@ -1,8 +1,5 @@
-﻿import { describe, it, expect } from 'vitest';
-import { checkPrescriptionSafety, DRUG_SAFETY_RULES } from '../services/drugInteractionService';
-import { 
-  createInitialDentalChart, calculateDentalSummary, TOOTH_SURFACES, RESTORATION_TYPES 
-} from '../utils/dentalChartHelper';
+import { describe, it, expect } from 'vitest';
+import { checkPrescriptionSafety } from '../services/drugInteractionService';
 import { 
   recordAuditEvent, getAuditLogs, filterAuditLogs, AUDIT_EVENT_TYPES 
 } from '../services/auditLoggerService';
@@ -64,43 +61,7 @@ describe('Enterprise Healthcare Modules & Clinical Decision Support Suite', () =
     });
   });
 
-  describe('2. Anatomical 5-Surface Dental Charting & Perio Pocket Evaluation', () => {
-    it('initializes 32 standard adult FDI teeth with 5 anatomical surfaces each', () => {
-      const chart = createInitialDentalChart();
-      expect(Object.keys(chart).length).toBe(32);
-      expect(chart[16]).toBeDefined();
-      expect(chart[16].surfaces.O).toBe('sound');
-      expect(chart[16].surfaces.M).toBe('sound');
-      expect(chart[16].surfaces.D).toBe('sound');
-      expect(chart[16].surfaces.B).toBe('sound');
-      expect(chart[16].surfaces.L).toBe('sound');
-    });
-
-    it('calculates WHO DMFT score and Perio disease risk correctly', () => {
-      const chart = createInitialDentalChart();
-
-      // Tooth 16 has Occlusal Cavity
-      chart[16].surfaces.O = 'cavity';
-      // Tooth 24 is Missing
-      chart[24].status = 'missing';
-      // Tooth 36 has Composite restoration on MO surfaces
-      chart[36].surfaces.M = 'composite';
-      chart[36].surfaces.O = 'composite';
-      // Tooth 46 has deep periodontal pocket (5mm) and BOP
-      chart[46].perio.buccalPocket = 5;
-      chart[46].perio.bop = true;
-
-      const summary = calculateDentalSummary(chart);
-
-      expect(summary.cavityCount).toBe(1);
-      expect(summary.missingCount).toBe(1);
-      expect(summary.filledCount).toBe(1);
-      expect(summary.dmftScore).toBe(3); // 1 Decayed + 1 Missing + 1 Filled
-      expect(summary.perioRiskCount).toBe(1); // Tooth 46 with 5mm pocket
-    });
-  });
-
-  describe('3. Immutable Healthcare Audit Trail Logger', () => {
+  describe('2. Immutable Healthcare Audit Trail Logger', () => {
     it('records and retrieves structured audit logs', () => {
       const event = recordAuditEvent({
         eventType: AUDIT_EVENT_TYPES.INVOICE_CREATED,

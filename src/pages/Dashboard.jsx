@@ -10,7 +10,6 @@ import ConsultationModal from './dashboard/ConsultationModal';
 import WalkInRegistrationModal from './dashboard/WalkInRegistrationModal';
 import RevenueAnalytics from './dashboard/RevenueAnalytics';
 import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
-import PrescriptionModal from '../components/PrescriptionModal';
 import ExpensesModal from '../components/ExpensesModal';
 import PatientRecallModal from '../components/PatientRecallModal';
 import ShiftHandoverModal from '../components/ShiftHandoverModal';
@@ -28,7 +27,6 @@ const Dashboard = () => {
   const [isWalkInModalOpen, setIsWalkInModalOpen] = useState(false);
   const [finishExamAppt, setFinishExamAppt] = useState(null);
   const [dossierPatient, setDossierPatient] = useState(null);
-  const [prescriptionPatient, setPrescriptionPatient] = useState(null);
   const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
   const [isRecallModalOpen, setIsRecallModalOpen] = useState(false);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
@@ -54,13 +52,7 @@ const Dashboard = () => {
   const waitingToday = useMemo(() => {
     return todaysAppointments
       .filter(a => a.status === 'waiting')
-      .sort((a, b) => {
-        const aIsEmergency = a.isEmergency || a.type === 'طوارئ' || (a.type || '').includes('طوارئ');
-        const bIsEmergency = b.isEmergency || b.type === 'طوارئ' || (b.type || '').includes('طوارئ');
-        if (aIsEmergency && !bIsEmergency) return -1;
-        if (!aIsEmergency && bIsEmergency) return 1;
-        return new Date(a.checkedInAt || 0) - new Date(b.checkedInAt || 0);
-      });
+      .sort((a, b) => new Date(a.checkedInAt || 0) - new Date(b.checkedInAt || 0));
   }, [todaysAppointments]);
   
   const bookedToday = useMemo(() => todaysAppointments.filter(a => a.status === 'booked' || a.status === 'upcoming'), [todaysAppointments]);
@@ -209,7 +201,6 @@ const Dashboard = () => {
         const match = (currentClinic.services || []).find(s => s.name === walkInData.type || (walkInData.type && s.name.includes(walkInData.type)));
         if (match?.price) return match.price;
         if (walkInData.type === 'استشارة') return currentClinic.consultationFee || '150 ج.م';
-        if (walkInData.type === 'طوارئ') return currentClinic.emergencyFee || '400 ج.م';
         if (walkInData.type === 'تنظيف وتلميع أسنان') return '400 ج.م';
         if (walkInData.type === 'حشو تجميلي كومبوزيت') return '500 ج.م';
         if (walkInData.type === 'علاج جذور وعصب') return '900 ج.م';
@@ -219,7 +210,6 @@ const Dashboard = () => {
         if (walkInData.type === 'زراعة أسنان') return '6500 ج.م';
         return currentClinic.regularFee || '300 ج.م';
       })(),
-      isEmergency: walkInData.isEmergency,
       status: 'waiting',
       checkedInAt: new Date().toISOString(),
       notes: walkInData.notes
@@ -364,7 +354,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-card-footer">
             <span>{waitingToday.length > 0 ? 'متوسط الانتظار: حوالي 10 دقائق' : 'لا يوجد انتظار حالياً'}</span>
-            <span>أولوية الطوارئ مفعلة</span>
+            <span>ترتيب حسب الحضور</span>
           </div>
         </div>
 
@@ -446,7 +436,6 @@ const Dashboard = () => {
             onOpenFinishModal={(appt) => setFinishExamAppt(appt)}
             onOpenDossier={(appt) => setDossierPatient(appt)}
             onOpenWalkInModal={() => setIsWalkInModalOpen(true)}
-            onOpenPrescription={(appt) => setPrescriptionPatient(appt)}
           />
 
           {/* Schedule Table Section */}
@@ -594,14 +583,6 @@ const Dashboard = () => {
           appointment={finishExamAppt}
           onClose={() => setFinishExamAppt(null)}
           onComplete={handleFinishConsultation}
-        />
-      )}
-
-      {prescriptionPatient && (
-        <PrescriptionModal
-          isOpen={!!prescriptionPatient}
-          patient={prescriptionPatient}
-          onClose={() => setPrescriptionPatient(null)}
         />
       )}
 

@@ -118,7 +118,7 @@ const LabOrderModal = ({
             </div>
 
             <div className="field-block">
-              <label>رقم السن / الضرس (FDI)</label>
+              <label>رقم السن / الضرس</label>
               <input
                 type="number"
                 placeholder="مثال: 16"

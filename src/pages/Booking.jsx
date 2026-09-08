@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import { clinicInfo, availableSlots } from '../data/demoData';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
@@ -9,7 +10,7 @@ import { recordReferral } from '../services/referralService';
 import { 
   MapPin, Phone, Stethoscope, 
   MessageCircle, Copy, Check, CalendarPlus, AlertCircle,
-  AlertTriangle, Sparkles, Users, UserPlus, Loader2,
+  Sparkles, Users, UserPlus, Loader2,
   RefreshCw, CheckCircle, ArrowRight, ShieldCheck, ChevronLeft
 } from 'lucide-react';
 
@@ -22,14 +23,23 @@ import './Booking.css';
 
 const Booking = () => {
   const navigate = useNavigate();
+  const { clinicSlug } = useParams();
   const [searchParams] = useSearchParams();
   const resumeId = searchParams.get('resume');
   const refCode = searchParams.get('ref');
 
   const { state, dispatch, useSupabase } = useApp();
+  const { tenant, allTenants, switchTenant } = useTenant();
   const { appointments = [], patients = [], blockedSlots = [] } = state;
 
-  const currentClinic = state.clinicInfo || clinicInfo;
+  useEffect(() => {
+    if (clinicSlug && tenant?.slug !== clinicSlug) {
+      switchTenant(clinicSlug);
+    }
+  }, [clinicSlug, tenant, switchTenant]);
+
+  const resolvedTenant = (clinicSlug ? allTenants.find(t => t.slug === clinicSlug) : null) || tenant;
+  const currentClinic = resolvedTenant || state.clinicInfo || clinicInfo;
   const todayStr = getTodayDateStr();
 
   // Booking Flow: 'phone_check' -> 'appointment_details' -> 'success'
@@ -42,9 +52,22 @@ const Booking = () => {
     gender: 'ذكر',
     date: todayStr,
     time: '',
-    type: currentClinic.services?.[0]?.name || 'كشف عادي',
+    type: currentClinic.services?.[0]?.name || 'كشف وفحص تشخيصي شامل',
     notes: ''
   });
+
+  // Sync service type if clinic changes
+  useEffect(() => {
+    if (currentClinic?.services?.[0]?.name) {
+      setFormData(prev => {
+        const hasMatchingService = (currentClinic.services || []).some(s => s.name === prev.type);
+        if (!hasMatchingService) {
+          return { ...prev, type: currentClinic.services[0].name };
+        }
+        return prev;
+      });
+    }
+  }, [currentClinic]);
 
   // Resume abandoned draft if param present
   useEffect(() => {
@@ -260,7 +283,7 @@ const Booking = () => {
       const bookingCode = '#CF-' + Math.floor(1000 + Math.random() * 9000);
 
       const selectedService = (currentClinic.services || []).find(s => s.name === formData.type);
-      const serviceFee = selectedService?.price || (formData.type === 'طوارئ' ? (currentClinic.emergencyFee || '400 ج.م') : (currentClinic.regularFee || '300 ج.م'));
+      const serviceFee = selectedService?.price || (currentClinic.regularFee || '300 ج.م');
 
       const newAppointment = {
         id: bookingId,
@@ -481,7 +504,7 @@ const Booking = () => {
                       gender: 'ذكر',
                       date: todayStr,
                       time: '',
-                      type: 'كشف عادي',
+                      type: currentClinic.services?.[0]?.name || 'كشف وفحص تشخيصي شامل للأسنان',
                       notes: ''
                     });
                     setIsExistingClient(false);
@@ -751,30 +774,24 @@ const Booking = () => {
                       onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
                     >
                       {(currentClinic.services && currentClinic.services.length > 0 ? currentClinic.services : [
-                        { id: '1', name: 'كشف وفحص تشخيصي شامل للأسنان', price: currentClinic.regularFee || '300 ج.م' },
-                        { id: '2', name: 'استشارة ومتابعة بعد العلاج', price: currentClinic.consultationFee || '150 ج.م' },
-                        { id: '3', name: 'جلسة تنظيف وتلميع وإزالة جير الأسنان', price: '400 ج.م' },
-                        { id: '4', name: 'حشو تجميلي كومبوزيت ليزر', price: '500 ج.م' },
-                        { id: '5', name: 'علاج جذور وعصب السن (RCT)', price: '900 ج.م' },
-                        { id: '6', name: 'خلع ضرس عادي أو مخلخل', price: '400 ج.م' },
-                        { id: '7', name: 'طربوش / تاج زيركون تجميلي عالي الدقة', price: '1800 ج.م' },
-                        { id: '8', name: 'تبييض أسنان احترافي بالعيادة (Laser/LED)', price: '2000 ج.م' },
-                        { id: '9', name: 'زراعة سن تيتانيوم ألماني فوري', price: '6500 ج.م' },
-                        { id: '10', name: 'حالة طارئة ومستعجلة', price: currentClinic.emergencyFee || '400 ج.م' }
-                      ]).map(s => (
+                        { id: '1', name: 'كشف وفحص تشخيصي شامل للأسنان' },
+                        { id: '2', name: 'استشارة ومتابعة بعد العلاج' },
+                        { id: '3', name: 'جلسة تنظيف وتلميع وإزالة جير الأسنان' },
+                        { id: '4', name: 'حشو تجميلي كومبوزيت ليزر' },
+                        { id: '5', name: 'علاج جذور وعصب السن (RCT)' },
+                        { id: '6', name: 'خلع ضرس عادي أو مخلخل' },
+                        { id: '7', name: 'طربوش / تاج زيركون تجميلي عالي الدقة' },
+                        { id: '8', name: 'تبييض أسنان احترافي بالعيادة (Laser/LED)' },
+                        { id: '9', name: 'زراعة سن تيتانيوم ألماني فوري' }
+                      ])
+                      .filter(s => !s.name?.includes('طوارئ'))
+                      .map(s => (
                         <option key={s.id} value={s.name}>
-                          {s.name} — ({s.price})
+                          {s.name}
                         </option>
                       ))}
                     </select>
                   </div>
-
-                  {(formData.type === 'طوارئ' || formData.type.includes('طوارئ')) && (
-                    <div className="nebras-emergency-banner">
-                      <AlertTriangle size={16} />
-                      <span>حالة طوارئ طبية عاجلة — سيتم إعطاء هذا الحجز أولوية قصوى داخل العيادة فور وصولكم.</span>
-                    </div>
-                  )}
                 </div>
 
                 {/* --------------------------------------------------------- */}

@@ -56,26 +56,25 @@ describe('End-to-End User Personas Experience Testing', () => {
       expect(cancelled.status).toBe('cancelled');
     });
 
-    it('handles emergency booking submission with correct prioritization flags', () => {
-      const emergencyBooking = {
+    it('handles booking submission and saves to appointments', () => {
+      const regularBooking = {
         id: 'appt-patient-2',
         patientId: 'patient-2',
         patientName: 'مريم أحمد',
         patientPhone: '01122334455',
         date: today,
         time: '06:00 م',
-        type: 'طوارئ',
-        fee: '400 ج.م',
-        isEmergency: true,
+        type: 'كشف عادي',
+        fee: '300 ج.م',
         bookingCode: 'CF-9911',
         status: 'booked',
-        notes: 'مغص كلوي حاد مفاجئ'
+        notes: 'فحص دوري شامل'
       };
 
-      const state = appReducer(initialState, { type: 'ADD_APPOINTMENT', payload: emergencyBooking });
+      const state = appReducer(initialState, { type: 'ADD_APPOINTMENT', payload: regularBooking });
       expect(state.appointments.length).toBe(1);
-      expect(state.appointments[0].isEmergency).toBe(true);
-      expect(state.appointments[0].type).toBe('طوارئ');
+      expect(state.appointments[0].type).toBe('كشف عادي');
+      expect(state.appointments[0].patientName).toBe('مريم أحمد');
     });
   });
 
@@ -92,9 +91,8 @@ describe('End-to-End User Personas Experience Testing', () => {
         patientPhone: '01255556666',
         date: today,
         time: '05:15 م',
-        type: 'طوارئ',
-        isEmergency: true,
-        fee: '400 ج.م',
+        type: 'كشف عادي',
+        fee: '300 ج.م',
         status: 'waiting',
         checkedInAt: new Date().toISOString()
       };

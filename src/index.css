@@ -573,45 +573,5 @@ button {
   border-top: 1px solid var(--border-color);
 }
 
-/* Emergency Checkbox Card in Modals */
-.emergency-checkbox-card {
-  background: rgba(255, 59, 48, 0.06);
-  border: 1.5px solid rgba(255, 59, 48, 0.2);
-  border-radius: var(--radius-lg, 12px);
-  padding: 0.85rem;
-  margin: 0.75rem 0;
-  transition: all var(--transition-fast);
-}
 
-.emergency-checkbox-card:hover {
-  border-color: var(--danger, #FF3B30);
-  background: rgba(255, 59, 48, 0.09);
-}
-
-.emergency-checkbox-card .checkbox-label {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.65rem;
-  cursor: pointer;
-}
-
-.emergency-checkbox-card .checkbox-label input {
-  margin-top: 0.2rem;
-  width: 16px;
-  height: 16px;
-  accent-color: var(--danger, #FF3B30);
-  cursor: pointer;
-}
-
-.emergency-checkbox-card strong {
-  font-size: 0.88rem;
-  color: var(--danger, #FF3B30);
-  display: block;
-}
-
-.emergency-checkbox-card p {
-  margin: 0.2rem 0 0 0;
-  font-size: 0.76rem;
-  color: var(--text-secondary);
-}
 

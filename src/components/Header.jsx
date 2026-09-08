@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import GlobalSearchModal from './GlobalSearchModal';
+import TenantSwitcher from './TenantSwitcher';
 import './Header.css';
 
 const Header = ({ title }) => {
@@ -35,10 +36,7 @@ const Header = ({ title }) => {
       <header className="header">
         <div className="header-title-wrap">
           <h1>{title}</h1>
-          <span className="clinic-status-badge">
-            <span className="live-pulse-dot"></span>
-            <span>{clinic?.name || state.clinicInfo?.name || 'العيادة جاهزة'}</span>
-          </span>
+          <TenantSwitcher />
         </div>
 
         <div className="header-actions">

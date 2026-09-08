@@ -1,4 +1,4 @@
-﻿const { chromium } = require('playwright');
+const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
@@ -217,8 +217,6 @@ async function generateSinglePagePdf() {
           <li><span class="feature-name">حجز أونلاين برقم الموبايل فقط:</span> المريض يحجز كشفه في 30 ثانية بدون تحميل تطبيق وبدون باسورد.</li>
           <li><span class="feature-name">إلغاء وتعديل الموعد أونلاين:</span> المريض يغير ميعاده أو يلغيه بنفسه من موبايله في أي وقت دون إحراج أو مكالمات.</li>
           <li><span class="feature-name">تذكرة حجز إلكترونية (#CF-XXXX):</span> كود حجز فريد وتذكرة أنيقة قابلة للطباعة والحفظ زي تذاكر الطيران.</li>
-          <li><span class="feature-name">عرض الأسعار والخدمات بوضوح:</span> المريض يشوف سعر كل كشف ومدته بوضوح قبل تأكيد الحجز.</li>
-          <li><span class="feature-name">تحديد الحالات الطارئة:</span> زرار خاص للحالات المستعجلة يعطي تنبيه فوري للعيادة ويضع المريض بأول الدور.</li>
           <li><span class="feature-name">التعرف التلقائي على المريض القديم:</span> بمجرد كتابة رقم الهاتف، يسترجع السيستم اسمه وملفه فوراً ويرحب بيه.</li>
         </ul>
       </div>
@@ -255,12 +253,10 @@ async function generateSinglePagePdf() {
       <div class="section-card indigo">
         <div class="section-header">
           <span class="section-icon">🩺</span>
-          <h2 class="section-title">4. الكشف والملفات الطبية والروشتة</h2>
+          <h2 class="section-title">4. الكشف والملفات الطبية</h2>
         </div>
         <ul class="features-list">
           <li><span class="feature-name">ملف طبي رقمي (EMR):</span> سجل كامل لكل مريض يشمل كشوفاته السابقة، أدويته، وتاريخ زياراته وصور الأشعة.</li>
-          <li><span class="feature-name">روشتة إلكترونية بضغطة زر:</span> كتابة التشخيص وطباعة الروشتة بتصميم معتمد وتحديد ميعاد الاستشارة فورياً.</li>
-          <li><span class="feature-name">مخطط أسنان تفاعلي (FDI Dental Chart):</span> (لدكاترة الأسنان) رسمة 32 سن بلمسة واحدة تحدد عليها الحشو والخلع والزراعة بألوان واضحة.</li>
           <li><span class="feature-name">مساعد طبي بالذكاء الاصطناعي:</span> دكتور يسأله بالصوت أو الكتابة: "طلعلي مرضى السكر" أو "اقفل الخميس" وينفذ في الأجندة فوراً.</li>
           <li><span class="feature-name">كاشف تعارض الأدوية:</span> تنبيه سريري ذكي يحذر الدكتور لو كتب دواء يتعارض مع حالة المريض الصحية.</li>
         </ul>

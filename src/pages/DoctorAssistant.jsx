@@ -511,10 +511,10 @@ const DoctorAssistant = () => {
               </button>
               <button 
                 type="button" 
-                className={`prompt-chip ${activeFilter === 'urgent' ? 'active' : ''}`}
-                onClick={() => handleQuickPrompt('مرضى الطوارئ والحالات العاجلة', 'urgent')}
+                className="prompt-chip"
+                onClick={() => handleQuickPrompt('مرضى الضغط')}
               >
-                 حالات الطوارئ
+                 مرضى الضغط
               </button>
             </div>
           </div>

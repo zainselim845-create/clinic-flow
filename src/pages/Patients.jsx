@@ -5,7 +5,6 @@ import {
   ChevronLeft, ChevronRight 
 } from 'lucide-react';
 import PatientCard from '../components/PatientCard';
-import PrescriptionModal from '../components/PrescriptionModal';
 import PatientRecallModal from '../components/PatientRecallModal';
 import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
 import { patientIndex } from '../services/indexedSearchService';
@@ -24,7 +23,6 @@ const Patients = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
   const [isRecallModalOpen, setIsRecallModalOpen] = useState(false);
 
   const [toastMessage, setToastMessage] = useState(null);
@@ -381,22 +379,14 @@ const Patients = () => {
         </div>
       )}
 
-      {/* Patient Full Clinical Dossier (Dental Chart, Notes, Treatment Plans, Rx) */}
+      {/* Patient Clinical Dossier (Clinical Notes, Treatment Plans) */}
       {isDetailModalOpen && selectedPatient && (
         <PatientDossierDrawer
           patient={selectedPatient}
           patientAppointments={getPatientAppointments(selectedPatient.id)}
           onClose={() => setIsDetailModalOpen(false)}
-          onIssuePrescription={() => setIsPrescriptionModalOpen(true)}
         />
       )}
-
-
-      <PrescriptionModal
-        isOpen={isPrescriptionModalOpen}
-        onClose={() => setIsPrescriptionModalOpen(false)}
-        patient={selectedPatient}
-      />
 
       <PatientRecallModal
         isOpen={isRecallModalOpen}

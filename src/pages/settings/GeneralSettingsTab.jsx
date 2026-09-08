@@ -214,7 +214,7 @@ export default function GeneralSettingsTab({
           </div>
 
           <div className="custom-specialty-input-group">
-            <label className="sub-field-label">المسمى واللقب الأكاديمي والمهني للطبيب (كما يظهر في ترويسة الروشتات وبوابة الحجز):</label>
+            <label className="sub-field-label">المسمى واللقب الأكاديمي والمهني للطبيب (كما يظهر في الملفات الطبية وبوابة الحجز):</label>
             <input 
               type="text" 
               value={clinicForm.specialty || ''} 

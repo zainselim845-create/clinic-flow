@@ -19,7 +19,6 @@ export function fromDbAppointment(row) {
     type: row.type || 'كشف عادي',
     fee: row.fee || '300 ج.م',
     status: row.status || 'booked',
-    isEmergency: row.is_emergency ?? (row.type === 'طوارئ' || (row.type || '').includes('طوارئ')),
     checkedInAt: row.checked_in_at || row.checkedInAt,
     consultationStartedAt: row.consultation_started_at || row.consultationStartedAt,
     notes: row.notes || '',

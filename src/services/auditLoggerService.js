@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Immutable Healthcare Audit Trail Logger Service
  * Compliant with healthcare governance and data protection regulations.
  */
@@ -12,7 +12,6 @@ export const AUDIT_EVENT_TYPES = {
   APPOINTMENT_CANCELLED: 'APPOINTMENT_CANCELLED',
   INVOICE_CREATED: 'INVOICE_CREATED',
   PAYMENT_COLLECTED: 'PAYMENT_COLLECTED',
-  PRESCRIPTION_ISSUED: 'PRESCRIPTION_ISSUED',
   PATIENT_RECORD_UPDATED: 'PATIENT_RECORD_UPDATED',
   EXPENSE_LOGGED: 'EXPENSE_LOGGED',
   SHIFT_CLOSED: 'SHIFT_CLOSED'

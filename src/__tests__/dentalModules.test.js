@@ -1,73 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { 
-  ADULT_TEETH, PEDIATRIC_TEETH,
-  toDbDentalChart, fromDbDentalChart
-} from '../services/dentalChartService';
 import { toDbInvoice } from '../services/invoicesService';
 import { toDbTreatmentPlan } from '../services/treatmentPlansService';
 import { toDbLabOrder } from '../services/labsService';
 
-
 describe('Dental Clinical & Operations Domain Behavior', () => {
-
-  describe('FDI Dental Arch & Tooth Anatomy Domain', () => {
-    
-    it('test_adult_fdi_teeth_span_all_four_quadrants_completely', () => {
-      const allTeeth = [
-        ...ADULT_TEETH.upperRight,
-        ...ADULT_TEETH.upperLeft,
-        ...ADULT_TEETH.lowerLeft,
-        ...ADULT_TEETH.lowerRight
-      ];
-      // Must contain exactly 32 distinct adult teeth
-      expect(new Set(allTeeth).size).toBe(32);
-      // Verify boundary teeth
-      expect(allTeeth).toContain(18); // Upper right 3rd molar
-      expect(allTeeth).toContain(11); // Upper right central incisor
-      expect(allTeeth).toContain(21); // Upper left central incisor
-      expect(allTeeth).toContain(28); // Upper left 3rd molar
-      expect(allTeeth).toContain(38); // Lower left 3rd molar
-      expect(allTeeth).toContain(48); // Lower right 3rd molar
-    });
-
-    it('test_pediatric_fdi_teeth_span_twenty_primary_teeth', () => {
-      const allTeeth = [
-        ...PEDIATRIC_TEETH.upperRight,
-        ...PEDIATRIC_TEETH.upperLeft,
-        ...PEDIATRIC_TEETH.lowerLeft,
-        ...PEDIATRIC_TEETH.lowerRight
-      ];
-      // Must contain exactly 20 distinct deciduous teeth
-      expect(new Set(allTeeth).size).toBe(20);
-      expect(allTeeth).toContain(55); // Upper right 2nd primary molar
-      expect(allTeeth).toContain(85); // Lower right 2nd primary molar
-    });
-
-    it.each([
-      { surface: 'O', expectedSurface: 'O' },
-      { surface: 'MOD', expectedSurface: 'MOD' },
-      { surface: 'WHOLE', expectedSurface: 'WHOLE' }
-    ])('test_tooth_condition_serialization_preserves_surface_$surface', ({ surface, expectedSurface }) => {
-      const payload = toDbDentalChart({
-        patientId: 'pat-100',
-        toothNumber: 16,
-        surface,
-        conditionCode: 'caries',
-        status: 'planned'
-      });
-      expect(payload.surface).toBe(expectedSurface);
-      expect(payload.tooth_number).toBe(16);
-
-      const domainModel = fromDbDentalChart({
-        ...payload,
-        id: 'tooth-entry-1',
-        created_at: '2026-08-30'
-      });
-      expect(domainModel.surface).toBe(expectedSurface);
-      expect(domainModel.conditionCode).toBe('caries');
-    });
-
-  });
 
   describe('Financial Invoicing & Payment Domain Behavior', () => {
 

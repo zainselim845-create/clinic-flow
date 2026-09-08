@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, useParams, Link } from 'react-router-dom';
 import { 
   Calendar, Clock, CheckCircle2, XCircle, AlertCircle, 
   Phone, Stethoscope, RefreshCw, ShieldCheck,
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import { generateDynamicSlots, getTodayDateStr, parseLocalDate } from '../utils/timeSlots';
 import { cleanEgyptianPhone } from '../utils/phoneValidation';
 import * as appointmentsService from '../services/appointmentsService';
@@ -14,13 +15,22 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import './ManageBooking.css';
 
 const ManageBooking = () => {
+  const { clinicSlug } = useParams();
   const [searchParams] = useSearchParams();
   const { state, dispatch } = useApp();
+  const { tenant, allTenants, switchTenant } = useTenant();
   const useSupabase = isSupabaseConfigured();
   const appointments = state.appointments || [];
 
+  useEffect(() => {
+    if (clinicSlug && tenant?.slug !== clinicSlug) {
+      switchTenant(clinicSlug);
+    }
+  }, [clinicSlug, tenant, switchTenant]);
+
+  const resolvedTenant = (clinicSlug ? allTenants.find(t => t.slug === clinicSlug) : null) || tenant;
+  const clinicInfo = resolvedTenant || state.clinicInfo || {};
   const blockedSlots = state.blockedSlots || [];
-  const clinicInfo = state.clinicInfo || {};
   const scheduleConfig = clinicInfo.scheduleConfig || {
     workingDays: [6, 0, 1, 2, 3, 4],
     startTime: '17:00',

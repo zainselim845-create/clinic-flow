@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
-import { Stethoscope, Check, CalendarPlus, BellRing } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Stethoscope, Check, CalendarPlus, BellRing, AlertTriangle } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-
+import { checkPrescriptionSafety } from '../../services/drugInteractionService';
 
 export default function ConsultationModal({
   appointment,
   onClose,
   onComplete
 }) {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
   const [diagnosis, setDiagnosis] = useState('');
-  const [prescription, setPrescription] = useState('');
+  const [notes, setNotes] = useState('');
   const [followUpOption, setFollowUpOption] = useState('none'); // 'none' | '7_days' | '14_days'
   const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' | 'card' | 'instapay'
   const [recallInterval, setRecallInterval] = useState('none'); // 'none' | '1_month' | '3_months' | '6_months' | '12_months'
+
+  const patientRecord = useMemo(() => {
+    return (state.patients || []).find(p => p.id === appointment?.patientId) || appointment || {};
+  }, [state?.patients, appointment]);
+
+  const safetyWarnings = useMemo(() => {
+    return checkPrescriptionSafety(notes, patientRecord);
+  }, [notes, patientRecord]);
 
   if (!appointment) return null;
 
@@ -36,7 +44,7 @@ export default function ConsultationModal({
         intervalMonths: months,
         dueDate,
         status: 'pending',
-        notes: prescription || diagnosis || 'متابعة وفحص دوري',
+        notes: notes || diagnosis || 'متابعة وفحص دوري',
         createdAt: new Date().toISOString(),
         lastContactedAt: null
       };
@@ -47,8 +55,7 @@ export default function ConsultationModal({
       appointmentId: appointment.id,
       patientId: appointment.patientId,
       diagnosis,
-      prescription,
-      notes: prescription,
+      notes,
       followUpOption,
       paymentMethod
     });
@@ -84,14 +91,28 @@ export default function ConsultationModal({
           </div>
 
           <div className="form-group">
-            <label>الوصفة الطبية وملاحظات العلاج</label>
+            <label>ملاحظات الكشف والتوصيات السريرية</label>
             <textarea
               rows={2}
-              placeholder="الأدوية المقررة أو اضغط زر 'روشتة إلكترونية' لإنشاء روشتة تفصيلية..."
-              value={prescription}
-              onChange={(e) => setPrescription(e.target.value)}
+              placeholder="ملاحظات الطبيب، التشخيص الإضافي، أو توصيات المتابعة..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
             />
           </div>
+
+          {safetyWarnings.length > 0 && (
+            <div style={{ background: '#FEF2F2', border: '1px solid #F87171', borderRadius: '8px', padding: '0.6rem 0.8rem', marginBottom: '0.75rem', fontSize: '0.82rem', color: '#991B1B' }}>
+              {safetyWarnings.map((w, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.4rem', marginBottom: idx < safetyWarnings.length - 1 ? '0.4rem' : 0 }}>
+                  <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong>{w.title}:</strong> {w.description}
+                    {w.recommendation && <div style={{ fontSize: '0.78rem', color: '#7F1D1D', marginTop: '2px' }}>{w.recommendation}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="form-group">
             <label>طريقة تحصيل الرسوم (Payment Method)</label>

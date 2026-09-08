@@ -32,8 +32,7 @@ export const recallPresets = [
 export const visitTypes = [
   { name: 'كشف عادي', value: 3, color: '#0071E3' },
   { name: 'متابعة', value: 2, color: '#10B981' },
-  { name: 'استشارة', value: 2, color: '#8B5CF6' },
-  { name: 'طوارئ', value: 1, color: '#EF4444' }
+  { name: 'استشارة', value: 2, color: '#8B5CF6' }
 ];
 
 export const availableSlots = [
@@ -64,6 +63,69 @@ export const clinicInfo = {
   }
 };
 
+export const demoClinics = [
+  {
+    ...clinicInfo,
+    id: '550e8400-e29b-41d4-a716-446655440000',
+    slug: 'dr-ahmed',
+    subscriptionTier: 'pro',
+    subscriptionStatus: 'active',
+    branding: {
+      primaryColor: '#0071E3',
+      accentColor: '#10B981',
+      badgeText: 'مركز الأسنان والابتسامة'
+    },
+    quotas: {
+      maxDoctors: 3,
+      monthlySmsQuota: 2000,
+      smsUsed: 340,
+      aiTokensQuota: 10000000,
+      aiTokensUsed: 1250000
+    }
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440099',
+    slug: 'dr-sara',
+    name: 'عيادة د. سارة للجلدية والتجميل والليزر',
+    doctorName: 'د. سارة محمود',
+    doctorEmail: 'sara.clinic@clinicflow.com',
+    doctorPassword: 'admin',
+    specialty: 'استشاري الأمراض الجلدية وتجميل الليزر والحقن التجميلي',
+    phone: '01123456780',
+    address: 'التجمع الخامس — ميديكال سنتر 2، الدور الثالث',
+    regularFee: '500 ج.م',
+    consultationFee: '250 ج.م',
+    emergencyFee: '600 ج.م',
+    subscriptionTier: 'enterprise',
+    subscriptionStatus: 'active',
+    branding: {
+      primaryColor: '#8B5CF6',
+      accentColor: '#EC4899',
+      badgeText: 'مركز الجلدية والتجميل'
+    },
+    quotas: {
+      maxDoctors: 10,
+      monthlySmsQuota: 5000,
+      smsUsed: 1120,
+      aiTokensQuota: 25000000,
+      aiTokensUsed: 4300000
+    },
+    services: [
+      { id: 'srv-sara-1', name: 'كشف واستشارة جلدية متخصصة', price: '500 ج.م', description: 'فحص مجهري للجلد وتشخيص تساقط الشعر والتصبغات' },
+      { id: 'srv-sara-2', name: 'جلسة فراكشنال ليزر نضارة وتفتيح', price: '1200 ج.م', description: 'علاج آثار حب الشباب وتجديد خلايا البشرة' },
+      { id: 'srv-sara-3', name: 'جلسة حقن بوتوكس لإزالة التجاعيد', price: '2500 ج.م', description: 'حقن عضلات الوجه والجبهة بمادة معتمدة عالمياً' }
+    ],
+    workingHours: 'السبت - الأربعاء: ١:٠٠ م - ٨:٠٠ م',
+    scheduleConfig: {
+      workingDays: [6, 0, 1, 2, 3],
+      startTime: '13:00',
+      endTime: '20:00',
+      slotDuration: 30,
+      workingHoursText: 'السبت - الأربعاء: ١:٠٠ م - ٨:٠٠ م'
+    }
+  }
+];
+
 export const staffMembers = [
   {
     id: 'staff-1',
@@ -74,7 +136,7 @@ export const staffMembers = [
     role: 'سكرتير أول',
     shift: 'مسائي (04:00 م - 10:00 م)',
     status: 'active',
-    permissions: ['appointments', 'patients', 'invoices', 'inventory', 'sms', 'prescriptions'],
+    permissions: ['appointments', 'patients', 'invoices', 'inventory', 'sms', 'labs'],
     createdAt: '2026-01-10'
   },
   {
@@ -562,81 +624,6 @@ export const invoices = [
   }
 ];
 
-export const prescriptions = [
-  {
-    id: 'rx-1',
-    patientId: 'pat-1',
-    patientName: 'عمر عبد العزيز محمود',
-    patientPhone: '01001234567',
-    doctorName: 'د. أحمد الشريف',
-    specialty: 'طب وجراحة الفم والأسنان',
-    date: '2026-08-31',
-    diagnosis: 'التهاب عصب حاد بالضرس 46 بعد تنظيف القنوات',
-    medications: [
-      { id: 'm-1', name: 'Augmentin 1gm (أوجمنتين)', dose: 'قرص واحد', freq: 'كل 12 ساعة بعد الأكل', duration: '5 أيام', notes: 'مضاد حيوي واسع المجال' },
-      { id: 'm-2', name: 'Cataflam 50mg (كتافلام)', dose: 'قرص واحد', freq: 'عند اللزوم / كل 8 ساعات', duration: '3 أيام', notes: 'مسكن ومضاد للالتهاب والتورم' },
-      { id: 'm-3', name: 'Orovex Mouthwash (غسول أوروفكس)', dose: 'مضمضة 15 مل', freq: 'مرتين يومياً بدون تخفيف', duration: 'أسبوع', notes: 'مضاد للبكتيريا ومطهر للفم' }
-    ],
-    labTests: 'أشعة بريابيكال Periapical X-Ray على الضرس 46',
-    followUpDate: '2026-09-07',
-    generalAdvice: 'تجنب المضغ على الجانب الأيمن لمدة 48 ساعة، والامتناع عن المشروبات الساخنة جداً.',
-    createdAt: '2026-08-31T17:30:00Z'
-  },
-  {
-    id: 'rx-2',
-    patientId: 'pat-3',
-    patientName: 'طارق الدسوقي خليل',
-    patientPhone: '01223456789',
-    doctorName: 'د. أحمد الشريف',
-    specialty: 'طب وجراحة الفم والأسنان',
-    date: '2026-08-25',
-    diagnosis: 'ما بعد خلع جراحي وتجهيز موقع الزراعة',
-    medications: [
-      { id: 'm-4', name: 'Clavamox 1gm (كلافاموكس)', dose: 'قرص واحد', freq: 'كل 12 ساعة', duration: '6 أيام', notes: 'بديل آمن لحساسية المريض' },
-      { id: 'm-5', name: 'Alphintern (ألفينترن)', dose: 'قرصين', freq: '3 مرات يومياً قبل الأكل بساعة', duration: '5 أيام', notes: 'لإزالة التورم والارتشاح الجراحي' }
-    ],
-    labTests: 'CBCT 3D Scan للفك السفلي',
-    followUpDate: '2026-08-31',
-    generalAdvice: 'كمادات ثلج خارجية أول 24 ساعة، والمضمضة بماء دافئ وملح بدءاً من اليوم الثاني.',
-    createdAt: '2026-08-25T19:00:00Z'
-  },
-  {
-    id: 'rx-3',
-    patientId: 'pat-6',
-    patientName: 'رانيا فؤاد مصطفى',
-    patientPhone: '01065432109',
-    doctorName: 'د. أحمد الشريف',
-    specialty: 'طب وجراحة الفم والأسنان وتجميل الابتسامة',
-    date: '2026-08-30',
-    diagnosis: 'ما بعد جلسة تبييض الأسنان بالليزر',
-    medications: [
-      { id: 'm-6', name: 'Sensodyne Rapid Action (معجون سنسوداين)', dose: 'تنظيف بلطف', freq: 'مرتين يومياً', duration: 'أسبوعين', notes: 'لحماية حساسية الأسنان المؤقتة' },
-      { id: 'm-7', name: 'Panadol Extra (بنادول اكسترا)', dose: 'قرص واحد', freq: 'عند الإحساس بلسعة أو حساسية', duration: 'يومين', notes: 'مسكن خفيف' }
-    ],
-    labTests: '',
-    followUpDate: '2026-09-15',
-    generalAdvice: 'حمية بيضاء (White Diet): الامتناع التام عن القهوة، الشاي، الكركديه، والصلصات الداكنة لمدة 48 ساعة.',
-    createdAt: '2026-08-30T19:30:00Z'
-  },
-  {
-    id: 'rx-4',
-    patientId: 'pat-8',
-    patientName: 'منى إبراهيم النجار',
-    patientPhone: '01287654321',
-    doctorName: 'د. أحمد الشريف',
-    specialty: 'طب وجراحة الفم والأسنان',
-    date: '2026-08-10',
-    diagnosis: 'تشنج عضلات الفك الصدغية والصرير الليلي',
-    medications: [
-      { id: 'm-8', name: 'Myofen (مايوفين)', dose: 'كبسولة واحدة', freq: 'مرتين يومياً بعد الأكل', duration: '5 أيام', notes: 'باسط للعضلات ومسكن' }
-    ],
-    labTests: '',
-    followUpDate: '2026-09-10',
-    generalAdvice: 'ارتداء الواقي الليلي يومياً قبل النوم، والابتعاد عن مضغ العلكة والأطعمة الصلبة.',
-    createdAt: '2026-08-10T18:00:00Z'
-  }
-];
-
 export const expenses = [
   { id: 'exp-1', title: 'شراء كربولات بنج ليدوكايين وحقن معقمة', category: 'مستلزمات وأدوية', amount: 1850, date: '2026-08-28', paidTo: 'شركة الدلتا للتوريدات الطبية', notes: 'فاتورة رقم #9921' },
   { id: 'exp-2', title: 'سداد إيجار مقر العيادة لشهر أغسطس', category: 'إيجار ومرافق', amount: 8000, date: '2026-08-01', paidTo: 'إدارة برج الأطباء', notes: 'إيصال استلام رسمي' },
@@ -678,7 +665,6 @@ export const getInitialData = () => ({
   patients,
   appointments,
   invoices,
-  prescriptions,
   expenses,
   recalls,
   notifications,

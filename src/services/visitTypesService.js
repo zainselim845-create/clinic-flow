@@ -9,8 +9,7 @@ export const DEFAULT_DENTAL_VISIT_TYPES = [
   { id: 'vt-6', nameAr: 'خلع ضرس عادي أو مخلخل', nameEn: 'Simple Extraction', standardFee: 400, colorCode: '#F59E0B', isDefault: false, isOnline: true },
   { id: 'vt-7', nameAr: 'طربوش / تاج زيركون تجميلي', nameEn: 'Zirconia Crown', standardFee: 1800, colorCode: '#6366F1', isDefault: false, isOnline: false },
   { id: 'vt-8', nameAr: 'تبييض أسنان احترافي بالعيادة', nameEn: 'In-Office Teeth Whitening', standardFee: 2000, colorCode: '#06B6D4', isDefault: false, isOnline: true },
-  { id: 'vt-9', nameAr: 'زراعة سن تيتانيوم ألماني', nameEn: 'Dental Implant', standardFee: 6500, colorCode: '#D97706', isDefault: false, isOnline: false },
-  { id: 'vt-10', nameAr: 'حالة طارئة ومستعجلة', nameEn: 'Dental Emergency', standardFee: 400, colorCode: '#EF4444', isDefault: false, isOnline: true }
+  { id: 'vt-9', nameAr: 'زراعة سن تيتانيوم ألماني', nameEn: 'Dental Implant', standardFee: 6500, colorCode: '#D97706', isDefault: false, isOnline: false }
 ];
 
 export function fromDbVisitType(row) {

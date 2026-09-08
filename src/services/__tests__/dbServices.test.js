@@ -18,12 +18,12 @@ describe('Database Services & Schema Mappers Test Suite', () => {
         patient_phone: '01012345678',
         date: '2026-08-25',
         time: '05:30 م',
-        type: 'طوارئ',
-        fee: '400 ج.م',
+        type: 'كشف عادي',
+        fee: '300 ج.م',
         status: 'waiting',
         checked_in_at: '2026-08-25T14:00:00.000Z',
         consultation_started_at: null,
-        notes: 'حالة عاجلة',
+        notes: 'فحص دوري',
         reminder_sent: true,
         booking_code: 'CF-9921',
         created_at: '2026-08-25T13:00:00.000Z'
@@ -34,7 +34,8 @@ describe('Database Services & Schema Mappers Test Suite', () => {
       expect(model.patientName).toBe('أحمد محمود');
       expect(model.patientPhone).toBe('01012345678');
       expect(model.bookingCode).toBe('CF-9921');
-      expect(model.isEmergency).toBe(true);
+      expect(model.type).toBe('كشف عادي');
+      expect(model.status).toBe('waiting');
       expect(model.checkedInAt).toBe('2026-08-25T14:00:00.000Z');
       expect(model.reminderSent).toBe(true);
     });
@@ -173,16 +174,16 @@ describe('Database Services & Schema Mappers Test Suite', () => {
     it('correctly maps notification DB row', () => {
       const dbNotif = {
         id: 'n-1',
-        type: 'emergency',
-        title: 'طوارئ',
-        message: 'حالة مستعجلة',
+        type: 'booking',
+        title: 'حجز جديد',
+        message: 'تم حجز موعد كشف جديد عبر البوابة',
         read: false,
         related_id: 'appt-123',
         created_at: '2026-08-25T12:00:00.000Z'
       };
 
       const notif = notificationsService.fromDbNotification(dbNotif);
-      expect(notif.type).toBe('emergency');
+      expect(notif.type).toBe('booking');
       expect(notif.relatedId).toBe('appt-123');
       expect(notif.read).toBe(false);
     });

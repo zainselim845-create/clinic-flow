@@ -1,26 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, 
-  Pill, Sparkles, FileSpreadsheet
+  FileSpreadsheet
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import DentalChart from '../../components/DentalChart';
 import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
 import TreatmentPlanModal from '../../components/TreatmentPlanModal';
-import { getPatientDentalChart } from '../../services/dentalChartService';
 import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
 import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
 
 export default function PatientDossierDrawer({
   patient,
   patientAppointments = [],
-  onClose,
-  onIssuePrescription
+  onClose
 }) {
   const { state } = useApp();
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'chart' | 'notes' | 'plans' | 'prescriptions'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'notes' | 'plans'
 
-  const [dentalChartEntries, setDentalChartEntries] = useState([]);
   const [clinicalNotes, setClinicalNotes] = useState([]);
   const [treatmentPlans, setTreatmentPlans] = useState([]);
   const [showPlansModal, setShowPlansModal] = useState(false);
@@ -33,9 +29,6 @@ export default function PatientDossierDrawer({
   useEffect(() => {
     async function loadData() {
       if (patientId) {
-        const { data: chartData } = await getPatientDentalChart(patientId);
-        if (chartData) setDentalChartEntries(chartData);
-
         const { data: notesData } = await getPatientClinicalNotes(patientId);
         if (notesData) setClinicalNotes(notesData);
 
@@ -47,16 +40,6 @@ export default function PatientDossierDrawer({
   }, [patientId]);
 
   if (!patient) return null;
-
-  // Get patient's prescriptions
-  const patientPrescriptions = (state.prescriptions || []).filter(
-    rx => (patient.id && rx.patientId === patient.id) ||
-          (patientPhone && rx.patientPhone === patientPhone) ||
-          (patientName && rx.patientName === patientName)
-  );
-
-  const clinicSpecialty = state.clinicInfo?.specialty || '';
-  const isDental = !clinicSpecialty || clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('Dental');
 
   return (
     <div className="modal-backdrop">
@@ -93,30 +76,6 @@ export default function PatientDossierDrawer({
           >
             نظرة عامة والزيارات
           </button>
-
-          {isDental && (
-            <button
-              type="button"
-              className={`btn-dossier-tab ${activeTab === 'chart' ? 'active' : ''}`}
-              onClick={() => setActiveTab('chart')}
-              style={{
-                background: activeTab === 'chart' ? 'var(--primary)' : 'var(--surface)',
-                color: activeTab === 'chart' ? '#FFFFFF' : 'var(--text-primary)',
-                border: '1px solid var(--border-color)',
-                padding: '0.45rem 0.95rem',
-                borderRadius: 'var(--radius-md)',
-                fontWeight: 700,
-                fontSize: '0.84rem',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem'
-              }}
-            >
-              <Sparkles size={14} style={{ color: 'var(--accent)' }} />
-              <span>مخطط الأسنان FDI ({dentalChartEntries.length})</span>
-            </button>
-          )}
 
           <button
             type="button"
@@ -160,28 +119,6 @@ export default function PatientDossierDrawer({
           >
             <FileSpreadsheet size={14} />
             <span>خطط العلاج ({treatmentPlans.length})</span>
-          </button>
-
-          <button
-            type="button"
-            className={`btn-dossier-tab ${activeTab === 'prescriptions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('prescriptions')}
-            style={{
-              background: activeTab === 'prescriptions' ? 'var(--primary)' : 'var(--surface)',
-              color: activeTab === 'prescriptions' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              padding: '0.45rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: 700,
-              fontSize: '0.84rem',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem'
-            }}
-          >
-            <Pill size={14} />
-            <span>الروشتات الطبية ({patientPrescriptions.length})</span>
           </button>
         </div>
 
@@ -279,16 +216,7 @@ export default function PatientDossierDrawer({
             </>
           )}
 
-          {/* TAB 2: DENTAL CHART */}
-          {activeTab === 'chart' && (
-            <DentalChart 
-              patientId={patientId}
-              chartEntries={dentalChartEntries}
-              onChartUpdate={setDentalChartEntries}
-            />
-          )}
-
-          {/* TAB 3: CLINICAL NOTES */}
+          {/* TAB 2: CLINICAL NOTES */}
           {activeTab === 'notes' && (
             <ClinicalNotesPanel
               patientId={patientId}
@@ -298,7 +226,7 @@ export default function PatientDossierDrawer({
             />
           )}
 
-          {/* TAB 4: TREATMENT PLANS */}
+          {/* TAB 3: TREATMENT PLANS */}
           {activeTab === 'plans' && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -339,61 +267,6 @@ export default function PatientDossierDrawer({
                         <span>الصافي المطلوب: <strong style={{ color: 'var(--primary)' }}>{plan.netCost || plan.totalCost} ج.م</strong></span>
                         <span>بتاريخ: {new Date(plan.createdAt).toLocaleDateString('ar-EG')}</span>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 5: PRESCRIPTIONS */}
-          {activeTab === 'prescriptions' && (
-            <div className="prescriptions-archive-section">
-              {onIssuePrescription && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => onIssuePrescription(patient)}
-                    className="btn btn-primary btn-sm"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700 }}
-                  >
-                    <Pill size={14} />
-                    <span>إصدار روشتة إلكترونية جديدة لهذا المريض</span>
-                  </button>
-                </div>
-              )}
-              {patientPrescriptions.length === 0 ? (
-                <div style={{ background: 'var(--bg-secondary)', padding: '2rem', borderRadius: 'var(--radius-md)', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                  لا توجد روشتات إلكترونية مسجلة لهذا المريض بعد.
-                </div>
-              ) : (
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {patientPrescriptions.map((rx) => (
-                    <div key={rx.id} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.4rem', marginBottom: '0.6rem' }}>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>
-                          بتاريخ: <strong>{rx.date}</strong> | التشخيص: {rx.diagnosis || 'كشف ومتابعة'}
-                        </span>
-                        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>بواسطة: {rx.doctorName}</span>
-                      </div>
-
-                      <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-                        <strong>الأدوية الموصوفة:</strong>
-                        <ul style={{ margin: '0.3rem 1.2rem 0 0', padding: 0 }}>
-                          {(rx.medications || []).map((m, idx) => (
-                            <li key={idx} style={{ marginBottom: '0.2rem' }}>
-                              <strong>{m.name}</strong> — {m.dose} ({m.freq} - {m.duration})
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {rx.labTests && (
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.3rem 0' }}>
-                          <strong>تحاليل مطلوبة:</strong> {rx.labTests}
-                        </p>
-                      )}
                     </div>
                   ))}
                 </div>

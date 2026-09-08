@@ -14,7 +14,6 @@ describe('Real-World Medical Practice Simulation (Realistic Users & Lifecycle)',
     appointments: [],
     notifications: [],
     blockedSlots: [],
-    prescriptions: [],
     expenses: [],
     recalls: [],
     isLoading: false
@@ -55,8 +54,8 @@ describe('Real-World Medical Practice Simulation (Realistic Users & Lifecycle)',
     expect(state.notifications[0].title).toBe('حجز موعد جديد');
   });
 
-  it('Step 2: Emergency Walk-In Patient Registration (طارق منصور)', () => {
-    const emergencyPatient = {
+  it('Step 2: Walk-In Patient Registration (طارق منصور)', () => {
+    const walkInPatient = {
       id: 'patient-tarek-102',
       name: 'طارق منصور عبد الرحيم',
       phone: '01122334455',
@@ -65,41 +64,36 @@ describe('Real-World Medical Practice Simulation (Realistic Users & Lifecycle)',
       visitsCount: 0
     };
 
-    const emergencyAppt = {
+    const walkInAppt = {
       id: 'appt-tarek-2',
       bookingCode: 'CF-9902',
-      patientId: emergencyPatient.id,
-      patientName: emergencyPatient.name,
-      patientPhone: emergencyPatient.phone,
+      patientId: walkInPatient.id,
+      patientName: walkInPatient.name,
+      patientPhone: walkInPatient.phone,
       date: today,
       time: '05:15 م',
-      type: 'طوارئ',
+      type: 'كشف عادي',
       fee: '400 ج.م',
-      isEmergency: true,
       status: 'waiting',
       checkedInAt: new Date().toISOString(),
-      notes: 'ألم حاد مفاجئ بالبطن'
+      notes: 'ألم بالبطن'
     };
 
-    state = appReducer(state, { type: 'ADD_PATIENT', payload: emergencyPatient });
-    state = appReducer(state, { type: 'ADD_APPOINTMENT', payload: emergencyAppt });
+    state = appReducer(state, { type: 'ADD_PATIENT', payload: walkInPatient });
+    state = appReducer(state, { type: 'ADD_APPOINTMENT', payload: walkInAppt });
 
     expect(state.patients.length).toBe(2);
     expect(state.appointments.length).toBe(2);
 
-    // Verify Emergency Sorting: Emergency patient must take precedence in the waiting queue
+    // Verify Queue Sorting: Natural fair queue based on arrival / waiting status
     const waitingPatients = state.appointments
-      .filter(a => a.status === 'waiting' || a.isEmergency)
-      .sort((a, b) => {
-        if (a.isEmergency && !b.isEmergency) return -1;
-        if (!a.isEmergency && b.isEmergency) return 1;
-        return 0;
-      });
+      .filter(a => a.status === 'waiting')
+      .sort((a, b) => new Date(a.checkedInAt || 0) - new Date(b.checkedInAt || 0));
 
     expect(waitingPatients[0].patientName).toBe('طارق منصور عبد الرحيم');
   });
 
-  it('Step 3: Doctor Starts Examination for Emergency Patient', () => {
+  it('Step 3: Doctor Starts Examination for Walk-In Patient', () => {
     state = appReducer(state, {
       type: 'UPDATE_APPOINTMENT_STATUS',
       payload: { id: 'appt-tarek-2', status: 'in_progress' }
@@ -109,7 +103,7 @@ describe('Real-World Medical Practice Simulation (Realistic Users & Lifecycle)',
     expect(inProgressAppt.status).toBe('in_progress');
   });
 
-  it('Step 4: Doctor Completes Consultation and Issues E-Prescription', () => {
+  it('Step 4: Doctor Completes Consultation and Records Diagnosis', () => {
     // 1. Complete exam
     state = appReducer(state, {
       type: 'UPDATE_APPOINTMENT_STATUS',
@@ -117,7 +111,6 @@ describe('Real-World Medical Practice Simulation (Realistic Users & Lifecycle)',
         id: 'appt-tarek-2',
         status: 'completed',
         diagnosis: 'نزلة معوية حادة وتجفاف خفيف',
-        prescription: 'محلول جفاف + Nexium 40mg',
         notes: 'الراحة التامة والعودة للاستشارة بعد 3 أيام'
       }
     });
@@ -128,41 +121,19 @@ describe('Real-World Medical Practice Simulation (Realistic Users & Lifecycle)',
       payload: {
         patientId: 'patient-tarek-102',
         diagnosis: 'نزلة معوية حادة وتجفاف خفيف',
-        prescription: 'محلول جفاف + Nexium 40mg',
         notes: 'الراحة التامة والعودة للاستشارة بعد 3 أيام',
         lastVisit: today
       }
     });
 
-    // 3. Create E-Prescription record
-    const newRx = {
-      id: 'rx-tarek-01',
-      patientId: 'patient-tarek-102',
-      patientName: 'طارق منصور عبد الرحيم',
-      patientPhone: '01122334455',
-      appointmentId: 'appt-tarek-2',
-      date: today,
-      doctorName: 'د. أحمد الشريف',
-      specialty: 'باطنة وجهاز هضمي',
-      diagnosis: 'نزلة معوية حادة وتجفاف خفيف',
-      medications: [
-        { name: 'Nexium 40mg', dose: 'قرص واحد', freq: 'قبل الإفطار', duration: '14 يوم', notes: 'على معدة فارغة' },
-        { name: 'Panadol 500mg', dose: 'قرص واحد', freq: 'عند اللزوم', duration: '3 أيام', notes: 'بعد الأكل' }
-      ]
-    };
-
-    state = appReducer(state, { type: 'ADD_PRESCRIPTION', payload: newRx });
-
     const tarekPatient = state.patients.find(p => p.id === 'patient-tarek-102');
     expect(tarekPatient.visitsCount).toBe(1);
     expect(tarekPatient.diagnosis).toBe('نزلة معوية حادة وتجفاف خفيف');
-    expect(state.prescriptions.length).toBe(1);
-    expect(state.prescriptions[0].medications.length).toBe(2);
 
     // Calculate revenue from completed appointments
     const completedAppts = state.appointments.filter(a => a.status === 'completed');
     const revenue = completedAppts.reduce((sum, a) => sum + (parseInt(a.fee.replace(/\D/g, ''), 10) || 300), 0);
-    expect(revenue).toBe(400); // 400 EGP for emergency visit
+    expect(revenue).toBe(400); // 400 EGP for completed walk-in visit
   });
 
   it('Step 5: Returning Patient Recognition Flow (مروة عادل تحجز استشارة ثانية)', () => {

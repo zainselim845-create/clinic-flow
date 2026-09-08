@@ -22,7 +22,7 @@ export const CLINIC_SPECIALTIES = [
       { name: 'كشف وتشخيص أسنان', value: 0, color: '#3b82f6' },
       { name: 'جلسة علاج عصب / حشو', value: 0, color: '#10b981' },
       { name: 'بروفة تركيبات / مقاسات', value: 0, color: '#8b5cf6' },
-      { name: 'طوارئ ألم أسنان حاد', value: 0, color: '#ef4444' }
+      { name: 'فحص وقائي وتلميع دوري', value: 0, color: '#0ea5e9' }
     ]
   },
   {
@@ -42,7 +42,7 @@ export const CLINIC_SPECIALTIES = [
       { name: 'استشارة تقويم أولية', value: 0, color: '#3b82f6' },
       { name: 'جلسة شد تقويم شهرية', value: 0, color: '#10b981' },
       { name: 'تركيب جهاز جديد', value: 0, color: '#8b5cf6' },
-      { name: 'طوارئ سلك / حاصرة مكسورة', value: 0, color: '#ef4444' }
+      { name: 'صيانة سلك / حاصرة', value: 0, color: '#0ea5e9' }
     ]
   },
   {
@@ -78,10 +78,10 @@ export const CLINIC_SPECIALTIES = [
       { id: 'srv-endo-3', name: 'إعادة علاج عصب سابق معقد (Retreatment)', price: '1500 ج.م', duration: 60, description: 'إزالة الحشو القديم وإعادة بناء السن' }
     ],
     defaultVisitTypes: [
-      { name: 'كشف وتشخيص ألم عصب', value: 0, color: '#3b82f6' },
-      { name: 'جلسة روتاري وتنظيف قنوات', value: 0, color: '#10b981' },
-      { name: 'جلسة حشو عصب نهائي', value: 0, color: '#8b5cf6' },
-      { name: 'طوارئ تسكين خراج وألم شديد', value: 0, color: '#ef4444' }
+      { name: 'كشف عصب أولي', value: 0, color: '#3b82f6' },
+      { name: 'جلسة تنظيف وحشو قنوات', value: 0, color: '#10b981' },
+      { name: 'متابعة أشعة نهائية', value: 0, color: '#8b5cf6' },
+      { name: 'جلسة تسكين وعلاج جذور', value: 0, color: '#0ea5e9' }
     ]
   },
   {
@@ -141,7 +141,7 @@ export const CLINIC_SPECIALTIES = [
       { name: 'كشف باطنة أول مرة', value: 0, color: '#3b82f6' },
       { name: 'استشارة ومتابعة تحاليل', value: 0, color: '#10b981' },
       { name: 'فحص سونار بطن', value: 0, color: '#8b5cf6' },
-      { name: 'طوارئ ارتفاع ضغط / سكر', value: 0, color: '#ef4444' }
+      { name: 'متابعة دورية ضغط / سكر', value: 0, color: '#0ea5e9' }
     ]
   },
   {
@@ -178,7 +178,7 @@ export const CLINIC_SPECIALTIES = [
     defaultVisitTypes: [
       { name: 'كشف أطفال أول مرة', value: 0, color: '#3b82f6' },
       { name: 'متابعة دورية وتطعيمات', value: 0, color: '#10b981' },
-      { name: 'طوارئ حرارة ونزلة معوية', value: 0, color: '#ef4444' }
+      { name: 'فحص نمو واستشارة تغذية', value: 0, color: '#0ea5e9' }
     ]
   },
   {
@@ -197,7 +197,7 @@ export const CLINIC_SPECIALTIES = [
       { name: 'كشف عظام أول مرة', value: 0, color: '#3b82f6' },
       { name: 'جلسة حقن مفصل', value: 0, color: '#8b5cf6' },
       { name: 'متابعة والتئام كسور', value: 0, color: '#10b981' },
-      { name: 'طوارئ كدمات وكسور', value: 0, color: '#ef4444' }
+      { name: 'فحص مفاصل وإصابات ملاعب', value: 0, color: '#0ea5e9' }
     ]
   },
   {
@@ -231,7 +231,7 @@ export const CLINIC_SPECIALTIES = [
     defaultVisitTypes: [
       { name: 'متابعة حمل دورية', value: 0, color: '#3b82f6' },
       { name: 'كشف نساء وتأخر إنجاب', value: 0, color: '#8b5cf6' },
-      { name: 'طوارئ آلام ولادة ونزيف', value: 0, color: '#ef4444' }
+      { name: 'استشارة ومتابعة بعد الولادة', value: 0, color: '#0ea5e9' }
     ]
   }
 ];
