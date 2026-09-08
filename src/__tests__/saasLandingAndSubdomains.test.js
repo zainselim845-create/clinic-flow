@@ -136,6 +136,40 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
       expect(res.slug).toBe('dr-sara');
       expect(res.isDedicatedDomain).toBe(false);
     });
+
+    it('treats platform deployment domain (e.g. clinic-flow-lh3g.vercel.app) as shared platform, NOT dedicated domain', () => {
+      const res = resolveTenantFromLocation(demoClinics, {
+        hostname: 'clinic-flow-lh3g.vercel.app',
+        pathname: '/booking',
+        search: ''
+      });
+
+      expect(res.isDedicatedDomain).toBe(false);
+    });
+
+    it('resolves dedicated clinic from 4-segment subdomain on platform (e.g. dr-sara.clinic-flow-lh3g.vercel.app)', () => {
+      const res = resolveTenantFromLocation(demoClinics, {
+        hostname: 'dr-sara.clinic-flow-lh3g.vercel.app',
+        pathname: '/booking',
+        search: ''
+      });
+
+      expect(res.slug).toBe('dr-sara');
+      expect(res.isDedicatedDomain).toBe(true);
+      expect(res.tenant?.slug).toBe('dr-sara');
+    });
+
+    it('correctly resolves /c/:slug on deployment domain without dedicated lock', () => {
+      const res = resolveTenantFromLocation(demoClinics, {
+        hostname: 'clinic-flow-lh3g.vercel.app',
+        pathname: '/c/dr-sara/booking',
+        search: ''
+      });
+
+      expect(res.slug).toBe('dr-sara');
+      expect(res.isDedicatedDomain).toBe(false);
+      expect(res.tenant?.slug).toBe('dr-sara');
+    });
   });
 
   describe('3. Public Clinic Discovery & Search Filtering Logic', () => {

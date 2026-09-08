@@ -46,7 +46,8 @@ const Booking = () => {
     }
   }, [clinicSlug, tenant, switchTenant]);
 
-  const resolvedTenant = (clinicSlug ? allTenants.find(t => t.slug === clinicSlug) : null) || tenant;
+  const targetSlug = clinicSlug || clinicQuery;
+  const resolvedTenant = (targetSlug ? allTenants.find(t => t.slug === targetSlug || t.id === targetSlug) : null) || (isDedicatedDomain ? tenant : null) || tenant;
   const currentClinic = resolvedTenant || state.clinicInfo || clinicInfo;
 
   // Tenant data isolation: filter local patients & appointments by active clinic

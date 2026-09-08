@@ -86,7 +86,20 @@ export function resolveTenantFromLocation(
   if (cleanHostname && !cleanHostname.match(/^(127\.0\.0\.1|0\.0\.0\.0)$/)) {
     const parts = cleanHostname.split('.');
     let sub = null;
-    if (parts.length >= 3 && parts[0] !== 'www' && parts[0] !== 'app') {
+
+    const isHostingPlatform = cleanHostname.endsWith('.vercel.app') || 
+                              cleanHostname.endsWith('.netlify.app') || 
+                              cleanHostname.endsWith('.pages.dev') ||
+                              cleanHostname.endsWith('.onrender.com') ||
+                              cleanHostname.endsWith('.github.io');
+
+    if (isHostingPlatform) {
+      // On platforms like *.vercel.app, 3 parts (e.g. clinic-flow-lh3g.vercel.app) is the root platform host.
+      // Subdomains require >= 4 parts (e.g. dr-sara.clinic-flow-lh3g.vercel.app).
+      if (parts.length >= 4 && parts[0] !== 'www' && parts[0] !== 'app') {
+        sub = parts[0];
+      }
+    } else if (parts.length >= 3 && parts[0] !== 'www' && parts[0] !== 'app') {
       sub = parts[0];
     } else if (parts.length === 2 && parts[1] === 'localhost' && parts[0] !== 'www' && parts[0] !== 'app') {
       sub = parts[0];
@@ -94,11 +107,13 @@ export function resolveTenantFromLocation(
 
     if (sub) {
       const subMatch = (tenants || []).find(t => t.slug?.toLowerCase() === sub || t.id === sub);
-      return {
-        slug: subMatch ? subMatch.slug : sub,
-        isDedicatedDomain: true,
-        tenant: subMatch || null
-      };
+      if (subMatch) {
+        return {
+          slug: subMatch.slug,
+          isDedicatedDomain: true,
+          tenant: subMatch
+        };
+      }
     }
   }
 
