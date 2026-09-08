@@ -10,9 +10,21 @@ import './PatientRecallModal.css';
 export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
   const { state, dispatch } = useApp();
   const today = getTodayDateStr();
+  const currentClinicId = state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
 
-  const patients = state?.patients || [];
-  const recalls = state?.recalls || [];
+  const patients = useMemo(() => {
+    return (state?.patients || []).filter(p => {
+      if (p.clinicId) return p.clinicId === currentClinicId;
+      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+    });
+  }, [state?.patients, currentClinicId]);
+
+  const clinicRecalls = useMemo(() => {
+    return (state?.recalls || []).filter(r => {
+      if (r.clinicId) return r.clinicId === currentClinicId;
+      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+    });
+  }, [state?.recalls, currentClinicId]);
 
   const [selectedPatientId, setSelectedPatientId] = useState(initialPatient?.id || (patients[0]?.id || ''));
   const [selectedPresetId, setSelectedPresetId] = useState(recallPresets[0]?.id || '');
@@ -31,21 +43,21 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
   }, [intervalMonths, customDueDate]);
 
   const targetPatient = useMemo(() => {
-    return (state?.patients || []).find(p => p.id === selectedPatientId) || initialPatient || null;
-  }, [state?.patients, selectedPatientId, initialPatient]);
+    return patients.find(p => p.id === selectedPatientId) || initialPatient || null;
+  }, [patients, selectedPatientId, initialPatient]);
 
   const filteredRecalls = useMemo(() => {
-    return (state?.recalls || []).filter(r => {
+    return clinicRecalls.filter(r => {
       if (filterStatus === 'all') return true;
       if (filterStatus === 'due') return r.dueDate <= today && r.status !== 'completed';
       if (filterStatus === 'upcoming') return r.dueDate > today && r.status !== 'completed';
       return r.status === filterStatus;
     });
-  }, [state?.recalls, filterStatus, today]);
+  }, [clinicRecalls, filterStatus, today]);
 
   const dueCount = useMemo(() => {
-    return (state?.recalls || []).filter(r => r.dueDate <= today && r.status !== 'completed').length;
-  }, [state?.recalls, today]);
+    return clinicRecalls.filter(r => r.dueDate <= today && r.status !== 'completed').length;
+  }, [clinicRecalls, today]);
 
 
   if (!isOpen) return null;
@@ -59,6 +71,8 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
 
     const newRecall = {
       id: 'rec-' + Date.now(),
+      clinicId: currentClinicId,
+      clinic_id: currentClinicId,
       patientId: targetPatient.id,
       patientName: targetPatient.name,
       patientPhone: targetPatient.phone,

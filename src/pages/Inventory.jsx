@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import { 
   Package, Plus, Search, 
   Clock, CheckCircle2, ShieldAlert 
@@ -11,6 +13,10 @@ import {
 import './Inventory.css';
 
 const Inventory = () => {
+  const { state } = useApp();
+  const { tenant } = useTenant();
+  const currentClinicId = tenant?.id || state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
+
   const [items, setItems] = useState([
     {
       id: 'inv-item-1',
@@ -75,16 +81,19 @@ const Inventory = () => {
 
   useEffect(() => {
     async function load() {
-      const { data } = await getInventoryItems();
+      const { data } = await getInventoryItems(currentClinicId);
       if (data && data.length > 0) {
         setItems(data);
       }
     }
     load();
-  }, []);
+  }, [currentClinicId]);
 
   const filteredItems = useMemo(() => {
     return items.filter(it => {
+      // Tenant scoping
+      if (it.clinicId && currentClinicId && it.clinicId !== currentClinicId) return false;
+
       const matchesSearch = 
         it.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (it.lotNumber && it.lotNumber.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -92,7 +101,7 @@ const Inventory = () => {
       const matchesCat = selectedCategory === 'all' || it.category === selectedCategory;
       return matchesSearch && matchesCat;
     });
-  }, [items, searchQuery, selectedCategory]);
+  }, [items, searchQuery, selectedCategory, currentClinicId]);
 
   // Adjust stock quantity
   const handleStockChange = async (id, delta) => {
@@ -104,8 +113,13 @@ const Inventory = () => {
   };
 
   const handleSaveItem = async (newItem) => {
-    await addInventoryItem(newItem);
-    setItems(prev => [newItem, ...prev]);
+    const itemWithClinic = {
+      ...newItem,
+      clinicId: currentClinicId,
+      clinic_id: currentClinicId
+    };
+    await addInventoryItem(itemWithClinic);
+    setItems(prev => [itemWithClinic, ...prev]);
   };
 
   // Metrics

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import { 
   UserPlus, Search, FolderOpen, Share2,
   CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark
@@ -19,8 +20,10 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const { state, dispatch } = useApp();
+  const { tenant } = useTenant();
   
   const currentClinic = state.clinicInfo || {};
+  const currentClinicId = tenant?.id || currentClinic?.id || '550e8400-e29b-41d4-a716-446655440000';
   const today = getTodayDateStr();
 
   // Modals & Drawers state
@@ -44,10 +47,14 @@ const Dashboard = () => {
     setTimeout(() => setCopiedBookingLink(false), 2500);
   };
 
-  // Filter today's appointments
+  // Filter today's appointments strictly scoped to current clinic
   const todaysAppointments = useMemo(() => {
-    return (state.appointments || []).filter(a => a.date === today);
-  }, [state.appointments, today]);
+    return (state.appointments || []).filter(a => {
+      if (a.date !== today) return false;
+      if (a.clinicId && currentClinicId) return a.clinicId === currentClinicId;
+      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+    });
+  }, [state.appointments, today, currentClinicId]);
 
   // Clinical Lifecycle Segmentation (Memoized)
   const completedToday = useMemo(() => todaysAppointments.filter(a => a.status === 'completed'), [todaysAppointments]);
@@ -174,6 +181,8 @@ const Dashboard = () => {
 
       const newRecall = {
         id: `rec-${Date.now()}`,
+        clinicId: currentClinicId,
+        clinic_id: currentClinicId,
         patientId: data.patientId,
         patientName: data.patientName,
         patientPhone: data.patientPhone,
@@ -194,6 +203,8 @@ const Dashboard = () => {
     const patientId = `p-${Date.now()}`;
     const newBooking = {
       id: `walkin-${Date.now()}`,
+      clinicId: currentClinicId,
+      clinic_id: currentClinicId,
       patientId,
       patientName: walkInData.name,
       patientPhone: walkInData.phone,
@@ -218,21 +229,27 @@ const Dashboard = () => {
       notes: walkInData.notes
     };
 
+    const newPatient = {
+      id: patientId,
+      clinicId: currentClinicId,
+      clinic_id: currentClinicId,
+      name: walkInData.name,
+      phone: walkInData.phone,
+      notes: 'مريض مباشر (Walk-in)',
+      lastVisit: walkInData.date,
+      visitsCount: 1
+    };
+
     if (state.useSupabase) {
       try {
-        await patientsService.addPatient({
-          id: patientId,
-          name: walkInData.name,
-          phone: walkInData.phone,
-          notes: 'مريض مباشر (Walk-in)',
-          lastVisit: walkInData.date
-        });
+        await patientsService.addPatient(newPatient);
         await appointmentsService.addAppointment(newBooking);
       } catch (err) {
         console.error('Failed to sync walk-in to Supabase:', err);
       }
     }
 
+    dispatch({ type: 'ADD_PATIENT', payload: newPatient });
     dispatch({ type: 'ADD_APPOINTMENT', payload: newBooking });
   };
 

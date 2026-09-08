@@ -4,6 +4,7 @@ import {
   AlertCircle, ChevronRight, Calendar 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import LabOrderModal from '../components/LabOrderModal';
 import { 
   getLabOrders, addLabOrder, updateLabOrderStatus, 
@@ -13,6 +14,9 @@ import './Labs.css';
 
 const Labs = () => {
   const { state } = useApp();
+  const { tenant } = useTenant();
+  const currentClinicId = tenant?.id || state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
+
   const [orders, setOrders] = useState([
     {
       id: 'lab-101',
@@ -65,16 +69,19 @@ const Labs = () => {
 
   useEffect(() => {
     async function load() {
-      const { data } = await getLabOrders();
+      const { data } = await getLabOrders(currentClinicId);
       if (data && data.length > 0) {
         setOrders(data);
       }
     }
     load();
-  }, []);
+  }, [currentClinicId]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter(o => {
+      // Clinic scoping
+      if (o.clinicId && currentClinicId && o.clinicId !== currentClinicId) return false;
+
       const matchesSearch = 
         (o.patientName && o.patientName.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (o.labName && o.labName.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -83,11 +90,16 @@ const Labs = () => {
       const matchesStatus = statusFilter === 'all' || o.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [orders, searchQuery, statusFilter]);
+  }, [orders, searchQuery, statusFilter, currentClinicId]);
 
   const handleSaveOrder = async (newOrder) => {
-    await addLabOrder(newOrder);
-    setOrders(prev => [newOrder, ...prev]);
+    const orderWithClinic = {
+      ...newOrder,
+      clinicId: currentClinicId,
+      clinic_id: currentClinicId
+    };
+    await addLabOrder(orderWithClinic);
+    setOrders(prev => [orderWithClinic, ...prev]);
   };
 
   const handleAdvanceStatus = async (orderId, currentStatus) => {

@@ -20,7 +20,10 @@ const Patients = () => {
 
   // Filter patients by clinic
   const clinicPatients = useMemo(() => {
-    return patients.filter(p => !p.clinicId || p.clinicId === currentClinicId);
+    return patients.filter(p => {
+      if (p.clinicId) return p.clinicId === currentClinicId;
+      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+    });
   }, [patients, currentClinicId]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,7 +75,12 @@ const Patients = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedPatient) {
-      const updatedPayload = { ...formData, id: selectedPatient.id };
+      const updatedPayload = { 
+        ...formData, 
+        id: selectedPatient.id,
+        clinicId: selectedPatient.clinicId || currentClinicId,
+        clinic_id: selectedPatient.clinic_id || currentClinicId
+      };
       if (useSupabase) {
         try {
           await patientsService.updatePatient(selectedPatient.id, updatedPayload);
@@ -88,6 +96,8 @@ const Patients = () => {
     } else {
       const newPatient = {
         id: Date.now().toString(),
+        clinicId: currentClinicId,
+        clinic_id: currentClinicId,
         ...formData,
         visitsCount: 0,
         lastVisit: null

@@ -26,7 +26,7 @@ describe('OpenRouter AI Assistant Service', () => {
 
   describe('Config Management', () => {
     it('returns default OpenRouter config when localStorage is empty or contains corrupted JSON', () => {
-      mockStorage['clinic_flow_ai_config'] = '{invalid-json';
+      mockStorage['clinicflow_ai_config'] = '{invalid-json';
       const config = getAiConfig();
       expect(config.apiKey).toBe(DEFAULT_OPENROUTER_KEY);
       expect(config.model).toBe(DEFAULT_AI_MODEL);

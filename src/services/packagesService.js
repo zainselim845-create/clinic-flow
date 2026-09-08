@@ -7,22 +7,30 @@ const PACKAGES_STORAGE_KEY = 'clinicflow_patient_packages';
 /**
  * Multi-Session Package Ledger (Laser, Skin Care, Physiotherapy, Slimming)
  */
-export function getPatientPackages() {
+export function getPatientPackages(clinicId) {
   try {
-    const data = safeStorage.getItem(PACKAGES_STORAGE_KEY);
+    const key = clinicId ? `${PACKAGES_STORAGE_KEY}_${clinicId}` : PACKAGES_STORAGE_KEY;
+    const data = safeStorage.getItem(key);
     if (!data) return [];
-    return typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
+    const list = typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
+    if (clinicId) {
+      return list.filter(p => !p.clinicId || p.clinicId === clinicId);
+    }
+    return list;
   } catch (e) {
     console.error('Failed to get packages', e);
     return [];
   }
 }
 
-export function savePatientPackage(pkgData) {
+export function savePatientPackage(pkgData, clinicId) {
   try {
-    const existing = getPatientPackages();
+    const key = clinicId ? `${PACKAGES_STORAGE_KEY}_${clinicId}` : PACKAGES_STORAGE_KEY;
+    const existing = getPatientPackages(clinicId);
     const newPkg = {
       id: pkgData.id || 'pkg_' + Date.now(),
+      clinicId: clinicId || pkgData.clinicId || undefined,
+      clinic_id: clinicId || pkgData.clinic_id || undefined,
       patientId: pkgData.patientId,
       patientName: pkgData.patientName,
       packageName: pkgData.packageName || 'باقة ليزر متكاملة (6 جلسات)',
@@ -39,7 +47,7 @@ export function savePatientPackage(pkgData) {
 
     const filtered = existing.filter(p => p.id !== newPkg.id);
     const updated = [newPkg, ...filtered];
-    safeStorage.setItem(PACKAGES_STORAGE_KEY, JSON.stringify(updated));
+    safeStorage.setItem(key, JSON.stringify(updated));
     return newPkg;
   } catch (e) {
     console.error('Failed to save package', e);

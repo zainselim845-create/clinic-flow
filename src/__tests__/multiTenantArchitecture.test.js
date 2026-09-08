@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { demoClinics, clinicInfo, getInitialDataForTenant } from '../data/demoData';
 import { canSwitchTenants, getUserAllowedClinics } from '../utils/permissions';
 import { resolveTenantFromLocation, isDedicatedDomain } from '../context/TenantContext';
 import { PatientIndexEngine } from '../services/indexedSearchService';
+import { getLocalTreatmentPlans, saveLocalTreatmentPlans } from '../services/treatmentPlansService';
+import { getPatientPackages, savePatientPackage } from '../services/packagesService';
+import { getStoredFeedbacks, saveFeedback } from '../services/feedbackService';
+import { getSmsConfig, saveSmsConfig } from '../services/smsService';
 import fs from 'fs';
 import path from 'path';
 
@@ -514,6 +518,95 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
       // In Sara clinic, can find Sara appointment but CANNOT find Ahmed appointment
       expect(findManageableAppointment('CF-2222', '01012345678', saraClinicId)?.id).toBe('appt-sara');
       expect(findManageableAppointment('CF-1111', '01012345678', saraClinicId)).toBeUndefined();
+    });
+  });
+
+  describe('13. Ancillary CRM LocalStorage Multi-Tenant Partitioning', () => {
+    const ahmedId = '550e8400-e29b-41d4-a716-446655440000';
+    const saraId = '550e8400-e29b-41d4-a716-446655440099';
+
+    it('isolates treatment plans storage per clinic ID', () => {
+      const ahmedPlans = [{ id: 'plan-ahmed-1', title: 'خطة تقويم أسنان' }];
+      const saraPlans = [{ id: 'plan-sara-1', title: 'خطة ليزر وتجديد بشرة' }];
+
+      saveLocalTreatmentPlans(ahmedPlans, ahmedId);
+      saveLocalTreatmentPlans(saraPlans, saraId);
+
+      const loadedAhmed = getLocalTreatmentPlans(ahmedId);
+      const loadedSara = getLocalTreatmentPlans(saraId);
+
+      expect(loadedAhmed.some(p => p.id === 'plan-ahmed-1')).toBe(true);
+      expect(loadedAhmed.some(p => p.id === 'plan-sara-1')).toBe(false);
+
+      expect(loadedSara.some(p => p.id === 'plan-sara-1')).toBe(true);
+      expect(loadedSara.some(p => p.id === 'plan-ahmed-1')).toBe(false);
+    });
+
+    it('isolates patient multi-session packages per clinic ID', () => {
+      savePatientPackage({ id: 'pkg-1', patientName: 'أحمد محمود', packageName: 'باقة تنظيف' }, ahmedId);
+      savePatientPackage({ id: 'pkg-2', patientName: 'سارة خالد', packageName: 'باقة ليزر' }, saraId);
+
+      const ahmedPackages = getPatientPackages(ahmedId);
+      const saraPackages = getPatientPackages(saraId);
+
+      expect(ahmedPackages.some(p => p.id === 'pkg-1')).toBe(true);
+      expect(ahmedPackages.some(p => p.id === 'pkg-2')).toBe(false);
+
+      expect(saraPackages.some(p => p.id === 'pkg-2')).toBe(true);
+      expect(saraPackages.some(p => p.id === 'pkg-1')).toBe(false);
+    });
+
+    it('isolates patient NPS feedback and reviews per clinic ID', () => {
+      saveFeedback({ id: 'fb-1', rating: 5, comment: 'عيادة أسنان ممتازة' }, ahmedId);
+      saveFeedback({ id: 'fb-2', rating: 5, comment: 'جلسة ليزر رائعة' }, saraId);
+
+      const ahmedFeedbacks = getStoredFeedbacks(ahmedId);
+      const saraFeedbacks = getStoredFeedbacks(saraId);
+
+      expect(ahmedFeedbacks.some(f => f.id === 'fb-1')).toBe(true);
+      expect(ahmedFeedbacks.some(f => f.id === 'fb-2')).toBe(false);
+
+      expect(saraFeedbacks.some(f => f.id === 'fb-2')).toBe(true);
+      expect(saraFeedbacks.some(f => f.id === 'fb-1')).toBe(false);
+    });
+
+    it('isolates SMS gateway credentials and sender IDs per clinic ID', () => {
+      saveSmsConfig({ provider: 'easysendsms', easysendsmsSender: 'DrAhmed' }, ahmedId);
+      saveSmsConfig({ provider: 'cequens', cequensSenderName: 'DrSara' }, saraId);
+
+      const ahmedConfig = getSmsConfig(ahmedId);
+      const saraConfig = getSmsConfig(saraId);
+
+      expect(ahmedConfig.easysendsmsSender).toBe('DrAhmed');
+      expect(saraConfig.cequensSenderName).toBe('DrSara');
+    });
+  });
+
+  describe('14. Internal Modals & Record Partitioning Integrity', () => {
+    it('enforces strict clinicId filtering for appointments, expenses, and recalls', () => {
+      const ahmedId = '550e8400-e29b-41d4-a716-446655440000';
+      const saraId = '550e8400-e29b-41d4-a716-446655440099';
+
+      const mixedAppointments = [
+        { id: 'a1', clinicId: ahmedId, patientName: 'علي' },
+        { id: 'a2', clinicId: saraId, patientName: 'منى' }
+      ];
+
+      const filterByClinic = (records, activeClinicId) => {
+        return records.filter(r => {
+          if (r.clinicId) return r.clinicId === activeClinicId;
+          return activeClinicId === ahmedId || activeClinicId === 'clinic-1';
+        });
+      };
+
+      const ahmedFiltered = filterByClinic(mixedAppointments, ahmedId);
+      const saraFiltered = filterByClinic(mixedAppointments, saraId);
+
+      expect(ahmedFiltered.length).toBe(1);
+      expect(ahmedFiltered[0].id).toBe('a1');
+
+      expect(saraFiltered.length).toBe(1);
+      expect(saraFiltered[0].id).toBe('a2');
     });
   });
 

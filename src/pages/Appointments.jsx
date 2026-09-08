@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useDeferredValue } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { useTenant } from '../context/TenantContext';
 import { Plus, X, Search, Lock, Unlock, Download, ChevronLeft, ChevronRight, Armchair, LayoutGrid } from 'lucide-react';
 import AppointmentCard from '../components/AppointmentCard';
 import MultiChairGrid from '../components/appointments/MultiChairGrid';
@@ -13,9 +14,11 @@ import './Appointments.css';
 
 const Appointments = () => {
   const { state, dispatch, useSupabase } = useApp();
+  const { tenant } = useTenant();
   const { role, user } = useAuth();
   const isDoctor = (user?.role || role || 'doctor') === 'doctor';
   const { appointments = [], patients = [], blockedSlots = [] } = state;
+  const currentClinicId = tenant?.id || state.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
 
   const todayStr = getTodayDateStr();
 
@@ -72,6 +75,9 @@ const Appointments = () => {
   const filteredAppointments = useMemo(() => {
     const query = deferredQuery.trim().toLowerCase();
     return appointments.filter(appt => {
+      // Strict multi-tenant isolation
+      if (appt.clinicId && currentClinicId && appt.clinicId !== currentClinicId) return false;
+
       let matchesStatus = true;
       if (filterStatus === 'waiting') matchesStatus = appt.status === 'waiting';
       else if (filterStatus === 'in_progress') matchesStatus = appt.status === 'in_progress';
@@ -91,7 +97,7 @@ const Appointments = () => {
         (appt.bookingCode && appt.bookingCode.toLowerCase().includes(query))
       );
     });
-  }, [appointments, patientMap, filterStatus, filterDate, deferredQuery]);
+  }, [appointments, patientMap, filterStatus, filterDate, deferredQuery, currentClinicId]);
 
   const totalPages = Math.ceil(filteredAppointments.length / PAGE_SIZE) || 1;
   const paginatedAppointments = useMemo(() => {
@@ -126,6 +132,8 @@ const Appointments = () => {
 
     const newAppointment = {
       id: Date.now().toString(),
+      clinicId: currentClinicId,
+      clinic_id: currentClinicId,
       patientId: formData.patientId,
       patientName: patient ? patient.name : 'مريض العيادة',
       patientPhone: patient ? patient.phone : '',

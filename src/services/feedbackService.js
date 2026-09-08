@@ -8,14 +8,25 @@ import { safeStorage } from '../utils/safeStorage';
 
 const FEEDBACK_STORAGE_KEY = 'clinicflow_feedbacks';
 
-export function getStoredFeedbacks() {
-  return safeStorage.getItem(FEEDBACK_STORAGE_KEY, []);
+export function getStoredFeedbacks(clinicId) {
+  const key = clinicId ? `${FEEDBACK_STORAGE_KEY}_${clinicId}` : FEEDBACK_STORAGE_KEY;
+  const list = safeStorage.getItem(key, []);
+  if (clinicId && Array.isArray(list)) {
+    return list.filter(f => !f.clinicId || f.clinicId === clinicId);
+  }
+  return Array.isArray(list) ? list : [];
 }
 
-export function saveFeedback(feedback) {
-  const current = getStoredFeedbacks();
-  const updated = [feedback, ...current.filter(f => f.id !== feedback.id)];
-  safeStorage.setItem(FEEDBACK_STORAGE_KEY, updated);
+export function saveFeedback(feedback, clinicId) {
+  const key = clinicId ? `${FEEDBACK_STORAGE_KEY}_${clinicId}` : FEEDBACK_STORAGE_KEY;
+  const current = getStoredFeedbacks(clinicId);
+  const feedbackWithClinic = {
+    ...feedback,
+    clinicId: clinicId || feedback.clinicId || undefined,
+    clinic_id: clinicId || feedback.clinic_id || undefined
+  };
+  const updated = [feedbackWithClinic, ...current.filter(f => f.id !== feedback.id)];
+  safeStorage.setItem(key, updated);
   return updated;
 }
 

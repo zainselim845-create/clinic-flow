@@ -17,20 +17,27 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
   const [category, setCategory] = useState(expenseCategories[0]);
   const [date, setDate] = useState(today);
   const [notes, setNotes] = useState('');
+  const currentClinicId = state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
   const [filterCategory, setFilterCategory] = useState('all');
-  const filteredExpenses = useMemo(() => {
-    return (state.expenses || []).filter(e => filterCategory === 'all' || e.category === filterCategory);
-  }, [state.expenses, filterCategory]);
 
+  const clinicExpenses = useMemo(() => {
+    return (state.expenses || []).filter(e => {
+      if (e.clinicId) return e.clinicId === currentClinicId;
+      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+    });
+  }, [state.expenses, currentClinicId]);
+
+  const filteredExpenses = useMemo(() => {
+    return clinicExpenses.filter(e => filterCategory === 'all' || e.category === filterCategory);
+  }, [clinicExpenses, filterCategory]);
 
   const totalAmount = useMemo(() => {
-    return (state.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  }, [state.expenses]);
+    return clinicExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  }, [clinicExpenses]);
 
   const todayAmount = useMemo(() => {
-    return (state.expenses || []).filter(e => e.date === today).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-  }, [state.expenses, today]);
-
+    return clinicExpenses.filter(e => e.date === today).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  }, [clinicExpenses, today]);
 
   if (!isOpen) return null;
 
@@ -40,6 +47,8 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
 
     const newExpense = {
       id: 'exp-' + Date.now(),
+      clinicId: currentClinicId,
+      clinic_id: currentClinicId,
       title: title.trim(),
       amount: Number(amount) || 0,
       category,
@@ -60,7 +69,7 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
     }
   };
 
-  const allExpenses = state.expenses || [];
+  const allExpenses = clinicExpenses;
 
   const handleExportCsv = () => {
     if (allExpenses.length === 0) return;

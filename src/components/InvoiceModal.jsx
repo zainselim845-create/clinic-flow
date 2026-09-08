@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   FileText, Printer, MessageCircle, Plus, Trash2, 
-  CheckCircle2, X, MapPin, Phone 
+  CheckCircle2, X, MapPin, Phone, Send 
 } from 'lucide-react';
 import { recordPayment } from '../services/invoicesService';
 

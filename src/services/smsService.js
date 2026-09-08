@@ -1,18 +1,38 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { safeStorage } from '../utils/safeStorage';
 
 /**
  * Get active SMS gateway configuration from LocalStorage or Environment variables.
  * Sensitive keys default to empty strings to avoid hardcoding secrets in source code.
  */
-export function getSmsConfig() {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    const saved = localStorage.getItem('clinicflow_sms_config');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse saved SMS config:', e);
+export function getSmsConfig(clinicId) {
+  const key = clinicId ? `clinicflow_sms_config_${clinicId}` : 'clinicflow_sms_config';
+  const saved = safeStorage.getItem(key, null) || (clinicId ? safeStorage.getItem('clinicflow_sms_config', null) : null);
+  if (saved) {
+    try {
+      const parsed = typeof saved === 'string' ? JSON.parse(saved) : saved;
+      if (parsed && typeof parsed === 'object') {
+        return {
+          provider: parsed.provider || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMS_PROVIDER) || 'none',
+          easysendsmsApiKey: parsed.easysendsmsApiKey ?? '',
+          easysendsmsSender: parsed.easysendsmsSender ?? 'keif',
+          easysendsmsApiUrl: parsed.easysendsmsApiUrl || 'https://restapi.easysendsms.app/v1/rest/sms/send',
+          smsmisrUsername: parsed.smsmisrUsername ?? '',
+          smsmisrPassword: parsed.smsmisrPassword ?? '',
+          smsmisrSender: parsed.smsmisrSender ?? 'keif',
+          smsmisrEnvironment: parsed.smsmisrEnvironment ?? '1',
+          smsmisrApiUrl: parsed.smsmisrApiUrl || 'https://smsmisr.com/api/SMS/',
+          cequensApiKey: parsed.cequensApiKey ?? '',
+          cequensSenderName: parsed.cequensSenderName ?? 'ClinicFlow',
+          cequensApiUrl: parsed.cequensApiUrl || 'https://apis.cequens.com/sms/v1/messages',
+          apiKey: parsed.apiKey ?? '',
+          apiUrl: parsed.apiUrl || 'https://api.textbee.dev/api/v1',
+          deviceId: parsed.deviceId ?? '',
+          enabled: parsed.enabled !== undefined ? parsed.enabled : true
+        };
       }
+    } catch (e) {
+      console.error('Failed to parse saved SMS config:', e);
     }
   }
 
@@ -55,10 +75,9 @@ export async function getEasySendSmsBalance(apiKey) {
   }
 }
 
-export function saveSmsConfig(config) {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    localStorage.setItem('clinicflow_sms_config', JSON.stringify(config));
-  }
+export function saveSmsConfig(config, clinicId) {
+  const key = clinicId ? `clinicflow_sms_config_${clinicId}` : 'clinicflow_sms_config';
+  safeStorage.setItem(key, config);
 }
 
 /**

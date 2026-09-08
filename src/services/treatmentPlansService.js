@@ -66,22 +66,24 @@ const DEFAULT_PLANS = [
   }
 ];
 
-export function getLocalTreatmentPlans() {
-  const stored = safeStorage.getItem(PLANS_STORAGE_KEY, DEFAULT_PLANS);
-  return Array.isArray(stored) ? stored : DEFAULT_PLANS;
+export function getLocalTreatmentPlans(clinicId) {
+  const key = clinicId ? `${PLANS_STORAGE_KEY}_${clinicId}` : PLANS_STORAGE_KEY;
+  const stored = safeStorage.getItem(key, clinicId ? [] : DEFAULT_PLANS);
+  return Array.isArray(stored) ? stored : (clinicId ? [] : DEFAULT_PLANS);
 }
 
-export function saveLocalTreatmentPlans(plans) {
-  const safePlans = Array.isArray(plans) ? plans : DEFAULT_PLANS;
-  safeStorage.setItem(PLANS_STORAGE_KEY, safePlans);
+export function saveLocalTreatmentPlans(plans, clinicId) {
+  const key = clinicId ? `${PLANS_STORAGE_KEY}_${clinicId}` : PLANS_STORAGE_KEY;
+  const safePlans = Array.isArray(plans) ? plans : (clinicId ? [] : DEFAULT_PLANS);
+  safeStorage.setItem(key, safePlans);
   return safePlans;
 }
 
 /**
  * Detect patients with unfinished treatment plans
  */
-export function detectUnfinishedTreatmentPlans(plans = []) {
-  const local = getLocalTreatmentPlans();
+export function detectUnfinishedTreatmentPlans(plans = [], clinicId) {
+  const local = getLocalTreatmentPlans(clinicId);
   const allPlans = (Array.isArray(plans) && plans.length > 0) ? plans : (Array.isArray(local) ? local : DEFAULT_PLANS);
 
   return (allPlans || [])
