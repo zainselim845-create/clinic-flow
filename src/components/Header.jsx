@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon, LogOut } from 'lucide-react';
+import { Search, Bell, Sun, Moon, LogOut, Bug } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
 import GlobalSearchModal from './GlobalSearchModal';
 import TenantSwitcher from './TenantSwitcher';
+import ReportIssueModal from './ReportIssueModal';
 import './Header.css';
 
 const Header = ({ title }) => {
@@ -14,6 +15,7 @@ const Header = ({ title }) => {
   const { tenant } = useTenant();
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
 
   // Real Logged-in User Identity (strictly reflects logged-in user or active tenant doctor)
@@ -76,6 +78,15 @@ const Header = ({ title }) => {
             {state.theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
+          <button 
+            className="theme-header-btn" 
+            onClick={() => setIsReportModalOpen(true)} 
+            title="إبلاغ عن عطل أو مشكلة فنية"
+            style={{ color: '#ef4444' }}
+          >
+            <Bug size={18} />
+          </button>
+
           <button className="notification-btn" onClick={() => navigate('/notifications')} title="التنبيهات">
             <Bell size={19} />
             {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
@@ -104,6 +115,12 @@ const Header = ({ title }) => {
       <GlobalSearchModal 
         isOpen={isSearchOpen} 
         onClose={() => setIsSearchOpen(false)} 
+      />
+
+      {/* Report Bug / Issue Modal */}
+      <ReportIssueModal 
+        isOpen={isReportModalOpen} 
+        onClose={() => setIsReportModalOpen(false)} 
       />
     </>
   );

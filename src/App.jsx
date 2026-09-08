@@ -1,9 +1,12 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
 import { useApp } from './context/AppContext';
+import { useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import { initGlobalErrorListeners } from './services/systemErrorService';
 import './App.css';
 
 // Smart Lazy Load with Auto-Retry on Deployment Update
@@ -42,10 +45,12 @@ const Labs = lazyWithRetry(() => import('./pages/Labs'));
 const Inventory = lazyWithRetry(() => import('./pages/Inventory'));
 const Attendance = lazyWithRetry(() => import('./pages/Attendance'));
 const SuperAdminDashboard = lazyWithRetry(() => import('./pages/superadmin/SuperAdminDashboard'));
+const LandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 const pageTitles = {
   '/': 'لوحة التحكم السريرية',
+  '/dashboard': 'لوحة التحكم السريرية',
   '/appointments': 'إدارة المواعيد والتقويم',
   '/patients': 'السجلات والملفات الطبية',
   '/invoices': 'الفوترة والتحصيلات المالية',
@@ -111,70 +116,90 @@ const AdminLayout = () => {
 
 function App() {
   const { state } = useApp();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    initGlobalErrorListeners();
+  }, []);
 
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        {/* 1. Public Pages (Clean Canvas Layout) */}
-        <Route path="/login" element={
-          <div className="app-wrapper booking-layout" data-theme={state.theme}><Login /></div>
-        } />
-        <Route path="/booking" element={
-          <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
-        } />
-        <Route path="/manage-booking" element={
-          <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
-        } />
-        {/* Multi-Tenant Public Pages & Tenant Slugs */}
-        <Route path="/c/:clinicSlug/booking" element={
-          <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
-        } />
-        <Route path="/c/:clinicSlug/manage-booking" element={
-          <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
-        } />
+    <ErrorBoundary>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* 1. Public Pages (Clean Canvas Layout) */}
+          <Route path="/" element={
+            user ? (
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            ) : (
+              <LandingPage />
+            )
+          }>
+            {user && <Route index element={<Dashboard />} />}
+          </Route>
 
-        {/* Super Admin Control Plane */}
-        <Route path="/super-admin" element={<SuperAdminDashboard />} />
+          <Route path="/login" element={
+            <div className="app-wrapper booking-layout" data-theme={state.theme}><Login /></div>
+          } />
+          <Route path="/booking" element={
+            <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
+          } />
+          <Route path="/manage-booking" element={
+            <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
+          } />
 
-        {/* 2. Admin Protected Routes with Sidebar & Header Layout */}
-        <Route element={
-          <ProtectedRoute>
-            <AdminLayout />
-          </ProtectedRoute>
-        }>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/appointments" element={
-            <ProtectedRoute requiredPermission="appointments"><Appointments /></ProtectedRoute>
+          {/* Multi-Tenant Public Pages & Tenant Slugs */}
+          <Route path="/c/:clinicSlug" element={<Navigate to="booking" replace />} />
+          <Route path="/c/:clinicSlug/booking" element={
+            <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
           } />
-          <Route path="/patients" element={
-            <ProtectedRoute requiredPermission="patients"><Patients /></ProtectedRoute>
+          <Route path="/c/:clinicSlug/manage-booking" element={
+            <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
           } />
-          <Route path="/invoices" element={
-            <ProtectedRoute requiredPermission="invoices"><Invoices /></ProtectedRoute>
-          } />
-          <Route path="/inventory" element={
-            <ProtectedRoute requiredPermission="inventory"><Inventory /></ProtectedRoute>
-          } />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/doctor-agent" element={
-            <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>
-          } />
-        </Route>
 
-        {/* 3. Removed Routes Redirects */}
-        <Route path="/labs" element={<Navigate to="/" replace />} />
-        <Route path="/attendance" element={<Navigate to="/" replace />} />
-        <Route path="/insurance" element={<Navigate to="/" replace />} />
+          {/* Super Admin Control Plane */}
+          <Route path="/super-admin" element={<SuperAdminDashboard />} />
 
-        {/* 4. Fallback unknown paths */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+          {/* 2. Admin Protected Routes with Sidebar & Header Layout */}
+          <Route element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/appointments" element={
+              <ProtectedRoute requiredPermission="appointments"><Appointments /></ProtectedRoute>
+            } />
+            <Route path="/patients" element={
+              <ProtectedRoute requiredPermission="patients"><Patients /></ProtectedRoute>
+            } />
+            <Route path="/invoices" element={
+              <ProtectedRoute requiredPermission="invoices"><Invoices /></ProtectedRoute>
+            } />
+            <Route path="/inventory" element={
+              <ProtectedRoute requiredPermission="inventory"><Inventory /></ProtectedRoute>
+            } />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/doctor-agent" element={
+              <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>
+            } />
+          </Route>
+
+          {/* 3. Removed Routes Redirects */}
+          <Route path="/labs" element={<Navigate to="/" replace />} />
+          <Route path="/attendance" element={<Navigate to="/" replace />} />
+          <Route path="/insurance" element={<Navigate to="/" replace />} />
+
+          {/* 4. Fallback unknown paths */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   );
-
 }
 
 export default App;

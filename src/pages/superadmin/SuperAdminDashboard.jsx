@@ -5,13 +5,23 @@ import {
   Building2, Plus, Users, CreditCard, Activity, ShieldCheck, 
   ExternalLink, CheckCircle2, AlertTriangle, ArrowRight, 
   Search, Sliders, HardDrive, BarChart3, Copy, CheckCheck,
-  AlertOctagon, Clock, Ban, Check
+  AlertOctagon, Clock, Ban, Check, Bug, RefreshCw, Trash2
 } from 'lucide-react';
+import { 
+  getSystemErrors, 
+  resolveSystemError, 
+  clearSystemErrors, 
+  getBugReports, 
+  updateBugReportStatus 
+} from '../../services/systemErrorService';
 import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { allTenants, setAllTenants, switchTenant, updateTenantStatus } = useTenant();
+  const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'telemetry_bugs'
+  const [systemErrors, setSystemErrors] = useState(getSystemErrors());
+  const [bugReports, setBugReports] = useState(getBugReports());
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -54,6 +64,23 @@ export default function SuperAdminDashboard() {
 
   const handleApproveClinic = (slug) => {
     updateTenantStatus(slug, 'active');
+  };
+
+  const handleResolveError = (errorId) => {
+    const updated = resolveSystemError(errorId);
+    setSystemErrors([...updated]);
+  };
+
+  const handleClearErrors = () => {
+    if (window.confirm('هل تريد مسح جميع سجلات الأعطال القديمة؟')) {
+      clearSystemErrors();
+      setSystemErrors([]);
+    }
+  };
+
+  const handleUpdateBugStatus = (reportId, newStatus) => {
+    const updated = updateBugReportStatus(reportId, newStatus);
+    setBugReports([...updated]);
   };
 
   const handleSuspendClinic = (slug) => {
@@ -201,8 +228,55 @@ export default function SuperAdminDashboard() {
           </div>
         </div>
 
-        {/* Tenant Directory & Management */}
-        <div className="saas-section-card">
+        {/* Navigation Tabs */}
+        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab('clinics')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.65rem 1.25rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: activeTab === 'clinics' ? 'var(--primary, #0284c7)' : 'var(--bg-secondary, #ffffff)',
+              color: activeTab === 'clinics' ? '#fff' : 'var(--text-secondary, #64748b)',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            <Building2 size={16} />
+            <span>دليل العيادات والاشتراكات ({totalClinics})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('telemetry_bugs');
+              setSystemErrors(getSystemErrors());
+              setBugReports(getBugReports());
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.65rem 1.25rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: activeTab === 'telemetry_bugs' ? '#ef4444' : 'var(--bg-secondary, #ffffff)',
+              color: activeTab === 'telemetry_bugs' ? '#fff' : 'var(--text-secondary, #64748b)',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            <AlertTriangle size={16} />
+            <span>مركز الأعطال وبلاغات النظام ({systemErrors.filter(e => e.status !== 'resolved').length + bugReports.filter(b => b.status !== 'resolved').length})</span>
+          </button>
+        </div>
+
+        {activeTab === 'clinics' ? (
+          /* Tenant Directory & Management */
+          <div className="saas-section-card">
           <div className="section-card-header">
             <div>
               <h2>دليل المستأجرين والعيادات (Tenants Directory)</h2>
@@ -392,6 +466,207 @@ export default function SuperAdminDashboard() {
             </table>
           </div>
         </div>
+        ) : (
+          <div className="saas-section-card">
+            <div className="section-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2>مركز رصد الأعطال وبلاغات النظام (System Health & Bug Center)</h2>
+                <p>استقبال تلقائي لكافة الأخطاء البرمجية والبلاغات من الأطباء والطاقم في كافة العيادات</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSystemErrors(getSystemErrors());
+                    setBugReports(getBugReports());
+                  }}
+                  className="btn btn-secondary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer' }}
+                >
+                  <RefreshCw size={14} />
+                  <span>تحديث السجل</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearErrors}
+                  className="btn btn-danger"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}
+                >
+                  <Trash2 size={14} />
+                  <span>مسح السجلات</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sub-Section 1: User Bug Reports */}
+            <div style={{ marginTop: '1.5rem', marginBottom: '2.5rem' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Bug size={20} color="#0284c7" />
+                <span>بلاغات الأطباء والمستخدمين ({bugReports.length})</span>
+              </h3>
+
+              {bugReports.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {bugReports.map(bug => (
+                    <div key={bug.id} style={{
+                      background: 'var(--bg-primary)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '12px',
+                      padding: '1.25rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.5rem'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <span style={{
+                            padding: '0.2rem 0.6rem',
+                            borderRadius: '6px',
+                            background: bug.category === 'bug' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(56, 189, 248, 0.15)',
+                            color: bug.category === 'bug' ? '#ef4444' : '#0284c7',
+                            fontSize: '0.75rem',
+                            fontWeight: 700
+                          }}>
+                            {bug.category === 'bug' ? 'عطل برمجي' : bug.category === 'performance' ? 'بطء استجابة' : 'اقتراح / واجهة'}
+                          </span>
+                          <strong style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>{bug.title}</strong>
+                        </div>
+                        <select
+                          value={bug.status}
+                          onChange={(e) => handleUpdateBugStatus(bug.id, e.target.value)}
+                          style={{
+                            padding: '0.35rem 0.75rem',
+                            borderRadius: '6px',
+                            border: '1px solid var(--border-color)',
+                            background: 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.82rem',
+                            fontWeight: 600
+                          }}
+                        >
+                          <option value="open">قيد الانتظار (Open)</option>
+                          <option value="in_progress">جاري التحقق (In Progress)</option>
+                          <option value="resolved">تم الحل (Resolved)</option>
+                        </select>
+                      </div>
+
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', margin: 0, lineHeight: '1.6' }}>
+                        {bug.description}
+                      </p>
+
+                      <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.8rem', color: '#94a3b8', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', marginTop: '0.25rem' }}>
+                        <span>العيادة: <strong>{bug.clinicName} ({bug.clinicId})</strong></span>
+                        <span>الطبيب: <strong>{bug.doctorEmail}</strong></span>
+                        <span>الصفحة: <code>{bug.path}</code></span>
+                        <span>الوقت: {new Date(bug.createdAt).toLocaleTimeString('ar-EG')}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--bg-primary)', borderRadius: '12px', color: '#94a3b8' }}>
+                  لا توجد بلاغات مرسلة من الأطباء حالياً. النظام يعمل بسلاسة تامة.
+                </div>
+              )}
+            </div>
+
+            {/* Sub-Section 2: Automated Runtime Exceptions */}
+            <div>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <AlertTriangle size={20} color="#ef4444" />
+                <span>سجل الأعطال البرمجية والتشخيصية التلقائية ({systemErrors.length})</span>
+              </h3>
+
+              {systemErrors.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {systemErrors.map(err => (
+                    <div key={err.id} style={{
+                      background: 'var(--bg-primary)',
+                      border: err.status === 'resolved' ? '1px solid var(--border-color)' : '1px solid rgba(239, 68, 68, 0.3)',
+                      borderRadius: '12px',
+                      padding: '1.25rem',
+                      opacity: err.status === 'resolved' ? 0.6 : 1
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{
+                            padding: '0.2rem 0.6rem',
+                            borderRadius: '6px',
+                            background: err.severity === 'critical' ? '#fee2e2' : '#fef3c7',
+                            color: err.severity === 'critical' ? '#dc2626' : '#d97706',
+                            fontSize: '0.75rem',
+                            fontWeight: 700
+                          }}>
+                            {err.severity.toUpperCase()}
+                          </span>
+                          <span style={{
+                            fontFamily: 'monospace',
+                            fontSize: '0.75rem',
+                            background: 'var(--bg-secondary)',
+                            padding: '0.15rem 0.5rem',
+                            borderRadius: '4px',
+                            color: '#0284c7'
+                          }}>
+                            {err.type}
+                          </span>
+                          <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{err.message}</strong>
+                        </div>
+
+                        {err.status !== 'resolved' ? (
+                          <button
+                            type="button"
+                            onClick={() => handleResolveError(err.id)}
+                            style={{
+                              padding: '0.35rem 0.85rem',
+                              borderRadius: '6px',
+                              border: 'none',
+                              background: '#10b981',
+                              color: '#fff',
+                              fontSize: '0.82rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            تعليم كـ محلول
+                          </button>
+                        ) : (
+                          <span style={{ color: '#10b981', fontSize: '0.82rem', fontWeight: 700 }}>✓ تم الحل</span>
+                        )}
+                      </div>
+
+                      {err.stack && (
+                        <pre style={{
+                          background: '#0f172a',
+                          color: '#f87171',
+                          padding: '0.75rem',
+                          borderRadius: '8px',
+                          fontSize: '0.75rem',
+                          overflowX: 'auto',
+                          maxHeight: '120px',
+                          direction: 'ltr',
+                          textAlign: 'left'
+                        }}>
+                          {err.stack}
+                        </pre>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                        <span>كود العطل: <code>{err.id}</code></span>
+                        <span>العيادة: <strong>{err.clinicId}</strong></span>
+                        <span>المسار: <code>{err.path}</code></span>
+                        <span>التاريخ: {new Date(err.timestamp).toLocaleString('ar-EG')}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--bg-primary)', borderRadius: '12px', color: '#94a3b8' }}>
+                  لا توجد أي أعطال برمجية مسجلة في النظام. كافة العمليات مستقرة 100%.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Security & Architectural Invariants */}
         <div className="saas-security-banner">
