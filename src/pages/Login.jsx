@@ -339,6 +339,8 @@ const Login = () => {
                   type={showPassword ? "text" : "password"} 
                   className="form-control" 
                   placeholder="لا تقل عن 6 أحرف"
+                  minLength={6}
+                  autoComplete="new-password"
                   dir="ltr"
                   value={regForm.password}
                   onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}

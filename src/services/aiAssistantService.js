@@ -15,7 +15,9 @@ export function getAiConfig() {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        console.error('Failed to parse AI config:', e);
+        try {
+          localStorage.removeItem('clinicflow_ai_config');
+        } catch (_) {}
       }
     }
   }
