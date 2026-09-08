@@ -287,6 +287,9 @@ export default function SuperAdminDashboard() {
               <div className="saas-search-box">
                 <Search size={16} />
                 <input 
+                  id="SuperAdminTenantSearch"
+                  name="tenantSearch"
+                  aria-label="البحث في المستأجرين والعيادات"
                   type="text" 
                   placeholder="ابحث بالاسم، الطبيب، أو الـ Slug..."
                   value={searchTerm}
@@ -295,6 +298,9 @@ export default function SuperAdminDashboard() {
               </div>
 
               <select 
+                id="SuperAdminTierFilter"
+                name="tierFilter"
+                aria-label="فلترة حسب باقة الاشتراك"
                 value={tierFilter} 
                 onChange={(e) => setTierFilter(e.target.value)}
                 className="saas-filter-select"
@@ -306,6 +312,9 @@ export default function SuperAdminDashboard() {
               </select>
 
               <select 
+                id="SuperAdminStatusFilter"
+                name="statusFilter"
+                aria-label="فلترة حسب حالة العيادة والاشتراك"
                 value={statusFilter} 
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="saas-filter-select"
