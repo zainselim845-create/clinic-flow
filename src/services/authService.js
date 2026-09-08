@@ -211,7 +211,7 @@ export function registerDoctorAndClinic({
   if (!doctorName?.trim()) throw new Error('يرجى إدخال اسم الطبيب بالكامل.');
   if (!email?.trim() || !email.includes('@')) throw new Error('يرجى إدخال بريد إلكتروني صالح.');
   if (!phone?.trim() || phone.replace(/\D/g, '').length < 10) throw new Error('يرجى إدخال رقم هاتف محمول صالح.');
-  if (!password || password.length < 4) throw new Error('يجب ألا تقل كلمة المرور عن 4 أحرف.');
+  if (!password || password.length < 6) throw new Error('يجب ألا تقل كلمة المرور عن 6 أحرف.');
   if (!clinicName?.trim()) throw new Error('يرجى إدخال اسم العيادة.');
 
   const cleanEmail = email.trim().toLowerCase();
