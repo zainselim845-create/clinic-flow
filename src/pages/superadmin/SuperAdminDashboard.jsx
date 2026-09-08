@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
+import { useAuth } from '../../context/AuthContext';
 import { 
   Building2, Plus, Users, CreditCard, Activity, ShieldCheck, 
   ExternalLink, CheckCircle2, AlertTriangle, ArrowRight, 
   Search, Sliders, HardDrive, BarChart3, Copy, CheckCheck,
-  AlertOctagon, Clock, Ban, Check, Bug, RefreshCw, Trash2
+  AlertOctagon, Clock, Ban, Check, Bug, RefreshCw, Trash2, LogOut
 } from 'lucide-react';
 import { 
   getSystemErrors, 
@@ -18,6 +19,7 @@ import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const { allTenants, setAllTenants, switchTenant, updateTenantStatus } = useTenant();
   const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'telemetry_bugs'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
@@ -174,6 +176,31 @@ export default function SuperAdminDashboard() {
           >
             <Plus size={18} />
             <span>تسجيل عيادة جديدة (Provision Tenant)</span>
+          </button>
+          <button
+            type="button"
+            className="btn-superadmin-logout"
+            onClick={async () => {
+              if (signOut) await signOut();
+              navigate('/login');
+            }}
+            title="تسجيل الخروج من لوحة التحكم"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.65rem 1.1rem',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              borderRadius: '10px',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.85rem'
+            }}
+          >
+            <LogOut size={16} />
+            <span>تسجيل الخروج</span>
           </button>
         </div>
       </header>

@@ -39,6 +39,19 @@ export const AuthProvider = ({ children }) => {
   
   const isDemoMode = !isSupabaseConfigured();
 
+  // Enforce client storage isolation for single-clinic accounts
+  const isolateTenantStorage = (activeSlug) => {
+    if (!activeSlug || typeof localStorage === 'undefined') return;
+    try {
+      const allKeys = Object.keys(localStorage);
+      for (const key of allKeys) {
+        if (key.startsWith('clinicflow_data_') && key !== `clinicflow_data_${activeSlug}`) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch (_) {}
+  };
+
   // Keep clinic info aligned with active tenant
   useEffect(() => {
     if (activeTenant) {
@@ -67,6 +80,9 @@ export const AuthProvider = ({ children }) => {
       setUser(doctorUser);
       setRole(doctorUser.role);
       setClinic(newTenant);
+      if (newTenant?.slug) {
+        isolateTenantStorage(newTenant.slug);
+      }
       return { data: { user: doctorUser, tenant: newTenant }, error: null };
     } catch (error) {
       return { data: null, error };
@@ -158,6 +174,9 @@ export const AuthProvider = ({ children }) => {
           setRole(authUser.role || 'doctor');
           if (authUser.clinicSlug) {
             switchTenant?.(authUser.clinicSlug);
+            if (authUser.role !== 'super_admin' && authUser.role !== 'multi_clinic_owner') {
+              isolateTenantStorage(authUser.clinicSlug);
+            }
           }
           return { data: { user: authUser }, error: null };
         }
@@ -248,6 +267,7 @@ export const AuthProvider = ({ children }) => {
         setUser(saraDoctorUser);
         setRole('doctor');
         switchTenant?.('dr-sara');
+        isolateTenantStorage('dr-sara');
         return { data: { user: saraDoctorUser }, error: null };
       }
 
@@ -288,6 +308,7 @@ export const AuthProvider = ({ children }) => {
         setUser(doctorUser);
         setRole('doctor');
         switchTenant?.('dr-ahmed');
+        isolateTenantStorage('dr-ahmed');
         return { data: { user: doctorUser }, error: null };
       }
 
@@ -326,6 +347,7 @@ export const AuthProvider = ({ children }) => {
         setUser(staffUser);
         setRole('staff');
         switchTenant?.(staffClinicSlug);
+        isolateTenantStorage(staffClinicSlug);
         return { data: { user: staffUser }, error: null };
       }
 

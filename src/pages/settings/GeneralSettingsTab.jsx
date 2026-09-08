@@ -447,10 +447,10 @@ export default function GeneralSettingsTab({
             <input 
               id="doctorPassword"
               name="doctorPassword"
-              type="text" 
+              type="password" 
               value={clinicForm.doctorPassword || ''} 
               onChange={(e) => setClinicForm({ ...clinicForm, doctorPassword: e.target.value })}
-              placeholder="admin" 
+              placeholder="••••••••" 
             />
           </div>
         </div>

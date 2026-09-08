@@ -159,7 +159,11 @@ function App() {
           } />
 
           {/* Super Admin Control Plane */}
-          <Route path="/super-admin" element={<SuperAdminDashboard />} />
+          <Route path="/super-admin" element={
+            <ProtectedRoute allowedRoles={['super_admin']}>
+              <SuperAdminDashboard />
+            </ProtectedRoute>
+          } />
 
           {/* 2. Admin Protected Routes with Sidebar & Header Layout */}
           <Route element={
