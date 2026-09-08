@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { fromDbClinic } from '../services/clinicsService';
 import { canSwitchTenants } from '../utils/permissions';
 import { patientIndex } from '../services/indexedSearchService';
+import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus } from '../services/authService';
 
 const TenantContext = createContext(null);
 
@@ -30,6 +31,13 @@ const initialClinics = fallbackDemoClinics || [
     }
   }
 ];
+
+export function getCombinedTenants() {
+  const base = fallbackDemoClinics || initialClinics;
+  const registered = getRegisteredTenants();
+  const filtered = registered.filter(rt => !base.some(b => b.slug === rt.slug || b.id === rt.id));
+  return [...base, ...filtered];
+}
 
 /**
  * Resolves tenant and dedicated domain status based on window location.
@@ -155,9 +163,9 @@ export function isDedicatedDomain(
 }
 
 export const TenantProvider = ({ children }) => {
-  const [allTenants, setAllTenants] = useState(initialClinics);
+  const [allTenants, setAllTenants] = useState(() => getCombinedTenants());
   const initialResolution = useMemo(() => resolveTenantFromLocation(allTenants), [allTenants]);
-  const [activeTenant, setActiveTenant] = useState(initialResolution.tenant || initialClinics[0]);
+  const [activeTenant, setActiveTenant] = useState(initialResolution.tenant || allTenants[0]);
   const [dedicatedDomainActive, setDedicatedDomainActive] = useState(initialResolution.isDedicatedDomain);
   const [isLoadingTenant, setIsLoadingTenant] = useState(true);
 
@@ -272,7 +280,42 @@ export const TenantProvider = ({ children }) => {
     return loadTenant(slugOrId);
   }, [dedicatedDomainActive, loadTenant]);
 
-  // 5. Feature Gating & Quota Checks
+  // 5. Register and Bind New Tenant dynamically
+  const registerNewTenant = useCallback((newTenant) => {
+    if (!newTenant) return;
+    saveRegisteredTenant(newTenant);
+    setAllTenants(prev => {
+      const exists = prev.some(t => t.id === newTenant.id || t.slug === newTenant.slug);
+      return exists 
+        ? prev.map(t => (t.id === newTenant.id || t.slug === newTenant.slug) ? newTenant : t) 
+        : [newTenant, ...prev];
+    });
+    setActiveTenant(newTenant);
+    if (newTenant.slug) {
+      localStorage.setItem('clinicflow_active_tenant_slug', newTenant.slug);
+    }
+    applyBranding(newTenant.branding);
+  }, []);
+
+  // 6. Update Tenant Subscription Status (Active, Suspended, Pending Approval, Past Due)
+  const updateTenantStatus = useCallback((slugOrId, newStatus, reason = '') => {
+    updateClinicSubscriptionStatus(slugOrId, newStatus, reason);
+    const updater = t => {
+      if (t.id === slugOrId || t.slug === slugOrId) {
+        return {
+          ...t,
+          subscriptionStatus: newStatus,
+          suspensionReason: newStatus === 'suspended' ? (reason || 'عدم سداد الاشتراك الدوري') : undefined,
+          statusUpdatedAt: new Date().toISOString()
+        };
+      }
+      return t;
+    };
+    setAllTenants(prev => prev.map(updater));
+    setActiveTenant(prev => (prev && (prev.id === slugOrId || prev.slug === slugOrId)) ? updater(prev) : prev);
+  }, []);
+
+  // 7. Feature Gating & Quota Checks
   const hasFeature = useCallback((featureName) => {
     if (!activeTenant) return false;
     const tier = activeTenant.subscriptionTier || 'starter';
@@ -330,11 +373,13 @@ export const TenantProvider = ({ children }) => {
     isLoadingTenant,
     isDedicatedDomain: dedicatedDomainActive,
     switchTenant,
+    registerNewTenant,
+    updateTenantStatus,
     hasFeature,
     checkQuota,
     tier: activeTenant?.subscriptionTier || 'pro',
     isMultiTenant: true
-  }), [activeTenant, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, hasFeature, checkQuota]);
+  }), [activeTenant, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, updateTenantStatus, hasFeature, checkQuota]);
 
   return (
     <TenantContext.Provider value={value}>

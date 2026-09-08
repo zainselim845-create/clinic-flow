@@ -54,6 +54,49 @@ export const ROUTE_PERMISSION_MAP = {
 };
 
 /**
+ * Determines if user holds a clinic management/doctor leadership role
+ * @param {Object} user
+ * @returns {boolean}
+ */
+export function isDoctorRole(user) {
+  if (!user) return false;
+  const role = user.role || 'staff';
+  return ['doctor', 'owner', 'clinic_admin', 'admin', 'super_admin', 'multi_clinic_owner'].includes(role);
+}
+
+/**
+ * Checks if user has permission to manage and provision staff accounts
+ * @param {Object} user
+ * @returns {boolean}
+ */
+export function canManageStaff(user) {
+  return isDoctorRole(user);
+}
+
+/**
+ * Checks if user has permission to view financial metrics and invoices
+ * @param {Object} user
+ * @returns {boolean}
+ */
+export function canAccessFinancials(user) {
+  if (isDoctorRole(user)) return true;
+  if (!user) return false;
+  if (user.role === 'accountant') return true;
+  return hasPermission(user, 'invoices');
+}
+
+/**
+ * Checks if user is authorized to edit clinical medical records / EMR
+ * @param {Object} user
+ * @returns {boolean}
+ */
+export function canEditMedicalRecords(user) {
+  if (isDoctorRole(user)) return true;
+  if (!user) return false;
+  return user.role === 'associate_doctor';
+}
+
+/**
  * Checks if a user has a specific permission
  * @param {Object} user - User object from AuthContext
  * @param {string} permissionKey - Permission key to verify
@@ -62,13 +105,12 @@ export const ROUTE_PERMISSION_MAP = {
 export function hasPermission(user, permissionKey) {
   if (!user) return false;
 
-  const role = user.role || 'staff';
-  // Doctor/Admin has full system-wide permissions
-  if (role === 'doctor' || role === 'admin') {
+  // Doctor/Owner/Admin has full system-wide permissions
+  if (isDoctorRole(user)) {
     return true;
   }
 
-  // Doctor-only features cannot be accessed by staff
+  // Doctor-only administrative features cannot be accessed by staff
   if (permissionKey === 'doctor_only') {
     return false;
   }
@@ -76,6 +118,14 @@ export function hasPermission(user, permissionKey) {
   // If no specific permission requested, grant access to authenticated staff
   if (!permissionKey) {
     return true;
+  }
+
+  // Role defaults for specific job titles
+  const role = user.role || 'staff';
+  if (role === 'accountant') {
+    if (permissionKey === 'invoices') return true;
+  } else if (role === 'associate_doctor') {
+    if (['appointments', 'patients', 'sms'].includes(permissionKey)) return true;
   }
 
   const permissions = Array.isArray(user.permissions) ? user.permissions : [];
@@ -91,8 +141,7 @@ export function hasPermission(user, permissionKey) {
 export function canAccessRoute(user, pathname) {
   if (!user) return false;
   
-  const role = user.role || 'staff';
-  if (role === 'doctor' || role === 'admin') return true;
+  if (isDoctorRole(user)) return true;
 
   const cleanPath = pathname.split('?')[0].replace(/\/$/, '') || '/';
   if (cleanPath === '/' || cleanPath === '/dashboard') return true;

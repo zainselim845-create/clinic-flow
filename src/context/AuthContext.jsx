@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { clinicInfo as defaultClinicInfo, demoClinics, staffMembers as defaultStaffMembers, drSaraStaffMembers } from '../data/demoData';
 import { fromDbClinic } from '../services/clinicsService';
+import { registerDoctorAndClinic, authenticateUser } from '../services/authService';
 import TenantContext from './TenantContext';
 
 const AuthContext = createContext({});
@@ -10,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   const tenantContext = useContext(TenantContext);
   const activeTenant = tenantContext?.tenant;
   const switchTenant = tenantContext?.switchTenant;
+  const registerNewTenant = tenantContext?.registerNewTenant;
 
   const [user, setUser] = useState(() => {
     try {
@@ -51,6 +53,23 @@ export const AuthProvider = ({ children }) => {
       const updatedUser = { ...user, role: newRole };
       setUser(updatedUser);
       sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(updatedUser));
+    }
+  };
+
+  const signUpDoctorAndClinic = async (formData) => {
+    try {
+      const { tenant: newTenant, user: doctorUser } = registerDoctorAndClinic(formData);
+      if (registerNewTenant) {
+        registerNewTenant(newTenant);
+      }
+      sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(doctorUser));
+      localStorage.setItem('clinicflow_role', doctorUser.role);
+      setUser(doctorUser);
+      setRole(doctorUser.role);
+      setClinic(newTenant);
+      return { data: { user: doctorUser, tenant: newTenant }, error: null };
+    } catch (error) {
+      return { data: null, error };
     }
   };
 
@@ -128,6 +147,25 @@ export const AuthProvider = ({ children }) => {
     if (isDemoMode) {
       const cleanId = (identifier || '').trim().toLowerCase();
       const cleanPass = (password || '').trim();
+
+      // Priority 0: Authenticate against registered users & custom tenants
+      try {
+        const authUser = authenticateUser(cleanId, cleanPass);
+        if (authUser) {
+          sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(authUser));
+          localStorage.setItem('clinicflow_role', authUser.role || 'doctor');
+          setUser(authUser);
+          setRole(authUser.role || 'doctor');
+          if (authUser.clinicSlug) {
+            switchTenant?.(authUser.clinicSlug);
+          }
+          return { data: { user: authUser }, error: null };
+        }
+      } catch (authErr) {
+        if (authErr.message && !authErr.message.includes('يرجى إدخال')) {
+          return { data: null, error: authErr };
+        }
+      }
 
       // Read current state from localStorage or defaults
       let currentStaff = defaultStaffMembers;
@@ -345,6 +383,7 @@ export const AuthProvider = ({ children }) => {
       loading,
       switchRole,
       signIn,
+      signUpDoctorAndClinic,
       signOut,
       updateClinicInfo,
       isDemoMode

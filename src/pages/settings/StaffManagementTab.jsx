@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import * as staffService from '../../services/staffService';
+import { provisionStaffAccount } from '../../services/authService';
 import { SYSTEM_PERMISSIONS } from '../../utils/permissions';
 import { isSupabaseConfigured } from '../../lib/supabase';
+import { useTenant } from '../../context/TenantContext';
 
 export default function StaffManagementTab({ staffMembers, dispatch }) {
+  const { tenant } = useTenant();
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [showStaffPass, setShowStaffPass] = useState(false);
@@ -14,6 +17,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     email: '',
     phone: '',
     password: '123',
+    roleKey: 'receptionist',
     role: 'سكرتير أول',
     shift: 'مسائي (04:00 م - 10:00 م)',
     status: 'active',
@@ -53,8 +57,16 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
       return;
     }
 
+    const staffClinicId = tenant?.id || 'dr-ahmed';
+    const staffClinicSlug = tenant?.slug || 'dr-ahmed';
+
     if (editingStaff) {
-      const updatedPayload = { ...staffForm, id: editingStaff.id };
+      const updatedPayload = { 
+        ...staffForm, 
+        id: editingStaff.id,
+        clinicId: staffClinicId,
+        clinicSlug: staffClinicSlug
+      };
       if (useSupabase) {
         try {
           await staffService.updateStaffMember(editingStaff.id, updatedPayload);
@@ -66,9 +78,24 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         type: 'UPDATE_STAFF',
         payload: updatedPayload
       });
+      try {
+        provisionStaffAccount({
+          clinicId: staffClinicId,
+          clinicSlug: staffClinicSlug,
+          name: staffForm.name,
+          phone: staffForm.phone,
+          email: staffForm.email,
+          password: staffForm.password,
+          role: staffForm.roleKey || 'receptionist',
+          permissions: staffForm.permissions,
+          shift: staffForm.shift
+        });
+      } catch (_) {}
     } else {
       const newStaff = {
         id: 'staff-' + Date.now(),
+        clinicId: staffClinicId,
+        clinicSlug: staffClinicSlug,
         ...staffForm,
         createdAt: new Date().toISOString().split('T')[0]
       };
@@ -83,6 +110,19 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         type: 'ADD_STAFF',
         payload: newStaff
       });
+      try {
+        provisionStaffAccount({
+          clinicId: staffClinicId,
+          clinicSlug: staffClinicSlug,
+          name: staffForm.name,
+          phone: staffForm.phone,
+          email: staffForm.email,
+          password: staffForm.password,
+          role: staffForm.roleKey || 'receptionist',
+          permissions: staffForm.permissions,
+          shift: staffForm.shift
+        });
+      } catch (_) {}
     }
 
     setIsStaffModalOpen(false);
@@ -280,15 +320,35 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
               </div>
 
               <div className="form-group">
-                <label>المسمى الوظيفي</label>
+                <label>المسمى الوظيفي والدور السريري</label>
                 <select
-                  value={staffForm.role}
-                  onChange={(e) => setStaffForm({ ...staffForm, role: e.target.value })}
+                  value={staffForm.roleKey || 'receptionist'}
+                  onChange={(e) => {
+                    const selected = e.target.value;
+                    let label = 'سكرتير أول (استقبال)';
+                    let perms = ['appointments', 'patients', 'sms'];
+                    if (selected === 'associate_doctor') {
+                      label = 'طبيب ممارس / مساعد سريري';
+                      perms = ['appointments', 'patients', 'sms'];
+                    } else if (selected === 'accountant') {
+                      label = 'محاسب مالي للعيادة';
+                      perms = ['invoices'];
+                    } else if (selected === 'assistant') {
+                      label = 'مساعد تمريض سريري';
+                      perms = ['appointments', 'patients', 'inventory'];
+                    }
+                    setStaffForm({
+                      ...staffForm,
+                      roleKey: selected,
+                      role: label,
+                      permissions: perms
+                    });
+                  }}
                 >
-                  <option value="سكرتير أول">سكرتير أول (استقبال كامل)</option>
-                  <option value="سكرتير مساعد">سكرتير مساعد</option>
-                  <option value="تمريض">طاقم تمريض</option>
-                  <option value="مدير إداري">مدير إداري للعيادة</option>
+                  <option value="receptionist">سكرتير أول (استقبال وحجوزات)</option>
+                  <option value="associate_doctor">طبيب ممارس / مساعد سريري (Associate Doctor)</option>
+                  <option value="accountant">محاسب مالي للعيادة (Accountant)</option>
+                  <option value="assistant">مساعد تمريض سريري (Clinical Assistant)</option>
                 </select>
               </div>
 

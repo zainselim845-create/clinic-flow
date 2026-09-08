@@ -4,15 +4,17 @@ import { useTenant } from '../../context/TenantContext';
 import { 
   Building2, Plus, Users, CreditCard, Activity, ShieldCheck, 
   ExternalLink, CheckCircle2, AlertTriangle, ArrowRight, 
-  Search, Sliders, HardDrive, BarChart3, Copy, CheckCheck
+  Search, Sliders, HardDrive, BarChart3, Copy, CheckCheck,
+  AlertOctagon, Clock, Ban, Check
 } from 'lucide-react';
 import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
-  const { allTenants, setAllTenants, switchTenant } = useTenant();
+  const { allTenants, setAllTenants, switchTenant, updateTenantStatus } = useTenant();
   const [searchTerm, setSearchTerm] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newClinic, setNewClinic] = useState({
@@ -27,9 +29,12 @@ export default function SuperAdminDashboard() {
   // Calculate high-level platform stats
   const totalClinics = allTenants.length;
   const activeClinics = allTenants.filter(t => (t.subscriptionStatus || 'active') === 'active').length;
+  const pendingClinics = allTenants.filter(t => t.subscriptionStatus === 'pending_approval').length;
+  const suspendedClinics = allTenants.filter(t => t.subscriptionStatus === 'suspended').length;
   const totalSmsUsed = allTenants.reduce((sum, t) => sum + (t.quotas?.smsUsed || 0), 0);
   const totalSmsQuota = allTenants.reduce((sum, t) => sum + (t.quotas?.monthlySmsQuota || 1000), 0);
   const estimatedMRR = allTenants.reduce((sum, t) => {
+    if (t.subscriptionStatus === 'suspended') return sum; // Exclude suspended from MRR
     const tier = t.subscriptionTier || 'pro';
     if (tier === 'enterprise') return sum + 3500;
     if (tier === 'pro') return sum + 1800;
@@ -42,8 +47,25 @@ export default function SuperAdminDashboard() {
                           t.doctorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           t.slug?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTier = tierFilter === 'all' || t.subscriptionTier === tierFilter;
-    return matchesSearch && matchesTier;
+    const currentStatus = t.subscriptionStatus || 'active';
+    const matchesStatus = statusFilter === 'all' || currentStatus === statusFilter;
+    return matchesSearch && matchesTier && matchesStatus;
   });
+
+  const handleApproveClinic = (slug) => {
+    updateTenantStatus(slug, 'active');
+  };
+
+  const handleSuspendClinic = (slug) => {
+    const reason = window.prompt('سبب إيقاف العيادة وتعليق الاشتراك:', 'عدم سداد الاشتراك الدوري المستحق');
+    if (reason !== null) {
+      updateTenantStatus(slug, 'suspended', reason.trim() || 'عدم سداد الاشتراك الدوري المستحق');
+    }
+  };
+
+  const handleReactivateClinic = (slug) => {
+    updateTenantStatus(slug, 'active');
+  };
 
   const handleCopyLink = (slug) => {
     const link = `${window.location.origin}/c/${slug}/booking`;
@@ -208,6 +230,18 @@ export default function SuperAdminDashboard() {
                 <option value="pro">عيادة ذكية Pro</option>
                 <option value="starter">أساسي Starter</option>
               </select>
+
+              <select 
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="saas-filter-select"
+                style={{ borderColor: statusFilter === 'suspended' ? '#f87171' : statusFilter === 'pending_approval' ? '#fbbf24' : undefined }}
+              >
+                <option value="all">كافة حالات العيادات</option>
+                <option value="active">العيادات النشطة ({activeClinics})</option>
+                <option value="pending_approval">قيد المراجعة والموافقة ({pendingClinics})</option>
+                <option value="suspended">الموقوفة لعدم السداد ({suspendedClinics})</option>
+              </select>
             </div>
           </div>
 
@@ -220,85 +254,140 @@ export default function SuperAdminDashboard() {
                   <th>الطبيب والتخصص</th>
                   <th>المسار المخصص (Slug)</th>
                   <th>باقة الاشتراك</th>
-                  <th>الحالة</th>
+                  <th>حالة الاشتراك والترخيص</th>
                   <th>حصص التشغيل</th>
-                  <th>إجراءات التحكم</th>
+                  <th>إجراءات الإدارة والرقابة</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredTenants.map((t) => (
-                  <tr key={t.slug || t.id}>
-                    <td>
-                      <div className="tenant-cell-brand">
-                        <div 
-                          className="tenant-badge-dot" 
-                          style={{ backgroundColor: t.branding?.primaryColor || '#0071E3' }} 
-                        />
-                        <strong>{t.name}</strong>
-                      </div>
-                    </td>
+                {filteredTenants.map((t) => {
+                  const subStatus = t.subscriptionStatus || 'active';
+                  const isSuspended = subStatus === 'suspended';
+                  const isPending = subStatus === 'pending_approval';
 
-                    <td>
-                      <div className="tenant-cell-doctor">
-                        <span>{t.doctorName}</span>
-                        <small>{t.specialty}</small>
-                      </div>
-                    </td>
-
-                    <td>
-                      <div className="tenant-cell-slug">
-                        <code>/c/{t.slug}</code>
-                        <button 
-                          type="button" 
-                          onClick={() => handleCopyLink(t.slug)}
-                          className="btn-icon-copy"
-                          title="نسخ رابط الحجز العام"
-                        >
-                          {copiedSlug === t.slug ? <CheckCheck size={14} color="#10B981" /> : <Copy size={14} />}
-                        </button>
-                      </div>
-                    </td>
-
-                    <td>
-                      <span className={`saas-tier-pill ${t.subscriptionTier || 'pro'}`}>
-                        {t.subscriptionTier === 'enterprise' ? 'مؤسسي' : t.subscriptionTier === 'pro' ? 'برو ذكي' : 'أساسي'}
-                      </span>
-                    </td>
-
-                    <td>
-                      <span className="saas-status-pill active">
-                        <CheckCircle2 size={12} />
-                        <span>نشط</span>
-                      </span>
-                    </td>
-
-                    <td>
-                      <div className="tenant-cell-quota">
-                        <span>SMS: {t.quotas?.smsUsed || 0}/{t.quotas?.monthlySmsQuota || 1000}</span>
-                        <div className="quota-bar-mini">
+                  return (
+                    <tr key={t.slug || t.id} style={isSuspended ? { background: '#fef2f218' } : isPending ? { background: '#fffbeb18' } : {}}>
+                      <td>
+                        <div className="tenant-cell-brand">
                           <div 
-                            className="quota-bar-fill" 
-                            style={{ width: `${Math.min(100, Math.round(((t.quotas?.smsUsed || 0) / (t.quotas?.monthlySmsQuota || 1000)) * 100))}%` }}
+                            className="tenant-badge-dot" 
+                            style={{ backgroundColor: isSuspended ? '#ef4444' : isPending ? '#f59e0b' : (t.branding?.primaryColor || '#0071E3') }} 
                           />
+                          <div>
+                            <strong>{t.name}</strong>
+                            {isSuspended && <div style={{ fontSize: '0.72rem', color: '#dc2626', fontWeight: 600 }}>{t.suspensionReason || 'موقوف لعدم السداد'}</div>}
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td>
-                      <div className="tenant-actions-cell">
-                        <button 
-                          type="button"
-                          className="btn-switch-tenant"
-                          onClick={() => handleSwitchAndVisit(t.slug)}
-                          title="التبديل إلى بيانات هذه العيادة فوراً"
-                        >
-                          <span>إدارة العيادة</span>
-                          <ExternalLink size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      <td>
+                        <div className="tenant-cell-doctor">
+                          <span>{t.doctorName}</span>
+                          <small>{t.specialty}</small>
+                        </div>
+                      </td>
+
+                      <td>
+                        <div className="tenant-cell-slug">
+                          <code>/c/{t.slug}</code>
+                          <button 
+                            type="button" 
+                            onClick={() => handleCopyLink(t.slug)}
+                            className="btn-icon-copy"
+                            title="نسخ رابط الحجز العام"
+                          >
+                            {copiedSlug === t.slug ? <CheckCheck size={14} color="#10B981" /> : <Copy size={14} />}
+                          </button>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span className={`saas-tier-pill ${t.subscriptionTier || 'pro'}`}>
+                          {t.subscriptionTier === 'enterprise' ? 'مؤسسي' : t.subscriptionTier === 'pro' ? 'برو ذكي' : 'أساسي'}
+                        </span>
+                      </td>
+
+                      <td>
+                        {isSuspended ? (
+                          <span className="saas-status-pill suspended" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700 }}>
+                            <AlertOctagon size={12} />
+                            <span>موقوف لعدم السداد</span>
+                          </span>
+                        ) : isPending ? (
+                          <span className="saas-status-pill pending" style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700 }}>
+                            <Clock size={12} />
+                            <span>بانتظار الموافقة</span>
+                          </span>
+                        ) : (
+                          <span className="saas-status-pill active" style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 700 }}>
+                            <CheckCircle2 size={12} />
+                            <span>نشط وساري</span>
+                          </span>
+                        )}
+                      </td>
+
+                      <td>
+                        <div className="tenant-cell-quota">
+                          <span>SMS: {t.quotas?.smsUsed || 0}/{t.quotas?.monthlySmsQuota || 1000}</span>
+                          <div className="quota-bar-mini">
+                            <div 
+                              className="quota-bar-fill" 
+                              style={{ width: `${Math.min(100, Math.round(((t.quotas?.smsUsed || 0) / (t.quotas?.monthlySmsQuota || 1000)) * 100))}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>
+                        <div className="tenant-actions-cell" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {isPending && (
+                            <button 
+                              type="button"
+                              onClick={() => handleApproveClinic(t.slug)}
+                              style={{ background: '#10B981', color: '#fff', border: 'none', padding: '0.35rem 0.65rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                              title="الموافقة على تسجيل العيادة وتفعيلها فوراً"
+                            >
+                              <Check size={13} />
+                              <span>اعتماد العيادة</span>
+                            </button>
+                          )}
+
+                          {!isSuspended ? (
+                            <button 
+                              type="button"
+                              onClick={() => handleSuspendClinic(t.slug)}
+                              style={{ background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca', padding: '0.35rem 0.65rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                              title="إيقاف العيادة فوراً لعدم سداد الاشتراك"
+                            >
+                              <Ban size={13} />
+                              <span>إيقاف لعدم السداد</span>
+                            </button>
+                          ) : (
+                            <button 
+                              type="button"
+                              onClick={() => handleReactivateClinic(t.slug)}
+                              style={{ background: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', padding: '0.35rem 0.65rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}
+                              title="إلغاء الإيقاف وإعادة تفعيل العيادة"
+                            >
+                              <CheckCircle2 size={13} />
+                              <span>إعادة التفعيل</span>
+                            </button>
+                          )}
+
+                          <button 
+                            type="button"
+                            className="btn-switch-tenant"
+                            onClick={() => handleSwitchAndVisit(t.slug)}
+                            title="التبديل إلى بيانات هذه العيادة فوراً"
+                          >
+                            <span>لوحة العيادة</span>
+                            <ExternalLink size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
