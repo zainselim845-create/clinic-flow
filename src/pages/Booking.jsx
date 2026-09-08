@@ -40,6 +40,11 @@ const Booking = () => {
 
   const resolvedTenant = (clinicSlug ? allTenants.find(t => t.slug === clinicSlug) : null) || tenant;
   const currentClinic = resolvedTenant || state.clinicInfo || clinicInfo;
+
+  // Tenant data isolation: filter local patients & appointments by active clinic
+  const clinicPatients = patients.filter(p => !p.clinicId || p.clinicId === currentClinic?.id);
+  const clinicAppointments = appointments.filter(a => !a.clinicId || a.clinicId === currentClinic?.id);
+
   const todayStr = getTodayDateStr();
 
   // Booking Flow: 'phone_check' -> 'appointment_details' -> 'success'
@@ -121,24 +126,25 @@ const Booking = () => {
       let foundPatient = null;
 
       // 1. O(1) Instantaneous Index Lookup (Optimized for 100,000+ patients)
-      if (!patientIndex.isIndexed || patientIndex.patientCount !== patients.length) {
-        patientIndex.buildIndex(patients);
+      if (!patientIndex.isIndexed || patientIndex.patientCount !== clinicPatients.length || patientIndex.currentClinicId !== currentClinic?.id) {
+        patientIndex.buildIndex(clinicPatients, currentClinic?.id);
       }
-      const indexedMatch = patientIndex.findByPhone(clean);
+      const indexedMatch = patientIndex.findByPhone(clean, currentClinic?.id);
       if (indexedMatch) {
         foundPatient = indexedMatch;
       }
 
-
-      // 2. Check previous appointments in local state
+      // 2. Check previous appointments in local state (scoped to current clinic)
       if (!foundPatient) {
-        const apptMatch = appointments.find(a => {
+        const apptMatch = clinicAppointments.find(a => {
           const aClean = cleanEgyptianPhone(a.patientPhone || '');
           return aClean === clean || a.patientPhone === formData.phone;
         });
         if (apptMatch && apptMatch.patientName) {
           foundPatient = {
             id: apptMatch.patientId || ('patient_' + clean),
+            clinicId: currentClinic?.id,
+            clinic_id: currentClinic?.id,
             name: apptMatch.patientName,
             phone: apptMatch.patientPhone,
             age: apptMatch.patientAge || '',
@@ -148,9 +154,9 @@ const Booking = () => {
         }
       }
 
-      // 3. Check Supabase PostgreSQL database
+      // 3. Check Supabase PostgreSQL database (strictly scoped to currentClinic)
       if (!foundPatient && useSupabase) {
-        const { data } = await patientsService.findPatientByPhone(null, formData.phone);
+        const { data } = await patientsService.findPatientByPhone(currentClinic?.id, clean);
         if (data) {
           foundPatient = data;
         }
@@ -221,8 +227,8 @@ const Booking = () => {
       return;
     }
 
-    // Duplicate check
-    const duplicateAppt = appointments.find(
+    // Duplicate check (scoped to clinic)
+    const duplicateAppt = clinicAppointments.find(
       a => (cleanEgyptianPhone(a.patientPhone) === cleanedPhone || a.patientPhone === cleanedPhone) &&
            a.date === formData.date &&
            a.time === formData.time &&
@@ -233,8 +239,8 @@ const Booking = () => {
       return;
     }
 
-    // Availability check
-    const isSlotBooked = appointments.some(
+    // Availability check (scoped to clinic)
+    const isSlotBooked = clinicAppointments.some(
       a => a.date === formData.date && a.time === formData.time && a.status !== 'cancelled'
     );
     const isSlotBlocked = blockedSlots.some(
@@ -258,6 +264,8 @@ const Booking = () => {
         patientId = Date.now().toString() + '_p';
         const newPatientData = {
           id: patientId,
+          clinicId: currentClinic?.id,
+          clinic_id: currentClinic?.id,
           name: formData.name.trim(),
           phone: cleanedPhone,
           age: formData.age || 'غير محدد',
@@ -287,6 +295,8 @@ const Booking = () => {
 
       const newAppointment = {
         id: bookingId,
+        clinicId: currentClinic?.id,
+        clinic_id: currentClinic?.id,
         patientId: patientId,
         patientName: formData.name.trim(),
         patientPhone: cleanedPhone,
@@ -819,7 +829,7 @@ const Booking = () => {
                       setFormData(prev => ({ ...prev, time: newTime }));
                       setBookingError('');
                     }}
-                    appointments={appointments}
+                    appointments={clinicAppointments}
                     blockedSlots={blockedSlots}
                     availableSlots={availableSlots}
                     scheduleConfig={currentClinic.scheduleConfig}

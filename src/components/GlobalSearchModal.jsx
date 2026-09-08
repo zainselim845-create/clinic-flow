@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import { 
   Search, User, Calendar, Clock, ArrowLeft, X, 
   Smartphone, Users, Plus, CheckCircle2, AlertCircle, ShieldCheck
@@ -11,6 +12,8 @@ import './GlobalSearchModal.css';
 const GlobalSearchModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { state } = useApp();
+  const { tenant } = useTenant();
+  const currentClinicId = tenant?.id || state.clinicInfo?.id;
   const { patients = [], appointments = [], staffMembers = [] } = state;
 
   const [query, setQuery] = useState('');
@@ -43,29 +46,32 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
 
   const cleanQuery = query.trim().toLowerCase();
 
-  // Search Results
+  // Search Results (scoped to current clinic)
   const matchingPatients = cleanQuery
     ? patients.filter(p => 
-        (p.name && p.name.toLowerCase().includes(cleanQuery)) ||
+        (!currentClinicId || !p.clinicId || p.clinicId === currentClinicId) &&
+        ((p.name && p.name.toLowerCase().includes(cleanQuery)) ||
         (p.phone && p.phone.includes(cleanQuery)) ||
-        (p.diagnosis && p.diagnosis.toLowerCase().includes(cleanQuery))
+        (p.diagnosis && p.diagnosis.toLowerCase().includes(cleanQuery)))
       ).slice(0, 5)
     : [];
 
   const matchingAppointments = cleanQuery
     ? appointments.filter(a => 
-        (a.patientName && a.patientName.toLowerCase().includes(cleanQuery)) ||
+        (!currentClinicId || !a.clinicId || a.clinicId === currentClinicId) &&
+        ((a.patientName && a.patientName.toLowerCase().includes(cleanQuery)) ||
         (a.patientPhone && a.patientPhone.includes(cleanQuery)) ||
         (a.date && a.date.includes(cleanQuery)) ||
-        (a.time && a.time.includes(cleanQuery))
+        (a.time && a.time.includes(cleanQuery)))
       ).slice(0, 5)
     : [];
 
   const matchingStaff = cleanQuery
     ? staffMembers.filter(s => 
-        (s.name && s.name.toLowerCase().includes(cleanQuery)) ||
+        (!currentClinicId || !s.clinicId || s.clinicId === currentClinicId) &&
+        ((s.name && s.name.toLowerCase().includes(cleanQuery)) ||
         (s.role && s.role.toLowerCase().includes(cleanQuery)) ||
-        (s.phone && s.phone.includes(cleanQuery))
+        (s.phone && s.phone.includes(cleanQuery)))
       ).slice(0, 3)
     : [];
 

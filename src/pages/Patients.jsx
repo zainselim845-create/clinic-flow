@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import { 
   Plus, Search, LayoutGrid, List, X, Download, 
   ChevronLeft, ChevronRight 
@@ -13,7 +14,14 @@ import './Patients.css';
 
 const Patients = () => {
   const { state, dispatch } = useApp();
+  const { tenant } = useTenant();
   const { patients = [], appointments = [], useSupabase } = state;
+  const currentClinicId = tenant?.id || state.clinicInfo?.id;
+
+  // Filter patients by clinic
+  const clinicPatients = useMemo(() => {
+    return patients.filter(p => !p.clinicId || p.clinicId === currentClinicId);
+  }, [patients, currentClinicId]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const deferredQuery = useDeferredValue(searchQuery);
@@ -31,10 +39,10 @@ const Patients = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Sync index with patients pool
+  // Sync index with patients pool scoped to clinic
   useEffect(() => {
-    patientIndex.buildIndex(patients);
-  }, [patients]);
+    patientIndex.buildIndex(clinicPatients, currentClinicId);
+  }, [clinicPatients, currentClinicId]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -48,8 +56,8 @@ const Patients = () => {
 
   // High-performance search for 100k+ records using deferred non-blocking query
   const searchResult = useMemo(() => {
-    return patientIndex.search(deferredQuery, currentPage, PAGE_SIZE, patients);
-  }, [patients, deferredQuery, currentPage, PAGE_SIZE]);
+    return patientIndex.search(deferredQuery, currentPage, PAGE_SIZE, clinicPatients, currentClinicId);
+  }, [clinicPatients, currentClinicId, deferredQuery, currentPage, PAGE_SIZE]);
 
   const paginatedPatients = searchResult.items;
   const totalPatientsCount = searchResult.total;

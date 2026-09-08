@@ -30,6 +30,9 @@ const ManageBooking = () => {
 
   const resolvedTenant = (clinicSlug ? allTenants.find(t => t.slug === clinicSlug) : null) || tenant;
   const clinicInfo = resolvedTenant || state.clinicInfo || {};
+  const clinicAppointments = (state.appointments || []).filter(
+    a => !a.clinicId || a.clinicId === clinicInfo?.id
+  );
   const blockedSlots = state.blockedSlots || [];
   const scheduleConfig = clinicInfo.scheduleConfig || {
     workingDays: [6, 0, 1, 2, 3, 4],
@@ -51,7 +54,7 @@ const ManageBooking = () => {
   const [verifyPatientName, setVerifyPatientName] = useState('');
   const [verifyFeedback, setVerifyFeedback] = useState(null);
 
-  // Auto-find appointment if id/phone AND code are passed securely in URL
+  // Auto-find appointment if id/phone AND code are passed securely in URL (strictly requiring clinic match)
   useEffect(() => {
     const idParam = searchParams.get('id');
     const phoneParam = searchParams.get('phone');
@@ -61,12 +64,13 @@ const ManageBooking = () => {
       const cleanCode = codeParam.trim().toUpperCase().replace('#', '');
       const cleanPhone = cleanEgyptianPhone(phoneParam);
 
-      const found = (state.appointments || []).find(a => {
+      const found = clinicAppointments.find(a => {
+        const matchesClinic = (!a.clinicId || a.clinicId === clinicInfo?.id);
         const matchesId = idParam && String(a.id) === String(idParam);
         const aPhone = cleanEgyptianPhone(a.patientPhone);
         const matchesPhone = cleanPhone && aPhone && (aPhone.includes(cleanPhone) || cleanPhone.includes(aPhone));
         const matchesCode = a.bookingCode && a.bookingCode.toUpperCase().replace('#', '') === cleanCode;
-        return (matchesId || matchesPhone) && matchesCode;
+        return matchesClinic && (matchesId || matchesPhone) && matchesCode;
       });
 
       if (found) {
@@ -74,9 +78,9 @@ const ManageBooking = () => {
         setBookingCodeSearch(codeParam);
       }
     }
-  }, [searchParams, state.appointments]);
+  }, [searchParams, clinicAppointments, clinicInfo?.id]);
 
-  // Secure 2-Factor Search Handler (Phone + Secret Booking Reference Code)
+  // Secure 2-Factor Search Handler (Phone + Secret Booking Reference Code) scoped to current clinic
   const handleSearch = (e) => {
     e.preventDefault();
     if (!phoneSearch.trim()) {
@@ -94,15 +98,16 @@ const ManageBooking = () => {
     const cleanDigits = cleanEgyptianPhone(phoneSearch);
     const cleanCode = bookingCodeSearch.trim().toUpperCase().replace('#', '');
 
-    // Check if phone exists
-    const matchingPhoneAppts = appointments.filter(a => {
+    // Check if phone exists strictly within this clinic
+    const matchingPhoneAppts = clinicAppointments.filter(a => {
+      const matchesClinic = (!a.clinicId || a.clinicId === clinicInfo?.id);
       const aPhone = cleanEgyptianPhone(a.patientPhone);
-      return cleanDigits && aPhone && (aPhone.includes(cleanDigits) || cleanDigits.includes(aPhone));
+      return matchesClinic && cleanDigits && aPhone && (aPhone.includes(cleanDigits) || cleanDigits.includes(aPhone));
     });
 
     if (matchingPhoneAppts.length === 0) {
       setSelectedAppointment(null);
-      setStatusMessage({ type: 'error', text: 'لم نتمكن من العثور على أي موعد مسجل بهذا الرقم. يرجى التأكد من كتابة الرقم بشكل صحيح.' });
+      setStatusMessage({ type: 'error', text: 'لم نتمكن من العثور على أي موعد مسجل بهذا الرقم في هذه العيادة. يرجى التأكد من كتابة الرقم والعيادة بشكل صحيح.' });
       return;
     }
 
@@ -125,7 +130,7 @@ const ManageBooking = () => {
     }
   };
 
-  // Zero-Cost Verification via Registered Patient Name Match (التحقق بالاسم المسجل بدون SMS)
+  // Zero-Cost Verification via Registered Patient Name Match (التحقق بالاسم المسجل بدون SMS) scoped to current clinic
   const handleVerifyByName = (e) => {
     e.preventDefault();
     const cleanDigits = cleanEgyptianPhone(phoneSearch);
@@ -141,9 +146,10 @@ const ManageBooking = () => {
       return;
     }
 
-    const matchingAppts = appointments.filter(a => {
+    const matchingAppts = clinicAppointments.filter(a => {
+      const matchesClinic = (!a.clinicId || a.clinicId === clinicInfo?.id);
       const aPhone = cleanEgyptianPhone(a.patientPhone);
-      return aPhone && (aPhone.includes(cleanDigits) || cleanDigits.includes(aPhone));
+      return matchesClinic && aPhone && (aPhone.includes(cleanDigits) || cleanDigits.includes(aPhone));
     });
 
     if (matchingAppts.length === 0) {
@@ -174,6 +180,12 @@ const ManageBooking = () => {
 
   const handleCancelAppointment = async () => {
     if (!selectedAppointment) return;
+
+    if (selectedAppointment.clinicId && clinicInfo?.id && selectedAppointment.clinicId !== clinicInfo.id) {
+      setStatusMessage({ type: 'error', text: 'لا يمكن إلغاء موعد تابع لعيادة أخرى.' });
+      return;
+    }
+
     if (window.confirm('هل أنت متأكد من رغبتك في إلغاء هذا الموعد؟')) {
       if (useSupabase) {
         try {
@@ -193,6 +205,13 @@ const ManageBooking = () => {
 
   const handleConfirmReschedule = async (e) => {
     e.preventDefault();
+    if (!selectedAppointment) return;
+
+    if (selectedAppointment.clinicId && clinicInfo?.id && selectedAppointment.clinicId !== clinicInfo.id) {
+      setStatusMessage({ type: 'error', text: 'لا يمكن تعديل موعد تابع لعيادة أخرى.' });
+      return;
+    }
+
     if (!newDate || !newTime) {
       setStatusMessage({ type: 'error', text: 'يرجى اختيار التاريخ والوقت الجديدين أولاً' });
       return;
@@ -251,7 +270,7 @@ const ManageBooking = () => {
       scheduleConfig.slotDuration || 30
     );
 
-    const bookedOnDate = appointments
+    const bookedOnDate = clinicAppointments
       .filter(a => a.date === date && a.status !== 'cancelled' && a.id !== selectedAppointment?.id)
       .map(a => a.time);
 

@@ -68,6 +68,7 @@ export const demoClinics = [
     ...clinicInfo,
     id: '550e8400-e29b-41d4-a716-446655440000',
     slug: 'dr-ahmed',
+    customDomain: 'dr-ahmed-dental.com',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     branding: {
@@ -87,6 +88,7 @@ export const demoClinics = [
   {
     id: '550e8400-e29b-41d4-a716-446655440099',
     slug: 'dr-sara',
+    customDomain: 'drsara-clinic.com',
     name: 'عيادة د. سارة للجلدية والتجميل والليزر',
     doctorName: 'د. سارة محمود',
     doctorEmail: 'sara.clinic@clinicflow.com',
@@ -864,8 +866,8 @@ export const getInitialDataForTenant = (tenantOrSlug) => {
   if (slug === 'dr-sara' || targetId === '550e8400-e29b-41d4-a716-446655440099') {
     const saraClinic = demoClinics.find(c => c.slug === 'dr-sara') || demoClinics[1];
     return {
-      patients: drSaraPatients,
-      appointments: drSaraAppointments,
+      patients: drSaraPatients.map(p => ({ ...p, clinicId: p.clinicId || '550e8400-e29b-41d4-a716-446655440099', clinic_id: p.clinic_id || '550e8400-e29b-41d4-a716-446655440099' })),
+      appointments: drSaraAppointments.map(a => ({ ...a, clinicId: a.clinicId || '550e8400-e29b-41d4-a716-446655440099', clinic_id: a.clinic_id || '550e8400-e29b-41d4-a716-446655440099' })),
       invoices: drSaraInvoices,
       expenses: drSaraExpenses,
       recalls: drSaraRecalls,
@@ -878,8 +880,8 @@ export const getInitialDataForTenant = (tenantOrSlug) => {
 
   // Default to Dr. Ahmed's clinic (dental)
   return {
-    patients,
-    appointments,
+    patients: patients.map(p => ({ ...p, clinicId: p.clinicId || '550e8400-e29b-41d4-a716-446655440000', clinic_id: p.clinic_id || '550e8400-e29b-41d4-a716-446655440000' })),
+    appointments: appointments.map(a => ({ ...a, clinicId: a.clinicId || '550e8400-e29b-41d4-a716-446655440000', clinic_id: a.clinic_id || '550e8400-e29b-41d4-a716-446655440000' })),
     invoices,
     expenses,
     recalls,

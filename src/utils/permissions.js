@@ -110,12 +110,17 @@ export function canAccessRoute(user, pathname) {
  *  (a) Multi-clinic owners / doctors with multiple allowed clinics
  *  (b) Super Admins (role === 'super_admin', isSuperAdmin === true, or in /super-admin)
  * 
+ * If isDedicatedDomain is true, returns false unless explicitly on /super-admin.
+ * 
  * @param {Object} user - User object from AuthContext
  * @param {string} pathname - Current route path
+ * @param {boolean} isDedicatedDomain - Whether app is running on dedicated domain/subdomain
  * @returns {boolean}
  */
-export function canSwitchTenants(user, pathname = '') {
+export function canSwitchTenants(user, pathname = '', isDedicatedDomain = false) {
   if (typeof pathname === 'string' && pathname.startsWith('/super-admin')) return true;
+  const dedicated = isDedicatedDomain || user?.isDedicatedDomain;
+  if (dedicated) return false;
   if (!user) return false;
   if (user.role === 'super_admin' || user.isSuperAdmin === true) return true;
   if (user.role === 'multi_clinic_owner') return true;
@@ -130,14 +135,28 @@ export function canSwitchTenants(user, pathname = '') {
  * 
  * @param {Object} user - User object from AuthContext
  * @param {Array} allTenants - Full catalog of registered tenants
+ * @param {boolean} isDedicatedDomain - Whether app is running on dedicated domain/subdomain
  * @returns {Array}
  */
-export function getUserAllowedClinics(user, allTenants = []) {
+export function getUserAllowedClinics(user, allTenants = [], isDedicatedDomain = false) {
   if (!Array.isArray(allTenants) || allTenants.length === 0) return [];
+
+  const isSuperAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/super-admin');
+
+  // If on a dedicated domain and not in super-admin portal, restrict catalog strictly to current clinic
+  if (isDedicatedDomain && !isSuperAdminRoute) {
+    const userClinicSlug = user?.clinicSlug || user?.clinicId;
+    if (userClinicSlug) {
+      const matched = allTenants.filter(t => t.slug === userClinicSlug || t.id === userClinicSlug);
+      if (matched.length > 0) return matched;
+    }
+    return allTenants.slice(0, 1);
+  }
+
   if (!user) return allTenants.slice(0, 1);
 
   // Super Admin has access to all tenants across the entire platform
-  if (user.role === 'super_admin' || user.isSuperAdmin === true || (typeof window !== 'undefined' && window.location.pathname.startsWith('/super-admin'))) {
+  if (user.role === 'super_admin' || user.isSuperAdmin === true || isSuperAdminRoute) {
     return allTenants;
   }
 

@@ -3,6 +3,7 @@ import { clinicInfo as defaultClinicInfo, demoClinics as fallbackDemoClinics } f
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { fromDbClinic } from '../services/clinicsService';
 import { canSwitchTenants } from '../utils/permissions';
+import { patientIndex } from '../services/indexedSearchService';
 
 const TenantContext = createContext(null);
 
@@ -12,6 +13,7 @@ const initialClinics = fallbackDemoClinics || [
     ...defaultClinicInfo,
     id: '550e8400-e29b-41d4-a716-446655440000',
     slug: 'dr-ahmed',
+    customDomain: 'dr-ahmed-dental.com',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     branding: {
@@ -29,51 +31,157 @@ const initialClinics = fallbackDemoClinics || [
   }
 ];
 
+/**
+ * Resolves tenant and dedicated domain status based on window location.
+ * Priority:
+ *  1. Custom domain match (customDomain / custom_domain against hostname without www) -> isDedicatedDomain: true
+ *  2. Dedicated subdomain (e.g. dr-sara.clinicflow.app or dr-sara.localhost) -> isDedicatedDomain: true
+ *  3. URL path (/c/:slug/...) -> isDedicatedDomain: false
+ *  4. URL query (?clinic=slug) -> isDedicatedDomain: false
+ *  5. LocalStorage stored preference -> isDedicatedDomain: false
+ *  6. Default fallback ('dr-ahmed') -> isDedicatedDomain: false
+ */
+export function resolveTenantFromLocation(
+  tenants = fallbackDemoClinics || initialClinics,
+  locationObj = (typeof window !== 'undefined' ? window.location : null)
+) {
+  if (!locationObj) {
+    const defaultClinic = tenants?.[0] || null;
+    return {
+      slug: defaultClinic?.slug || 'dr-ahmed',
+      isDedicatedDomain: false,
+      tenant: defaultClinic
+    };
+  }
+
+  const hostname = (locationObj.hostname || '').toLowerCase().trim();
+  const cleanHostname = hostname.replace(/^www\./i, '');
+  const pathname = locationObj.pathname || '';
+  const search = locationObj.search || '';
+
+  // 1. Custom domain match: match custom_domain or customDomain against hostname without www
+  if (cleanHostname) {
+    const customMatch = (tenants || []).find(t => {
+      const cd = (t.customDomain || t.custom_domain || '').toLowerCase().trim().replace(/^www\./i, '');
+      return cd && cd === cleanHostname;
+    });
+    if (customMatch) {
+      return {
+        slug: customMatch.slug,
+        isDedicatedDomain: true,
+        tenant: customMatch
+      };
+    }
+  }
+
+  // 2. Dedicated subdomain (e.g. dr-sara.clinicflow.app or dr-sara.localhost)
+  if (cleanHostname && !cleanHostname.match(/^(127\.0\.0\.1|0\.0\.0\.0)$/)) {
+    const parts = cleanHostname.split('.');
+    let sub = null;
+    if (parts.length >= 3 && parts[0] !== 'www' && parts[0] !== 'app') {
+      sub = parts[0];
+    } else if (parts.length === 2 && parts[1] === 'localhost' && parts[0] !== 'www' && parts[0] !== 'app') {
+      sub = parts[0];
+    }
+
+    if (sub) {
+      const subMatch = (tenants || []).find(t => t.slug?.toLowerCase() === sub || t.id === sub);
+      return {
+        slug: subMatch ? subMatch.slug : sub,
+        isDedicatedDomain: true,
+        tenant: subMatch || null
+      };
+    }
+  }
+
+  // 3. URL path (e.g. /c/:slug/...)
+  const pathMatch = pathname.match(/\/c\/([a-zA-Z0-9_-]+)/);
+  if (pathMatch && pathMatch[1]) {
+    const pathSlug = pathMatch[1].toLowerCase().trim();
+    const match = (tenants || []).find(t => t.slug?.toLowerCase() === pathSlug || t.id === pathSlug);
+    return {
+      slug: pathSlug,
+      isDedicatedDomain: false,
+      tenant: match || null
+    };
+  }
+
+  // 4. URL query param (e.g. ?clinic=dr-sara)
+  const urlParams = new URLSearchParams(search);
+  const querySlug = urlParams.get('clinic');
+  if (querySlug) {
+    const qSlug = querySlug.toLowerCase().trim();
+    const match = (tenants || []).find(t => t.slug?.toLowerCase() === qSlug || t.id === qSlug);
+    return {
+      slug: qSlug,
+      isDedicatedDomain: false,
+      tenant: match || null
+    };
+  }
+
+  // 5. Stored preference in localStorage
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('clinicflow_active_tenant_slug');
+      if (saved) {
+        const savedSlug = saved.toLowerCase().trim();
+        const match = (tenants || []).find(t => t.slug?.toLowerCase() === savedSlug || t.id === savedSlug);
+        return {
+          slug: savedSlug,
+          isDedicatedDomain: false,
+          tenant: match || null
+        };
+      }
+    } catch (_) {}
+  }
+
+  // 6. Fallback
+  const defaultFallback = (tenants && tenants[0]) ? tenants[0] : null;
+  return {
+    slug: defaultFallback?.slug || 'dr-ahmed',
+    isDedicatedDomain: false,
+    tenant: defaultFallback
+  };
+}
+
+/**
+ * Returns whether current or given location is a dedicated domain / subdomain
+ */
+export function isDedicatedDomain(
+  locationObj = (typeof window !== 'undefined' ? window.location : null),
+  tenants = fallbackDemoClinics || initialClinics
+) {
+  return resolveTenantFromLocation(tenants, locationObj).isDedicatedDomain;
+}
+
 export const TenantProvider = ({ children }) => {
   const [allTenants, setAllTenants] = useState(initialClinics);
-  const [activeTenant, setActiveTenant] = useState(initialClinics[0]);
+  const initialResolution = useMemo(() => resolveTenantFromLocation(allTenants), [allTenants]);
+  const [activeTenant, setActiveTenant] = useState(initialResolution.tenant || initialClinics[0]);
+  const [dedicatedDomainActive, setDedicatedDomainActive] = useState(initialResolution.isDedicatedDomain);
   const [isLoadingTenant, setIsLoadingTenant] = useState(true);
 
   // 1. Resolve Tenant from Subdomain, Custom Domain, or URL Path
   const resolveTenantSlug = useCallback(() => {
-    if (typeof window === 'undefined') return 'dr-ahmed';
-
-    // A. Check URL query param (e.g. ?clinic=dr-sara)
-    const urlParams = new URLSearchParams(window.location.search);
-    const querySlug = urlParams.get('clinic');
-    if (querySlug) return querySlug.toLowerCase().trim();
-
-    // B. Check URL path (e.g. /c/dr-sara/...)
-    const pathMatch = window.location.pathname.match(/\/c\/([a-zA-Z0-9_-]+)/);
-    if (pathMatch && pathMatch[1]) {
-      return pathMatch[1].toLowerCase().trim();
-    }
-
-    // C. Check Subdomain (e.g. dr-sara.clinicflow.app or dr-sara.localhost)
-    const hostname = window.location.hostname.toLowerCase();
-    const parts = hostname.split('.');
-    if (parts.length >= 3 && parts[0] !== 'www' && parts[0] !== 'app') {
-      return parts[0];
-    }
-
-    // D. Check stored preference in localStorage
-    const saved = localStorage.getItem('clinicflow_active_tenant_slug');
-    if (saved) return saved.toLowerCase().trim();
-
-    return 'dr-ahmed';
-  }, []);
+    return resolveTenantFromLocation(allTenants).slug;
+  }, [allTenants]);
 
   // 2. Load and Bind Active Tenant
   const loadTenant = useCallback(async (slug) => {
     setIsLoadingTenant(true);
-    const targetSlug = slug || resolveTenantSlug();
+    const locationResolution = resolveTenantFromLocation(allTenants);
+    setDedicatedDomainActive(locationResolution.isDedicatedDomain);
+
+    const targetSlug = slug || locationResolution.slug;
 
     if (!isSupabaseConfigured()) {
       // Offline / Demo Mode: find in demo clinics
       let match = allTenants.find(t => t.slug === targetSlug || t.id === targetSlug);
-      if (!match) match = allTenants[0];
+      if (!match) match = locationResolution.tenant || allTenants[0];
       setActiveTenant(match);
-      localStorage.setItem('clinicflow_active_tenant_slug', match.slug);
+      if (!locationResolution.isDedicatedDomain) {
+        localStorage.setItem('clinicflow_active_tenant_slug', match.slug);
+      }
       applyBranding(match.branding);
       setIsLoadingTenant(false);
       return match;
@@ -92,13 +200,16 @@ export const TenantProvider = ({ children }) => {
         const merged = {
           ...parsed,
           slug: data.slug || targetSlug,
+          customDomain: data.custom_domain || parsed.customDomain,
           subscriptionTier: data.subscription_tier || 'pro',
           subscriptionStatus: data.subscription_status || 'active',
           branding: data.branding || { primaryColor: '#0071E3', accentColor: '#10B981' },
           quotas: data.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
         };
         setActiveTenant(merged);
-        localStorage.setItem('clinicflow_active_tenant_slug', merged.slug);
+        if (!locationResolution.isDedicatedDomain) {
+          localStorage.setItem('clinicflow_active_tenant_slug', merged.slug);
+        }
         applyBranding(merged.branding);
         setIsLoadingTenant(false);
         return merged;
@@ -108,12 +219,12 @@ export const TenantProvider = ({ children }) => {
     }
 
     // Fallback to first tenant
-    const fallback = allTenants[0];
+    const fallback = locationResolution.tenant || allTenants[0];
     setActiveTenant(fallback);
     applyBranding(fallback?.branding);
     setIsLoadingTenant(false);
     return fallback;
-  }, [allTenants, resolveTenantSlug]);
+  }, [allTenants]);
 
   // 3. Inject Tenant Brand Colors into CSS Variables Dynamically
   const applyBranding = (branding) => {
@@ -134,11 +245,19 @@ export const TenantProvider = ({ children }) => {
   // 4. Switch Tenant Action (for Multi-Clinic Owner / Super Admin)
   const switchTenant = useCallback((slugOrId) => {
     try {
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+      const isSuperAdminRoute = currentPath.startsWith('/super-admin');
+
+      // Locked in dedicated domain mode unless explicitly on super admin
+      if (dedicatedDomainActive && !isSuperAdminRoute) {
+        console.warn(`[Tenant Isolation Enforcement] Tenant switch blocked: Locked to dedicated domain`);
+        return false;
+      }
+
       const savedUserStr = sessionStorage.getItem('clinicflow_auth_user');
       if (savedUserStr) {
         const currentUser = JSON.parse(savedUserStr);
-        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-        const canSwitch = canSwitchTenants(currentUser, currentPath);
+        const canSwitch = canSwitchTenants(currentUser, currentPath, dedicatedDomainActive);
         if (!canSwitch) {
           const userAllowedSlug = currentUser.allowedClinics?.[0] || currentUser.clinicSlug || currentUser.clinicId;
           if (slugOrId && slugOrId !== userAllowedSlug && slugOrId !== currentUser.clinicId) {
@@ -148,8 +267,10 @@ export const TenantProvider = ({ children }) => {
         }
       }
     } catch (_) {}
+
+    patientIndex.clearIndex();
     return loadTenant(slugOrId);
-  }, [loadTenant]);
+  }, [dedicatedDomainActive, loadTenant]);
 
   // 5. Feature Gating & Quota Checks
   const hasFeature = useCallback((featureName) => {
@@ -193,18 +314,27 @@ export const TenantProvider = ({ children }) => {
     }
   }, [activeTenant]);
 
+  const isSuperAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/super-admin');
+  const isolatedTenantsCatalog = useMemo(() => {
+    if (dedicatedDomainActive && !isSuperAdminRoute) {
+      return activeTenant ? [activeTenant] : allTenants.slice(0, 1);
+    }
+    return allTenants;
+  }, [dedicatedDomainActive, isSuperAdminRoute, activeTenant, allTenants]);
+
   const value = useMemo(() => ({
     tenant: activeTenant,
     tenantSlug: activeTenant?.slug || 'dr-ahmed',
-    allTenants,
+    allTenants: isolatedTenantsCatalog,
     setAllTenants,
     isLoadingTenant,
+    isDedicatedDomain: dedicatedDomainActive,
     switchTenant,
     hasFeature,
     checkQuota,
     tier: activeTenant?.subscriptionTier || 'pro',
     isMultiTenant: true
-  }), [activeTenant, allTenants, isLoadingTenant, switchTenant, hasFeature, checkQuota]);
+  }), [activeTenant, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, hasFeature, checkQuota]);
 
   return (
     <TenantContext.Provider value={value}>

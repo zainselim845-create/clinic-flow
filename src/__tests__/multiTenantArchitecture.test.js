@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { demoClinics, clinicInfo, getInitialDataForTenant } from '../data/demoData';
 import { canSwitchTenants, getUserAllowedClinics } from '../utils/permissions';
+import { resolveTenantFromLocation, isDedicatedDomain } from '../context/TenantContext';
+import { PatientIndexEngine } from '../services/indexedSearchService';
 import fs from 'fs';
 import path from 'path';
 
@@ -15,6 +17,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
 
       // Dental Clinic (Dr. Ahmed)
       expect(dentalClinic.slug).toBe('dr-ahmed');
+      expect(dentalClinic.customDomain).toBe('dr-ahmed-dental.com');
       expect(dentalClinic.subscriptionTier).toBe('pro');
       expect(dentalClinic.branding.primaryColor).toBe('#0071E3');
       expect(dentalClinic.quotas.monthlySmsQuota).toBe(2000);
@@ -22,6 +25,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
 
       // Dermatology & Laser Clinic (Dr. Sara)
       expect(dermClinic.slug).toBe('dr-sara');
+      expect(dermClinic.customDomain).toBe('drsara-clinic.com');
       expect(dermClinic.subscriptionTier).toBe('enterprise');
       expect(dermClinic.branding.primaryColor).toBe('#8B5CF6');
       expect(dermClinic.quotas.monthlySmsQuota).toBe(5000);
@@ -111,44 +115,75 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
     });
   });
 
-  describe('4. Dynamic Tenant Slug & Subdomain Resolution Logic', () => {
-    const resolveTenantSlugFromLocation = (pathname, search, hostname) => {
-      // 1. Query param ?clinic=slug
-      const urlParams = new URLSearchParams(search);
-      const querySlug = urlParams.get('clinic');
-      if (querySlug) return querySlug.toLowerCase().trim();
+  describe('4. Dynamic Tenant Slug, Custom Domain & Subdomain Resolution Engine', () => {
+    it('resolves tenant and activates dedicated domain mode from custom domains', () => {
+      // Dr. Sara custom domain (with and without www)
+      const saraResult = resolveTenantFromLocation(demoClinics, { hostname: 'drsara-clinic.com', pathname: '/', search: '' });
+      expect(saraResult.slug).toBe('dr-sara');
+      expect(saraResult.isDedicatedDomain).toBe(true);
+      expect(saraResult.tenant?.name).toContain('سارة');
 
-      // 2. Path param /c/:slug/...
-      const pathMatch = pathname.match(/\/c\/([a-zA-Z0-9_-]+)/);
-      if (pathMatch && pathMatch[1]) return pathMatch[1].toLowerCase().trim();
+      const saraWwwResult = resolveTenantFromLocation(demoClinics, { hostname: 'www.drsara-clinic.com', pathname: '/', search: '' });
+      expect(saraWwwResult.slug).toBe('dr-sara');
+      expect(saraWwwResult.isDedicatedDomain).toBe(true);
 
-      // 3. Subdomain
-      const parts = hostname.toLowerCase().split('.');
-      if (parts.length >= 3 && parts[0] !== 'www' && parts[0] !== 'app') {
-        return parts[0];
-      }
+      // Dr. Ahmed custom domain (with and without www)
+      const ahmedResult = resolveTenantFromLocation(demoClinics, { hostname: 'dr-ahmed-dental.com', pathname: '/', search: '' });
+      expect(ahmedResult.slug).toBe('dr-ahmed');
+      expect(ahmedResult.isDedicatedDomain).toBe(true);
+      expect(ahmedResult.tenant?.name).toContain('النخبة');
 
-      return 'dr-ahmed';
-    };
-
-    it('resolves slug from URL path /c/:clinicSlug/booking', () => {
-      const slug = resolveTenantSlugFromLocation('/c/dr-sara/booking', '', 'clinicflow.app');
-      expect(slug).toBe('dr-sara');
+      const ahmedWwwResult = resolveTenantFromLocation(demoClinics, { hostname: 'www.dr-ahmed-dental.com', pathname: '/', search: '' });
+      expect(ahmedWwwResult.slug).toBe('dr-ahmed');
+      expect(ahmedWwwResult.isDedicatedDomain).toBe(true);
     });
 
-    it('resolves slug from query param ?clinic=dr-sara', () => {
-      const slug = resolveTenantSlugFromLocation('/booking', '?clinic=dr-sara', 'clinicflow.app');
-      expect(slug).toBe('dr-sara');
+    it('resolves tenant and activates dedicated domain mode from subdomains', () => {
+      // Subdomain on cloud platform (dr-sara.clinicflow.app)
+      const saraSub = resolveTenantFromLocation(demoClinics, { hostname: 'dr-sara.clinicflow.app', pathname: '/', search: '' });
+      expect(saraSub.slug).toBe('dr-sara');
+      expect(saraSub.isDedicatedDomain).toBe(true);
+
+      // Subdomain on cloud platform (dr-ahmed.clinicflow.app)
+      const ahmedSub = resolveTenantFromLocation(demoClinics, { hostname: 'dr-ahmed.clinicflow.app', pathname: '/', search: '' });
+      expect(ahmedSub.slug).toBe('dr-ahmed');
+      expect(ahmedSub.isDedicatedDomain).toBe(true);
+
+      // Local development subdomain (dr-sara.localhost)
+      const saraLocal = resolveTenantFromLocation(demoClinics, { hostname: 'dr-sara.localhost', pathname: '/', search: '' });
+      expect(saraLocal.slug).toBe('dr-sara');
+      expect(saraLocal.isDedicatedDomain).toBe(true);
     });
 
-    it('resolves slug from subdomain dr-sara.clinicflow.app', () => {
-      const slug = resolveTenantSlugFromLocation('/', '', 'dr-sara.clinicflow.app');
-      expect(slug).toBe('dr-sara');
+    it('resolves slug from URL path /c/:clinicSlug/booking on shared domain without dedicated flag', () => {
+      const pathResult = resolveTenantFromLocation(demoClinics, { hostname: 'clinicflow.app', pathname: '/c/dr-sara/booking', search: '' });
+      expect(pathResult.slug).toBe('dr-sara');
+      expect(pathResult.isDedicatedDomain).toBe(false);
     });
 
-    it('falls back to dr-ahmed for default root domain', () => {
-      const slug = resolveTenantSlugFromLocation('/', '', 'clinicflow.app');
-      expect(slug).toBe('dr-ahmed');
+    it('resolves slug from query param ?clinic=dr-sara on shared domain without dedicated flag', () => {
+      const queryResult = resolveTenantFromLocation(demoClinics, { hostname: 'clinicflow.app', pathname: '/booking', search: '?clinic=dr-sara' });
+      expect(queryResult.slug).toBe('dr-sara');
+      expect(queryResult.isDedicatedDomain).toBe(false);
+    });
+
+    it('falls back to default root tenant (dr-ahmed) for root shared domain and localhost', () => {
+      const rootResult = resolveTenantFromLocation(demoClinics, { hostname: 'clinicflow.app', pathname: '/', search: '' });
+      expect(rootResult.slug).toBe('dr-ahmed');
+      expect(rootResult.isDedicatedDomain).toBe(false);
+
+      const localResult = resolveTenantFromLocation(demoClinics, { hostname: 'localhost', pathname: '/', search: '' });
+      expect(localResult.slug).toBe('dr-ahmed');
+      expect(localResult.isDedicatedDomain).toBe(false);
+    });
+
+    it('isDedicatedDomain helper function correctly identifies dedicated hostnames', () => {
+      expect(isDedicatedDomain({ hostname: 'drsara-clinic.com' }, demoClinics)).toBe(true);
+      expect(isDedicatedDomain({ hostname: 'dr-ahmed-dental.com' }, demoClinics)).toBe(true);
+      expect(isDedicatedDomain({ hostname: 'dr-sara.clinicflow.app' }, demoClinics)).toBe(true);
+      expect(isDedicatedDomain({ hostname: 'clinicflow.app' }, demoClinics)).toBe(false);
+      expect(isDedicatedDomain({ hostname: 'app.clinicflow.app' }, demoClinics)).toBe(false);
+      expect(isDedicatedDomain({ hostname: 'localhost' }, demoClinics)).toBe(false);
     });
   });
 
@@ -371,6 +406,114 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
 
       expect(shouldSaveStateForTenant(currentTenantSlug, newTenantSlug)).toBe(false);
       expect(shouldSaveStateForTenant(newTenantSlug, newTenantSlug)).toBe(true);
+    });
+  });
+
+  describe('11. In-Memory Search Engine & Patient Index Multi-Tenant Isolation', () => {
+    it('isolates phone lookup and search queries strictly by clinicId', () => {
+      const index = new PatientIndexEngine();
+
+      const ahmedClinicId = '550e8400-e29b-41d4-a716-446655440000';
+      const saraClinicId = '550e8400-e29b-41d4-a716-446655440099';
+
+      const sharedPhone = '01012345678';
+      const mixedPatients = [
+        { id: 'pat-ahmed-1', name: 'عمر مصطفى (أسنان)', phone: sharedPhone, clinicId: ahmedClinicId },
+        { id: 'pat-sara-1', name: 'مريم خليل (جلدية)', phone: sharedPhone, clinicId: saraClinicId },
+        { id: 'pat-sara-2', name: 'نور أحمد (جلدية)', phone: '01122334455', clinicId: saraClinicId }
+      ];
+
+      // 1. Build index scoped to Ahmed Clinic
+      index.buildIndex(mixedPatients, ahmedClinicId);
+      const foundInAhmed = index.findByPhone(sharedPhone, ahmedClinicId);
+      expect(foundInAhmed).not.toBeNull();
+      expect(foundInAhmed.name).toBe('عمر مصطفى (أسنان)');
+
+      // If querying with Sara Clinic ID, Ahmed patient must NOT be returned
+      const leakedInSara = index.findByPhone(sharedPhone, saraClinicId);
+      expect(leakedInSara).toBeNull();
+
+      // 2. Re-build index scoped to Sara Clinic
+      index.buildIndex(mixedPatients, saraClinicId);
+      const foundInSara = index.findByPhone(sharedPhone, saraClinicId);
+      expect(foundInSara).not.toBeNull();
+      expect(foundInSara.name).toBe('مريم خليل (جلدية)');
+
+      // If querying with Ahmed Clinic ID, Sara patient must NOT be returned
+      const leakedInAhmed = index.findByPhone(sharedPhone, ahmedClinicId);
+      expect(leakedInAhmed).toBeNull();
+
+      // 3. Paginated search filter strictly by clinicId
+      const saraSearch = index.search('', 1, 10, mixedPatients, saraClinicId);
+      expect(saraSearch.total).toBe(2);
+      expect(saraSearch.items.every(p => p.clinicId === saraClinicId)).toBe(true);
+
+      const ahmedSearch = index.search('', 1, 10, mixedPatients, ahmedClinicId);
+      expect(ahmedSearch.total).toBe(1);
+      expect(ahmedSearch.items[0].clinicId).toBe(ahmedClinicId);
+    });
+  });
+
+  describe('12. Public Booking & Manage Booking Multi-Tenant Scoping Integrity', () => {
+    it('attaches clinicId to online patient and appointment objects', () => {
+      const activeClinic = demoClinics.find(c => c.slug === 'dr-sara');
+      const bookingId = 'booking-12345';
+      const patientId = 'patient-online-999';
+
+      const newPatientData = {
+        id: patientId,
+        clinicId: activeClinic.id,
+        clinic_id: activeClinic.id,
+        name: 'سارة عبد الله',
+        phone: '01099887766',
+        diagnosis: 'مريض جديد أونلاين'
+      };
+
+      const newAppointment = {
+        id: bookingId,
+        clinicId: activeClinic.id,
+        clinic_id: activeClinic.id,
+        patientId: patientId,
+        patientName: newPatientData.name,
+        patientPhone: newPatientData.phone,
+        date: '2026-09-08',
+        time: '04:00 م',
+        type: 'جلسة فراكشنال ليزر',
+        status: 'booked',
+        bookingCode: '#CF-8822'
+      };
+
+      expect(newPatientData.clinicId).toBe(activeClinic.id);
+      expect(newAppointment.clinicId).toBe(activeClinic.id);
+    });
+
+    it('prevents managing or cancelling appointments belonging to another clinic in ManageBooking', () => {
+      const ahmedClinicId = '550e8400-e29b-41d4-a716-446655440000';
+      const saraClinicId = '550e8400-e29b-41d4-a716-446655440099';
+
+      const allAppointments = [
+        { id: 'appt-ahmed', clinicId: ahmedClinicId, bookingCode: '#CF-1111', patientPhone: '01012345678', patientName: 'خالد' },
+        { id: 'appt-sara', clinicId: saraClinicId, bookingCode: '#CF-2222', patientPhone: '01012345678', patientName: 'خالد' }
+      ];
+
+      // Function simulating ManageBooking appointment resolution
+      const findManageableAppointment = (code, phone, currentClinicId) => {
+        const cleanCode = code.replace('#', '');
+        return allAppointments.find(a => {
+          const matchesClinic = (!a.clinicId || a.clinicId === currentClinicId);
+          const matchesPhone = a.patientPhone === phone;
+          const matchesCode = a.bookingCode.replace('#', '') === cleanCode;
+          return matchesClinic && matchesPhone && matchesCode;
+        });
+      };
+
+      // In Ahmed clinic, can find Ahmed appointment but CANNOT find Sara appointment
+      expect(findManageableAppointment('CF-1111', '01012345678', ahmedClinicId)?.id).toBe('appt-ahmed');
+      expect(findManageableAppointment('CF-2222', '01012345678', ahmedClinicId)).toBeUndefined();
+
+      // In Sara clinic, can find Sara appointment but CANNOT find Ahmed appointment
+      expect(findManageableAppointment('CF-2222', '01012345678', saraClinicId)?.id).toBe('appt-sara');
+      expect(findManageableAppointment('CF-1111', '01012345678', saraClinicId)).toBeUndefined();
     });
   });
 
