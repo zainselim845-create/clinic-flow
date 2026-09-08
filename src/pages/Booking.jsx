@@ -18,6 +18,7 @@ import BookingCalendar from '../components/BookingCalendar';
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../utils/phoneValidation';
 import { patientIndex } from '../services/indexedSearchService';
 import { getTodayDateStr } from '../utils/timeSlots';
+import { checkActionRateLimit } from '../utils/rateLimiter';
 
 import './Booking.css';
 
@@ -117,6 +118,13 @@ const Booking = () => {
 
     if (!clean || !validateEgyptianPhone(formData.phone)) {
       setPhoneError('يرجى إدخال رقم هاتف محمول مصري صحيح مكون من 11 رقماً (مثال: 01012345678)');
+      return;
+    }
+
+    // Rate limiting: Protect against automated scraping and phone enumeration
+    const phoneRate = checkActionRateLimit('phone_lookup', clean, 10, 60000);
+    if (!phoneRate.allowed) {
+      setPhoneError(`محاولات بحث سريعة ومتكررة. يرجى الانتظار ${phoneRate.retryAfterSeconds} ثانية قبل المحاولة مجدداً.`);
       return;
     }
 
@@ -249,6 +257,13 @@ const Booking = () => {
 
     if (isSlotBooked || isSlotBlocked) {
       setBookingError('عذراً، هذا الموعد تم حجزه أو إغلاقه مؤخراً. يرجى اختيار موعد آخر.');
+      return;
+    }
+
+    // Rate limiting: Protect against bot booking flooding (Max 5 booking requests per 10 mins)
+    const bookingRate = checkActionRateLimit('booking_submit', cleanedPhone, 5, 600000);
+    if (!bookingRate.allowed) {
+      setBookingError(`عذراً، تجاوزت الحد المسموح به للمحاولات السريعة لحماية النظام. يرجى الانتظار ${bookingRate.retryAfterSeconds} ثانية والمحاولة مجدداً.`);
       return;
     }
 
