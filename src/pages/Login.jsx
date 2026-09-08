@@ -32,7 +32,7 @@ const Login = () => {
   const { signIn, signUpDoctorAndClinic, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/dashboard';
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -110,7 +110,7 @@ const Login = () => {
 
       setSuccessMessage('تم تأسيس حساب العيادة بنجاح! جاري تحويلك لمنظومة العيادة...');
       setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate('/dashboard', { replace: true });
       }, 1000);
     } catch (err) {
       setError(err.message || 'فشل تسجيل العيادة، يرجى المحاولة لاحقاً.');
