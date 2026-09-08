@@ -20,6 +20,7 @@ import { validateEgyptianPhone, cleanEgyptianPhone } from '../utils/phoneValidat
 import { patientIndex } from '../services/indexedSearchService';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { checkActionRateLimit } from '../utils/rateLimiter';
+import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 
 import './Booking.css';
 
@@ -412,9 +413,7 @@ const Booking = () => {
         (clinic.address || '').toLowerCase().includes(discoverySearch.toLowerCase()) ||
         (clinic.specialty || '').toLowerCase().includes(discoverySearch.toLowerCase());
 
-      const matchSpec = 
-        discoverySpecialty === 'الكل' || 
-        (clinic.specialty && clinic.specialty.includes(discoverySpecialty.replace('طب وجراحة ', '').replace('الأمراض ', '')));
+      const matchSpec = matchesSpecialtyFilter(clinic.specialty, discoverySpecialty);
 
       return matchSearch && matchSpec;
     });
@@ -472,6 +471,9 @@ const Booking = () => {
               <Search size={20} style={{ position: 'absolute', right: '1.25rem', color: '#94a3b8' }} />
               <input
                 type="text"
+                id="booking-discovery-search"
+                name="bookingDiscoverySearch"
+                aria-label="ابحث باسم العيادة، اسم الطبيب، التخصص، أو العنوان"
                 value={discoverySearch}
                 onChange={(e) => setDiscoverySearch(e.target.value)}
                 placeholder="ابحث باسم العيادة، اسم الطبيب، التخصص، أو العنوان..."

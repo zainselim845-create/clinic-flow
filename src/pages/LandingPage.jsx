@@ -8,6 +8,7 @@ import {
   Search, MapPin, Phone, Star, Building2, Lock, 
   Activity, DollarSign, Clock, MessageSquare, Zap, Cpu, Award
 } from 'lucide-react';
+import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import './LandingPage.css';
 
 const SPECIALTY_OPTIONS = [
@@ -100,9 +101,7 @@ const LandingPage = () => {
         (clinic.address || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
         (clinic.specialty || '').toLowerCase().includes(clinicSearch.toLowerCase());
 
-      const matchSpec = 
-        selectedSpecialty === 'الكل' || 
-        (clinic.specialty && clinic.specialty.includes(selectedSpecialty.replace('طب وجراحة ', '').replace('الأمراض ', '')));
+      const matchSpec = matchesSpecialtyFilter(clinic.specialty, selectedSpecialty);
 
       return matchSearch && matchSpec;
     });
@@ -253,6 +252,9 @@ const LandingPage = () => {
             <Search size={20} className="search-icon" />
             <input 
               type="text" 
+              id="clinic-search-input"
+              name="clinicSearch"
+              aria-label="ابحث باسم العيادة، اسم الطبيب، أو التخصص"
               placeholder="ابحث باسم العيادة، اسم الطبيب، التخصص، أو العنوان..."
               value={clinicSearch}
               onChange={(e) => setClinicSearch(e.target.value)}

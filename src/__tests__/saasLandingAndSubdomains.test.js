@@ -10,6 +10,7 @@ import {
 } from '../services/systemErrorService';
 import { resolveTenantFromLocation } from '../context/TenantContext';
 import { demoClinics } from '../data/demoData';
+import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 
 const createStorageMock = () => {
   let store = {};
@@ -189,6 +190,20 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
 
       expect(results.length).toBe(1);
       expect(results[0].doctorName).toBe('د. منى زكي');
+    });
+
+    it('matches Dr. Sara dermatology clinic when selecting "الأمراض الجلدية والتجميل" pill', () => {
+      const saraSpecialty = 'استشاري الأمراض الجلدية وتجميل الليزر والحقن التجميلي';
+      expect(matchesSpecialtyFilter(saraSpecialty, 'الأمراض الجلدية والتجميل')).toBe(true);
+      expect(matchesSpecialtyFilter(saraSpecialty, 'طب وجراحة الأسنان')).toBe(false);
+      expect(matchesSpecialtyFilter(saraSpecialty, 'الكل')).toBe(true);
+    });
+
+    it('matches Dr. Ahmed dental clinic when selecting "طب وجراحة الأسنان" pill', () => {
+      const ahmedSpecialty = 'طب وجراحة الفم والأسنان وتجميل الابتسامة';
+      expect(matchesSpecialtyFilter(ahmedSpecialty, 'طب وجراحة الأسنان')).toBe(true);
+      expect(matchesSpecialtyFilter(ahmedSpecialty, 'الأمراض الجلدية والتجميل')).toBe(false);
+      expect(matchesSpecialtyFilter(ahmedSpecialty, 'الكل')).toBe(true);
     });
   });
 });
