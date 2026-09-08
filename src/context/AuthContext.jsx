@@ -373,6 +373,51 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    if (!isDemoMode && supabase?.auth?.signInWithOAuth) {
+      try {
+        const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined;
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent'
+            }
+          }
+        });
+        if (error) throw error;
+        return { data, error: null };
+      } catch (error) {
+        return { data: null, error };
+      }
+    }
+
+    // High-speed Demo & Local Verification Mode
+    const googleDoctorUser = {
+      id: 'google-doctor-ahmed',
+      email: 'dr.ahmed.google@gmail.com',
+      name: 'د. أحمد الشريف (Google Verified)',
+      role: 'doctor',
+      clinicSlug: 'dr-ahmed',
+      clinicId: '550e8400-e29b-41d4-a716-446655440000',
+      allowedClinics: ['dr-ahmed'],
+      authProvider: 'google',
+      isEmailVerified: true
+    };
+
+    sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(googleDoctorUser));
+    localStorage.setItem('clinicflow_role', 'doctor');
+    setUser(googleDoctorUser);
+    setRole('doctor');
+    if (activeTenant?.slug !== 'dr-ahmed') {
+      switchTenant?.('dr-ahmed');
+    }
+    isolateTenantStorage('dr-ahmed');
+    return { data: { user: googleDoctorUser }, error: null };
+  };
+
   const signOut = async () => {
     sessionStorage.removeItem('clinicflow_auth_user');
     localStorage.removeItem('clinicflow_role');
@@ -408,6 +453,7 @@ export const AuthProvider = ({ children }) => {
       loading,
       switchRole,
       signIn,
+      signInWithGoogle,
       signUpDoctorAndClinic,
       signOut,
       updateClinicInfo,

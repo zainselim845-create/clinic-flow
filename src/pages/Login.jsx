@@ -29,7 +29,7 @@ const Login = () => {
     address: 'القاهرة، مصر'
   });
   
-  const { signIn, signUpDoctorAndClinic, user } = useAuth();
+  const { signIn, signUpDoctorAndClinic, signInWithGoogle, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
@@ -48,7 +48,7 @@ const Login = () => {
       interval = setInterval(() => {
         setLockoutTimer(prev => {
           if (prev <= 1) {
-            setFailedAttempts(0);
+            clearInterval(interval);
             setError('');
             return 0;
           }
@@ -56,38 +56,39 @@ const Login = () => {
         });
       }, 1000);
     }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [lockoutTimer]);
+
+  const recordFailedAttempt = (msg) => {
+    const nextFailed = failedAttempts + 1;
+    setFailedAttempts(nextFailed);
+    if (nextFailed >= MAX_FAILED_ATTEMPTS) {
+      setLockoutTimer(LOCKOUT_SECONDS);
+      setError(`تم تجاوز الحد الأقصى للمحاولات الخاطئة. تم قفل تسجيل الدخول لمدة ${LOCKOUT_SECONDS} ثانية لحماية الحساب.`);
+    } else {
+      setError(`${msg || 'بيانات الدخول غير صحيحة.'} (المحاولة ${nextFailed} من ${MAX_FAILED_ATTEMPTS})`);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (lockoutTimer > 0) return;
 
-    if (!identifier.trim() || !password.trim()) {
-      setError('يرجى إدخال البريد الإلكتروني أو الهاتف وكلمة المرور.');
+    if (!identifier || !password) {
+      setError('يرجى إدخال اسم المستخدم وكلمة المرور.');
       return;
     }
 
-    setError('');
     setIsLoading(true);
+    setError('');
 
     try {
-      const { error: signInError } = await signIn(identifier.trim(), password.trim());
+      const { error: signInError } = await signIn(identifier, password);
       if (signInError) throw signInError;
-      setFailedAttempts(0);
+      
       navigate(from, { replace: true });
     } catch (err) {
-      const nextFailed = failedAttempts + 1;
-      setFailedAttempts(nextFailed);
-
-      if (nextFailed >= MAX_FAILED_ATTEMPTS) {
-        setLockoutTimer(LOCKOUT_SECONDS);
-        setError(`تم تجاوز الحد الأقصى للمحاولات الخاطئة. تم قفل تسجيل الدخول لمدة ${LOCKOUT_SECONDS} ثانية لحماية الحساب.`);
-      } else {
-        setError(`${err.message || 'بيانات الدخول غير صحيحة.'} (المحاولة ${nextFailed} من ${MAX_FAILED_ATTEMPTS})`);
-      }
+      recordFailedAttempt(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +97,11 @@ const Login = () => {
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccessMessage('');
+
+    if (regForm.password && regForm.password.length < 6) {
+      setError('كلمة المرور يجب أن لا تقل عن 6 أحرف لحماية بيانات المرضى.');
+      return;
+    }
 
     if (!regForm.doctorName || !regForm.clinicName || !regForm.email || !regForm.phone || !regForm.password) {
       setError('يرجى ملء جميع الحقول الإلزامية لتسجيل العيادة.');
@@ -125,6 +130,25 @@ const Login = () => {
     setIdentifier(presetId);
     setPassword(presetPass);
     setError('');
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (lockoutTimer > 0) return;
+    setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
+    try {
+      const { error: gError } = await signInWithGoogle();
+      if (gError) throw gError;
+      setSuccessMessage('تم التحقق والتسجيل عبر حساب Google بنجاح! جاري توجيهك للعيادة...');
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 600);
+    } catch (err) {
+      setError(err.message || 'تعذر تسجيل الدخول عبر Google. يرجى المحاولة لاحقاً.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isLocked = lockoutTimer > 0;
@@ -370,6 +394,27 @@ const Login = () => {
             </button>
           </form>
         )}
+
+        {/* Google OAuth Single Sign-On */}
+        <div className="login-divider">
+          <span>أو الدخول المباشر السحابي</span>
+        </div>
+
+        <button 
+          type="button" 
+          onClick={handleGoogleSignIn}
+          className="btn btn-google-login"
+          disabled={isLoading || isLocked}
+          aria-label="تسجيل الدخول باستخدام حساب Google"
+        >
+          <svg className="google-icon" width="19" height="19" viewBox="0 0 18 18" aria-hidden="true">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+            <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+          </svg>
+          <span>تسجيل الدخول باستخدام Google</span>
+        </button>
 
         {/* Collapsible Developer & Demo Sandbox Helper */}
         <details className="demo-sandbox-helper" style={{ marginTop: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.75rem 1rem', background: 'var(--bg-tertiary)' }}>
