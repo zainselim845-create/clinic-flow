@@ -2,13 +2,18 @@ const memoryStore = new Map();
 
 function parseStoredValue(val, defaultValue) {
   if (val === null || val === undefined) return defaultValue;
-  if (defaultValue !== null && typeof defaultValue === 'object') {
-    if (typeof val !== 'string') return val;
-    try {
-      const parsed = JSON.parse(val);
-      return parsed !== null && parsed !== undefined ? parsed : defaultValue;
-    } catch {
-      return defaultValue;
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    const shouldTryJson = (defaultValue !== null && typeof defaultValue === 'object') ||
+      (defaultValue === null && (trimmed.startsWith('{') || trimmed.startsWith('[')));
+
+    if (shouldTryJson) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return parsed !== null && parsed !== undefined ? parsed : defaultValue;
+      } catch {
+        return defaultValue;
+      }
     }
   }
   return val;

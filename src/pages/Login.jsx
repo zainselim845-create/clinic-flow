@@ -180,6 +180,8 @@ const Login = () => {
               <label className="form-label" htmlFor="identifier">البريد الإلكتروني أو رقم الهاتف</label>
               <input
                 id="identifier"
+                name="identifier"
+                aria-label="البريد الإلكتروني أو رقم الهاتف"
                 type="text"
                 className="form-control"
                 placeholder="name@clinic.com / 010XXXXXXXX"
@@ -197,6 +199,8 @@ const Login = () => {
               <div className="password-input-wrapper">
                 <input
                   id="password"
+                  name="password"
+                  aria-label="كلمة المرور"
                   type={showPassword ? "text" : "password"}
                   className="form-control"
                   placeholder="••••••••"
@@ -238,8 +242,11 @@ const Login = () => {
         {activeTab === 'register' && (
           <form onSubmit={handleRegisterSubmit} className="login-form">
             <div className="form-group">
-              <label className="form-label">اسم الطبيب الكامل *</label>
+              <label className="form-label" htmlFor="regDoctorName">اسم الطبيب الكامل *</label>
               <input 
+                id="regDoctorName"
+                name="doctorName"
+                aria-label="اسم الطبيب الكامل"
                 type="text" 
                 className="form-control" 
                 placeholder="د. محمد عبد الرحمن"
@@ -251,8 +258,11 @@ const Login = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">اسم العيادة أو المركز الطبي *</label>
+              <label className="form-label" htmlFor="regClinicName">اسم العيادة أو المركز الطبي *</label>
               <input 
+                id="regClinicName"
+                name="clinicName"
+                aria-label="اسم العيادة أو المركز الطبي"
                 type="text" 
                 className="form-control" 
                 placeholder="عيادة الشروق لطب الأسنان"
@@ -264,8 +274,11 @@ const Login = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">التخصص السريري للعيادة *</label>
+              <label className="form-label" htmlFor="regSpecialty">التخصص السريري للعيادة *</label>
               <select
+                id="regSpecialty"
+                name="specialty"
+                aria-label="التخصص السريري للعيادة"
                 className="form-control"
                 value={regForm.specialty}
                 onChange={(e) => setRegForm({ ...regForm, specialty: e.target.value })}
@@ -283,8 +296,11 @@ const Login = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">رقم الهاتف المحمول (مصر) *</label>
+              <label className="form-label" htmlFor="regPhone">رقم الهاتف المحمول (مصر) *</label>
               <input 
+                id="regPhone"
+                name="phone"
+                aria-label="رقم الهاتف المحمول للمسؤول"
                 type="tel" 
                 className="form-control" 
                 placeholder="010XXXXXXXX"
@@ -297,8 +313,11 @@ const Login = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">البريد الإلكتروني المهني *</label>
+              <label className="form-label" htmlFor="regEmail">البريد الإلكتروني المهني *</label>
               <input 
+                id="regEmail"
+                name="email"
+                aria-label="البريد الإلكتروني المهني"
                 type="email" 
                 className="form-control" 
                 placeholder="doctor@myclinic.com"
@@ -311,9 +330,12 @@ const Login = () => {
             </div>
 
             <div className="form-group relative">
-              <label className="form-label">كلمة المرور للحساب *</label>
+              <label className="form-label" htmlFor="regPassword">كلمة المرور للحساب *</label>
               <div className="password-input-wrapper">
                 <input 
+                  id="regPassword"
+                  name="password"
+                  aria-label="كلمة المرور للحساب"
                   type={showPassword ? "text" : "password"} 
                   className="form-control" 
                   placeholder="لا تقل عن 6 أحرف"

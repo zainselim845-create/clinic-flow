@@ -15,14 +15,20 @@ export class RateLimiter {
     const now = Date.now();
     let bucket = this.memoryBuckets.get(key);
 
-    if (!bucket) {
-      const stored = safeStorage.getItem(`${RATE_LIMIT_PREFIX}${key}`, null);
-      bucket = stored || { timestamps: [] };
+    if (!bucket || typeof bucket !== 'object') {
+      const stored = safeStorage.getItem(`${RATE_LIMIT_PREFIX}${key}`, { timestamps: [] });
+      bucket = (stored && typeof stored === 'object' && Array.isArray(stored.timestamps))
+        ? stored
+        : { timestamps: [] };
       this.memoryBuckets.set(key, bucket);
     }
 
+    if (!Array.isArray(bucket.timestamps)) {
+      bucket.timestamps = [];
+    }
+
     // Prune timestamps older than 1 hour to prevent memory bloat
-    bucket.timestamps = (bucket.timestamps || []).filter(ts => now - ts < 3600000);
+    bucket.timestamps = bucket.timestamps.filter(ts => typeof ts === 'number' && now - ts < 3600000);
     return bucket;
   }
 

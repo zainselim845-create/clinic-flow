@@ -512,6 +512,108 @@
   gap: 0.5rem;
 }
 
+/* Confirmed Ticket Action Buttons - 8pt Grid & Touch-Friendly */
+.nebras-actions-row {
+  display: flex;
+  gap: 0.75rem; /* 12px */
+  margin-top: 1.5rem; /* 24px */
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .nebras-actions-row {
+    flex-direction: column;
+    gap: 0.5rem; /* 8px */
+  }
+}
+
+.nebras-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem; /* 8px */
+  min-height: 48px;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.nebras-action-btn.sms {
+  background: #059669;
+  color: #FFFFFF !important;
+  border: 1px solid #047857;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+
+.nebras-action-btn.sms:hover {
+  background: #047857;
+  transform: scale(1.02);
+}
+
+.nebras-action-btn.calendar {
+  background: var(--bg-surface-secondary, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color);
+}
+
+.nebras-action-btn.calendar:hover {
+  background: var(--bg-hover);
+  border-color: var(--primary);
+  transform: scale(1.02);
+}
+
+.nebras-success-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem; /* 12px */
+  margin-top: 1.25rem; /* 20px */
+  padding-top: 1rem; /* 16px */
+  border-top: 1px dashed var(--border-subtle);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.nebras-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 40px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.84rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.nebras-link-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--primary);
+}
+
+.nebras-link-btn.secondary {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-tertiary);
+}
+
+.nebras-link-btn.secondary:hover {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+}
+
 /* 4. Footer */
 .nebras-footer {
   text-align: center;

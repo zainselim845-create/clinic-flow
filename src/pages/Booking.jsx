@@ -926,11 +926,13 @@ const Booking = () => {
               <form onSubmit={handlePhoneSubmit} className="nebras-search-form">
                 
                 <div className="nebras-input-group">
-                  <label className="nebras-label">رقم الهاتف المحمول (مصر) *</label>
+                  <label htmlFor="SearchPhoneNumber" className="nebras-label">رقم الهاتف المحمول (مصر) *</label>
                   <div className="nebras-input-wrap">
                     <input 
                       type="tel"
                       id="SearchPhoneNumber"
+                      name="phone"
+                      aria-label="رقم الهاتف المحمول للمريض"
                       className={`nebras-input ${phoneError ? 'error-border' : ''}`}
                       placeholder="01012345678"
                       dir="ltr"
@@ -1049,9 +1051,12 @@ const Booking = () => {
 
                     <div className="nebras-form-grid">
                       <div className="nebras-input-group">
-                        <label className="nebras-label">الاسم بالكامل (الاسم الثلاثي) *</label>
+                        <label htmlFor="patientFullName" className="nebras-label">الاسم بالكامل (الاسم الثلاثي) *</label>
                         <input 
                           type="text" 
+                          id="patientFullName"
+                          name="fullName"
+                          aria-label="الاسم بالكامل"
                           className="nebras-input"
                           placeholder="أدخل اسمك الثلاثي"
                           value={formData.name}
@@ -1063,9 +1068,12 @@ const Booking = () => {
 
                       <div className="nebras-row-2">
                         <div className="nebras-input-group">
-                          <label className="nebras-label">السن (العمر)</label>
+                          <label htmlFor="patientAge" className="nebras-label">السن (العمر)</label>
                           <input 
                             type="number" 
+                            id="patientAge"
+                            name="age"
+                            aria-label="السن"
                             className="nebras-input"
                             placeholder="مثال: 30"
                             value={formData.age}
@@ -1075,8 +1083,11 @@ const Booking = () => {
                           />
                         </div>
                         <div className="nebras-input-group">
-                          <label className="nebras-label">النوع</label>
+                          <label htmlFor="patientGender" className="nebras-label">النوع</label>
                           <select 
+                            id="patientGender"
+                            name="gender"
+                            aria-label="النوع"
                             className="nebras-input nebras-select"
                             value={formData.gender}
                             onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
@@ -1094,9 +1105,12 @@ const Booking = () => {
                 {/* SERVICE SELECTION                                         */}
                 {/* --------------------------------------------------------- */}
                 <div className="nebras-section">
-                  <h5 className="nebras-section-heading">الخدمة الطبية المطلوبة</h5>
+                  <label htmlFor="patientService" className="nebras-section-heading">الخدمة الطبية المطلوبة</label>
                   <div className="nebras-input-group">
                     <select 
+                      id="patientService"
+                      name="service"
+                      aria-label="الخدمة الطبية المطلوبة"
                       className="nebras-input nebras-select"
                       value={formData.type}
                       onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
@@ -1158,8 +1172,11 @@ const Booking = () => {
                 {/* NOTES & SUBMIT                                            */}
                 {/* --------------------------------------------------------- */}
                 <div className="nebras-section">
-                  <h5 className="nebras-section-heading">ملاحظات إضافية (اختياري)</h5>
+                  <label htmlFor="bookingNotes" className="nebras-section-heading">ملاحظات إضافية (اختياري)</label>
                   <textarea 
+                    id="bookingNotes"
+                    name="notes"
+                    aria-label="ملاحظات إضافية للكشف"
                     className="nebras-input nebras-textarea"
                     rows="2"
                     placeholder="اكتب هنا أي تفاصيل أو أعراض ترغب في إبلاغ الطبيب بها مسبقاً..."
