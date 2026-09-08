@@ -38,12 +38,26 @@ a {
 button, input, select, textarea {
   font-family: inherit;
   border: none;
-  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary, #0284c7);
+  outline-offset: 2px;
 }
 
 button {
   cursor: pointer;
   user-select: none;
+  transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* 2. Apple Design Tokens */
