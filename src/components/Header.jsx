@@ -3,6 +3,7 @@ import { Search, Bell, Sun, Moon, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { useTenant } from '../context/TenantContext';
 import GlobalSearchModal from './GlobalSearchModal';
 import TenantSwitcher from './TenantSwitcher';
 import './Header.css';
@@ -10,18 +11,23 @@ import './Header.css';
 const Header = ({ title }) => {
   const { state, toggleTheme } = useApp();
   const { user, clinic, role, signOut } = useAuth();
+  const { tenant } = useTenant();
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
 
-  // Real Logged-in User Identity (syncs live with state.clinicInfo)
-  const displayName = role === 'doctor' 
-    ? (state.clinicInfo?.doctorName || clinic?.doctorName || user?.name || 'د. أحمد الشريف') 
+  // Real Logged-in User Identity (strictly reflects active tenant doctor & specialty)
+  const isDoctor = (user?.role || role || 'doctor') === 'doctor' || role === 'super_admin' || role === 'multi_clinic_owner';
+  const activeDoctorName = tenant?.doctorName || state.clinicInfo?.doctorName || clinic?.doctorName || user?.name || 'د. أحمد الشريف';
+  const activeSpecialty = tenant?.specialty || state.clinicInfo?.specialty || clinic?.specialty || user?.jobTitle || 'المدير الطبي';
+
+  const displayName = isDoctor 
+    ? activeDoctorName 
     : (user?.name || 'موظف الاستقبال');
-  const displayRole = role === 'doctor' 
-    ? (state.clinicInfo?.specialty || clinic?.specialty || user?.jobTitle || 'المدير الطبي') 
+  const displayRole = isDoctor 
+    ? activeSpecialty 
     : (user?.jobTitle || user?.role || 'سكرتارية العيادة');
-  const initial = displayName.charAt(0) || (role === 'doctor' ? 'د' : 'س');
+  const initial = displayName.replace(/^د\.?\s*/, '').charAt(0) || displayName.charAt(0) || (isDoctor ? 'د' : 'س');
 
 
   const handleLogout = async () => {

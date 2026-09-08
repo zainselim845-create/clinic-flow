@@ -35,7 +35,10 @@ const Dashboard = () => {
   const [copiedBookingLink, setCopiedBookingLink] = useState(false);
 
   const handleCopyBookingLink = () => {
-    const url = `${window.location.origin}/booking`;
+    const origin = window.location.origin;
+    const url = state.clinicInfo?.slug 
+      ? `${origin}/c/${state.clinicInfo.slug}/booking`
+      : `${origin}/booking`;
     navigator.clipboard.writeText(url);
     setCopiedBookingLink(true);
     setTimeout(() => setCopiedBookingLink(false), 2500);

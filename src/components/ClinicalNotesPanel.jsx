@@ -4,7 +4,7 @@ import { Plus, Trash2, FileText, CheckCircle2, User, Clock } from 'lucide-react'
 
 import './ClinicalNotesPanel.css';
 
-const ClinicalNotesPanel = ({ patientId, doctorName = 'د. أحمد الشريف', notes = [], onNotesUpdate }) => {
+const ClinicalNotesPanel = ({ patientId, doctorName = 'الطبيب المعالج', notes = [], onNotesUpdate }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [chiefComplaint, setChiefComplaint] = useState('');
   const [diagnosis, setDiagnosis] = useState('');

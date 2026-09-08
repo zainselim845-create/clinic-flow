@@ -49,7 +49,7 @@ export function toDbInvoice(data) {
   };
 }
 
-export async function getInvoices(clinicId) {
+export async function getInvoices(clinicId, { limit = 200 } = {}) {
   if (!isSupabaseConfigured()) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
@@ -58,7 +58,8 @@ export async function getInvoices(clinicId) {
     let query = supabase
       .from('invoices')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (clinicId) query = query.eq('clinic_id', clinicId);
 
@@ -68,6 +69,44 @@ export async function getInvoices(clinicId) {
   } catch (error) {
     console.error('Error fetching invoices:', error);
     return { data: [], error };
+  }
+}
+
+/**
+ * Get paginated invoices for high scale (1M+ financial records)
+ */
+export async function getInvoicesPaginated({ clinicId, page = 1, pageSize = 25, paymentStatus = null } = {}) {
+  if (!isSupabaseConfigured()) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: NOT_CONFIGURED_ERROR };
+  }
+
+  try {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from('invoices')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (clinicId) query = query.eq('clinic_id', clinicId);
+    if (paymentStatus) query = query.eq('payment_status', paymentStatus);
+
+    const { data, count, error } = await query;
+    if (error) throw error;
+
+    return {
+      data: (data || []).map(fromDbInvoice),
+      total: count || 0,
+      page,
+      pageSize,
+      totalPages: Math.ceil((count || 0) / pageSize) || 1,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error fetching paginated invoices:', error);
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error };
   }
 }
 

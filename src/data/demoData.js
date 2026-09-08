@@ -73,7 +73,8 @@ export const demoClinics = [
     branding: {
       primaryColor: '#0071E3',
       accentColor: '#10B981',
-      badgeText: 'مركز الأسنان والابتسامة'
+      badgeText: 'مركز الأسنان والابتسامة',
+      brandTitle: 'كلينيك فلو دنتال'
     },
     quotas: {
       maxDoctors: 3,
@@ -101,7 +102,8 @@ export const demoClinics = [
     branding: {
       primaryColor: '#8B5CF6',
       accentColor: '#EC4899',
-      badgeText: 'مركز الجلدية والتجميل'
+      badgeText: 'مركز الجلدية والتجميل',
+      brandTitle: 'كلينيك فلو ديرما'
     },
     quotas: {
       maxDoctors: 10,
@@ -661,14 +663,234 @@ export const weeklyStats = [
   { day: 'الجمعة', visits: 0, newPatients: 0 }
 ];
 
-export const getInitialData = () => ({
-  patients,
-  appointments,
-  invoices,
-  expenses,
-  recalls,
-  notifications,
-  blockedSlots,
-  staffMembers,
-  clinicInfo
-});
+// =========================================================================
+// Dermatology Clinic (Dr. Sara) Dedicated Scoped Seed Dataset
+// =========================================================================
+export const drSaraPatients = [
+  {
+    id: 'pat-sara-1',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    name: 'نورهان عبد الله الشامي',
+    phone: '01011223344',
+    age: '27',
+    gender: 'أنثى',
+    bloodType: 'A+',
+    diagnosis: 'ندبات وآثار حب الشباب بالوجه — خطة فراكشنال ليزر',
+    notes: 'تم عمل اختبار حساسية للبشرة، استجابة ممتازة للفراكشنال ليزر',
+    lastVisit: '2026-09-01',
+    visitsCount: 3,
+    totalVisits: 3,
+    createdAt: '2026-06-15T10:00:00Z'
+  },
+  {
+    id: 'pat-sara-2',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    name: 'ياسمين الشاذلي إبراهيم',
+    phone: '01122334455',
+    age: '35',
+    gender: 'أنثى',
+    bloodType: 'O+',
+    diagnosis: 'تجاعيد تعبيرية بالجبهة وحول العينين — حقن بوتوكس',
+    notes: 'تم حقن 35 وحدة بوتوكس أليرجان، تحديد موعد رتوش بعد أسبوعين',
+    lastVisit: '2026-08-25',
+    visitsCount: 2,
+    totalVisits: 2,
+    createdAt: '2026-07-20T11:30:00Z'
+  },
+  {
+    id: 'pat-sara-3',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    name: 'هدى مصطفى منصور',
+    phone: '01233445566',
+    age: '42',
+    gender: 'أنثى',
+    bloodType: 'B+',
+    diagnosis: 'تساقط شعر كربي وتراجع كثافة مقدمة الرأس',
+    notes: 'بدء كورس بلازما PRP مع فيتامينات ميزوثيرابي',
+    lastVisit: '2026-09-03',
+    visitsCount: 4,
+    totalVisits: 4,
+    createdAt: '2026-05-10T14:00:00Z'
+  },
+  {
+    id: 'pat-sara-4',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    name: 'كريم أشرف عبد العزيز',
+    phone: '01555667788',
+    age: '31',
+    gender: 'ذكر',
+    bloodType: 'A-',
+    diagnosis: 'تصبغات جلدية شمسية وآثار حروق سطحية',
+    notes: 'جلسة تقشير كيميائي سطحي وجلسة ليزر كربوني',
+    lastVisit: '2026-08-18',
+    visitsCount: 1,
+    totalVisits: 1,
+    createdAt: '2026-08-18T16:00:00Z'
+  }
+];
+
+export const drSaraAppointments = [
+  {
+    id: 'appt-sara-1',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    patientId: 'pat-sara-1',
+    patientName: 'نورهان عبد الله الشامي',
+    patientPhone: '01011223344',
+    date: '2026-09-08',
+    time: '02:00 م',
+    type: 'جلسة فراكشنال ليزر',
+    fee: '1200 ج.م',
+    status: 'in_progress',
+    checkedInAt: '2026-09-08T11:45:00Z',
+    consultationStartedAt: '2026-09-08T12:00:00Z',
+    notes: 'الجلسة الثالثة لكورس فراكشنال ليزر الوجه',
+    reminderSent: true,
+    doctorName: 'د. سارة محمود'
+  },
+  {
+    id: 'appt-sara-2',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    patientId: 'pat-sara-2',
+    patientName: 'ياسمين الشاذلي إبراهيم',
+    patientPhone: '01122334455',
+    date: '2026-09-08',
+    time: '03:00 م',
+    type: 'جلسة حقن بوتوكس',
+    fee: '2500 ج.م',
+    status: 'waiting',
+    checkedInAt: '2026-09-08T12:15:00Z',
+    notes: 'رتوش ومراجعة نتيجة حقن البوتوكس',
+    reminderSent: true,
+    doctorName: 'د. سارة محمود'
+  },
+  {
+    id: 'appt-sara-3',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    patientId: 'pat-sara-3',
+    patientName: 'هدى مصطفى منصور',
+    patientPhone: '01233445566',
+    date: '2026-09-08',
+    time: '04:30 م',
+    type: 'كشف واستشارة جلدية',
+    fee: '500 ج.م',
+    status: 'upcoming',
+    notes: 'فحص مجهري لبصيلات الشعر ومتابعة كورس العلاج',
+    reminderSent: false,
+    doctorName: 'د. سارة محمود'
+  }
+];
+
+export const drSaraInvoices = [
+  {
+    id: 'inv-sara-1',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    invoiceNumber: 'INV-DERM-001',
+    patientId: 'pat-sara-2',
+    patientName: 'ياسمين الشاذلي إبراهيم',
+    patientPhone: '01122334455',
+    date: '2026-09-08',
+    total: 2500,
+    paidAmount: 2500,
+    remainingBalance: 0,
+    paymentStatus: 'paid',
+    paymentMethod: 'visa',
+    doctorName: 'د. سارة محمود',
+    notes: 'جلسة بوتوكس كاملة مع ضمان الرتوش',
+    createdAt: '2026-09-08T11:00:00Z'
+  },
+  {
+    id: 'inv-sara-2',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    invoiceNumber: 'INV-DERM-002',
+    patientId: 'pat-sara-1',
+    patientName: 'نورهان عبد الله الشامي',
+    patientPhone: '01011223344',
+    date: '2026-09-08',
+    total: 1200,
+    paidAmount: 1200,
+    remainingBalance: 0,
+    paymentStatus: 'paid',
+    paymentMethod: 'cash',
+    doctorName: 'د. سارة محمود',
+    notes: 'جلسة فراكشنال ليزر للوجه والرقبة',
+    createdAt: '2026-09-08T11:45:00Z'
+  }
+];
+
+export const drSaraExpenses = [
+  { id: 'exp-sara-1', title: 'توريد خراطيش ليزر أصلية من وكيل كانديلا', category: 'مستلزمات وأدوية', amount: 4500, date: '2026-09-02', paidTo: 'الشركة الدولية للأجهزة الطبية والليزرات', notes: 'خراطيش كانديلا جنتل برو' },
+  { id: 'exp-sara-2', title: 'شراء أمبولات بوتوكس وديسبورت معتمدة', category: 'مستلزمات وأدوية', amount: 9200, date: '2026-09-01', paidTo: 'مستودع الأدوية المعتمد', notes: 'فاتورة رسمية تشمل ضريبة القيمة المضافة' },
+  { id: 'exp-sara-3', title: 'إيجار مقر عيادة التجمع الخامس ميديكال سنتر 2', category: 'إيجار ومرافق', amount: 14000, date: '2026-09-01', paidTo: 'إدارة ميديكال سنتر 2', notes: 'إيجار شهر سبتمبر 2026' }
+];
+
+export const drSaraRecalls = [
+  { id: 'rec-sara-1', patientId: 'pat-sara-2', patientName: 'ياسمين الشاذلي إبراهيم', patientPhone: '01122334455', reason: 'جلسة رتوش البوتوكس المجانية (أسبوعين)', dueDate: '2026-09-22', status: 'pending' },
+  { id: 'rec-sara-2', patientId: 'pat-sara-1', patientName: 'نورهان عبد الله الشامي', patientPhone: '01011223344', reason: 'جلسة الفراكشنال ليزر الرابعة (بعد 4 أسابيع)', dueDate: '2026-10-06', status: 'pending' }
+];
+
+export const drSaraNotifications = [
+  { id: 'notif-sara-1', title: 'حجز جلسة ليزر جديدة', message: 'تم حجز جلسة فراكشنال ليزر للمريضة نورهان عبد الله.', time: 'منذ 10 دقائق', read: false, type: 'booking' },
+  { id: 'notif-sara-2', title: 'استحقاق رتوش بوتوكس', message: 'حان موعد رتوش البوتوكس للمريضة ياسمين الشاذلي.', time: 'منذ ساعتين', read: true, type: 'recall' }
+];
+
+export const drSaraBlockedSlots = [
+  { id: 'blk-sara-1', date: '2026-09-10', time: 'FULL_DAY', isFullDay: true, reason: 'مؤتمر الجمعية المصرية لأطباء الجلدية والتجميل' }
+];
+
+export const drSaraStaffMembers = [
+  {
+    id: 'staff-sara-1',
+    clinicId: '550e8400-e29b-41d4-a716-446655440099',
+    clinicSlug: 'dr-sara',
+    allowedClinics: ['dr-sara'],
+    name: 'مريم سمير (منسقة عيادة الجلدية)',
+    email: 'mariam@sara-clinic.com',
+    phone: '01198765432',
+    password: '123',
+    role: 'منسقة عيادة التجميل',
+    shift: 'صباحي/مسائي (01:00 م - 08:00 م)',
+    status: 'active',
+    permissions: ['appointments', 'patients', 'invoices', 'inventory', 'sms'],
+    createdAt: '2026-02-01'
+  }
+];
+
+export const getInitialDataForTenant = (tenantOrSlug) => {
+  const slug = typeof tenantOrSlug === 'string'
+    ? tenantOrSlug
+    : (tenantOrSlug?.slug || 'dr-ahmed');
+  const targetId = typeof tenantOrSlug === 'object' ? tenantOrSlug?.id : null;
+
+  if (slug === 'dr-sara' || targetId === '550e8400-e29b-41d4-a716-446655440099') {
+    const saraClinic = demoClinics.find(c => c.slug === 'dr-sara') || demoClinics[1];
+    return {
+      patients: drSaraPatients,
+      appointments: drSaraAppointments,
+      invoices: drSaraInvoices,
+      expenses: drSaraExpenses,
+      recalls: drSaraRecalls,
+      notifications: drSaraNotifications,
+      blockedSlots: drSaraBlockedSlots,
+      staffMembers: drSaraStaffMembers,
+      clinicInfo: saraClinic
+    };
+  }
+
+  // Default to Dr. Ahmed's clinic (dental)
+  return {
+    patients,
+    appointments,
+    invoices,
+    expenses,
+    recalls,
+    notifications,
+    blockedSlots,
+    staffMembers,
+    clinicInfo: demoClinics[0] || clinicInfo
+  };
+};
+
+export const getInitialData = (tenantOrSlug = 'dr-ahmed') => {
+  return getInitialDataForTenant(tenantOrSlug);
+};
+

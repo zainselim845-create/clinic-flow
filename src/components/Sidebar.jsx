@@ -3,22 +3,35 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, 
   Stethoscope, LogOut, Smartphone, Bot, Receipt, Layers, 
-  Package, UserCheck 
+  Package, UserCheck, Sparkles
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { useTenant } from '../context/TenantContext';
 import { hasPermission } from '../utils/permissions';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const { state, toggleTheme } = useApp();
   const { signOut, user, role } = useAuth();
+  const { tenant } = useTenant();
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
   const isDoctor = (user?.role || role || 'doctor') === 'doctor';
 
-  const clinicSpecialty = state.clinicInfo?.specialty || '';
+  const clinicSpecialty = tenant?.specialty || state.clinicInfo?.specialty || '';
   const isDental = !clinicSpecialty || clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('Dental');
-  const brandTitle = isDental ? 'كلينك فلو دنتال' : 'كلينك فلو ميديكال';
+  const isDerma = clinicSpecialty.includes('جلدية') || clinicSpecialty.includes('تجميل') || clinicSpecialty.includes('ليزر') || clinicSpecialty.includes('Derma');
+
+  let brandTitle = 'كلينيك فلو دنتال';
+  if (isDerma && !isDental) {
+    brandTitle = tenant?.branding?.brandTitle || 'كلينيك فلو ديرما';
+  } else if (!isDental) {
+    brandTitle = tenant?.branding?.brandTitle || tenant?.name || 'كلينيك فلو ميديكال';
+  } else {
+    brandTitle = tenant?.branding?.brandTitle || 'كلينيك فلو دنتال';
+  }
+
+  const LogoIcon = isDerma && !isDental ? Sparkles : Stethoscope;
 
   const handleSignOut = async () => {
     await signOut();
@@ -27,8 +40,14 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="logo-icon-wrap">
-          <Stethoscope size={22} />
+        <div 
+          className="logo-icon-wrap"
+          style={{ 
+            backgroundColor: tenant?.branding?.primaryColor ? `${tenant.branding.primaryColor}1A` : undefined,
+            color: tenant?.branding?.primaryColor || 'var(--primary)'
+          }}
+        >
+          <LogoIcon size={22} />
         </div>
         <h2>{brandTitle}</h2>
       </div>

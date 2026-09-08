@@ -1,13 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTenant } from '../context/TenantContext';
-import { Building2, ChevronDown, Check, ExternalLink, ShieldCheck, Sparkles, Copy, CheckCheck } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { canSwitchTenants, getUserAllowedClinics } from '../utils/permissions';
+import { Building2, ChevronDown, Check, ShieldCheck, Copy, CheckCheck, Lock } from 'lucide-react';
 import './TenantSwitcher.css';
 
 export default function TenantSwitcher() {
   const { tenant, allTenants, switchTenant, tenantSlug } = useTenant();
+  const { user } = useAuth();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [copiedSlug, setCopiedSlug] = useState(null);
   const dropdownRef = useRef(null);
+
+  const canSwitch = canSwitchTenants(user, location.pathname);
+  const allowedTenants = getUserAllowedClinics(user, allTenants);
+  const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true || location.pathname.startsWith('/super-admin');
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -38,13 +47,37 @@ export default function TenantSwitcher() {
     }
   };
 
+  // 1. Single-clinic lock: Regular doctors and receptionists cannot switch or see other clinics
+  if (!canSwitch || allowedTenants.length <= 1) {
+    return (
+      <div className="tenant-switcher-container">
+        <div 
+          className="tenant-switcher-btn tenant-locked" 
+          title="العيادة المصرح بها فقط — حساب أحادي العيادة مقفل أمنياً"
+        >
+          <div className="tenant-avatar-badge" style={{ backgroundColor: tenant?.branding?.primaryColor || 'var(--primary)' }}>
+            <Building2 size={15} color="#FFFFFF" />
+          </div>
+          <div className="tenant-btn-info">
+            <span className="tenant-name-label">{tenant?.name || 'العيادة النشطة'}</span>
+            <span className="tenant-slug-label">/{tenantSlug}</span>
+          </div>
+          <div className="tenant-locked-tag" title="مقفل — حساب عيادة وحيدة">
+            <Lock size={13} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Multi-Clinic Owner / Super Admin Interactive Switcher
   return (
     <div className="tenant-switcher-container" ref={dropdownRef}>
       <button 
         type="button"
         className="tenant-switcher-btn"
         onClick={() => setIsOpen(!isOpen)}
-        title="التبديل بين العيادات المشتركة"
+        title="التبديل بين العيادات المشتركة المصرح بها"
       >
         <div className="tenant-avatar-badge" style={{ backgroundColor: tenant?.branding?.primaryColor || 'var(--primary)' }}>
           <Building2 size={15} color="#FFFFFF" />
@@ -59,12 +92,12 @@ export default function TenantSwitcher() {
       {isOpen && (
         <div className="tenant-dropdown-menu">
           <div className="tenant-dropdown-header">
-            <span>العيادات والمراكز المسجلة ({allTenants.length})</span>
-            <span className="saas-badge">Multi-Tenant SaaS</span>
+            <span>العيادات المصرح بها ({allowedTenants.length})</span>
+            <span className="saas-badge">{isSuperAdmin ? 'Super Admin Control' : 'Multi-Clinic Owner'}</span>
           </div>
 
           <div className="tenant-list">
-            {allTenants.map((item) => {
+            {allowedTenants.map((item) => {
               const isSelected = item.slug === tenantSlug;
               return (
                 <div 
@@ -117,14 +150,17 @@ export default function TenantSwitcher() {
             })}
           </div>
 
-          <div className="tenant-dropdown-footer">
-            <a href="/super-admin" className="super-admin-link">
-              <ShieldCheck size={14} />
-              <span>لوحة مالك المنصة (Super Admin Portal)</span>
-            </a>
-          </div>
+          {isSuperAdmin && (
+            <div className="tenant-dropdown-footer">
+              <a href="/super-admin" className="super-admin-link">
+                <ShieldCheck size={14} />
+                <span>لوحة مالك المنصة (Super Admin Portal)</span>
+              </a>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
+

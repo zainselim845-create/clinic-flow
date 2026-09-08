@@ -78,7 +78,11 @@ export async function getAppointments(clinicId, filters = {}) {
       query = query.eq('date', filters.date);
     }
 
-    const { data, error } = await query.order('date', { ascending: true }).order('time', { ascending: true });
+    const limit = filters.limit || 300;
+    const { data, error } = await query
+      .order('date', { ascending: true })
+      .order('time', { ascending: true })
+      .limit(limit);
 
     if (error) throw error;
     return { data: (data || []).map(fromDbAppointment), error: null };
@@ -236,3 +240,44 @@ export async function markReminderSent(id) {
     return { data: null, error };
   }
 }
+
+/**
+ * Get paginated appointments for enterprise scale (1M+ rows)
+ */
+export async function getAppointmentsPaginated({ clinicId, page = 1, pageSize = 25, date = null, status = null } = {}) {
+  if (!isSupabaseConfigured()) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: NOT_CONFIGURED_ERROR };
+  }
+
+  try {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from('appointments')
+      .select('*', { count: 'exact' })
+      .order('date', { ascending: false })
+      .order('time', { ascending: true })
+      .range(from, to);
+
+    if (clinicId) query = query.eq('clinic_id', clinicId);
+    if (date) query = query.eq('date', date);
+    if (status) query = query.eq('status', status);
+
+    const { data, count, error } = await query;
+    if (error) throw error;
+
+    return {
+      data: (data || []).map(fromDbAppointment),
+      total: count || 0,
+      page,
+      pageSize,
+      totalPages: Math.ceil((count || 0) / pageSize) || 1,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error fetching paginated appointments:', error);
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error };
+  }
+}
+

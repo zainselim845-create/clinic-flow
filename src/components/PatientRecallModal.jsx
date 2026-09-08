@@ -94,12 +94,13 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
   };
 
   const generateSmsRecallUrl = (recall) => {
-    const clinicName = state.clinicInfo?.name || 'عيادة د. أحمد الشريف';
+    const clinicName = state.clinicInfo?.name || 'العيادة التخصصية';
     const doctorPhone = state.clinicInfo?.phone || '01006285031';
     const cleanPhone = (recall.patientPhone || '').replace(/\D/g, '');
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow.com';
+    const bookingPath = state.clinicInfo?.slug ? `/c/${state.clinicInfo.slug}/booking` : '/booking';
     
-    const message = `مرحباً أستاذ/ة ${recall.patientName}،\nنود تذكيركم بموعدكم الدوري لمتابعة [${recall.reason}] لدى ${clinicName}.\n\nللحجز وتأكيد الموعد المناسب لكم: ${origin}/booking\nأو الاتصال على: ${doctorPhone}\nنتمنى لكم دوام الصحة والعافية.`;
+    const message = `مرحباً أستاذ/ة ${recall.patientName}،\nنود تذكيركم بموعدكم الدوري لمتابعة [${recall.reason}] لدى ${clinicName}.\n\nللحجز وتأكيد الموعد المناسب لكم: ${origin}${bookingPath}\nأو الاتصال على: ${doctorPhone}\nنتمنى لكم دوام الصحة والعافية.`;
     
     return `sms:+2${cleanPhone}?body=${encodeURIComponent(message)}`;
   };

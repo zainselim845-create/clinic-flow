@@ -1,5 +1,6 @@
 import React from 'react';
 import { Phone, Calendar, Hash, MessageCircle } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import './PatientCard.css';
 
 const formatLastVisit = (dateStr) => {
@@ -9,16 +10,18 @@ const formatLastVisit = (dateStr) => {
 };
 
 const PatientCard = ({ patient, onClick }) => {
+  const { state } = useApp();
   if (!patient) return null;
 
   const name = patient.name || 'مريض بدون اسم';
   const initials = name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('') || 'م';
+  const clinicName = state.clinicInfo?.name || 'العيادة';
 
   const handleSendSms = (e) => {
     e.stopPropagation();
     if (!patient.phone) return;
     const cleanPhone = (patient.phone || '').replace(/^0/, '20').replace(/\D/g, '');
-    window.open(`sms:+${cleanPhone}?body=${encodeURIComponent(`مرحباً أ/ ${name}، نتواصل معك من عيادة د. أحمد الشريف`)}`, '_self');
+    window.open(`sms:+${cleanPhone}?body=${encodeURIComponent(`مرحباً أ/ ${name}، نتواصل معك من ${clinicName}`)}`, '_self');
   };
 
   return (

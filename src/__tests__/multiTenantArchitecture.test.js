@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { demoClinics, clinicInfo } from '../data/demoData';
+import { demoClinics, clinicInfo, getInitialDataForTenant } from '../data/demoData';
+import { canSwitchTenants, getUserAllowedClinics } from '../utils/permissions';
 import fs from 'fs';
 import path from 'path';
 
@@ -172,6 +173,140 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
       expect(content).toContain('platform_audit_logs');
       expect(content).toContain('tenant_usage_records');
       expect(content).toContain('ENABLE ROW LEVEL SECURITY');
+    });
+  });
+
+  describe('6. Tenant Switching Authorization & Role Lockdown', () => {
+    it('locks tenant switching for regular single-clinic doctors and staff', () => {
+      const singleDoctor = {
+        id: 'doc-1',
+        role: 'doctor',
+        clinicSlug: 'dr-ahmed',
+        allowedClinics: ['dr-ahmed']
+      };
+      expect(canSwitchTenants(singleDoctor)).toBe(false);
+
+      const receptionist = {
+        id: 'rec-1',
+        role: 'receptionist',
+        clinicSlug: 'dr-sara',
+        allowedClinics: ['dr-sara']
+      };
+      expect(canSwitchTenants(receptionist)).toBe(false);
+    });
+
+    it('permits tenant switching for multi-clinic owners and super admins', () => {
+      const owner = {
+        id: 'owner-1',
+        role: 'multi_clinic_owner',
+        allowedClinics: ['dr-ahmed', 'dr-sara']
+      };
+      expect(canSwitchTenants(owner)).toBe(true);
+
+      const superAdmin = {
+        id: 'admin-1',
+        role: 'super_admin',
+        allowedClinics: ['*']
+      };
+      expect(canSwitchTenants(superAdmin)).toBe(true);
+      expect(canSwitchTenants(null, '/super-admin/overview')).toBe(true);
+    });
+
+    it('getUserAllowedClinics restricts clinic list to authorized scopes only', () => {
+      const singleDoctor = {
+        id: 'doc-1',
+        role: 'doctor',
+        clinicSlug: 'dr-sara',
+        allowedClinics: ['dr-sara']
+      };
+      const allowed = getUserAllowedClinics(singleDoctor, demoClinics);
+      expect(allowed.length).toBe(1);
+      expect(allowed[0].slug).toBe('dr-sara');
+
+      const superAdmin = {
+        id: 'admin-1',
+        role: 'super_admin'
+      };
+      const adminAllowed = getUserAllowedClinics(superAdmin, demoClinics);
+      expect(adminAllowed.length).toBe(demoClinics.length);
+    });
+  });
+
+  describe('7. Scoped Tenant Initial Data Isolation & Dynamic Branding', () => {
+    it('returns isolated dental dataset with dental branding for dr-ahmed', () => {
+      const data = getInitialDataForTenant('dr-ahmed');
+      expect(data.clinicInfo.slug).toBe('dr-ahmed');
+      expect(data.clinicInfo.specialty).toContain('أسنان');
+      expect(data.clinicInfo.branding.brandTitle).toBe('كلينيك فلو دنتال');
+      expect(data.patients.length).toBeGreaterThan(0);
+      expect(data.appointments.length).toBeGreaterThan(0);
+
+      // Verify appointments belong to Dr. Ahmed
+      const hasAhmedAppointments = data.appointments.some(a => a.doctorName?.includes('أحمد') || a.service?.includes('أسنان') || a.service?.includes('عصب'));
+      expect(hasAhmedAppointments).toBe(true);
+    });
+
+    it('returns isolated dermatology dataset with derma branding for dr-sara', () => {
+      const data = getInitialDataForTenant('dr-sara');
+      expect(data.clinicInfo.slug).toBe('dr-sara');
+      expect(data.clinicInfo.specialty).toContain('جلدية');
+      expect(data.clinicInfo.branding.brandTitle).toBe('كلينيك فلو ديرما');
+      expect(data.patients.length).toBeGreaterThan(0);
+      expect(data.appointments.length).toBeGreaterThan(0);
+
+      // Verify appointments belong to Dr. Sara and dermatology treatments
+      const hasSaraAppointments = data.appointments.some(a => a.doctorName?.includes('سارة') || a.service?.includes('ليزر') || a.service?.includes('جلدية') || a.service?.includes('بوتوكس'));
+      expect(hasSaraAppointments).toBe(true);
+    });
+
+    it('guarantees complete patient and appointment isolation between clinics', () => {
+      const ahmedData = getInitialDataForTenant('dr-ahmed');
+      const saraData = getInitialDataForTenant('dr-sara');
+
+      const ahmedPatientIds = new Set(ahmedData.patients.map(p => p.id));
+      const saraPatientIds = new Set(saraData.patients.map(p => p.id));
+
+      // No patient ID overlap between tenants
+      for (const id of saraPatientIds) {
+        expect(ahmedPatientIds.has(id)).toBe(false);
+      }
+
+      const ahmedApptIds = new Set(ahmedData.appointments.map(a => a.id));
+      const saraApptIds = new Set(saraData.appointments.map(a => a.id));
+
+      // No appointment ID overlap between tenants
+      for (const id of saraApptIds) {
+        expect(ahmedApptIds.has(id)).toBe(false);
+      }
+    });
+  });
+
+  describe('8. 1-Million User Database Scaling Schema (Migration 005)', () => {
+    it('migration 005 contains composite indexes and strict RLS policies for high scale', () => {
+      const migrationPath = path.resolve(__dirname, '../../supabase/migrations/005_million_user_scale_and_scoping.sql');
+      const content = fs.readFileSync(migrationPath, 'utf8');
+
+      // Check composite indexes
+      expect(content).toContain('idx_patients_clinic_created');
+      expect(content).toContain('idx_patients_clinic_phone');
+      expect(content).toContain('idx_appointments_clinic_date');
+      expect(content).toContain('idx_appointments_clinic_created');
+      expect(content).toContain('idx_invoices_clinic_created');
+      expect(content).toContain('idx_expenses_clinic_date');
+      expect(content).toContain('idx_recalls_clinic_due');
+
+      // Check essential scale tables
+      expect(content).toContain('CREATE TABLE IF NOT EXISTS invoices');
+      expect(content).toContain('CREATE TABLE IF NOT EXISTS payments');
+      expect(content).toContain('CREATE TABLE IF NOT EXISTS inventory_items');
+
+      // Check RLS policies on key tables
+      expect(content).toContain('ALTER TABLE appointments ENABLE ROW LEVEL SECURITY');
+      expect(content).toContain('ALTER TABLE patients ENABLE ROW LEVEL SECURITY');
+      expect(content).toContain('ALTER TABLE invoices ENABLE ROW LEVEL SECURITY');
+      expect(content).toContain('ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY');
+      expect(content).toContain('get_active_clinic_id()');
+      expect(content).toContain('is_member_of_clinic');
     });
   });
 

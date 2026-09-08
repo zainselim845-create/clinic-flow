@@ -220,7 +220,7 @@ export default function PatientDossierDrawer({
           {activeTab === 'notes' && (
             <ClinicalNotesPanel
               patientId={patientId}
-              doctorName={state.clinicInfo?.doctorName || 'د. أحمد الشريف'}
+              doctorName={state.clinicInfo?.doctorName || 'الطبيب المعالج'}
               notes={clinicalNotes}
               onNotesUpdate={setClinicalNotes}
             />

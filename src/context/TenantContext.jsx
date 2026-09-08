@@ -130,9 +130,24 @@ export const TenantProvider = ({ children }) => {
     loadTenant();
   }, [loadTenant]);
 
-  // 4. Switch Tenant Action (for Doctor / Multi-Clinic Owner)
+  // 4. Switch Tenant Action (for Multi-Clinic Owner / Super Admin)
   const switchTenant = useCallback((slugOrId) => {
-    loadTenant(slugOrId);
+    try {
+      const savedUserStr = sessionStorage.getItem('clinicflow_auth_user');
+      if (savedUserStr) {
+        const currentUser = JSON.parse(savedUserStr);
+        const isSuper = currentUser.role === 'super_admin' || currentUser.isSuperAdmin;
+        const isMulti = currentUser.role === 'multi_clinic_owner' || (Array.isArray(currentUser.allowedClinics) && currentUser.allowedClinics.length > 1);
+        if (!isSuper && !isMulti && Array.isArray(currentUser.allowedClinics) && currentUser.allowedClinics.length === 1) {
+          const allowed = currentUser.allowedClinics[0];
+          if (slugOrId && slugOrId !== allowed && slugOrId !== currentUser.clinicId) {
+            console.warn(`[Tenant Isolation Enforcement] Tenant switch blocked: User is restricted to clinic '${allowed}'`);
+            return false;
+          }
+        }
+      }
+    } catch (_) {}
+    return loadTenant(slugOrId);
   }, [loadTenant]);
 
   // 5. Feature Gating & Quota Checks

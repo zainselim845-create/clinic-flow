@@ -59,7 +59,7 @@ export function toDbPatient(data) {
 /**
  * Get all patients for a clinic
  */
-export async function getPatients(clinicId) {
+export async function getPatients(clinicId, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
@@ -73,6 +73,9 @@ export async function getPatients(clinicId) {
     if (clinicId) {
       query = query.eq('clinic_id', clinicId);
     }
+
+    const limit = options?.limit || 300;
+    query = query.limit(limit);
 
     const { data, error } = await query;
     if (error) throw error;

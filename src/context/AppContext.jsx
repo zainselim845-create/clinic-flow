@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
-import { getInitialData } from '../data/demoData';
+import { getInitialData, getInitialDataForTenant } from '../data/demoData';
+import TenantContext from './TenantContext';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import * as patientsService from '../services/patientsService';
 import * as appointmentsService from '../services/appointmentsService';
@@ -407,40 +408,42 @@ export function AppProvider({ children }) {
   const stateRef = useRef(state);
   const useSupabase = isSupabaseConfigured();
 
+  // Resolve active tenant from TenantContext
+  const tenantContext = useContext(TenantContext);
+  const activeTenant = tenantContext?.tenant;
+  const tenantSlug = tenantContext?.tenantSlug || activeTenant?.slug || 'dr-ahmed';
+  const tenantId = activeTenant?.id || (tenantSlug === 'dr-sara' ? '550e8400-e29b-41d4-a716-446655440099' : '550e8400-e29b-41d4-a716-446655440000');
+
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
   // ==========================================
-  // تحميل البيانات — Supabase أو localStorage
+  // تحميل البيانات بمعزل تام لكل عيادة (Tenant Data Isolation)
   // ==========================================
   useEffect(() => {
+    let isCancelled = false;
+
     const loadData = async () => {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const currentSlug = tenantSlug || 'dr-ahmed';
+      const currentClinicId = tenantId;
+
       if (useSupabase) {
         try {
-          // جلب البيانات من Supabase
+          // جلب البيانات من Supabase مع الفلترة بالعيادة النشطة فقط
           const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, expensesRes, recallsRes] = await Promise.all([
-            patientsService.getPatients(),
-            appointmentsService.getAppointments(),
-            blockedSlotsService.getBlockedSlots(),
-            notificationsService.getNotifications(),
-            staffService.getStaffMembers(),
-            clinicsService.getClinicInfo(),
-            expensesService.getExpenses(),
-            recallsService.getRecalls()
+            patientsService.getPatients(currentClinicId),
+            appointmentsService.getAppointments(currentClinicId),
+            blockedSlotsService.getBlockedSlots(currentClinicId),
+            notificationsService.getNotifications(currentClinicId),
+            staffService.getStaffMembers(currentClinicId),
+            clinicsService.getClinicInfo(currentClinicId),
+            expensesService.getExpenses(currentClinicId),
+            recallsService.getRecalls(currentClinicId)
           ]);
 
-          // Fallback to local storage for expenses/recalls if remote is still empty
-          let fallbackExpenses = [];
-          let fallbackRecalls = [];
-          try {
-            const stored = localStorage.getItem('clinicflow_data');
-            if (stored) {
-              const p = JSON.parse(stored);
-              fallbackExpenses = p.expenses || [];
-              fallbackRecalls = p.recalls || [];
-            }
-          } catch (_) {}
+          if (isCancelled) return;
 
           dispatch({
             type: 'INIT_DATA',
@@ -450,55 +453,68 @@ export function AppProvider({ children }) {
               blockedSlots: blockedRes?.data || [],
               notifications: notifsRes?.data || [],
               staffMembers: staffRes?.data && staffRes.data.length > 0 ? staffRes.data : [],
-              clinicInfo: clinicRes?.data || null,
-              expenses: (expensesRes?.data && expensesRes.data.length > 0) ? expensesRes.data : fallbackExpenses,
-              recalls: (recallsRes?.data && recallsRes.data.length > 0) ? recallsRes.data : fallbackRecalls,
+              clinicInfo: clinicRes?.data || activeTenant || null,
+              expenses: expensesRes?.data || [],
+              recalls: recallsRes?.data || [],
               useSupabase: true
             }
           });
+          return;
         } catch (err) {
-          console.error('Supabase load failed, falling back to localStorage:', err);
-          loadFromLocalStorage();
+          console.error('Supabase scoped load failed, falling back to localStorage:', err);
         }
-      } else {
-        loadFromLocalStorage();
       }
-    };
 
-    const loadFromLocalStorage = () => {
-      const savedData = localStorage.getItem('clinicflow_data');
-      const initial = getInitialData();
+      if (isCancelled) return;
+
+      // وضع الأوفلاين / العرض التجريبي: مفتاح تخزين منفصل ومعزول تماماً لكل عيادة
+      const scopedKey = `clinicflow_data_${currentSlug}`;
+      let savedData = null;
+      try {
+        savedData = localStorage.getItem(scopedKey);
+        // التوافق الرجعي مع الحساب الافتراضي
+        if (!savedData && currentSlug === 'dr-ahmed') {
+          savedData = localStorage.getItem('clinicflow_data');
+        }
+      } catch (_) {}
+
+      const seedData = getInitialDataForTenant(activeTenant || currentSlug);
+
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
           dispatch({ 
             type: 'INIT_DATA', 
             payload: { 
-              patients: (parsed.patients && parsed.patients.length > 0) ? parsed.patients : initial.patients,
-              appointments: (parsed.appointments && parsed.appointments.length > 0) ? parsed.appointments : initial.appointments,
-              notifications: (parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : initial.notifications,
-              blockedSlots: parsed.blockedSlots || initial.blockedSlots,
-              expenses: (parsed.expenses && parsed.expenses.length > 0) ? parsed.expenses : initial.expenses,
-              recalls: (parsed.recalls && parsed.recalls.length > 0) ? parsed.recalls : initial.recalls,
-              staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : initial.staffMembers,
-              clinicInfo: parsed.clinicInfo || initial.clinicInfo,
+              patients: (parsed.patients && parsed.patients.length > 0) ? parsed.patients : seedData.patients,
+              appointments: (parsed.appointments && parsed.appointments.length > 0) ? parsed.appointments : seedData.appointments,
+              notifications: (parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : seedData.notifications,
+              blockedSlots: parsed.blockedSlots || seedData.blockedSlots,
+              expenses: (parsed.expenses && parsed.expenses.length > 0) ? parsed.expenses : seedData.expenses,
+              recalls: (parsed.recalls && parsed.recalls.length > 0) ? parsed.recalls : seedData.recalls,
+              staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : seedData.staffMembers,
+              clinicInfo: activeTenant || parsed.clinicInfo || seedData.clinicInfo,
               useSupabase: false 
             } 
           });
         } catch (err) {
-          console.error('Error loading localStorage:', err);
-          dispatch({ type: 'INIT_DATA', payload: { ...initial, useSupabase: false } });
+          console.error('Error loading scoped localStorage:', err);
+          dispatch({ type: 'INIT_DATA', payload: { ...seedData, clinicInfo: activeTenant || seedData.clinicInfo, useSupabase: false } });
         }
       } else {
-        dispatch({ type: 'INIT_DATA', payload: { ...initial, useSupabase: false } });
+        dispatch({ type: 'INIT_DATA', payload: { ...seedData, clinicInfo: activeTenant || seedData.clinicInfo, useSupabase: false } });
       }
     };
 
     loadData();
-  }, [useSupabase]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [useSupabase, tenantSlug, tenantId, activeTenant]);
 
   // ==========================================
-  // حفظ في localStorage آمن وبدون تجميد (Debounced & Quota-Protected)
+  // حفظ في localStorage معزول لكل عيادة بدون تجميد أو تسريب
   // ==========================================
   const saveTimeoutRef = useRef(null);
 
@@ -511,6 +527,8 @@ export function AppProvider({ children }) {
     }
 
     saveTimeoutRef.current = setTimeout(() => {
+      const currentSlug = tenantSlug || 'dr-ahmed';
+      const scopedKey = `clinicflow_data_${currentSlug}`;
       try {
         const payload = JSON.stringify({
           patients: state.patients,
@@ -522,11 +540,13 @@ export function AppProvider({ children }) {
           expenses: state.expenses,
           recalls: state.recalls
         });
-        localStorage.setItem('clinicflow_data', payload);
+        localStorage.setItem(scopedKey, payload);
+        if (currentSlug === 'dr-ahmed') {
+          localStorage.setItem('clinicflow_data', payload);
+        }
       } catch (err) {
         console.warn('LocalStorage quota warning, executing smart compaction:', err);
         try {
-          // Smart Compaction: prune notifications and archive old completed visits
           const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
           const compactedState = {
             patients: state.patients,
@@ -538,7 +558,10 @@ export function AppProvider({ children }) {
             expenses: state.expenses,
             recalls: state.recalls
           };
-          localStorage.setItem('clinicflow_data', JSON.stringify(compactedState));
+          localStorage.setItem(scopedKey, JSON.stringify(compactedState));
+          if (currentSlug === 'dr-ahmed') {
+            localStorage.setItem('clinicflow_data', JSON.stringify(compactedState));
+          }
         } catch (compactErr) {
           console.error('Fatal LocalStorage quota exceeded, keeping in-memory state:', compactErr);
         }
@@ -560,19 +583,20 @@ export function AppProvider({ children }) {
     state.expenses, 
     state.recalls, 
     useSupabase, 
-    state.isLoading
+    state.isLoading,
+    tenantSlug
   ]);
 
-
   // ==========================================
-  // Supabase Realtime Subscriptions
+  // Supabase Realtime Subscriptions معزولة بمفتاح العيادة فقط
   // ==========================================
   useEffect(() => {
     if (!useSupabase || !supabase) return;
+    const currentClinicId = tenantId;
 
     const channel = supabase
-      .channel('clinic-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, (payload) => {
+      .channel(`clinic-realtime-${currentClinicId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
         if (payload.eventType === 'INSERT') {
           dispatch({ type: 'ADD_APPOINTMENT', payload: appointmentsService.fromDbAppointment(payload.new) });
         } else if (payload.eventType === 'UPDATE') {
@@ -581,19 +605,19 @@ export function AppProvider({ children }) {
           dispatch({ type: 'DELETE_APPOINTMENT', payload: payload.old.id });
         }
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
         if (payload.eventType === 'INSERT') {
           dispatch({ type: 'ADD_NOTIFICATION', payload: notificationsService.fromDbNotification(payload.new) });
         }
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
         if (payload.eventType === 'INSERT') {
           dispatch({ type: 'ADD_PATIENT', payload: patientsService.fromDbPatient(payload.new) });
         } else if (payload.eventType === 'UPDATE') {
           dispatch({ type: 'UPDATE_PATIENT', payload: patientsService.fromDbPatient(payload.new) });
         }
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'staff_members' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'staff_members', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
         if (payload.eventType === 'INSERT') {
           dispatch({ type: 'ADD_STAFF', payload: staffService.fromDbStaff(payload.new) });
         } else if (payload.eventType === 'UPDATE') {
@@ -602,7 +626,7 @@ export function AppProvider({ children }) {
           dispatch({ type: 'DELETE_STAFF', payload: payload.old.id });
         }
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'blocked_slots' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'blocked_slots', filter: `clinic_id=eq.${currentClinicId}` }, (payload) => {
         if (payload.eventType === 'INSERT') {
           dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: blockedSlotsService.fromDbBlockedSlot(payload.new) });
         }
@@ -612,7 +636,7 @@ export function AppProvider({ children }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [useSupabase]);
+  }, [useSupabase, tenantId]);
 
   // Theme Management
   useEffect(() => {
@@ -625,21 +649,22 @@ export function AppProvider({ children }) {
   }, [state.theme]);
 
   // ==========================================
-  // SMS — Simulation أو حقيقي
+  // SMS — استخدام اسم العيادة النشطة ديناميكياً
   // ==========================================
   const sendSmsReminder = useCallback(async (appointment) => {
     try {
+      const activeClinicName = stateRef.current.clinicInfo?.name || (tenantSlug === 'dr-sara' ? 'عيادة د. سارة للجلدية والتجميل' : 'مركز النخبة لطب الأسنان');
       await sendReminder(
         appointment.patientName,
         appointment.patientPhone,
         appointment.date,
         appointment.time,
-        'عيادة د. أحمد الشريف'
+        activeClinicName
       );
     } catch (err) {
       console.error('SMS send failed:', err);
     }
-  }, []);
+  }, [tenantSlug]);
 
   // ==========================================
   // نظام التذكيرات التلقائي (كل 60 ثانية)

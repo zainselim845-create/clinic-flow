@@ -36,14 +36,16 @@ export function toDbNotification(data) {
 /**
  * Fetch all notifications, ordered by created_at DESC
  */
-export async function getNotifications(clinicId) {
+export async function getNotifications(clinicId, options = {}) {
   if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
   try {
+    const limit = options?.limit || 100;
     let query = supabase
       .from('notifications')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (clinicId) {
       query = query.eq('clinic_id', clinicId);

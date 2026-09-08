@@ -273,3 +273,36 @@
   background: #0071e3;
   color: #ffffff;
 }
+
+/* Locked Tenant Switcher (Single Clinic Mode) */
+.tenant-switcher-btn.tenant-locked {
+  cursor: default;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px dashed rgba(0, 0, 0, 0.15);
+  box-shadow: none;
+}
+
+.tenant-switcher-btn.tenant-locked:hover {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: none;
+  transform: none;
+}
+
+.tenant-locked-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 4px;
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .tenant-switcher-btn.tenant-locked {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+[data-theme='dark'] .tenant-locked-tag {
+  color: #64748b;
+}
+

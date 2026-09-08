@@ -33,7 +33,7 @@ export function toDbExpense(data) {
   return payload;
 }
 
-export async function getExpenses(clinicId) {
+export async function getExpenses(clinicId, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
@@ -42,7 +42,8 @@ export async function getExpenses(clinicId) {
     if (clinicId) {
       query = query.eq('clinic_id', clinicId);
     }
-    const { data, error } = await query.order('date', { ascending: false });
+    const limit = options?.limit || 200;
+    const { data, error } = await query.order('date', { ascending: false }).limit(limit);
     if (error) throw error;
     return { data: (data || []).map(fromDbExpense), error: null };
   } catch (error) {

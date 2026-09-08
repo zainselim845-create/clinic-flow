@@ -48,7 +48,7 @@ export function toDbInventoryItem(data) {
   };
 }
 
-export async function getInventoryItems(clinicId) {
+export async function getInventoryItems(clinicId, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
@@ -56,6 +56,9 @@ export async function getInventoryItems(clinicId) {
   try {
     let query = supabase.from('inventory_items').select('*').order('name', { ascending: true });
     if (clinicId) query = query.eq('clinic_id', clinicId);
+
+    const limit = options?.limit || 300;
+    query = query.limit(limit);
 
     const { data, error } = await query;
     if (error) throw error;

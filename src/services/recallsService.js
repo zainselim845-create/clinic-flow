@@ -39,7 +39,7 @@ export function toDbRecall(data) {
   return payload;
 }
 
-export async function getRecalls(clinicId) {
+export async function getRecalls(clinicId, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
@@ -48,7 +48,8 @@ export async function getRecalls(clinicId) {
     if (clinicId) {
       query = query.eq('clinic_id', clinicId);
     }
-    const { data, error } = await query.order('due_date', { ascending: true });
+    const limit = options?.limit || 200;
+    const { data, error } = await query.order('due_date', { ascending: true }).limit(limit);
     if (error) throw error;
     return { data: (data || []).map(fromDbRecall), error: null };
   } catch (error) {

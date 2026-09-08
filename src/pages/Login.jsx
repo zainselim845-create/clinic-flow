@@ -172,30 +172,69 @@ const Login = () => {
             <KeyRound size={14} />
             <span>حسابات العرض التجريبية (Demo Testing)</span>
           </summary>
-          <div className="presets-buttons-grid" style={{ marginTop: '0.75rem' }}>
+          <div className="presets-buttons-grid" style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.6rem' }}>
             <button 
               type="button" 
-              className={`preset-btn ${identifier.includes('doctor') ? 'active' : ''}`}
+              className={`preset-btn ${identifier.includes('doctor@') ? 'active' : ''}`}
               onClick={() => handleQuickPreset('doctor@clinicflow.com', 'admin')}
               disabled={isLocked}
             >
               <Shield size={16} className="text-primary" />
               <div>
-                <strong>حساب الطبيب </strong>
-                <span>doctor@clinicflow.com</span>
+                <strong>د. أحمد الشريف (أسنان)</strong>
+                <span>doctor@clinicflow.com • عيادة مقفلة</span>
               </div>
             </button>
 
             <button 
               type="button" 
-              className={`preset-btn ${identifier.includes('sara') ? 'active' : ''}`}
+              className={`preset-btn ${identifier.includes('sara.clinic') ? 'active' : ''}`}
+              onClick={() => handleQuickPreset('sara.clinic@clinicflow.com', 'admin')}
+              disabled={isLocked}
+            >
+              <Shield size={16} style={{ color: '#8B5CF6' }} />
+              <div>
+                <strong>د. سارة محمود (جلدية)</strong>
+                <span>sara.clinic@clinicflow.com • عيادة مقفلة</span>
+              </div>
+            </button>
+
+            <button 
+              type="button" 
+              className={`preset-btn ${identifier.includes('owner') ? 'active' : ''}`}
+              onClick={() => handleQuickPreset('owner@clinicflow.com', 'admin')}
+              disabled={isLocked}
+            >
+              <Shield size={16} style={{ color: '#F59E0B' }} />
+              <div>
+                <strong>مالك العيادات (متعدد العيادات)</strong>
+                <span>owner@clinicflow.com • تبديل متاح</span>
+              </div>
+            </button>
+
+            <button 
+              type="button" 
+              className={`preset-btn ${identifier.includes('superadmin') ? 'active' : ''}`}
+              onClick={() => handleQuickPreset('superadmin@clinicflow.com', 'admin')}
+              disabled={isLocked}
+            >
+              <Shield size={16} style={{ color: '#EF4444' }} />
+              <div>
+                <strong>مدير المنصة (Super Admin)</strong>
+                <span>superadmin@clinicflow.com • تحكم كامل</span>
+              </div>
+            </button>
+
+            <button 
+              type="button" 
+              className={`preset-btn ${identifier === 'sara@clinic.com' ? 'active' : ''}`}
               onClick={() => handleQuickPreset('sara@clinic.com', '123')}
               disabled={isLocked}
             >
               <UserCheck size={16} className="text-emerald" />
               <div>
-                <strong>حساب السكرتارية (سارة كمال)</strong>
-                <span>sara@clinic.com</span>
+                <strong>سارة كمال (سكرتارية)</strong>
+                <span>sara@clinic.com • مقفلة</span>
               </div>
             </button>
           </div>

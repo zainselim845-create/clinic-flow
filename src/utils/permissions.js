@@ -102,3 +102,67 @@ export function canAccessRoute(user, pathname) {
 
   return hasPermission(user, requiredPerm);
 }
+
+/**
+ * Checks if a user has authority to switch between tenants/clinics.
+ * In enterprise SaaS architecture, tenant switching is strictly forbidden
+ * for single-clinic doctors and staff. Only permitted for:
+ *  (a) Multi-clinic owners / doctors with multiple allowed clinics
+ *  (b) Super Admins (role === 'super_admin', isSuperAdmin === true, or in /super-admin)
+ * 
+ * @param {Object} user - User object from AuthContext
+ * @param {string} pathname - Current route path
+ * @returns {boolean}
+ */
+export function canSwitchTenants(user, pathname = '') {
+  if (typeof pathname === 'string' && pathname.startsWith('/super-admin')) return true;
+  if (!user) return false;
+  if (user.role === 'super_admin' || user.isSuperAdmin === true) return true;
+  if (user.role === 'multi_clinic_owner') return true;
+  if (Array.isArray(user.allowedClinics) && user.allowedClinics.length > 1) return true;
+  if (Array.isArray(user.tenantMemberships) && user.tenantMemberships.length > 1) return true;
+  return false;
+}
+
+/**
+ * Returns the list of clinics a user is authorized to access.
+ * Single-clinic doctors and receptionists only get their specific clinic.
+ * 
+ * @param {Object} user - User object from AuthContext
+ * @param {Array} allTenants - Full catalog of registered tenants
+ * @returns {Array}
+ */
+export function getUserAllowedClinics(user, allTenants = []) {
+  if (!Array.isArray(allTenants) || allTenants.length === 0) return [];
+  if (!user) return allTenants.slice(0, 1);
+
+  // Super Admin has access to all tenants across the entire platform
+  if (user.role === 'super_admin' || user.isSuperAdmin === true || (typeof window !== 'undefined' && window.location.pathname.startsWith('/super-admin'))) {
+    return allTenants;
+  }
+
+  // Explicit allowed clinics list (array of slugs or ids)
+  if (Array.isArray(user.allowedClinics) && user.allowedClinics.length > 0) {
+    if (user.allowedClinics.includes('*')) return allTenants;
+    const filtered = allTenants.filter(t => user.allowedClinics.includes(t.slug) || user.allowedClinics.includes(t.id));
+    return filtered.length > 0 ? filtered : allTenants.slice(0, 1);
+  }
+
+  // Database tenant memberships
+  if (Array.isArray(user.tenantMemberships) && user.tenantMemberships.length > 0) {
+    const allowedIds = user.tenantMemberships.map(m => (typeof m === 'string' ? m : (m.clinic_id || m.clinicId || m.slug)));
+    const filtered = allTenants.filter(t => allowedIds.includes(t.id) || allowedIds.includes(t.slug));
+    return filtered.length > 0 ? filtered : allTenants.slice(0, 1);
+  }
+
+  // Bound to single clinic slug or ID
+  const userClinicSlug = user.clinicSlug || user.clinicId;
+  if (userClinicSlug) {
+    const matched = allTenants.filter(t => t.slug === userClinicSlug || t.id === userClinicSlug);
+    if (matched.length > 0) return matched;
+  }
+
+  // Default fallback: single locked active clinic only
+  return allTenants.slice(0, 1);
+}
+
