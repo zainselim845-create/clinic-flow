@@ -117,10 +117,12 @@ export default function GeneralSettingsTab({
 
       <div className="form-grid">
         <div className="form-group">
-          <label>اسم العيادة الرسمي</label>
+          <label htmlFor="clinicName">اسم العيادة الرسمي</label>
           <div className="input-with-icon">
             <Building2 size={18} />
             <input 
+              id="clinicName"
+              name="clinicName"
               type="text" 
               value={clinicForm.name || ''} 
               onChange={(e) => setClinicForm({ ...clinicForm, name: e.target.value })}
@@ -131,8 +133,10 @@ export default function GeneralSettingsTab({
         </div>
 
         <div className="form-group">
-          <label>اسم الطبيب المسؤول</label>
+          <label htmlFor="doctorName">اسم الطبيب المسؤول</label>
           <input 
+            id="doctorName"
+            name="doctorName"
             type="text" 
             value={clinicForm.doctorName || ''} 
             onChange={(e) => setClinicForm({ ...clinicForm, doctorName: e.target.value })}
@@ -214,8 +218,10 @@ export default function GeneralSettingsTab({
           </div>
 
           <div className="custom-specialty-input-group">
-            <label className="sub-field-label">المسمى واللقب الأكاديمي والمهني للطبيب (كما يظهر في الملفات الطبية وبوابة الحجز):</label>
+            <label htmlFor="doctorSpecialty" className="sub-field-label">المسمى واللقب الأكاديمي والمهني للطبيب (كما يظهر في الملفات الطبية وبوابة الحجز):</label>
             <input 
+              id="doctorSpecialty"
+              name="doctorSpecialty"
               type="text" 
               value={clinicForm.specialty || ''} 
               onChange={(e) => setClinicForm({ ...clinicForm, specialty: e.target.value })}
@@ -225,13 +231,13 @@ export default function GeneralSettingsTab({
           </div>
         </div>
 
-
-
         <div className="form-group">
-          <label>رقم هاتف العيادة (للتواصل)</label>
+          <label htmlFor="clinicPhone">رقم هاتف العيادة (للتواصل)</label>
           <div className="input-with-icon">
             <Phone size={18} />
             <input 
+              id="clinicPhone"
+              name="clinicPhone"
               type="tel" 
               value={clinicForm.phone || ''} 
               onChange={(e) => setClinicForm({ ...clinicForm, phone: e.target.value })}
@@ -241,8 +247,10 @@ export default function GeneralSettingsTab({
         </div>
 
         <div className="form-group full-width">
-          <label>عنوان العيادة بالتفصيل</label>
+          <label htmlFor="clinicAddress">عنوان العيادة بالتفصيل</label>
           <input 
+            id="clinicAddress"
+            name="clinicAddress"
             type="text" 
             value={clinicForm.address || ''} 
             onChange={(e) => setClinicForm({ ...clinicForm, address: e.target.value })}
@@ -251,8 +259,10 @@ export default function GeneralSettingsTab({
         </div>
 
         <div className="form-group">
-          <label>رسوم الكشف الافتراضي (ج.م)</label>
+          <label htmlFor="regularFee">رسوم الكشف الافتراضي (ج.م)</label>
           <input 
+            id="regularFee"
+            name="regularFee"
             type="text" 
             value={clinicForm.regularFee || ''} 
             onChange={(e) => setClinicForm({ ...clinicForm, regularFee: e.target.value })}
@@ -261,8 +271,10 @@ export default function GeneralSettingsTab({
         </div>
 
         <div className="form-group">
-          <label>رسوم الاستشارة / المتابعة (ج.م)</label>
+          <label htmlFor="consultationFee">رسوم الاستشارة / المتابعة (ج.م)</label>
           <input 
+            id="consultationFee"
+            name="consultationFee"
             type="text" 
             value={clinicForm.consultationFee || ''} 
             onChange={(e) => setClinicForm({ ...clinicForm, consultationFee: e.target.value })}
@@ -271,10 +283,12 @@ export default function GeneralSettingsTab({
         </div>
 
         <div className="form-group full-width">
-          <label>مواعيد وأيام العمل المعلنة للمرضى (نص توضيحي)</label>
+          <label htmlFor="workingHours">مواعيد وأيام العمل المعلنة للمرضى (نص توضيحي)</label>
           <div className="input-with-icon">
             <Clock size={18} />
             <input 
+              id="workingHours"
+              name="workingHours"
               type="text" 
               value={clinicForm.workingHours || ''} 
               onChange={(e) => setClinicForm({ ...clinicForm, workingHours: e.target.value })}
@@ -311,8 +325,10 @@ export default function GeneralSettingsTab({
             <h5 style={{ margin: '0 0 0.75rem 0', fontWeight: 700 }}>بيانات الخدمة الطبية الجديدة:</h5>
             <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
               <div className="form-group">
-                <label>اسم الخدمة</label>
+                <label htmlFor="newServiceName">اسم الخدمة</label>
                 <input 
+                  id="newServiceName"
+                  name="newServiceName"
                   type="text" 
                   className="input-field" 
                   placeholder="مثال: فحص سونار بطن وحوض"
@@ -322,8 +338,10 @@ export default function GeneralSettingsTab({
                 />
               </div>
               <div className="form-group">
-                <label>سعر الخدمة (ج.م)</label>
+                <label htmlFor="newServicePrice">سعر الخدمة (ج.م)</label>
                 <input 
+                  id="newServicePrice"
+                  name="newServicePrice"
                   type="text" 
                   className="input-field" 
                   placeholder="مثال: 400 ج.م"
@@ -333,8 +351,10 @@ export default function GeneralSettingsTab({
                 />
               </div>
               <div className="form-group full-width">
-                <label>وصف توضيحي للخدمة للمريض</label>
+                <label htmlFor="newServiceDesc">وصف توضيحي للخدمة للمريض</label>
                 <input 
+                  id="newServiceDesc"
+                  name="newServiceDesc"
                   type="text" 
                   className="input-field" 
                   placeholder="وصف مختصر لما تشمله هذه الخدمة الطبية..."
@@ -406,10 +426,12 @@ export default function GeneralSettingsTab({
 
       <div className="form-grid">
         <div className="form-group">
-          <label>البريد الإلكتروني للطبيب</label>
+          <label htmlFor="doctorEmail">البريد الإلكتروني للطبيب</label>
           <div className="input-with-icon">
             <Mail size={18} />
             <input 
+              id="doctorEmail"
+              name="doctorEmail"
               type="email" 
               value={clinicForm.doctorEmail || ''} 
               onChange={(e) => setClinicForm({ ...clinicForm, doctorEmail: e.target.value })}
@@ -419,10 +441,12 @@ export default function GeneralSettingsTab({
         </div>
 
         <div className="form-group">
-          <label>كلمة المرور الخاصة بالطبيب</label>
+          <label htmlFor="doctorPassword">كلمة المرور الخاصة بالطبيب</label>
           <div className="input-with-icon">
             <KeyRound size={18} />
             <input 
+              id="doctorPassword"
+              name="doctorPassword"
               type="text" 
               value={clinicForm.doctorPassword || ''} 
               onChange={(e) => setClinicForm({ ...clinicForm, doctorPassword: e.target.value })}

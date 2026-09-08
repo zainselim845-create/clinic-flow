@@ -16,7 +16,14 @@ export class RateLimiter {
     let bucket = this.memoryBuckets.get(key);
 
     if (!bucket || typeof bucket !== 'object') {
-      const stored = safeStorage.getItem(`${RATE_LIMIT_PREFIX}${key}`, { timestamps: [] });
+      let stored = safeStorage.getItem(`${RATE_LIMIT_PREFIX}${key}`, { timestamps: [] });
+      if (typeof stored === 'string') {
+        try {
+          stored = JSON.parse(stored);
+        } catch {
+          stored = { timestamps: [] };
+        }
+      }
       bucket = (stored && typeof stored === 'object' && Array.isArray(stored.timestamps))
         ? stored
         : { timestamps: [] };
