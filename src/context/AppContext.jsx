@@ -27,7 +27,8 @@ export const initialState = {
   theme: 'light',
   searchQuery: '',
   isLoading: true,
-  useSupabase: false
+  useSupabase: false,
+  currentTenantSlug: null
 };
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -35,8 +36,25 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 export function appReducer(state, action) {
   switch (action.type) {
     // Initialization & Fresh Start
+    case 'SWITCH_TENANT_START':
+      return {
+        ...state,
+        isLoading: true,
+        currentTenantSlug: action.payload.tenantSlug,
+        patients: [],
+        appointments: [],
+        notifications: [],
+        blockedSlots: [],
+        expenses: [],
+        recalls: []
+      };
     case 'INIT_DATA':
-      return { ...state, ...action.payload, isLoading: false };
+      return { 
+        ...state, 
+        ...action.payload, 
+        currentTenantSlug: action.payload.currentTenantSlug || state.currentTenantSlug,
+        isLoading: false 
+      };
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
     case 'RESET_TO_FRESH_START': {
@@ -385,6 +403,8 @@ export function appReducer(state, action) {
 
     case 'RESET_ALL_DATA': {
       if (typeof window !== 'undefined') {
+        const slug = state.currentTenantSlug || 'dr-ahmed';
+        localStorage.removeItem(`clinicflow_data_${slug}`);
         localStorage.removeItem('clinicflow_data');
       }
       return {
@@ -421,14 +441,24 @@ export function AppProvider({ children }) {
   // ==========================================
   // تحميل البيانات بمعزل تام لكل عيادة (Tenant Data Isolation)
   // ==========================================
+  const saveTimeoutRef = useRef(null);
+
   useEffect(() => {
     let isCancelled = false;
 
-    const loadData = async () => {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      const currentSlug = tenantSlug || 'dr-ahmed';
-      const currentClinicId = tenantId;
+    // Immediately cancel any pending save from previous tenant to prevent race condition
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
 
+    const currentSlug = tenantSlug || 'dr-ahmed';
+    const currentClinicId = tenantId;
+
+    // Reset previous tenant data so it never flashes or leaks into the new tenant
+    dispatch({ type: 'SWITCH_TENANT_START', payload: { tenantSlug: currentSlug } });
+
+    const loadData = async () => {
       if (useSupabase) {
         try {
           // جلب البيانات من Supabase مع الفلترة بالعيادة النشطة فقط
@@ -456,7 +486,8 @@ export function AppProvider({ children }) {
               clinicInfo: clinicRes?.data || activeTenant || null,
               expenses: expensesRes?.data || [],
               recalls: recallsRes?.data || [],
-              useSupabase: true
+              useSupabase: true,
+              currentTenantSlug: currentSlug
             }
           });
           return;
@@ -494,15 +525,32 @@ export function AppProvider({ children }) {
               recalls: (parsed.recalls && parsed.recalls.length > 0) ? parsed.recalls : seedData.recalls,
               staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : seedData.staffMembers,
               clinicInfo: activeTenant || parsed.clinicInfo || seedData.clinicInfo,
-              useSupabase: false 
+              useSupabase: false,
+              currentTenantSlug: currentSlug
             } 
           });
         } catch (err) {
           console.error('Error loading scoped localStorage:', err);
-          dispatch({ type: 'INIT_DATA', payload: { ...seedData, clinicInfo: activeTenant || seedData.clinicInfo, useSupabase: false } });
+          dispatch({ 
+            type: 'INIT_DATA', 
+            payload: { 
+              ...seedData, 
+              clinicInfo: activeTenant || seedData.clinicInfo, 
+              useSupabase: false,
+              currentTenantSlug: currentSlug 
+            } 
+          });
         }
       } else {
-        dispatch({ type: 'INIT_DATA', payload: { ...seedData, clinicInfo: activeTenant || seedData.clinicInfo, useSupabase: false } });
+        dispatch({ 
+          type: 'INIT_DATA', 
+          payload: { 
+            ...seedData, 
+            clinicInfo: activeTenant || seedData.clinicInfo, 
+            useSupabase: false,
+            currentTenantSlug: currentSlug 
+          } 
+        });
       }
     };
 
@@ -516,10 +564,15 @@ export function AppProvider({ children }) {
   // ==========================================
   // حفظ في localStorage معزول لكل عيادة بدون تجميد أو تسريب
   // ==========================================
-  const saveTimeoutRef = useRef(null);
-
   useEffect(() => {
     if (state.isLoading) return;
+    const currentSlug = tenantSlug || 'dr-ahmed';
+
+    // Strict Isolation Guard: DO NOT save state if state does not match the active tenant slug!
+    if (state.currentTenantSlug && state.currentTenantSlug !== currentSlug) {
+      return;
+    }
+
     if (state.patients.length === 0 && state.appointments.length === 0 && !state._freshReset) return;
 
     if (saveTimeoutRef.current) {
@@ -527,7 +580,6 @@ export function AppProvider({ children }) {
     }
 
     saveTimeoutRef.current = setTimeout(() => {
-      const currentSlug = tenantSlug || 'dr-ahmed';
       const scopedKey = `clinicflow_data_${currentSlug}`;
       try {
         const payload = JSON.stringify({
@@ -573,19 +625,7 @@ export function AppProvider({ children }) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [
-    state.patients, 
-    state.appointments, 
-    state.blockedSlots, 
-    state.notifications, 
-    state.staffMembers, 
-    state.clinicInfo, 
-    state.expenses, 
-    state.recalls, 
-    useSupabase, 
-    state.isLoading,
-    tenantSlug
-  ]);
+  }, [state.patients, state.appointments, state.blockedSlots, state.notifications, state.staffMembers, state.clinicInfo, state.expenses, state.recalls, state._freshReset, state.isLoading, state.currentTenantSlug, tenantSlug]);
 
   // ==========================================
   // Supabase Realtime Subscriptions معزولة بمفتاح العيادة فقط

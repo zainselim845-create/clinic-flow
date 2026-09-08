@@ -19,11 +19,11 @@ const Sidebar = () => {
   const isDoctor = (user?.role || role || 'doctor') === 'doctor';
 
   const clinicSpecialty = tenant?.specialty || state.clinicInfo?.specialty || '';
-  const isDental = !clinicSpecialty || clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('Dental');
-  const isDerma = clinicSpecialty.includes('جلدية') || clinicSpecialty.includes('تجميل') || clinicSpecialty.includes('ليزر') || clinicSpecialty.includes('Derma');
+  const isDental = !clinicSpecialty || clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('فم') || clinicSpecialty.includes('Dental');
+  const isDerma = !isDental && (clinicSpecialty.includes('جلدية') || clinicSpecialty.includes('تجميل') || clinicSpecialty.includes('ليزر') || clinicSpecialty.includes('Derma'));
 
   let brandTitle = 'كلينيك فلو دنتال';
-  if (isDerma && !isDental) {
+  if (isDerma) {
     brandTitle = tenant?.branding?.brandTitle || 'كلينيك فلو ديرما';
   } else if (!isDental) {
     brandTitle = tenant?.branding?.brandTitle || tenant?.name || 'كلينيك فلو ميديكال';
@@ -31,7 +31,7 @@ const Sidebar = () => {
     brandTitle = tenant?.branding?.brandTitle || 'كلينيك فلو دنتال';
   }
 
-  const LogoIcon = isDerma && !isDental ? Sparkles : Stethoscope;
+  const LogoIcon = isDerma ? Sparkles : Stethoscope;
 
   const handleSignOut = async () => {
     await signOut();
@@ -98,7 +98,13 @@ const Sidebar = () => {
             <span>إدارة وإعدادات العيادة</span>
           </NavLink>
         )}
-        <a href="/booking" target="_blank" rel="noreferrer" className="nav-item" title="معاينة وفتح صفحة الحجز العامة للمرضى في نافذة جديدة">
+        <a 
+          href={tenant?.slug ? `/c/${tenant.slug}/booking` : '/booking'} 
+          target="_blank" 
+          rel="noreferrer" 
+          className="nav-item" 
+          title="معاينة وفتح صفحة الحجز العامة للمرضى في نافذة جديدة"
+        >
           <Globe size={19} />
           <span>بوابة الحجز (للمرضى)</span>
         </a>

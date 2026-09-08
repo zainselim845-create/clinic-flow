@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { clinicInfo as defaultClinicInfo, demoClinics, staffMembers as defaultStaffMembers } from '../data/demoData';
+import { clinicInfo as defaultClinicInfo, demoClinics, staffMembers as defaultStaffMembers, drSaraStaffMembers } from '../data/demoData';
 import { fromDbClinic } from '../services/clinicsService';
 import TenantContext from './TenantContext';
 
@@ -256,7 +256,8 @@ export const AuthProvider = ({ children }) => {
       // 4. Check Staff Login
       const allStaff = [
         ...(Array.isArray(currentStaff) ? currentStaff : []),
-        ...(Array.isArray(defaultStaffMembers) ? defaultStaffMembers : [])
+        ...(Array.isArray(defaultStaffMembers) ? defaultStaffMembers : []),
+        ...(Array.isArray(drSaraStaffMembers) ? drSaraStaffMembers : [])
       ];
 
       const matchedStaff = allStaff.find(s => {

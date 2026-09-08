@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { clinicInfo as defaultClinicInfo, demoClinics as fallbackDemoClinics } from '../data/demoData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { fromDbClinic } from '../services/clinicsService';
+import { canSwitchTenants } from '../utils/permissions';
 
 const TenantContext = createContext(null);
 
@@ -136,12 +137,12 @@ export const TenantProvider = ({ children }) => {
       const savedUserStr = sessionStorage.getItem('clinicflow_auth_user');
       if (savedUserStr) {
         const currentUser = JSON.parse(savedUserStr);
-        const isSuper = currentUser.role === 'super_admin' || currentUser.isSuperAdmin;
-        const isMulti = currentUser.role === 'multi_clinic_owner' || (Array.isArray(currentUser.allowedClinics) && currentUser.allowedClinics.length > 1);
-        if (!isSuper && !isMulti && Array.isArray(currentUser.allowedClinics) && currentUser.allowedClinics.length === 1) {
-          const allowed = currentUser.allowedClinics[0];
-          if (slugOrId && slugOrId !== allowed && slugOrId !== currentUser.clinicId) {
-            console.warn(`[Tenant Isolation Enforcement] Tenant switch blocked: User is restricted to clinic '${allowed}'`);
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+        const canSwitch = canSwitchTenants(currentUser, currentPath);
+        if (!canSwitch) {
+          const userAllowedSlug = currentUser.allowedClinics?.[0] || currentUser.clinicSlug || currentUser.clinicId;
+          if (slugOrId && slugOrId !== userAllowedSlug && slugOrId !== currentUser.clinicId) {
+            console.warn(`[Tenant Isolation Enforcement] Tenant switch blocked: User is restricted to clinic '${userAllowedSlug}'`);
             return false;
           }
         }

@@ -85,7 +85,7 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
--- 4. Multi-Tenant Membership Verification Function
+-- 4. Multi-Tenant Membership Verification Function (Strict Security Model)
 CREATE OR REPLACE FUNCTION is_member_of_clinic(target_clinic_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
@@ -93,12 +93,7 @@ BEGIN
         RETURN FALSE;
     END IF;
 
-    -- A. Transaction current_clinic_id match
-    IF get_active_clinic_id() IS NOT NULL AND get_active_clinic_id() = target_clinic_id THEN
-        RETURN TRUE;
-    END IF;
-
-    -- B. Platform Super Admin bypass
+    -- A. Platform Super Admin bypass
     IF EXISTS (
         SELECT 1 FROM tenant_members 
         WHERE user_id = auth.uid() AND role = 'super_admin' AND is_active = true
@@ -106,7 +101,7 @@ BEGIN
         RETURN TRUE;
     END IF;
 
-    -- C. Direct Clinic Owner
+    -- B. Direct Clinic Owner
     IF EXISTS (
         SELECT 1 FROM clinics 
         WHERE id = target_clinic_id AND owner_id = auth.uid()
@@ -114,7 +109,7 @@ BEGIN
         RETURN TRUE;
     END IF;
 
-    -- D. Verified Tenant Member
+    -- C. Verified Active Tenant Member
     IF EXISTS (
         SELECT 1 FROM tenant_members 
         WHERE clinic_id = target_clinic_id AND user_id = auth.uid() AND is_active = true
@@ -126,7 +121,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
--- 5. Strict RLS Policies Enforcing clinic_id = get_active_clinic_id()
+-- 5. Strict RLS Policies Enforcing clinic_id = get_active_clinic_id() with verified membership
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
@@ -142,68 +137,68 @@ ALTER TABLE patient_recalls ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Enforce tenant isolation on appointments" ON appointments;
 CREATE POLICY "Enforce tenant isolation on appointments" ON appointments 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Patients RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on patients" ON patients;
 CREATE POLICY "Enforce tenant isolation on patients" ON patients 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Invoices RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on invoices" ON invoices;
 CREATE POLICY "Enforce tenant isolation on invoices" ON invoices 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Inventory RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on inventory" ON inventory_items;
 CREATE POLICY "Enforce tenant isolation on inventory" ON inventory_items 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Notifications RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on notifications" ON notifications;
 CREATE POLICY "Enforce tenant isolation on notifications" ON notifications 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Branches RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on branches" ON branches;
 CREATE POLICY "Enforce tenant isolation on branches" ON branches 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Doctors RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on doctors" ON doctors;
 CREATE POLICY "Enforce tenant isolation on doctors" ON doctors 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Tenant Members RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on tenant_members" ON tenant_members;
 CREATE POLICY "Enforce tenant isolation on tenant_members" ON tenant_members 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id) OR user_id = auth.uid()) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING ((is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) OR user_id = auth.uid()) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Expenses RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on expenses" ON expenses;
 CREATE POLICY "Enforce tenant isolation on expenses" ON expenses 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));
 
 -- Patient Recalls RLS
 DROP POLICY IF EXISTS "Enforce tenant isolation on recalls" ON patient_recalls;
 CREATE POLICY "Enforce tenant isolation on recalls" ON patient_recalls 
     FOR ALL TO authenticated 
-    USING (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id)) 
-    WITH CHECK (clinic_id = get_active_clinic_id() OR is_member_of_clinic(clinic_id));
+    USING (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id())) 
+    WITH CHECK (is_member_of_clinic(clinic_id) AND (get_active_clinic_id() IS NULL OR clinic_id = get_active_clinic_id()));

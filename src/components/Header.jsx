@@ -16,18 +16,32 @@ const Header = ({ title }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
 
-  // Real Logged-in User Identity (strictly reflects active tenant doctor & specialty)
-  const isDoctor = (user?.role || role || 'doctor') === 'doctor' || role === 'super_admin' || role === 'multi_clinic_owner';
-  const activeDoctorName = tenant?.doctorName || state.clinicInfo?.doctorName || clinic?.doctorName || user?.name || 'د. أحمد الشريف';
-  const activeSpecialty = tenant?.specialty || state.clinicInfo?.specialty || clinic?.specialty || user?.jobTitle || 'المدير الطبي';
+  // Real Logged-in User Identity (strictly reflects logged-in user or active tenant doctor)
+  const effectiveRole = user?.role || role || 'doctor';
+  const isDoctor = effectiveRole === 'doctor' || effectiveRole === 'super_admin' || effectiveRole === 'multi_clinic_owner';
+  const activeDoctorName = tenant?.doctorName || state.clinicInfo?.doctorName || clinic?.doctorName || 'د. أحمد الشريف';
+  const activeSpecialty = tenant?.specialty || state.clinicInfo?.specialty || clinic?.specialty || 'المدير الطبي';
 
-  const displayName = isDoctor 
-    ? activeDoctorName 
-    : (user?.name || 'موظف الاستقبال');
-  const displayRole = isDoctor 
-    ? activeSpecialty 
-    : (user?.jobTitle || user?.role || 'سكرتارية العيادة');
-  const initial = displayName.replace(/^د\.?\s*/, '').charAt(0) || displayName.charAt(0) || (isDoctor ? 'د' : 'س');
+  // Display user name: prioritize authenticated user name; fallback to active clinic doctor
+  const displayName = user?.name 
+    ? user.name 
+    : (isDoctor ? activeDoctorName : 'موظف الاستقبال');
+
+  // Display role: prioritize authenticated user job title; fallback to active clinic specialty or role label
+  let displayRole = user?.jobTitle;
+  if (!displayRole) {
+    if (user?.role === 'super_admin') {
+      displayRole = 'مدير عام المنصة والسحابة';
+    } else if (user?.role === 'multi_clinic_owner') {
+      displayRole = 'مالك مجمع العيادات';
+    } else if (isDoctor) {
+      displayRole = activeSpecialty;
+    } else {
+      displayRole = user?.role === 'staff' ? 'سكرتارية واستقبال العيادة' : 'طاقم العيادة';
+    }
+  }
+
+  const initial = displayName.replace(/^د\.?\s*/, '').trim().charAt(0) || displayName.charAt(0) || (isDoctor ? 'د' : 'س');
 
 
   const handleLogout = async () => {

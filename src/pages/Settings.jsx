@@ -14,33 +14,32 @@ import StaffManagementTab from './settings/StaffManagementTab';
 import SmsConfigTab from './settings/SmsConfigTab';
 import AiAssistantConfigTab from './settings/AiAssistantConfigTab';
 import DatabaseSyncTab from './settings/DatabaseSyncTab';
+import { useTenant } from '../context/TenantContext';
+import { clinicInfo as defaultClinicInfo } from '../data/demoData';
 import './Settings.css';
-
 
 const Settings = () => {
   const { state, dispatch } = useApp();
   const { updateClinicInfo } = useAuth();
+  const { tenant, tenantSlug } = useTenant();
   const [activeTab, setActiveTab] = useState('clinic'); // 'clinic' | 'schedule' | 'staff' | 'sms' | 'ai' | 'database'
 
   const useSupabase = isSupabaseConfigured();
 
   // Clinic Profile State
-  const clinicInfo = state.clinicInfo || {
-    name: 'مركز النخبة لطب وجراحة الأسنان',
-    doctorName: 'د. أحمد الشريف',
-    doctorEmail: 'doctor@clinicflow.com',
-    doctorPassword: 'admin',
-    specialty: 'طب وجراحة الفم والأسنان وتجميل الابتسامة',
-    address: 'مصر الجديدة — شارع الأهرام، برج الأطباء، الدور الرابع',
-    phone: '01006285031',
-    regularFee: '300 ج.م',
-    consultationFee: '150 ج.م',
-    workingHours: 'السبت - الخميس: ٥:٠٠ مساءً - ١٠:٠٠ مساءً'
-  };
+  const initialClinicInfo = state.clinicInfo || tenant || defaultClinicInfo;
 
-
-  const [clinicForm, setClinicForm] = useState(clinicInfo);
+  const [clinicForm, setClinicForm] = useState(initialClinicInfo);
   const [clinicSaveSuccess, setClinicSaveSuccess] = useState(false);
+
+  // Sync clinicForm whenever active tenant or state.clinicInfo updates
+  useEffect(() => {
+    if (state.clinicInfo) {
+      setClinicForm(state.clinicInfo);
+    } else if (tenant) {
+      setClinicForm(tenant);
+    }
+  }, [state.clinicInfo, tenant]);
 
   const handleSaveClinic = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -59,11 +58,16 @@ const Settings = () => {
       updateClinicInfo(clinicForm);
     }
     try {
-      const stored = localStorage.getItem('clinicflow_data');
+      const currentSlug = tenantSlug || tenant?.slug || 'dr-ahmed';
+      const scopedKey = `clinicflow_data_${currentSlug}`;
+      const stored = localStorage.getItem(scopedKey);
       const parsed = stored ? JSON.parse(stored) : {};
       parsed.clinicInfo = clinicForm;
       if (clinicForm.services) parsed.services = clinicForm.services;
-      localStorage.setItem('clinicflow_data', JSON.stringify(parsed));
+      localStorage.setItem(scopedKey, JSON.stringify(parsed));
+      if (currentSlug === 'dr-ahmed') {
+        localStorage.setItem('clinicflow_data', JSON.stringify(parsed));
+      }
     } catch (_) {}
 
     setClinicSaveSuccess(true);

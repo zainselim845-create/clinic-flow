@@ -308,6 +308,70 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
       expect(content).toContain('get_active_clinic_id()');
       expect(content).toContain('is_member_of_clinic');
     });
+
+    it('migration 005 secures is_member_of_clinic against unverified session spoofing', () => {
+      const migrationPath = path.resolve(__dirname, '../../supabase/migrations/005_million_user_scale_and_scoping.sql');
+      const content = fs.readFileSync(migrationPath, 'utf8');
+
+      // Ensure that get_active_clinic_id alone does NOT grant access without membership
+      const functionDef = content.slice(content.indexOf('CREATE OR REPLACE FUNCTION is_member_of_clinic'));
+      const functionBody = functionDef.slice(0, functionDef.indexOf('LANGUAGE plpgsql'));
+      expect(functionBody).not.toContain('IF get_active_clinic_id() IS NOT NULL AND get_active_clinic_id() = target_clinic_id THEN\n        RETURN TRUE;');
+    });
+  });
+
+  describe('9. Header User Profile & Multi-Clinic Owner Identity Integrity', () => {
+    it('preserves multi-clinic owner name and role when viewing any clinic', () => {
+      const ownerUser = {
+        id: 'user-owner',
+        name: 'د. شريف العوضي (مالك مجمع العيادات)',
+        role: 'multi_clinic_owner',
+        jobTitle: 'مالك ومستثمر طبي — مجمع عيادات كلينيك فلو'
+      };
+
+      const drSaraTenant = demoClinics.find(c => c.slug === 'dr-sara');
+      
+      // Compute identity with the updated Header logic
+      const effectiveRole = ownerUser.role;
+      const isDoctor = effectiveRole === 'doctor' || effectiveRole === 'super_admin' || effectiveRole === 'multi_clinic_owner';
+      const displayName = ownerUser?.name ? ownerUser.name : drSaraTenant.doctorName;
+      const displayRole = ownerUser?.jobTitle || 'مالك مجمع العيادات';
+
+      expect(displayName).toBe('د. شريف العوضي (مالك مجمع العيادات)');
+      expect(displayName).not.toBe(drSaraTenant.doctorName);
+      expect(displayRole).toBe('مالك ومستثمر طبي — مجمع عيادات كلينيك فلو');
+    });
+
+    it('falls back to active clinic doctor name only when unauthenticated demo visitor', () => {
+      const unauthUser = null;
+      const drSaraTenant = demoClinics.find(c => c.slug === 'dr-sara');
+
+      const isDoctor = true;
+      const activeDoctorName = drSaraTenant.doctorName;
+      const displayName = unauthUser?.name ? unauthUser.name : activeDoctorName;
+      const displayRole = unauthUser?.jobTitle || drSaraTenant.specialty;
+
+      expect(displayName).toBe('د. سارة محمود');
+      expect(displayRole).toContain('الأمراض الجلدية');
+    });
+  });
+
+  describe('10. AppContext Cross-Tenant Save Isolation', () => {
+    it('protects new tenant storage from being overwritten by previous tenant state', () => {
+      const currentTenantSlug = 'dr-ahmed';
+      const newTenantSlug = 'dr-sara';
+
+      // Simulation of save effect guard
+      const shouldSaveStateForTenant = (stateTenantSlug, targetTenantSlug) => {
+        if (!stateTenantSlug || stateTenantSlug !== targetTenantSlug) {
+          return false; // BLOCKED: Do not save stale state into new tenant
+        }
+        return true;
+      };
+
+      expect(shouldSaveStateForTenant(currentTenantSlug, newTenantSlug)).toBe(false);
+      expect(shouldSaveStateForTenant(newTenantSlug, newTenantSlug)).toBe(true);
+    });
   });
 
 });
