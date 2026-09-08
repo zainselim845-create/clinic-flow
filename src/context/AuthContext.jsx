@@ -48,6 +48,9 @@ export const AuthProvider = ({ children }) => {
         if (key.startsWith('clinicflow_data_') && key !== `clinicflow_data_${activeSlug}`) {
           localStorage.removeItem(key);
         }
+        if (key.startsWith('clinicflow_invoices_') && key !== `clinicflow_invoices_${activeSlug}`) {
+          localStorage.removeItem(key);
+        }
       }
     } catch (_) {}
   };

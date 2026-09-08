@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  FileText, Printer, MessageCircle, Plus, Trash2, 
-  CheckCircle2, X, MapPin, Phone, Send 
+  Printer, Plus, CheckCircle2, X, MapPin, Phone, Send 
 } from 'lucide-react';
 import { recordPayment } from '../services/invoicesService';
 
@@ -184,22 +183,51 @@ const InvoiceModal = ({
           </div>
 
           {/* Patient Details Row */}
-          <div className="invoice-patient-banner">
-            <div className="banner-item">
-              <span className="lbl">اسم المريض:</span>
-              <strong className="val">{currentInv.patientName || 'عميل نقدي'}</strong>
+          {isCreatingNew ? (
+            <div className="invoice-patient-banner editor" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '8px', marginBottom: '1rem' }}>
+              <div className="banner-item" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>اسم المريض *</label>
+                <input 
+                  type="text" 
+                  className="table-txt-input" 
+                  placeholder="اسم المريض بالكامل..." 
+                  value={patientName} 
+                  onChange={(e) => setPatientName(e.target.value)} 
+                  required 
+                  style={{ padding: '8px 12px', borderRadius: '6px' }}
+                />
+              </div>
+              <div className="banner-item" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <label className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>رقم هاتف المريض</label>
+                <input 
+                  type="tel" 
+                  className="table-txt-input" 
+                  placeholder="010XXXXXXXX" 
+                  value={patientPhone} 
+                  onChange={(e) => setPatientPhone(e.target.value)} 
+                  dir="ltr"
+                  style={{ padding: '8px 12px', borderRadius: '6px' }}
+                />
+              </div>
             </div>
-            <div className="banner-item">
-              <span className="lbl">رقم الهاتف:</span>
-              <strong className="val" dir="ltr">{currentInv.patientPhone || '—'}</strong>
+          ) : (
+            <div className="invoice-patient-banner">
+              <div className="banner-item">
+                <span className="lbl">اسم المريض:</span>
+                <strong className="val">{currentInv.patientName || 'عميل نقدي'}</strong>
+              </div>
+              <div className="banner-item">
+                <span className="lbl">رقم الهاتف:</span>
+                <strong className="val" dir="ltr">{currentInv.patientPhone || '—'}</strong>
+              </div>
+              <div className="banner-item">
+                <span className="lbl">حالة السداد:</span>
+                <span className={`status-pill ${currentInv.paymentStatus}`}>
+                  {currentInv.paymentStatus === 'paid' ? 'مدفوعة بالكامل' : currentInv.paymentStatus === 'partial' ? 'سداد جزئي' : 'مستحقة للدفع'}
+                </span>
+              </div>
             </div>
-            <div className="banner-item">
-              <span className="lbl">حالة السداد:</span>
-              <span className={`status-pill ${currentInv.paymentStatus}`}>
-                {currentInv.paymentStatus === 'paid' ? 'مدفوعة بالكامل' : currentInv.paymentStatus === 'partial' ? 'سداد جزئي' : 'مستحقة للدفع'}
-              </span>
-            </div>
-          </div>
+          )}
 
           {/* Line Items Table */}
           {isCreatingNew ? (
@@ -294,17 +322,47 @@ const InvoiceModal = ({
                 <span>إجمالي الخدمات:</span>
                 <strong>{subtotal} ج.م</strong>
               </div>
-              {Number(discount) > 0 && (
-                <div className="total-line text-danger">
-                  <span>الخصم الممنوح:</span>
-                  <strong>-{discount} ج.م</strong>
-                </div>
-              )}
-              {Number(taxAmount) > 0 && (
-                <div className="total-line">
-                  <span>ضريبة القيمة المضافة ({taxPercent}%):</span>
-                  <strong>+{taxAmount} ج.م</strong>
-                </div>
+              {isCreatingNew ? (
+                <>
+                  <div className="total-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <span>الخصم الممنوح (ج.م):</span>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      className="table-txt-input" 
+                      value={discount} 
+                      onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))}
+                      style={{ width: '90px', padding: '4px 8px', textAlign: 'left' }}
+                    />
+                  </div>
+                  <div className="total-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                    <span>نسبة الضريبة (%):</span>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="100" 
+                      className="table-txt-input" 
+                      value={taxPercent} 
+                      onChange={(e) => setTaxPercent(Math.max(0, Number(e.target.value) || 0))}
+                      style={{ width: '90px', padding: '4px 8px', textAlign: 'left' }}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {Number(discount) > 0 && (
+                    <div className="total-line text-danger">
+                      <span>الخصم الممنوح:</span>
+                      <strong>-{discount} ج.م</strong>
+                    </div>
+                  )}
+                  {Number(taxAmount) > 0 && (
+                    <div className="total-line">
+                      <span>ضريبة القيمة المضافة ({taxPercent}%):</span>
+                      <strong>+{taxAmount} ج.م</strong>
+                    </div>
+                  )}
+                </>
               )}
               <div className="total-line grand-line">
                 <span>المطلوب من المريض:</span>

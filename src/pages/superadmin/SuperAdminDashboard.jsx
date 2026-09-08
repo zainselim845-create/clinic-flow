@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTenant } from '../../context/TenantContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
-  Building2, Plus, Users, CreditCard, Activity, ShieldCheck, 
+  Building2, Plus, CreditCard, Activity, ShieldCheck, 
   ExternalLink, CheckCircle2, AlertTriangle, ArrowRight, 
-  Search, Sliders, HardDrive, BarChart3, Copy, CheckCheck,
+  Search, HardDrive, Copy, CheckCheck,
   AlertOctagon, Clock, Ban, Check, Bug, RefreshCw, Trash2, LogOut
 } from 'lucide-react';
 import { 
@@ -19,7 +19,7 @@ import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const { allTenants, setAllTenants, switchTenant, updateTenantStatus } = useTenant();
   const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'telemetry_bugs'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());

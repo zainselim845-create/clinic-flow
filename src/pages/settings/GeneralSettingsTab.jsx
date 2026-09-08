@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Building2, Save, CheckCircle2, Phone, Mail, Clock, KeyRound, 
-  CalendarDays, ArrowLeft, Plus, Trash2, Stethoscope
+  CalendarDays, ArrowLeft, Plus, Trash2, Stethoscope, Globe
 } from 'lucide-react';
 
 import { defaultServices } from '../../data/demoData';
@@ -256,6 +256,24 @@ export default function GeneralSettingsTab({
             onChange={(e) => setClinicForm({ ...clinicForm, address: e.target.value })}
             placeholder="مثال: مصر الجديدة — شارع الأهرام، برج الأطباء، الدور الرابع" 
           />
+        </div>
+
+        <div className="form-group full-width">
+          <label htmlFor="googleReviewUrl">رابط صفحة العيادة على خرائط جوجل (Google Maps / Reviews URL)</label>
+          <div className="input-with-icon">
+            <Globe size={18} />
+            <input 
+              id="googleReviewUrl"
+              name="googleReviewUrl"
+              type="url" 
+              value={clinicForm.googleReviewUrl || ''} 
+              onChange={(e) => setClinicForm({ ...clinicForm, googleReviewUrl: e.target.value })}
+              placeholder="مثال: https://g.page/r/your-clinic/review أو https://maps.google.com/?cid=..." 
+            />
+          </div>
+          <p className="field-hint" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            يستخدمه النظام تلقائياً لتوجيه المرضى الراضين (تقييم 5 نجوم) لكتابة تقييمات إيجابية على Google Maps لرفع ترتيب عيادتك في بحث جوجل.
+          </p>
         </div>
 
         <div className="form-group">

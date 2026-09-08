@@ -3,10 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTenant } from '../context/TenantContext';
 import { useAuth } from '../context/AuthContext';
 import { 
-  Stethoscope, ShieldCheck, Sparkles, Globe, Calendar, 
-  Users, ArrowLeft, ArrowRight, CheckCircle2, ChevronDown, 
-  Search, MapPin, Phone, Star, Building2, Lock, 
-  Activity, DollarSign, Clock, MessageSquare, Zap, Cpu, Award
+  Stethoscope, ShieldCheck, Sparkles, Globe, 
+  ArrowLeft, CheckCircle2, ChevronDown, 
+  Search, MapPin, Phone, Lock, 
+  Activity, DollarSign, Cpu, Award
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import './LandingPage.css';

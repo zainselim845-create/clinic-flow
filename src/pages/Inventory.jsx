@@ -92,7 +92,8 @@ const Inventory = () => {
   const filteredItems = useMemo(() => {
     return items.filter(it => {
       // Tenant scoping
-      if (it.clinicId && currentClinicId && it.clinicId !== currentClinicId) return false;
+      const matchesClinic = it.clinicId ? it.clinicId === currentClinicId : (currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1');
+      if (!matchesClinic) return false;
 
       const matchesSearch = 
         it.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

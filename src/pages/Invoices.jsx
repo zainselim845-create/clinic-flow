@@ -12,17 +12,21 @@ import './Invoices.css';
 const Invoices = () => {
   const { state } = useApp();
   const currentClinic = state.clinicInfo || {};
+  const clinicSlug = currentClinic?.slug || 'dr-ahmed';
+  const clinicId = currentClinic?.id || '550e8400-e29b-41d4-a716-446655440000';
 
-  const [invoicesList, setInvoicesList] = useState(() => {
+  const loadScopedInvoices = (slug, cid) => {
     try {
-      const stored = localStorage.getItem('clinicflow_invoices');
+      const stored = localStorage.getItem(`clinicflow_invoices_${slug}`);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch (_) {}
-    return defaultInvoices || [];
-  });
+    return (defaultInvoices || []).filter(inv => !inv.clinicId || inv.clinicId === cid);
+  };
+
+  const [invoicesList, setInvoicesList] = useState(() => loadScopedInvoices(clinicSlug, clinicId));
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all, unpaid, partial, paid
@@ -30,21 +34,27 @@ const Invoices = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    setInvoicesList(loadScopedInvoices(clinicSlug, clinicId));
+  }, [clinicSlug, clinicId]);
+
+  useEffect(() => {
     async function load() {
-      const { data } = await getInvoices();
-      if (data && data.length > 0) {
-        setInvoicesList(data);
+      if (clinicId) {
+        const { data } = await getInvoices(clinicId);
+        if (data && data.length > 0) {
+          setInvoicesList(data);
+        }
       }
     }
     load();
-  }, []);
+  }, [clinicId]);
 
-  // Save to localStorage when list changes
+  // Save to tenant-scoped localStorage when list changes
   useEffect(() => {
     try {
-      localStorage.setItem('clinicflow_invoices', JSON.stringify(invoicesList));
+      localStorage.setItem(`clinicflow_invoices_${clinicSlug}`, JSON.stringify(invoicesList));
     } catch (_) {}
-  }, [invoicesList]);
+  }, [invoicesList, clinicSlug]);
 
   const filteredInvoices = useMemo(() => {
     return invoicesList.filter(inv => {
@@ -74,8 +84,13 @@ const Invoices = () => {
   };
 
   const handleSaveInvoice = async (newInv) => {
-    await addInvoice(newInv);
-    setInvoicesList(prev => [newInv, ...prev.filter(i => i.id !== newInv.id)]);
+    const invWithClinic = {
+      ...newInv,
+      clinicId,
+      clinic_id: clinicId
+    };
+    await addInvoice(invWithClinic);
+    setInvoicesList(prev => [invWithClinic, ...prev.filter(i => i.id !== invWithClinic.id)]);
   };
 
   const handleExportCSV = () => {

@@ -20,7 +20,6 @@ const ManageBooking = () => {
   const { state, dispatch } = useApp();
   const { tenant, allTenants, switchTenant } = useTenant();
   const useSupabase = isSupabaseConfigured();
-  const appointments = state.appointments || [];
 
   useEffect(() => {
     if (clinicSlug && tenant?.slug !== clinicSlug) {

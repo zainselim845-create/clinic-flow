@@ -21,6 +21,7 @@ import { patientIndex } from '../services/indexedSearchService';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { checkActionRateLimit } from '../utils/rateLimiter';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
+import { parseArabicTime } from '../utils/parseArabicTime';
 
 import './Booking.css';
 
@@ -370,17 +371,15 @@ const Booking = () => {
   // Google Calendar Link
   const getGoogleCalendarUrl = (booking) => {
     if (!booking || !booking.date || !booking.time) return '#';
-    const isPM = booking.time.includes('م');
-    const timeClean = booking.time.replace(/[^\d:]/g, '');
-    const [rawH, rawM] = timeClean.split(':').map(Number);
-    let hours = rawH || 18;
-    if (isPM && hours < 12) hours += 12;
-    if (!isPM && hours === 12) hours = 0;
+    const parsed = parseArabicTime(booking.time);
+    const hours = parsed ? parsed.hours : 18;
+    const minutes = parsed ? parsed.minutes : 0;
 
     const dateFormatted = booking.date.replace(/-/g, '');
     const startHourStr = String(hours).padStart(2, '0');
-    const startMinStr = String(rawM || 0).padStart(2, '0');
-    const endHourStr = String(hours + 1).padStart(2, '0');
+    const startMinStr = String(minutes).padStart(2, '0');
+    const endHour = (hours + 1) % 24;
+    const endHourStr = String(endHour).padStart(2, '0');
 
     const startIso = `${dateFormatted}T${startHourStr}${startMinStr}00`;
     const endIso = `${dateFormatted}T${endHourStr}${startMinStr}00`;
@@ -390,6 +389,11 @@ const Booking = () => {
     const location = encodeURIComponent(currentClinic.address || '');
 
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${location}`;
+  };
+
+  const getGoogleMapsUrl = (address, clinicName) => {
+    const query = address ? `${address} (${clinicName || ''})` : (clinicName || 'عيادة');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
   };
 
   const copyBookingCode = () => {
@@ -802,10 +806,20 @@ const Booking = () => {
                   </div>
                 </div>
 
-                <div className="nebras-ticket-address">
+                <a 
+                  href={getGoogleMapsUrl(currentClinic.address, currentClinic.name)}
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="nebras-ticket-address"
+                  title="عرض موقع العيادة والاتجاهات على خرائط جوجل"
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
                   <MapPin size={16} />
                   <span>{currentClinic.address}</span>
-                </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600, marginRight: 'auto' }}>
+                    (الاتجاهات عبر Google Maps 📍)
+                  </span>
+                </a>
               </div>
 
               {/* Action Buttons */}
