@@ -44,9 +44,9 @@ export async function addWalletTransaction(patientId, { type, amount, notes, ref
   try {
     const { balance } = await getPatientWalletHistory(patientId);
     let newBalance = balance;
-    if (type === 'deposit') newBalance += Number(amount);
-    else if (type === 'deduction') newBalance = Math.max(0, newBalance - Number(amount));
-    else if (type === 'refund') newBalance = Math.max(0, newBalance - Number(amount));
+    if (type === 'deposit') newBalance += Math.abs(Number(amount));
+    else if (type === 'deduction') newBalance = Math.max(0, newBalance - Math.abs(Number(amount)));
+    else if (type === 'refund') newBalance += Math.abs(Number(amount));
 
     const { data, error } = await supabase.from('patient_wallet').insert({
       patient_id: patientId,

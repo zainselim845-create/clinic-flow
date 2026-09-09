@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stethoscope, Clock, Check, ArrowRight, UserPlus, FolderOpen, Sparkles } from 'lucide-react';
+import { Stethoscope, Clock, Check, ArrowLeft, UserPlus, FolderOpen, Sparkles } from 'lucide-react';
 
 function WaitingRoomQueue({
   currentExamPatient,
@@ -118,7 +118,7 @@ function WaitingRoomQueue({
                   onClick={() => onStartExam(waitingToday[0])}
                   className="btn-call-next-patient"
                 >
-                  <ArrowRight size={18} />
+                  <ArrowLeft size={18} />
                   <span>استدعاء المريض التالي فوراً: {waitingToday[0].patientName}</span>
                 </button>
               )}
@@ -166,7 +166,7 @@ function WaitingRoomQueue({
                         title="إدخال لغرفة الكشف وبدء الفحص السريري"
                       >
                         <span>بدء الفحص</span>
-                        <ArrowRight size={14} />
+                        <ArrowLeft size={14} />
                       </button>
                     </div>
                   </div>

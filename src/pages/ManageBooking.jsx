@@ -10,6 +10,7 @@ import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { generateDynamicSlots, getTodayDateStr, parseLocalDate } from '../utils/timeSlots';
 import { cleanEgyptianPhone } from '../utils/phoneValidation';
+import { checkActionRateLimit } from '../utils/rateLimiter';
 import * as appointmentsService from '../services/appointmentsService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import './ManageBooking.css';
@@ -145,6 +146,16 @@ const ManageBooking = () => {
       return;
     }
 
+    // Rate limiting: Protect against name guessing/enumeration (Max 5 attempts per minute)
+    const rateCheck = checkActionRateLimit('manage_booking_verify', cleanDigits, 5, 60000);
+    if (!rateCheck.allowed) {
+      setVerifyFeedback({ 
+        type: 'error', 
+        text: `تجاوزت الحد المسموح به لمحاولات الاسترجاع. يرجى الانتظار ${rateCheck.retryAfterSeconds} ثانية للمحاولة مجدداً.` 
+      });
+      return;
+    }
+
     const matchingAppts = clinicAppointments.filter(a => {
       const matchesClinic = (!a.clinicId || a.clinicId === clinicInfo?.id);
       const aPhone = cleanEgyptianPhone(a.patientPhone);
@@ -156,12 +167,21 @@ const ManageBooking = () => {
       return;
     }
 
-    // Check if patient name matches
+    // Check if patient name matches accurately (prevent single-word fuzzy enumeration)
+    const inputParts = cleanName.split(/\s+/).filter(Boolean);
     const nameMatchedAppt = matchingAppts.find(a => {
       const dbName = (a.patientName || '').trim().toLowerCase();
-      // Match first name or full name
-      const nameParts = cleanName.split(/\s+/);
-      return dbName.includes(cleanName) || nameParts.some(part => part.length >= 3 && dbName.includes(part));
+      const dbParts = dbName.split(/\s+/).filter(Boolean);
+      
+      // Exact match or sub-phrase match
+      if (dbName === cleanName || dbName.includes(cleanName)) return true;
+      
+      // Two-part match
+      if (inputParts.length >= 2 && dbParts.length >= 2) {
+        return inputParts[0] === dbParts[0] && inputParts[1] === dbParts[1];
+      }
+      
+      return false;
     });
 
     if (nameMatchedAppt) {
@@ -172,7 +192,7 @@ const ManageBooking = () => {
     } else {
       setVerifyFeedback({ 
         type: 'error', 
-        text: 'اسم المريض غير متطابق مع المسجل لهذا الرقم. يرجى التأكد من كتابة الاسم المسجل بالحجز أو التواصل مع العيادة عبر SMS.' 
+        text: 'اسم المريض غير متطابق مع المسجل لهذا الرقم. يرجى كتابة الاسم الثنائي المسجل بالحجز أو التواصل مع العيادة.' 
       });
     }
   };

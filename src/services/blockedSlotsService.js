@@ -137,10 +137,11 @@ export async function isSlotBlocked(clinicId, date, time) {
 /**
  * Block a specific slot or full day in database
  */
-export async function blockSlotInDb(date, time, reason = 'حظر مخصص', isFullDay = false) {
+export async function blockSlotInDb(date, time, reason = 'حظر مخصص', isFullDay = false, clinicId = null) {
   if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
   try {
     const payload = { date, time, reason, is_full_day: isFullDay };
+    if (clinicId) payload.clinic_id = clinicId;
     const { data, error } = await supabase.from('blocked_slots').insert([payload]).select().single();
     if (error) throw error;
     return { data: fromDbBlockedSlot(data), error: null };
@@ -153,10 +154,14 @@ export async function blockSlotInDb(date, time, reason = 'حظر مخصص', isFu
 /**
  * Unblock a specific slot in database
  */
-export async function unblockSlotInDb(date, time) {
+export async function unblockSlotInDb(date, time, clinicId = null) {
   if (!isSupabaseConfigured()) return { success: false, error: NOT_CONFIGURED_ERROR };
   try {
-    const { error } = await supabase.from('blocked_slots').delete().eq('date', date).eq('time', time);
+    let query = supabase.from('blocked_slots').delete().eq('date', date).eq('time', time);
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+    const { error } = await query;
     if (error) throw error;
     return { success: true, error: null };
   } catch (error) {
@@ -168,10 +173,14 @@ export async function unblockSlotInDb(date, time) {
 /**
  * Unblock a full day in database
  */
-export async function unblockFullDayInDb(date) {
+export async function unblockFullDayInDb(date, clinicId = null) {
   if (!isSupabaseConfigured()) return { success: false, error: NOT_CONFIGURED_ERROR };
   try {
-    const { error } = await supabase.from('blocked_slots').delete().eq('date', date);
+    let query = supabase.from('blocked_slots').delete().eq('date', date);
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+    const { error } = await query;
     if (error) throw error;
     return { success: true, error: null };
   } catch (error) {

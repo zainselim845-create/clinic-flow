@@ -282,11 +282,20 @@ const Booking = () => {
     try {
       let patientId;
 
+      const generateUuid = () => {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      };
+
       if (isExistingClient && recognizedPatient && !isFamilyMemberBooking) {
         patientId = recognizedPatient.id;
       } else {
         // Create new patient record for new client or family member
-        patientId = Date.now().toString() + '_p';
+        patientId = generateUuid();
         const newPatientData = {
           id: patientId,
           clinicId: currentClinic?.id,
@@ -312,7 +321,7 @@ const Booking = () => {
         dispatch({ type: 'ADD_PATIENT', payload: newPatientData });
       }
 
-      const bookingId = Date.now().toString();
+      const bookingId = generateUuid();
       const bookingCode = '#CF-' + Math.floor(1000 + Math.random() * 9000);
 
       const selectedService = (currentClinic.services || []).find(s => s.name === formData.type);

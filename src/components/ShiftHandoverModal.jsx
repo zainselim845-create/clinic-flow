@@ -35,7 +35,12 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
 
     // Sum from completed appointments
     todayAppointments.forEach(appt => {
-      const fee = Number(appt.paidAmount || appt.fee?.replace(/\D/g, '') || 300);
+      const parseAmt = (val) => {
+        if (!val) return 0;
+        const cleaned = parseFloat(String(val).replace(/[^\d.]/g, ''));
+        return isNaN(cleaned) ? 0 : cleaned;
+      };
+      const fee = parseAmt(appt.paidAmount) || parseAmt(appt.fee) || 300;
       const method = appt.paymentMethod || 'cash';
       if (method === 'cash') cashReceived += fee;
       else if (method === 'card') cardReceived += fee;

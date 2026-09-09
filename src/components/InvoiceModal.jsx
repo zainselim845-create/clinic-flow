@@ -29,8 +29,10 @@ const InvoiceModal = ({
 
   // Totals calculations
   const subtotal = items.reduce((acc, it) => acc + (Number(it.unitPrice || 0) * Number(it.quantity || 1)), 0);
-  const taxAmount = (subtotal - Number(discount)) * (Number(taxPercent) / 100);
-  const grandTotal = Math.max(0, subtotal - Number(discount) + taxAmount);
+  const cleanDiscount = Math.min(subtotal, Math.max(0, Number(discount) || 0));
+  const taxableAmount = Math.max(0, subtotal - cleanDiscount);
+  const taxAmount = taxableAmount * (Math.max(0, Number(taxPercent) || 0) / 100);
+  const grandTotal = Math.max(0, taxableAmount + taxAmount);
   const patientShare = grandTotal;
 
   const handleAddItem = () => {
@@ -92,10 +94,15 @@ const InvoiceModal = ({
       });
       setPaymentAmount('');
       if (onSaveInvoice) {
+        const totalDue = Number(invoice.patientShare ?? invoice.total ?? 0);
+        const newPaid = Number(invoice.paidAmount || 0) + Number(paymentAmount);
+        const newRemaining = Math.max(0, totalDue - newPaid);
+        const newStatus = newRemaining <= 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'unpaid');
         onSaveInvoice({
           ...invoice,
-          paidAmount: Number(invoice.paidAmount || 0) + Number(paymentAmount),
-          remainingBalance: Math.max(0, Number(invoice.remainingBalance || invoice.patientShare) - Number(paymentAmount))
+          paidAmount: newPaid,
+          remainingBalance: newRemaining,
+          paymentStatus: newStatus
         });
       }
     } catch (err) {

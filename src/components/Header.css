@@ -267,3 +267,33 @@
   color: var(--error, #D93025);
   background: var(--error-container, #FCE8E6);
 }
+
+/* Mobile Menu Hamburger Button */
+.mobile-menu-btn {
+  display: none;
+  background: var(--surface-container, #F0F4F9);
+  border: 1px solid var(--border-color, #DADCE0);
+  border-radius: var(--radius-md, 12px);
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary, #202124);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.mobile-menu-btn:hover {
+  background: var(--surface-container-high, #E9EEF6);
+}
+
+.mobile-menu-btn:active {
+  transform: scale(0.96);
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+}

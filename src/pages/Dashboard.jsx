@@ -178,29 +178,6 @@ const Dashboard = () => {
       });
     }
 
-    // Schedule recall if selected
-    if (data.recallInterval && data.patientId) {
-      const intervalDays = parseInt(data.recallInterval, 10);
-      const targetDate = new Date();
-      targetDate.setDate(targetDate.getDate() + intervalDays);
-      const targetDateStr = targetDate.toISOString().split('T')[0];
-
-      const newRecall = {
-        id: `rec-${Date.now()}`,
-        clinicId: currentClinicId,
-        clinic_id: currentClinicId,
-        patientId: data.patientId,
-        patientName: data.patientName,
-        patientPhone: data.patientPhone,
-        reason: `متابعة واستدعاء دوري بعد (${data.diagnosis || 'الكشف'})`,
-        dueDate: targetDateStr,
-        intervalDays,
-        status: 'pending',
-        createdAt: new Date().toISOString()
-      };
-      dispatch({ type: 'ADD_RECALL', payload: newRecall });
-    }
-
     setFinishExamAppt(null);
   };
 

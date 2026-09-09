@@ -12,7 +12,7 @@ import { hasPermission, isDoctorRole } from '../utils/permissions';
 import './Sidebar.css';
 
 const Sidebar = () => {
-  const { state, toggleTheme } = useApp();
+  const { state, toggleTheme, mobileNavOpen, setMobileNavOpen } = useApp();
   const { signOut, user } = useAuth();
   const { tenant } = useTenant();
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
@@ -38,7 +38,15 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="sidebar">
+    <>
+      {mobileNavOpen && (
+        <div 
+          className="sidebar-backdrop" 
+          onClick={() => setMobileNavOpen(false)} 
+          aria-label="إغلاق القائمة"
+        />
+      )}
+      <aside className={`sidebar ${mobileNavOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-logo">
         <div 
           className="logo-icon-wrap"
@@ -124,6 +132,7 @@ const Sidebar = () => {
         )}
       </div>
     </aside>
+    </>
   );
 };
 

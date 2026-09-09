@@ -880,6 +880,8 @@ export function AppProvider({ children }) {
     dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
   }, [useSupabase]);
 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   const value = useMemo(() => ({
     state,
     dispatch,
@@ -895,7 +897,9 @@ export function AppProvider({ children }) {
     useSupabase,
     realtimeStatus,
     broadcastClinicEvent,
-    BROADCAST_EVENTS
+    BROADCAST_EVENTS,
+    mobileNavOpen,
+    setMobileNavOpen
   }), [
     state,
     dispatch,
@@ -910,7 +914,8 @@ export function AppProvider({ children }) {
     sendSmsReminder,
     useSupabase,
     realtimeStatus,
-    broadcastClinicEvent
+    broadcastClinicEvent,
+    mobileNavOpen
   ]);
 
   return (

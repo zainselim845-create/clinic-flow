@@ -29,6 +29,8 @@ export default function ConsultationModal({
 
       const recallPayload = {
         id: 'rec-' + Date.now(),
+        clinicId: appointment.clinicId || appointment.clinic_id || null,
+        clinic_id: appointment.clinicId || appointment.clinic_id || null,
         patientId: appointment.patientId || appointment.id,
         patientName: appointment.patientName,
         patientPhone: appointment.patientPhone,

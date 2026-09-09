@@ -51,20 +51,9 @@ export const AuthProvider = ({ children }) => {
   
   const isDemoMode = !isSupabaseConfigured();
 
-  // Enforce client storage isolation for single-clinic accounts
-  const isolateTenantStorage = (activeSlug) => {
-    if (!activeSlug || typeof localStorage === 'undefined') return;
-    try {
-      const allKeys = Object.keys(localStorage);
-      for (const key of allKeys) {
-        if (key.startsWith('clinicflow_data_') && key !== `clinicflow_data_${activeSlug}`) {
-          localStorage.removeItem(key);
-        }
-        if (key.startsWith('clinicflow_invoices_') && key !== `clinicflow_invoices_${activeSlug}`) {
-          localStorage.removeItem(key);
-        }
-      }
-    } catch (_) {}
+  // Safe storage isolation: keep tenant data scoped without wiping coexisting clinics
+  const isolateTenantStorage = (_activeSlug) => {
+    // Intentionally non-destructive: scoped keys (clinicflow_data_{slug}) coexist safely
   };
 
   // Keep clinic info aligned with active tenant
