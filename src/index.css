@@ -19,11 +19,11 @@ html {
 
 body {
   margin: 0;
-  font-family: "Google Sans", "Google Sans Text", "Cairo", "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Readex Pro", "Google Sans", "Cairo", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   letter-spacing: 0;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 ul, ol {
@@ -61,8 +61,8 @@ button:active:not(:disabled), .btn:active:not(:disabled) {
 
 h1, h2, h3, h4, h5, h6 {
   text-wrap: balance;
-  font-family: "Google Sans", "Cairo", "Roboto", system-ui, sans-serif;
-  letter-spacing: -0.01em;
+  font-family: "Readex Pro", "Google Sans", "Cairo", system-ui, sans-serif;
+  letter-spacing: 0;
 }
 
 @media (pointer: coarse) {
@@ -86,7 +86,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* 2. Google Material 3 Design Tokens */
 :root {
-  --font-family: "Google Sans", "Google Sans Text", "Cairo", "Roboto", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family: "Readex Pro", "Google Sans", "Cairo", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   
   --font-size-xs: 0.75rem;   /* 12px - Label small */
   --font-size-sm: 0.84rem;   /* 14px - Body small */
@@ -479,7 +479,7 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
 }
 
 .page-header p {

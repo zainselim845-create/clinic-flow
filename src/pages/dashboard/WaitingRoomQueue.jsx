@@ -148,10 +148,10 @@ function WaitingRoomQueue({
                       <button
                         type="button"
                         onClick={() => onStartExam(appt)}
-                        className="btn btn-primary btn-sm"
-                        title="إدخال لغرفة الكشف"
+                        className="btn-queue-start-exam"
+                        title="إدخال لغرفة الكشف وبدء الفحص السريري"
                       >
-                        <span>إدخال للكشف</span>
+                        <span>بدء الفحص</span>
                         <ArrowRight size={14} />
                       </button>
                     </div>

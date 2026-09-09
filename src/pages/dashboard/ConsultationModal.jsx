@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Stethoscope, Check, CalendarPlus, BellRing } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import './ConsultationModal.css';
 
 export default function ConsultationModal({
   appointment,
@@ -39,35 +40,52 @@ export default function ConsultationModal({
         createdAt: new Date().toISOString(),
         lastContactedAt: null
       };
-      dispatch({ type: 'ADD_RECALL', payload: recallPayload });
+
+      dispatch({
+        type: 'ADD_RECALL',
+        payload: recallPayload
+      });
     }
 
     onComplete({
       appointmentId: appointment.id,
-      patientId: appointment.patientId,
+      patientId: appointment.patientId || appointment.id,
+      patientName: appointment.patientName,
+      patientPhone: appointment.patientPhone,
       diagnosis,
       notes,
-      followUpOption,
-      paymentMethod
+      paidAmount: appointment.fee || '300 ج.م',
+      paymentMethod,
+      recallInterval,
+      followUpOption
     });
   };
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-content consultation-modal" style={{ maxWidth: '600px' }}>
-        <div className="modal-header">
-          <div className="title-row">
-            <Stethoscope className="text-primary" size={20} />
+      <div className="modal-content consultation-modal consultation-modal-box">
+        <div className="consultation-header">
+          <div className="consultation-title">
+            <Stethoscope className="text-primary" size={22} />
             <h3>إنهاء كشف المريض: {appointment.patientName}</h3>
           </div>
-          <button type="button" onClick={onClose} className="btn-close">×</button>
+          <button type="button" onClick={onClose} className="btn-close" aria-label="إغلاق">×</button>
         </div>
 
         <form onSubmit={handleSubmit} className="consultation-form">
           <div className="patient-quick-badge">
-            <span>نوع الزيارة: <strong>{appointment.type || 'كشف عادي'}</strong></span>
-            <span>الهاتف: <strong>{appointment.patientPhone}</strong></span>
-            <span>رسوم الكشف: <strong>{appointment.fee || '300 ج.م'}</strong></span>
+            <div className="badge-item">
+              <span className="badge-label">نوع الزيارة</span>
+              <strong className="badge-value">{appointment.type || 'كشف عادي'}</strong>
+            </div>
+            <div className="badge-item">
+              <span className="badge-label">رقم الهاتف</span>
+              <strong className="badge-value" style={{ direction: 'ltr', textAlign: 'right' }}>{appointment.patientPhone}</strong>
+            </div>
+            <div className="badge-item">
+              <span className="badge-label">رسوم الكشف</span>
+              <strong className="badge-value" style={{ color: '#1E8E3E' }}>{appointment.fee || '300 ج.م'}</strong>
+            </div>
           </div>
 
           <div className="form-group">
@@ -190,10 +208,10 @@ export default function ConsultationModal({
           </div>
 
           <div className="modal-actions">
-            <button type="button" onClick={onClose} className="btn btn-secondary">
+            <button type="button" onClick={onClose} className="btn-cancel-consultation">
               إلغاء
             </button>
-            <button type="submit" className="btn btn-success">
+            <button type="submit" className="btn-submit-consultation">
               <Check size={18} />
               <span>تأكيد إتمام الكشف وتحديث السجل</span>
             </button>

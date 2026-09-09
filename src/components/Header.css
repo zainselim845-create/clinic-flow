@@ -24,7 +24,7 @@
   font-weight: 700;
   color: var(--text-primary);
   margin: 0;
-  letter-spacing: -0.015em;
+  letter-spacing: 0;
 }
 
 .clinic-status-badge {
@@ -177,12 +177,20 @@
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.2;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .doctor-role {
   font-size: 0.7rem;
   color: var(--text-tertiary);
   line-height: 1;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .btn-logout-header {

@@ -6,7 +6,7 @@ import {
   Stethoscope, ShieldCheck, Sparkles, Globe, 
   ArrowLeft, CheckCircle2, ChevronDown, 
   Search, MapPin, Phone, Lock, 
-  Activity, DollarSign, Cpu, Award
+  Activity, DollarSign, Cpu, Award, Clock
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import './LandingPage.css';
@@ -119,11 +119,11 @@ const LandingPage = () => {
         <div className="landing-nav-inner">
           <div className="landing-brand" onClick={() => navigate('/')}>
             <div className="brand-logo-badge">
-              <Stethoscope size={22} className="text-primary-brand" />
+              <Stethoscope size={22} />
             </div>
             <div className="brand-titles">
               <span className="brand-name">كلينيك فلو</span>
-              <span className="brand-tag">ClinicFlow SaaS</span>
+              <span className="brand-tag">ClinicFlow • Enterprise Medical SaaS</span>
             </div>
           </div>
 
@@ -161,18 +161,19 @@ const LandingPage = () => {
         <div className="hero-background-glow"></div>
         <div className="hero-content">
           <div className="hero-badge">
-            <Sparkles size={14} className="text-yellow-400" />
-            <span>المنظومة السحابية الأذكى للعيادات في مصر والشرق الأوسط</span>
+            <Sparkles size={14} className="badge-sparkle-icon" />
+            <span>المنظومة السحابية الذكية لإدارة العيادات والمراكز التخصصية</span>
           </div>
 
           <h1 className="hero-headline">
-            عيادتك الطبية المتكاملة <br />
-            <span className="gradient-text">بدومين مستقل وذكاء اصطناعي فائق</span>
+            منظومة عيادتك الذكية <br />
+            <span className="gradient-text">بهوية مستقلة وأعلى معايير الأمان</span>
           </h1>
 
           <p className="hero-subheadline">
-            منظومة B2B SaaS سحابية متقدمة تمنح كل طبيب عيادة رقمية بهوية مستقلة وسب دومين خاص، 
-            حجز ذكي برقم الهاتف والـ SMS، سجل طبي سريري EMR، ووكيل ذكاء اصطناعي طبي لمساعدة التشخيص.
+            حل سحابي B2B متكامل يمنح كل طبيب عيادة رقمية بهوية ونطاق خاص، 
+            حجز ذكي برقم الموبايل والرسائل النصية SMS، سجل طبي إلكتروني EMR متقدم، 
+            وإدارة مالية وسريرية لحظية بكل سهولة واحترافية.
           </p>
 
           <div className="hero-cta-group">
@@ -202,7 +203,7 @@ const LandingPage = () => {
           </div>
         </div>
 
-        {/* HERO INTERACTIVE SHOWCASE PREVIEW */}
+        {/* HERO INTERACTIVE SHOWCASE PREVIEW (Mini Cockpit) */}
         <div className="hero-showcase-wrapper">
           <div className="showcase-window">
             <div className="showcase-window-bar">
@@ -213,24 +214,87 @@ const LandingPage = () => {
               </div>
               <div className="window-url-bar">
                 <Lock size={12} className="text-emerald-500" />
-                <span>https://dr-sara.clinicflow.app/booking</span>
+                <span>https://dr-ahmed-dental.clinicflow.app/dashboard</span>
               </div>
+              <span className="showcase-live-pill">● متصل ومباشر</span>
             </div>
-            <div className="showcase-preview-body">
-              <div className="preview-stat-card">
-                <span className="preview-lbl">المستأجر النشط (Tenant)</span>
-                <strong className="preview-val text-primary">عيادة د. سارة للجلدية والتجميل</strong>
-                <span className="preview-tag">سب دومين معزول ومستقل</span>
+
+            <div className="showcase-cockpit-preview">
+              {/* Card 1: Waiting Room Stream */}
+              <div className="cockpit-preview-card">
+                <div className="c-card-header">
+                  <div className="c-icon-badge blue">
+                    <Clock size={16} />
+                  </div>
+                  <strong>صالة الانتظار الرقمية</strong>
+                  <span className="c-count-pill">3 حالات</span>
+                </div>
+                <div className="c-card-body">
+                  <div className="c-patient-row in-exam">
+                    <span className="c-row-badge">جاري الفحص</span>
+                    <span className="c-row-name">عمر عبد العزيز محمود</span>
+                    <span className="c-row-time">منذ 15 د</span>
+                  </div>
+                  <div className="c-patient-row waiting">
+                    <span className="c-row-badge wait">انتظار #1</span>
+                    <span className="c-row-name">مينا سمير غالي</span>
+                    <span className="c-row-time">05:30 م</span>
+                  </div>
+                  <div className="c-patient-row waiting">
+                    <span className="c-row-badge wait">انتظار #2</span>
+                    <span className="c-row-name">ياسمين عادل إبراهيم</span>
+                    <span className="c-row-time">06:00 م</span>
+                  </div>
+                </div>
               </div>
-              <div className="preview-stat-card">
-                <span className="preview-lbl">سرعة الاستجابة والبحث</span>
-                <strong className="preview-val text-emerald-500">&lt; 1.0 ملي ثانية</strong>
-                <span className="preview-tag">O(1) Indexed Sharding</span>
+
+              {/* Card 2: Active Clinical Record */}
+              <div className="cockpit-preview-card active-exam-card">
+                <div className="c-card-header">
+                  <div className="c-icon-badge purple">
+                    <Stethoscope size={16} />
+                  </div>
+                  <strong>الفحص السريري المباشر</strong>
+                  <span className="c-active-pill">غرفة الكشف 1</span>
+                </div>
+                <div className="c-card-body">
+                  <div className="c-diagnosis-box">
+                    <span className="c-lbl">التشخيص الطبي:</span>
+                    <strong>تسوس عميق بالضرس 46 مع التهاب عصب حاد</strong>
+                  </div>
+                  <div className="c-treatment-tags">
+                    <span className="c-tag">علاج جذور روتاري</span>
+                    <span className="c-tag">حشو ليزر تجميلي</span>
+                    <span className="c-tag">طربوش زيركون</span>
+                  </div>
+                  <div className="c-exam-footer-note">
+                    <span>🛡️ فحص التعارضات الدوائية: آمن 100%</span>
+                  </div>
+                </div>
               </div>
-              <div className="preview-stat-card">
-                <span className="preview-lbl">مفتاح الحماية والاشتراك</span>
-                <strong className="preview-val text-blue-500">نشط ومعتمد</strong>
-                <span className="preview-tag">Company Kill-Switch Guard</span>
+
+              {/* Card 3: Financial & Smart Engine */}
+              <div className="cockpit-preview-card">
+                <div className="c-card-header">
+                  <div className="c-icon-badge green">
+                    <DollarSign size={16} />
+                  </div>
+                  <strong>الخزينة والتحصيل الفوري</strong>
+                  <span className="c-status-pill-green">مسدد وموثق</span>
+                </div>
+                <div className="c-card-body">
+                  <div className="c-revenue-stat">
+                    <span className="c-stat-label">إيراد اليوم المحصل:</span>
+                    <strong className="c-stat-amount">2,450 ج.م</strong>
+                  </div>
+                  <div className="c-stat-progress-bar">
+                    <div className="c-stat-progress-fill" style={{ width: '85%' }}></div>
+                  </div>
+                  <div className="c-meta-notes">
+                    <span>📱 رسائل SMS التأكيد: 18 مرسلة</span>
+                    <span>🔄 استدعاءات المتابعة: 4 مجدولة</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

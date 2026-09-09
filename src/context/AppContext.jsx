@@ -12,7 +12,10 @@ import * as expensesService from '../services/expensesService';
 import * as recallsService from '../services/recallsService';
 import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
+import { getTodayDateStr } from '../utils/timeSlots';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
+
+export const DATA_SCHEMA_VERSION = 'v4_google_material_3';
 
 const AppContext = createContext(null);
 
@@ -402,6 +405,34 @@ export function appReducer(state, action) {
     case 'SET_SEARCH_QUERY':
       return { ...state, searchQuery: action.payload };
 
+    case 'REFRESH_TODAY_DEMO_DATA': {
+      const slug = state.currentTenantSlug || 'dr-ahmed';
+      const freshSeed = getInitialDataForTenant(state.clinicInfo || slug);
+      const today = getTodayDateStr();
+      const nonToday = (state.appointments || []).filter(a => a.date !== today);
+      const existingPatIds = new Set((state.patients || []).map(p => p.id));
+      const missingPatients = freshSeed.patients.filter(p => !existingPatIds.has(p.id));
+
+      return {
+        ...state,
+        appointments: [...freshSeed.appointments, ...nonToday],
+        patients: [...missingPatients, ...(state.patients || [])],
+        expenses: freshSeed.expenses && freshSeed.expenses.length > 0 ? freshSeed.expenses : (state.expenses || []),
+        recalls: freshSeed.recalls && freshSeed.recalls.length > 0 ? freshSeed.recalls : (state.recalls || []),
+        notifications: [
+          {
+            id: 'notif-' + Date.now(),
+            type: 'system',
+            title: 'تحديث بيانات اليوم الحية',
+            message: 'تم تحديث جدول اليوم المباشر وصالة الانتظار بنجاح وفق معايير Google Material 3',
+            timestamp: new Date().toISOString(),
+            read: false
+          },
+          ...(state.notifications || [])
+        ].slice(0, 100)
+      };
+    }
+
     case 'RESET_ALL_DATA': {
       if (typeof window !== 'undefined') {
         const slug = state.currentTenantSlug || 'dr-ahmed';
@@ -513,19 +544,46 @@ export function AppProvider({ children }) {
       } catch (_) {}
 
       const seedData = getInitialDataForTenant(activeTenant || currentSlug);
+      const today = getTodayDateStr();
 
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
+          const hasTodayAppts = Array.isArray(parsed.appointments) && parsed.appointments.some(a => a.date === today);
+          const isUpToDate = parsed._version === DATA_SCHEMA_VERSION;
+
+          let finalAppointments = Array.isArray(parsed.appointments) ? parsed.appointments : [];
+          let finalPatients = Array.isArray(parsed.patients) ? parsed.patients : [];
+          let finalExpenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
+          let finalRecalls = Array.isArray(parsed.recalls) ? parsed.recalls : [];
+
+          // Auto-heal / migrate: If there are no appointments for today OR schema version changed,
+          // ensure the live operational floor has today's dynamic seed data active
+          if (!hasTodayAppts || !isUpToDate) {
+            const nonTodayAppointments = finalAppointments.filter(a => a.date !== today);
+            finalAppointments = [...seedData.appointments, ...nonTodayAppointments];
+
+            const existingPatIds = new Set(finalPatients.map(p => p.id));
+            const missingSeedPatients = seedData.patients.filter(p => !existingPatIds.has(p.id));
+            finalPatients = [...missingSeedPatients, ...finalPatients];
+
+            if (finalExpenses.length === 0 && seedData.expenses) {
+              finalExpenses = seedData.expenses;
+            }
+            if (finalRecalls.length === 0 && seedData.recalls) {
+              finalRecalls = seedData.recalls;
+            }
+          }
+
           dispatch({ 
             type: 'INIT_DATA', 
             payload: { 
-              patients: (parsed.patients && parsed.patients.length > 0) ? parsed.patients : seedData.patients,
-              appointments: (parsed.appointments && parsed.appointments.length > 0) ? parsed.appointments : seedData.appointments,
+              patients: finalPatients.length > 0 ? finalPatients : seedData.patients,
+              appointments: finalAppointments.length > 0 ? finalAppointments : seedData.appointments,
               notifications: (parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : seedData.notifications,
               blockedSlots: parsed.blockedSlots || seedData.blockedSlots,
-              expenses: (parsed.expenses && parsed.expenses.length > 0) ? parsed.expenses : seedData.expenses,
-              recalls: (parsed.recalls && parsed.recalls.length > 0) ? parsed.recalls : seedData.recalls,
+              expenses: finalExpenses.length > 0 ? finalExpenses : seedData.expenses,
+              recalls: finalRecalls.length > 0 ? finalRecalls : seedData.recalls,
               staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : seedData.staffMembers,
               clinicInfo: activeTenant || parsed.clinicInfo || seedData.clinicInfo,
               useSupabase: false,
@@ -586,6 +644,7 @@ export function AppProvider({ children }) {
       const scopedKey = `clinicflow_data_${currentSlug}`;
       try {
         const payload = JSON.stringify({
+          _version: DATA_SCHEMA_VERSION,
           patients: state.patients,
           appointments: state.appointments,
           blockedSlots: state.blockedSlots,
@@ -604,6 +663,7 @@ export function AppProvider({ children }) {
         try {
           const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
           const compactedState = {
+            _version: DATA_SCHEMA_VERSION,
             patients: state.patients,
             notifications: (state.notifications || []).slice(0, 50),
             appointments: (state.appointments || []).filter(a => a.status !== 'completed' || a.date >= thirtyDaysAgo),

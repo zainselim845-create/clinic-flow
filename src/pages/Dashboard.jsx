@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
-  UserPlus, Search, FolderOpen, Share2,
+  UserPlus, Search, FolderOpen, Share2, RotateCcw,
   CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark
 } from 'lucide-react';
 import { getTodayDateStr } from '../utils/timeSlots';
@@ -274,27 +274,35 @@ const Dashboard = () => {
       <div className="dashboard-top-hero">
         <div className="hero-welcome">
           <div className="hero-title-row">
-            <h2>لوحة العمليات والتحكم السريري</h2>
+            <h2>مرحباً، {currentClinic.doctorName || tenant?.doctorName || 'د. أحمد الشريف'} 👋</h2>
             <span className="hero-status-pill">
               <span className="live-pulse-dot"></span>
               <span>العيادة تستقبل المرضى الآن</span>
             </span>
           </div>
           <p className="hero-subtitle">
-            جدول اليوم: <strong>{today}</strong> • المتابعة الحية لحركة صالة الانتظار وغرف الكشف ومؤشرات الإيراد
+            اليوم: <strong>{today}</strong> • جدول العيادة نشط وصالة الانتظار محدثة لحظياً
           </p>
         </div>
 
         <div className="hero-actions">
           <button 
             type="button" 
+            onClick={() => dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' })} 
+            className="btn-hero-action secondary" 
+            title="تحديث واستعادة جدول اليوم المباشر"
+          >
+            <RotateCcw size={15} />
+            <span>تحديث الأجندة</span>
+          </button>
+          <button 
+            type="button" 
             onClick={() => setIsShiftModalOpen(true)} 
             className="btn-hero-action secondary" 
             title="تصفية ومطابقة درج الخزينة وتسليم الوردية"
-            style={{ background: '#f8fafc', color: '#1e40af', border: '1px solid #cbd5e1' }}
           >
-            <Landmark size={16} />
-            <span>تسليم وردية الاستقبال</span>
+            <Landmark size={15} />
+            <span>تسليم الوردية</span>
           </button>
           <button 
             type="button" 
@@ -302,8 +310,8 @@ const Dashboard = () => {
             className="btn-hero-action secondary" 
             title="نسخ رابط الحجز المباشر للمرضى"
           >
-            <Share2 size={16} />
-            <span>{copiedBookingLink ? 'تم نسخ الرابط!' : 'مشاركة رابط الحجز'}</span>
+            <Share2 size={15} />
+            <span>{copiedBookingLink ? 'تم النسخ!' : 'رابط الحجز'}</span>
           </button>
           <button 
             type="button" 
@@ -311,7 +319,7 @@ const Dashboard = () => {
             className="btn-hero-action primary"
           >
             <UserPlus size={16} />
-            <span>تسجيل حضور مباشر (Walk-in)</span>
+            <span>تسجيل مريض مباشر</span>
           </button>
         </div>
       </div>
@@ -389,23 +397,24 @@ const Dashboard = () => {
               <Stethoscope size={20} />
             </div>
             <span className={`stat-card-tag ${currentExamPatient ? 'in-session-tag' : 'vacant-tag'}`}>
-              {currentExamPatient ? 'جاري الفحص' : 'الغرفة شاغرة'}
+              {currentExamPatient ? 'قيد الفحص' : 'الغرفة شاغرة'}
             </span>
           </div>
           <div className="stat-card-body">
-            <h4 className="stat-patient-name">
-              {currentExamPatient ? currentExamPatient.patientName : 'الغرفة شاغرة ومستعدة'}
-            </h4>
+            <h3 className="stat-main-number text-primary">{inProgressToday.length}</h3>
             <span className="stat-card-label">
-              {currentExamPatient ? `نوع الزيارة: ${currentExamPatient.type || 'كشف عادي'}` : 'جاهزة لاستدعاء الحالة التالية'}
+              {currentExamPatient ? currentExamPatient.patientName : 'لا توجد كشوفات جارية'}
             </span>
           </div>
+          <div className="stat-progress-bar">
+            <div 
+              className="stat-progress-fill" 
+              style={{ width: currentExamPatient ? '100%' : '0%', background: '#5856D6' }}
+            ></div>
+          </div>
           <div className="stat-card-footer exam-footer">
-            {currentExamPatient ? (
-              <span className="text-primary font-bold">⏱️ انقر للمعاينة السريعة</span>
-            ) : (
-              <span className="text-success">✅ شاغرة لاستقبال مريض</span>
-            )}
+            <span>{currentExamPatient ? `⏱️ ${currentExamPatient.type || 'كشف'}` : 'جاهزة للمريض التالي'}</span>
+            <span>غرفة الكشف 1</span>
           </div>
         </div>
 
