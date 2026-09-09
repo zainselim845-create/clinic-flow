@@ -284,7 +284,7 @@ export default function PatientDossierDrawer({
                       <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
                         <span>عدد الإجراءات: <strong>{plan.items?.length || 0}</strong></span>
                         <span>الصافي المطلوب: <strong style={{ color: 'var(--primary)' }}>{plan.netCost || plan.totalCost} ج.م</strong></span>
-                        <span>بتاريخ: {new Date(plan.createdAt).toLocaleDateString('ar-EG')}</span>
+                        <span>بتاريخ: {plan.createdAt && !isNaN(new Date(plan.createdAt).getTime()) ? new Date(plan.createdAt).toISOString().split('T')[0] : 'تاريخ الزيارة'}</span>
                       </div>
                     </div>
                   ))}

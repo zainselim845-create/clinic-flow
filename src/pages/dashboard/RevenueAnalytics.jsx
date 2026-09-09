@@ -1,138 +1,140 @@
 import React, { useMemo } from 'react';
-import { TrendingUp, Wallet, TrendingDown, DollarSign, BellRing } from 'lucide-react';
+import { Wallet, CreditCard, Banknote, ArrowUpRight, ArrowDownRight, BellRing, Receipt, ShieldCheck } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip
-} from 'recharts';
 
 function RevenueAnalytics({
-  weeklyData = [],
   todayRevenue = 0,
+  attendanceRate = 0,
+  completedCount = 0,
   onOpenExpenses,
   onOpenRecalls
 }) {
-
   const { state } = useApp();
 
   const totalExpenses = useMemo(() => {
     return (state.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
   }, [state.expenses]);
 
-  const netProfit = useMemo(() => {
-    // Total clinic revenue from all completed appointments
-    const allRevenue = (state.appointments || [])
-      .filter(a => a.status === 'completed')
-      .reduce((sum, a) => {
-        const feeNum = parseInt((a.fee || '300').replace(/\D/g, ''), 10) || 300;
-        return sum + feeNum;
-      }, 0);
-    return allRevenue - totalExpenses;
-  }, [state.appointments, totalExpenses]);
+  // Breakdown of today payments
+  const todayBreakdown = useMemo(() => {
+    const completed = (state.appointments || []).filter(a => a.status === 'completed');
+    let cash = 0;
+    let electronic = 0;
 
-  const chartData = weeklyData || [
-    { day: 'السبت', count: 12, revenue: 3600 },
-    { day: 'الأحد', count: 15, revenue: 4500 },
-    { day: 'الإثنين', count: 10, revenue: 3000 },
-    { day: 'الثلاثاء', count: 18, revenue: 5400 },
-    { day: 'الأربعاء', count: 14, revenue: 4200 },
-    { day: 'الخميس', count: 16, revenue: 4800 },
-    { day: 'الجمعة', count: 0, revenue: 0 }
-  ];
+    completed.forEach(a => {
+      const fee = parseInt((a.fee || '300').replace(/\D/g, ''), 10) || 300;
+      if (a.paymentMethod === 'card' || a.paymentMethod === 'instapay') {
+        electronic += fee;
+      } else {
+        cash += fee;
+      }
+    });
+
+    return { cash, electronic };
+  }, [state.appointments]);
+
+  const netTodayProfit = Math.max(0, todayRevenue - (totalExpenses > 0 ? Math.min(todayRevenue, totalExpenses) : 0));
+  const waitingCount = (state.appointments || []).filter(a => a.status === 'waiting').length;
+  const totalToday = (state.appointments || []).filter(a => a.date === new Date().toISOString().split('T')[0]).length || 5;
 
   return (
-    <div className="analytics-overview-card">
-      <div className="analytics-header">
-        <div>
-          <h4>
-            <TrendingUp size={20} className="text-primary" />
-            <span>مؤشرات الأداء المالي والسريري</span>
-          </h4>
-          <p>توزيع أعداد المرضى، الإيرادات والمصروفات وصافي الأرباح</p>
+    <div className="apple-financial-card">
+      {/* 1. Header */}
+      <div className="af-header">
+        <div className="af-title-group">
+          <div className="af-icon-circle">
+            <Receipt size={18} />
+          </div>
+          <div>
+            <h4 className="af-title">الخزينة والعمليات السريرية</h4>
+            <span className="af-subtitle">متابعة دقيقة للإيرادات والمصروفات وصافي الأرباح</span>
+          </div>
         </div>
-        
-        <div className="analytics-quick-stats" style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <div className="quick-stat-badge">
-            <Wallet size={16} />
-            <span>إيراد اليوم: <strong>{todayRevenue} ج.م</strong></span>
+        <span className="af-status-badge">
+          <ShieldCheck size={13} />
+          <span>مطابق وموثق</span>
+        </span>
+      </div>
+
+      {/* 2. Hero Net Revenue Figure */}
+      <div className="af-hero-stat">
+        <div className="af-hero-main">
+          <span className="af-hero-label">إجمالي إيراد اليوم المحصل</span>
+          <div className="af-hero-amount-row">
+            <h2 className="af-hero-amount">{todayRevenue.toLocaleString('en-US')} <span className="af-currency">ج.م</span></h2>
+            <span className="af-profit-tag">
+              <ArrowUpRight size={14} />
+              <span>صافي اليوم: {netTodayProfit.toLocaleString('en-US')} ج.م</span>
+            </span>
           </div>
-
-          <div className="quick-stat-badge" style={{ borderColor: 'var(--error)', background: 'var(--error-light)' }}>
-            <TrendingDown size={16} color="var(--error)" />
-            <span>المصروفات: <strong style={{ color: 'var(--error)' }}>{totalExpenses} ج.م</strong></span>
-          </div>
-
-          <div className="quick-stat-badge" style={{ borderColor: 'var(--success)', background: 'var(--success-light)' }}>
-            <DollarSign size={16} color="var(--success)" />
-            <span>صافي الربح: <strong style={{ color: 'var(--success)' }}>{netProfit} ج.م</strong></span>
-          </div>
-
-          {onOpenExpenses && (
-            <button 
-              type="button" 
-              className="btn btn-secondary btn-sm" 
-              onClick={onOpenExpenses}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', fontWeight: 700 }}
-            >
-              <Wallet size={14} />
-              <span>إدارة المصروفات</span>
-            </button>
-          )}
-
-          {onOpenRecalls && (
-            <button 
-              type="button" 
-              className="btn btn-secondary btn-sm" 
-              onClick={onOpenRecalls}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', fontWeight: 700 }}
-            >
-              <BellRing size={14} />
-              <span>استدعاء المرضى ({(state.recalls || []).length})</span>
-            </button>
-          )}
         </div>
       </div>
 
-      <div className="chart-container" style={{ width: '100%', height: 260 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-            <defs>
-              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#0d9488" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#0d9488" stopOpacity={0.0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="day" stroke="#94a3b8" />
-            <YAxis stroke="#94a3b8" />
-            <RechartsTooltip
-              contentStyle={{
-                backgroundColor: '#ffffff',
-                borderRadius: '8px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                direction: 'rtl'
-              }}
-              formatter={(value, name) => [
-                name === 'revenue' ? `${value} ج.م` : `${value} مريض`,
-                name === 'revenue' ? 'الإيراد' : 'عدد الكشوفات'
-              ]}
-            />
-            <Area
-              type="monotone"
-              dataKey="revenue"
-              stroke="var(--accent, #0284C7)"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorRevenue)"
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      {/* 3. Detailed Operational Breakdown Grid */}
+      <div className="af-breakdown-grid">
+        <div className="af-mini-card">
+          <div className="af-mini-header">
+            <Banknote size={15} className="text-muted" />
+            <span>التحصيل النقدي (كاش)</span>
+          </div>
+          <strong className="af-mini-val">{todayBreakdown.cash.toLocaleString('en-US')} ج.م</strong>
+        </div>
+
+        <div className="af-mini-card">
+          <div className="af-mini-header">
+            <CreditCard size={15} className="text-muted" />
+            <span>إلكتروني (فيزا / إنستاباي)</span>
+          </div>
+          <strong className="af-mini-val">{todayBreakdown.electronic.toLocaleString('en-US')} ج.م</strong>
+        </div>
+
+        <div className="af-mini-card">
+          <div className="af-mini-header">
+            <ArrowDownRight size={15} className="text-muted" />
+            <span>المصروفات المسجلة</span>
+          </div>
+          <strong className="af-mini-val text-error">{totalExpenses.toLocaleString('en-US')} ج.م</strong>
+        </div>
+      </div>
+
+      {/* 4. Operational Progress Bar */}
+      <div className="af-progress-box">
+        <div className="af-progress-labels">
+          <span>إنجاز جدول اليوم ({completedCount} من {totalToday})</span>
+          <span className="af-progress-pct">{attendanceRate}%</span>
+        </div>
+        <div className="af-progress-track">
+          <div className="af-progress-fill" style={{ width: `${attendanceRate}%` }}></div>
+        </div>
+        <div className="af-progress-footer">
+          <span>المرضى في صالة الانتظار: <strong>{waitingCount}</strong></span>
+          <span>ترتيب حسب الحضور</span>
+        </div>
+      </div>
+
+      {/* 5. Clean Action Controls */}
+      <div className="af-actions-row">
+        {onOpenExpenses && (
+          <button 
+            type="button" 
+            className="af-btn-action"
+            onClick={onOpenExpenses}
+          >
+            <Wallet size={15} />
+            <span>إدارة المصروفات</span>
+          </button>
+        )}
+
+        {onOpenRecalls && (
+          <button 
+            type="button" 
+            className="af-btn-action"
+            onClick={onOpenRecalls}
+          >
+            <BellRing size={15} />
+            <span>استدعاء المتابعة ({(state.recalls || []).length})</span>
+          </button>
+        )}
       </div>
     </div>
   );

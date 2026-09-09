@@ -21,6 +21,7 @@ const Patients = () => {
   // Filter patients by clinic
   const clinicPatients = useMemo(() => {
     return patients.filter(p => {
+      if (!p || (!p.name && !p.phone)) return false;
       if (p.clinicId) return p.clinicId === currentClinicId;
       return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
     });

@@ -73,147 +73,149 @@ export default function ConsultationModal({
         </div>
 
         <form onSubmit={handleSubmit} className="consultation-form">
-          <div className="patient-quick-badge">
-            <div className="badge-item">
-              <span className="badge-label">نوع الزيارة</span>
-              <strong className="badge-value">{appointment.type || 'كشف عادي'}</strong>
+          <div className="consultation-scroll-body">
+            <div className="patient-quick-badge">
+              <div className="badge-item">
+                <span className="badge-label">نوع الزيارة</span>
+                <strong className="badge-value">{appointment.type || 'كشف عادي'}</strong>
+              </div>
+              <div className="badge-item">
+                <span className="badge-label">رقم الهاتف</span>
+                <strong className="badge-value" style={{ direction: 'ltr', textAlign: 'right' }}>{appointment.patientPhone}</strong>
+              </div>
+              <div className="badge-item">
+                <span className="badge-label">رسوم الكشف</span>
+                <strong className="badge-value" style={{ color: '#1E8E3E' }}>{appointment.fee || '300 ج.م'}</strong>
+              </div>
             </div>
-            <div className="badge-item">
-              <span className="badge-label">رقم الهاتف</span>
-              <strong className="badge-value" style={{ direction: 'ltr', textAlign: 'right' }}>{appointment.patientPhone}</strong>
+
+            <div className="form-group">
+              <label>التشخيص الطبي السريري *</label>
+              <input
+                type="text"
+                placeholder="مثال: التهاب معوي حاد، نزلة شعبية، علاج عصب، متابعة سكر..."
+                value={diagnosis}
+                onChange={(e) => setDiagnosis(e.target.value)}
+                required
+              />
             </div>
-            <div className="badge-item">
-              <span className="badge-label">رسوم الكشف</span>
-              <strong className="badge-value" style={{ color: '#1E8E3E' }}>{appointment.fee || '300 ج.م'}</strong>
+
+            <div className="form-group">
+              <label>ملاحظات الكشف والتوصيات الطبية</label>
+              <textarea
+                rows={3}
+                placeholder="ملاحظات الطبيب السريرية، تفاصيل العلاج، أو توصيات المتابعة..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
-          </div>
 
-          <div className="form-group">
-            <label>التشخيص الطبي (Diagnosis) *</label>
-            <input
-              type="text"
-              placeholder="مثال: التهاب معوي حاد، نزلة شعبية، متابعة سكر..."
-              value={diagnosis}
-              onChange={(e) => setDiagnosis(e.target.value)}
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label>طريقة تحصيل الرسوم</label>
+              <div className="followup-radio-group">
+                <label className={`radio-pill ${paymentMethod === 'cash' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="payMethod"
+                    value="cash"
+                    checked={paymentMethod === 'cash'}
+                    onChange={() => setPaymentMethod('cash')}
+                  />
+                  <span>نقداً (كاش)</span>
+                </label>
 
-          <div className="form-group">
-            <label>ملاحظات الكشف والتوصيات السريرية</label>
-            <textarea
-              rows={3}
-              placeholder="ملاحظات الطبيب، التشخيص الإضافي، أو توصيات المتابعة..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
+                <label className={`radio-pill ${paymentMethod === 'card' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="payMethod"
+                    value="card"
+                    checked={paymentMethod === 'card'}
+                    onChange={() => setPaymentMethod('card')}
+                  />
+                  <span>فيزا وبطاقة بنكية</span>
+                </label>
 
-          <div className="form-group">
-            <label>طريقة تحصيل الرسوم (Payment Method)</label>
-            <div className="followup-radio-group">
-              <label className={`radio-pill ${paymentMethod === 'cash' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="payMethod"
-                  value="cash"
-                  checked={paymentMethod === 'cash'}
-                  onChange={() => setPaymentMethod('cash')}
-                />
-                <span>نقداً (كاش)</span>
-              </label>
-
-              <label className={`radio-pill ${paymentMethod === 'card' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="payMethod"
-                  value="card"
-                  checked={paymentMethod === 'card'}
-                  onChange={() => setPaymentMethod('card')}
-                />
-                <span>فيزا / كارت</span>
-              </label>
-
-              <label className={`radio-pill ${paymentMethod === 'instapay' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="payMethod"
-                  value="instapay"
-                  checked={paymentMethod === 'instapay'}
-                  onChange={() => setPaymentMethod('instapay')}
-                />
-                <span>إنستاباي / محفظة</span>
-              </label>
+                <label className={`radio-pill ${paymentMethod === 'instapay' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="payMethod"
+                    value="instapay"
+                    checked={paymentMethod === 'instapay'}
+                    onChange={() => setPaymentMethod('instapay')}
+                  />
+                  <span>إنستاباي ومحفظة</span>
+                </label>
+              </div>
             </div>
-          </div>
 
-          {/* Periodic Recall Selector */}
-          <div className="form-group">
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <BellRing size={16} className="text-primary" />
-              <span>جدولة استدعاء ومتابعة دورية تلقائية (Patient Recall)</span>
-            </label>
-            <select
-              className="input-field"
-              value={recallInterval}
-              onChange={(e) => setRecallInterval(e.target.value)}
-            >
-              <option value="none">بدون جدولة استدعاء دوري</option>
-              <option value="1_month">استدعاء دوري بعد شهر واحد (1)</option>
-              <option value="3_months">استدعاء دوري بعد 3 أشهر (فحص سكر / ربع سنوي)</option>
-              <option value="6_months">استدعاء دوري بعد 6 أشهر (نصف سنوي)</option>
-              <option value="12_months">استدعاء دوري بعد سنة (فحص سنوي)</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>
-              <CalendarPlus size={16} />
-              <span>استشارة قريبة مجانية</span>
-            </label>
-            <div className="followup-radio-group">
-              <label className={`radio-pill ${followUpOption === 'none' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="followup"
-                  value="none"
-                  checked={followUpOption === 'none'}
-                  onChange={() => setFollowUpOption('none')}
-                />
-                <span>لا تحتاج استشارة قريبة</span>
+            {/* Periodic Recall Selector */}
+            <div className="form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <BellRing size={16} className="text-primary" />
+                <span>جدولة استدعاء ومتابعة دورية للمريض</span>
               </label>
+              <select
+                className="input-field"
+                value={recallInterval}
+                onChange={(e) => setRecallInterval(e.target.value)}
+              >
+                <option value="none">بدون استدعاء دوري</option>
+                <option value="1_month">استدعاء دوري بعد شهر واحد (1)</option>
+                <option value="3_months">استدعاء دوري بعد 3 أشهر (فحص ربع سنوي)</option>
+                <option value="6_months">استدعاء دوري بعد 6 أشهر (فحص نصف سنوي)</option>
+                <option value="12_months">استدعاء دوري بعد سنة (فحص سنوي)</option>
+              </select>
+            </div>
 
-              <label className={`radio-pill ${followUpOption === '7_days' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="followup"
-                  value="7_days"
-                  checked={followUpOption === '7_days'}
-                  onChange={() => setFollowUpOption('7_days')}
-                />
-                <span>استشارة بعد أسبوع (7 أيام)</span>
+            <div className="form-group">
+              <label>
+                <CalendarPlus size={16} />
+                <span>استشارة قريبة مجانية</span>
               </label>
+              <div className="followup-radio-group">
+                <label className={`radio-pill ${followUpOption === 'none' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="followup"
+                    value="none"
+                    checked={followUpOption === 'none'}
+                    onChange={() => setFollowUpOption('none')}
+                  />
+                  <span>لا تحتاج استشارة قريبة</span>
+                </label>
 
-              <label className={`radio-pill ${followUpOption === '14_days' ? 'selected' : ''}`}>
-                <input
-                  type="radio"
-                  name="followup"
-                  value="14_days"
-                  checked={followUpOption === '14_days'}
-                  onChange={() => setFollowUpOption('14_days')}
-                />
-                <span>استشارة بعد أسبوعين (14 يوماً)</span>
-              </label>
+                <label className={`radio-pill ${followUpOption === '7_days' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="followup"
+                    value="7_days"
+                    checked={followUpOption === '7_days'}
+                    onChange={() => setFollowUpOption('7_days')}
+                  />
+                  <span>استشارة بعد أسبوع (7 أيام)</span>
+                </label>
+
+                <label className={`radio-pill ${followUpOption === '14_days' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="followup"
+                    value="14_days"
+                    checked={followUpOption === '14_days'}
+                    onChange={() => setFollowUpOption('14_days')}
+                  />
+                  <span>استشارة بعد أسبوعين (14 يوماً)</span>
+                </label>
+              </div>
             </div>
           </div>
 
-          <div className="modal-actions">
+          <div className="modal-actions consultation-footer">
             <button type="button" onClick={onClose} className="btn-cancel-consultation">
               إلغاء
             </button>
             <button type="submit" className="btn-submit-consultation">
               <Check size={18} />
-              <span>تأكيد إتمام الكشف وتحديث السجل</span>
+              <span>تأكيد إتمام الكشف وحفظ السجل</span>
             </button>
           </div>
         </form>

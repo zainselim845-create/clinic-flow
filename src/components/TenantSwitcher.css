@@ -46,18 +46,18 @@
 }
 
 .tenant-name-label {
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: #1d1d1f;
-  max-width: 140px;
+  color: #202124;
+  max-width: 220px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tenant-slug-label {
-  font-size: 0.68rem;
-  color: #86868b;
+  font-size: 0.7rem;
+  color: #5F6368;
   direction: ltr;
   text-align: right;
 }

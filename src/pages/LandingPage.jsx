@@ -162,18 +162,18 @@ const LandingPage = () => {
         <div className="hero-content">
           <div className="hero-badge">
             <Sparkles size={14} className="badge-sparkle-icon" />
-            <span>المنظومة السحابية الذكية لإدارة العيادات والمراكز التخصصية</span>
+            <span>المنظومة السحابية الذكية • إصدار العيادات والمراكز التخصصية</span>
           </div>
 
           <h1 className="hero-headline">
-            منظومة عيادتك الذكية <br />
-            <span className="gradient-text">بهوية مستقلة وأعلى معايير الأمان</span>
+            منظومة العيادات الذكية، <br />
+            <span className="google-hero-focus gradient-text">كما يجب أن تكون.</span>
           </h1>
 
           <p className="hero-subheadline">
-            حل سحابي B2B متكامل يمنح كل طبيب عيادة رقمية بهوية ونطاق خاص، 
-            حجز ذكي برقم الموبايل والرسائل النصية SMS، سجل طبي إلكتروني EMR متقدم، 
-            وإدارة مالية وسريرية لحظية بكل سهولة واحترافية.
+            حل سحابي متكامل يمنح كل طبيب عيادة رقمية راقية بهوية ودومين مستقل، 
+            تنظيم دقيق للمواعيد وصالة انتظار لحظية، سجلات طبية سريرية متقدمة، 
+            وإدارة مالية واضحة بأعلى معايير الهدوء والاحترافية.
           </p>
 
           <div className="hero-cta-group">
@@ -398,7 +398,7 @@ const LandingPage = () => {
       {/* 4. ENTERPRISE SAAS FEATURES GRID */}
       <section id="features" className="features-section">
         <div className="section-header">
-          <span className="section-pill">معمارية متطورة</span>
+          <span className="section-pill">دليل العيادات المعتمدة</span>
           <h2 className="section-title">كل ما تحتاجه عيادتك في منظومة سحابية واحدة</h2>
           <p className="section-desc">
             صممت المنظومة لتمنحك استقلالية تامة، أماناً بنكياً، وتجربة سلسة لطاقمك ومرضاك:
@@ -477,7 +477,7 @@ const LandingPage = () => {
       {/* 5. PRICING SECTION */}
       <section id="pricing" className="pricing-section">
         <div className="section-header">
-          <span className="section-pill">باقات شفافة وبدون مصاريف خفية</span>
+          <span className="section-pill">دليل العيادات المعتمدة</span>
           <h2 className="section-title">اختر الباقة المناسبة لحجم ونمو عيادتك</h2>
           <p className="section-desc">
             جميع الباقات تشمل فترة تجريبية مجانية لمدة 14 يوماً مع تدريب كامل لطاقمك الطبي والإداري.
@@ -525,7 +525,7 @@ const LandingPage = () => {
       {/* 6. FAQ SECTION */}
       <section id="faq" className="faq-section">
         <div className="section-header">
-          <span className="section-pill">الأسئلة الشائعة</span>
+          <span className="section-pill">دليل العيادات المعتمدة</span>
           <h2 className="section-title">كل ما تود معرفته عن منظومة كلينيك فلو</h2>
         </div>
 

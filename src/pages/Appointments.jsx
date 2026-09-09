@@ -81,7 +81,7 @@ const Appointments = () => {
       let matchesStatus = true;
       if (filterStatus === 'waiting') matchesStatus = appt.status === 'waiting';
       else if (filterStatus === 'in_progress') matchesStatus = appt.status === 'in_progress';
-      else if (filterStatus === 'booked') matchesStatus = appt.status === 'booked' || appt.status === 'upcoming';
+      else if (filterStatus === 'booked') matchesStatus = appt.status === 'booked' || appt.status === 'upcoming' || appt.status === 'confirmed' || appt.status === 'pending';
       else if (filterStatus === 'completed') matchesStatus = appt.status === 'completed';
       else if (filterStatus === 'cancelled') matchesStatus = appt.status === 'cancelled';
 

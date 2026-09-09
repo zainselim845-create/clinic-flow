@@ -64,48 +64,24 @@ const Header = ({ title }) => {
         </div>
 
         <div className="header-actions">
-          {/* Cloud Backend vs Offline Local Mode Indicator */}
+          {/* Subtle Google Cloud Sync Status Indicator */}
           <div 
-            className="cloud-status-badge"
+            className={`google-sync-indicator ${isCloudConnected ? 'synced' : 'local'}`}
             onClick={() => navigate('/settings')}
             title={isCloudConnected 
               ? 'متصل بالسحابة (Supabase): التزامن الفوري نشط والبيانات مشفرة ومحفوظة سحابياً' 
-              : 'وضع محلي فوري (Local Mode): العيادة تعمل بدون انقطاع على التخزين المحلي الآمن. اضغط لربط Supabase السحابي'}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '20px',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              border: isCloudConnected ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(59, 130, 246, 0.4)',
-              background: isCloudConnected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-              color: isCloudConnected ? '#10B981' : '#3B82F6',
-              transition: 'all 0.2s ease',
-              whiteSpace: 'nowrap'
-            }}
+              : 'وضع محلي فوري (Local Mode): العيادة تعمل بنجاح على التخزين المحلي الآمن. اضغط للربط السحابي'}
           >
-            <span 
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                backgroundColor: isCloudConnected ? '#10B981' : '#3B82F6',
-                display: 'inline-block',
-                boxShadow: isCloudConnected ? '0 0 8px #10B981' : '0 0 6px #3B82F6'
-              }}
-            />
-            <span>{isCloudConnected ? 'سحابي (Supabase)' : 'وضع محلي فوري'}</span>
+            <span className="sync-status-dot" />
+            <span className="sync-status-text">{isCloudConnected ? 'سحابي' : 'تخزين محلي'}</span>
           </div>
 
-          {/* Interactive Global Search Trigger Bar */}
+          {/* Google Material 3 Global Search Trigger Bar */}
           <div className="search-bar" onClick={() => setIsSearchOpen(true)} title="بحث سريع وشامل (Ctrl + K)">
-            <Search size={16} className="search-icon" />
+            <Search size={17} className="search-icon" />
             <input 
               type="text" 
-              placeholder="بحث سريع في العيادة..." 
+              placeholder="بحث في العيادة (اسم، هاتف، موعد)..." 
               readOnly 
               style={{ cursor: 'pointer' }}
             />
@@ -116,21 +92,12 @@ const Header = ({ title }) => {
             {state.theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          <button 
-            className="theme-header-btn" 
-            onClick={() => setIsReportModalOpen(true)} 
-            title="إبلاغ عن عطل أو مشكلة فنية"
-            style={{ color: '#ef4444' }}
-          >
-            <Bug size={18} />
-          </button>
-
           <button className="notification-btn" onClick={() => navigate('/notifications')} title="التنبيهات">
-            <Bell size={19} />
+            <Bell size={18} />
             {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
           </button>
 
-          {/* Unified Profile & Account Action */}
+          {/* Unified Google-Style Profile Chip */}
           <div className="doctor-profile">
             <div className="avatar">{initial}</div>
             <div className="doctor-info">

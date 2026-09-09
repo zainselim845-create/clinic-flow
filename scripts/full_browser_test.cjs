@@ -117,7 +117,7 @@ async function runFullBrowserAudit() {
     record('Doctor Login & Dashboard', isDashboardLoaded ? 'PASS' : 'FAIL', `Dashboard loaded: ${isDashboardLoaded}`);
 
     // Check Cloud Status pill
-    const cloudPill = await page.locator('.cloud-status-badge').count() > 0;
+    const cloudPill = await page.locator('.google-sync-indicator, .cloud-status-badge').count() > 0;
     record('Cloud Status Indicator', cloudPill ? 'PASS' : 'WARN', `Cloud status indicator rendered in header: ${cloudPill}`);
 
     // Test Consultation Flow: Click "إنهاء الكشف" or start examination

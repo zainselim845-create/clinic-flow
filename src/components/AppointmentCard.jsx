@@ -8,13 +8,15 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'in_progress': return 'في الكشف ';
-      case 'waiting': return 'في صالة الانتظار ';
+      case 'in_progress': return 'في الكشف';
+      case 'waiting': return 'في صالة الانتظار';
+      case 'confirmed': return 'مؤكد';
+      case 'pending': return 'قيد التأكيد';
       case 'booked':
-      case 'upcoming': return 'محجوز ';
-      case 'completed': return 'تم الكشف ';
-      case 'cancelled': return 'ملغى ';
-      default: return status;
+      case 'upcoming': return 'محجوز';
+      case 'completed': return 'تم الكشف';
+      case 'cancelled': return 'ملغى';
+      default: return status || 'محجوز';
     }
   };
 
@@ -98,15 +100,15 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
 
         <div className="appt-actions-right">
           {/* Quick Lifecycle Progress Action */}
-          {(appointment.status === 'booked' || appointment.status === 'upcoming') && (
+          {(appointment.status === 'booked' || appointment.status === 'upcoming' || appointment.status === 'confirmed') && (
             <button 
               type="button"
               className="btn-status-advance checkin"
               onClick={() => handleStatusChange('waiting')}
-              title="تسجيل حضور المريض"
+              title="تسجيل حضور المريض في صالة الانتظار"
             >
               <UserPlus size={13} />
-              <span>تسجيل وصول </span>
+              <span>تسجيل وصول</span>
             </button>
           )}
 

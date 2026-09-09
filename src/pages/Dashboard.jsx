@@ -288,43 +288,42 @@ const Dashboard = () => {
         <div className="hero-actions">
           <button 
             type="button" 
-            onClick={() => dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' })} 
-            className="btn-hero-action secondary" 
-            title="تحديث واستعادة جدول اليوم المباشر"
-          >
-            <RotateCcw size={15} />
-            <span>تحديث الأجندة</span>
-          </button>
-          <button 
-            type="button" 
-            onClick={() => setIsShiftModalOpen(true)} 
-            className="btn-hero-action secondary" 
-            title="تصفية ومطابقة درج الخزينة وتسليم الوردية"
-          >
-            <Landmark size={15} />
-            <span>تسليم الوردية</span>
-          </button>
-          <button 
-            type="button" 
             onClick={handleCopyBookingLink} 
-            className="btn-hero-action secondary" 
-            title="نسخ رابط الحجز المباشر للمرضى"
+            className="btn-hero-icon-action" 
+            title="نسخ رابط حجز العيادة المباشر للمرضى"
           >
             <Share2 size={15} />
             <span>{copiedBookingLink ? 'تم النسخ!' : 'رابط الحجز'}</span>
           </button>
           <button 
             type="button" 
+            onClick={() => setIsShiftModalOpen(true)} 
+            className="btn-hero-icon-action" 
+            title="تصفية الخزينة وتسليم الوردية"
+          >
+            <Landmark size={15} />
+            <span>الوردية</span>
+          </button>
+          <button 
+            type="button" 
+            onClick={() => dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' })} 
+            className="btn-hero-icon-action icon-only" 
+            title="تحديث واستعادة جدول اليوم"
+          >
+            <RotateCcw size={15} />
+          </button>
+          <button 
+            type="button" 
             onClick={() => setIsWalkInModalOpen(true)} 
-            className="btn-hero-action primary"
+            className="btn-hero-primary-action"
           >
             <UserPlus size={16} />
-            <span>تسجيل مريض مباشر</span>
+            <span>تسجيل مريض جديد</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Interactive KPI Command Cards (4-Grid with Click-to-Filter) */}
+      {/* 2. Interactive KPI Command Cards (Apple Health Minimalist) */}
       <div className="cockpit-stats-grid">
         
         {/* Metric 1: Total Appointments */}
@@ -335,18 +334,18 @@ const Dashboard = () => {
         >
           <div className="stat-card-header">
             <div className="stat-icon-box total">
-              <CalendarDays size={20} />
+              <CalendarDays size={18} />
             </div>
-            <span className="stat-card-tag">جدول اليوم</span>
+            <span className="stat-card-tag">أجندة اليوم</span>
           </div>
           <div className="stat-card-body">
             <h3 className="stat-main-number">{todaysAppointments.length}</h3>
-            <span className="stat-card-label">حالة مسجلة بالأجندة</span>
+            <span className="stat-card-label">حالة مسجلة بالجدول</span>
           </div>
           <div className="stat-progress-bar">
             <div 
               className="stat-progress-fill" 
-              style={{ width: `${attendanceRate}%`, background: 'var(--primary)' }}
+              style={{ width: `${attendanceRate}%` }}
             ></div>
           </div>
           <div className="stat-card-footer">
@@ -363,26 +362,26 @@ const Dashboard = () => {
         >
           <div className="stat-card-header">
             <div className="stat-icon-box waiting">
-              <Clock size={20} />
+              <Clock size={18} />
             </div>
             <span className="stat-card-tag waiting-tag">
               <span className="live-pulse-dot" style={{ width: 6, height: 6 }}></span>
-              <span>مباشر بالعيادة</span>
+              <span>صالة الانتظار</span>
             </span>
           </div>
           <div className="stat-card-body">
-            <h3 className="stat-main-number text-warning">{waitingToday.length}</h3>
-            <span className="stat-card-label">مرضى في صالة الانتظار</span>
+            <h3 className="stat-main-number">{waitingToday.length}</h3>
+            <span className="stat-card-label">مرضى بانتظار الدخول</span>
           </div>
           <div className="stat-progress-bar">
             <div 
               className="stat-progress-fill" 
-              style={{ width: `${Math.min(100, waitingToday.length * 20)}%`, background: 'var(--warning)' }}
+              style={{ width: `${Math.min(100, waitingToday.length * 25)}%` }}
             ></div>
           </div>
           <div className="stat-card-footer">
-            <span>{waitingToday.length > 0 ? 'متوسط الانتظار: حوالي 10 دقائق' : 'لا يوجد انتظار حالياً'}</span>
-            <span>ترتيب حسب الحضور</span>
+            <span>{waitingToday.length > 0 ? 'متوسط الانتظار: 10 د' : 'لا يوجد انتظار'}</span>
+            <span>أسبقية الحضور</span>
           </div>
         </div>
 
@@ -394,27 +393,27 @@ const Dashboard = () => {
         >
           <div className="stat-card-header">
             <div className="stat-icon-box exam">
-              <Stethoscope size={20} />
+              <Stethoscope size={18} />
             </div>
             <span className={`stat-card-tag ${currentExamPatient ? 'in-session-tag' : 'vacant-tag'}`}>
               {currentExamPatient ? 'قيد الفحص' : 'الغرفة شاغرة'}
             </span>
           </div>
           <div className="stat-card-body">
-            <h3 className="stat-main-number text-primary">{inProgressToday.length}</h3>
+            <h3 className="stat-main-number">{inProgressToday.length}</h3>
             <span className="stat-card-label">
-              {currentExamPatient ? currentExamPatient.patientName : 'لا توجد كشوفات جارية'}
+              {currentExamPatient ? currentExamPatient.patientName : 'الغرفة مستعدة للمريض التالي'}
             </span>
           </div>
           <div className="stat-progress-bar">
             <div 
               className="stat-progress-fill" 
-              style={{ width: currentExamPatient ? '100%' : '0%', background: '#5856D6' }}
+              style={{ width: currentExamPatient ? '100%' : '0%' }}
             ></div>
           </div>
           <div className="stat-card-footer exam-footer">
-            <span>{currentExamPatient ? `⏱️ ${currentExamPatient.type || 'كشف'}` : 'جاهزة للمريض التالي'}</span>
-            <span>غرفة الكشف 1</span>
+            <span>{currentExamPatient ? currentExamPatient.type || 'كشف' : 'غرفة الكشف 1'}</span>
+            <span>مباشر</span>
           </div>
         </div>
 
@@ -426,29 +425,27 @@ const Dashboard = () => {
         >
           <div className="stat-card-header">
             <div className="stat-icon-box revenue">
-              <Wallet size={20} />
+              <Wallet size={18} />
             </div>
             <span className="stat-card-tag revenue-tag">
-              <TrendingUp size={12} />
-              <span>تحصيل نقدي وفوري</span>
+              <span>الخزينة اليومية</span>
             </span>
           </div>
           <div className="stat-card-body">
-            <h3 className="stat-main-number text-success">{todayRevenue} ج.م</h3>
-            <span className="stat-card-label">إجمالي إيراد الكشوفات اليوم</span>
+            <h3 className="stat-main-number text-success">{todayRevenue.toLocaleString('en-US')} ج.م</h3>
+            <span className="stat-card-label">إجمالي التحصيل اليوم</span>
           </div>
           <div className="stat-progress-bar">
             <div 
               className="stat-progress-fill" 
-              style={{ width: `${attendanceRate}%`, background: 'var(--success)' }}
+              style={{ width: `${attendanceRate}%`, background: '#10B981' }}
             ></div>
           </div>
           <div className="stat-card-footer">
             <span>{completedToday.length} كشف مسدد</span>
-            <span>الذمم المالية موثقة</span>
+            <span>مطابق وموثق</span>
           </div>
         </div>
-
       </div>
 
       {/* 2. Cockpit Layout: 2-Column Responsive High-Density Grid */}

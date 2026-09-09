@@ -13,7 +13,7 @@ const PatientCard = ({ patient, onClick }) => {
   const { state } = useApp();
   if (!patient) return null;
 
-  const name = patient.name || 'مريض بدون اسم';
+  const name = patient.name || (patient.phone ? `مريض (${patient.phone})` : 'مريض مسجل بالعيادة');
   const initials = name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('') || 'م';
   const clinicName = state.clinicInfo?.name || 'العيادة';
 

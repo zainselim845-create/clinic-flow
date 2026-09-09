@@ -68,41 +68,56 @@
   gap: 0.65rem;
 }
 
-.btn-hero-action {
+/* Google Material 3 Hero Action Buttons */
+.btn-hero-primary-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.35rem;
+  border-radius: 9999px;
+  background: #0B57D0;
+  color: #FFFFFF !important;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
+  transition: all var(--transition-fast);
+}
+
+.btn-hero-primary-action:hover {
+  background: #0842A0;
+  box-shadow: 0 2px 6px rgba(60, 64, 67, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-hero-icon-action {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.55rem 1.15rem;
-  border-radius: var(--radius-full);
-  font-weight: 600;
+  padding: 0.6rem 1rem;
+  border-radius: 9999px;
+  background: var(--surface-container, #F0F4F9);
+  color: #444746;
   font-size: 0.84rem;
+  font-weight: 500;
   cursor: pointer;
+  border: 1px solid var(--border-subtle, #E8EAED);
   transition: all var(--transition-fast);
-  border: 1px solid transparent;
 }
 
-.btn-hero-action.secondary {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-.btn-hero-action.secondary:hover {
-  background: var(--surface);
-  border-color: var(--primary);
-  color: var(--primary);
+.btn-hero-icon-action:hover {
+  background: var(--surface-container-high, #E9EEF6);
+  color: #1F1F1F;
+  border-color: var(--border-color, #DADCE0);
 }
 
-.btn-hero-action.primary {
-  background: var(--primary);
-  color: #FFFFFF !important;
-  box-shadow: var(--shadow-sm);
-}
-.btn-hero-action.primary:hover {
-  background: var(--primary-hover);
-  box-shadow: var(--shadow-md);
+.btn-hero-icon-action.icon-only {
+  padding: 0.6rem;
+  border-radius: 50%;
 }
 
-/* 2. KPI 4-Card Grid */
+/* 2. KPI 4-Card Grid (Google Material 3 Symmetric Cards) */
 .cockpit-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -121,27 +136,28 @@
 }
 
 .cockpit-stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 1.15rem 1.25rem;
-  box-shadow: var(--shadow-card);
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border-color, #DADCE0);
+  border-radius: 16px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.75rem;
-  transition: all var(--transition-normal);
+  gap: 0.85rem;
+  transition: all var(--transition-fast);
   cursor: pointer;
 }
 
 .cockpit-stat-card:hover {
-  box-shadow: var(--shadow-card-hover);
+  box-shadow: 0 4px 12px rgba(60, 64, 67, 0.12);
   transform: translateY(-2px);
+  border-color: #BDC1C6;
 }
 
 .cockpit-stat-card.active-filter-card {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px var(--primary-light);
+  border-color: #1A73E8;
+  background: #FCFDFF;
 }
 
 .stat-card-header {
@@ -151,8 +167,8 @@
 }
 
 .stat-icon-box {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -160,24 +176,24 @@
   flex-shrink: 0;
 }
 
-.stat-icon-box.total { background: var(--primary-light); color: var(--primary); }
-.stat-icon-box.waiting { background: var(--warning-light); color: var(--warning); }
-.stat-icon-box.exam { background: rgba(88, 86, 214, 0.1); color: #5856D6; }
-.stat-icon-box.revenue { background: var(--success-light); color: var(--success); }
+.stat-icon-box.total { background: #E8F0FE; color: #0B57D0; }
+.stat-icon-box.waiting { background: #FEF7E0; color: #B06000; }
+.stat-icon-box.exam { background: #F3E8FD; color: #7C3AED; }
+.stat-icon-box.revenue { background: #E6F4EA; color: #137333; }
 
 .stat-card-tag {
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--bg-primary);
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-full);
+  color: #5F6368;
+  background: #F1F3F4;
+  padding: 0.25rem 0.65rem;
+  border-radius: 8px;
 }
 
-.stat-card-tag.waiting-tag { background: var(--warning-light); color: var(--warning); }
-.stat-card-tag.in-session-tag { background: var(--warning-light); color: var(--warning); }
-.stat-card-tag.vacant-tag { background: var(--success-light); color: var(--success); }
-.stat-card-tag.paid-tag { background: var(--success-light); color: var(--success); }
+.stat-card-tag.waiting-tag { background: #FEF7E0; color: #B06000; }
+.stat-card-tag.in-session-tag { background: #F3E8FD; color: #7C3AED; }
+.stat-card-tag.vacant-tag { background: #E6F4EA; color: #137333; }
+.stat-card-tag.paid-tag { background: #E6F4EA; color: #137333; }
 
 .stat-card-body {
   display: flex;
@@ -863,4 +879,266 @@
   width: 100%;
   height: 180px;
   margin-top: 0.5rem;
+}
+
+
+/* ==========================================================================
+   Apple Health / Minimalist Hero Actions & Financial Card
+   ========================================================================== */
+.btn-hero-primary-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 9999px;
+  background: #0071E3;
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 113, 227, 0.3);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+.btn-hero-primary-action:hover {
+  background: #0077ED;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.35);
+}
+
+.btn-hero-icon-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 9999px;
+  background: #FFFFFF;
+  color: #334155;
+  border: 1px solid #E2E8F0;
+  font-weight: 500;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.btn-hero-icon-action:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+.btn-hero-icon-action.icon-only {
+  padding: 0.55rem;
+}
+
+/* Apple Financial Operations Card */
+.apple-financial-card {
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border-color, #E5E7EB);
+  border-radius: var(--radius-xl, 18px);
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.af-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.af-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.af-icon-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #F1F5F9;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.af-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+}
+
+.af-subtitle {
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+.af-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: #ECFDF5;
+  color: #059669;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.af-hero-stat {
+  padding: 0.35rem 0;
+}
+
+.af-hero-label {
+  font-size: 0.8rem;
+  color: #64748B;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.af-hero-amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.af-hero-amount {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.af-currency {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.af-profit-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: #F0FDF4;
+  color: #16A34A;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.af-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.65rem;
+}
+
+@media (max-width: 600px) {
+  .af-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.af-mini-card {
+  background: #F8FAFC;
+  border: 1px solid #F1F5F9;
+  border-radius: 12px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.af-mini-header {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: #64748B;
+}
+
+.af-mini-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.af-progress-box {
+  background: #FAFAFA;
+  border: 1px solid #F1F5F9;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.af-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.af-progress-track {
+  width: 100%;
+  height: 6px;
+  background: #E2E8F0;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.af-progress-fill {
+  height: 100%;
+  background: #0071E3;
+  border-radius: 9999px;
+  transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.af-progress-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: #64748B;
+}
+
+.af-actions-row {
+  display: flex;
+  gap: 0.65rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #F1F5F9;
+}
+
+.af-btn-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.af-btn-action:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
 }

@@ -11,8 +11,15 @@ function WaitingRoomQueue({
 }) {
   const calculateWaitMinutes = (checkedInAt) => {
     if (!checkedInAt) return 0;
-    const diffMs = Date.now() - new Date(checkedInAt).getTime();
-    return Math.max(0, Math.floor(diffMs / 60000));
+    try {
+      const parsed = new Date(checkedInAt);
+      const timeMs = parsed.getTime();
+      if (isNaN(timeMs)) return 0;
+      const diffMs = Date.now() - timeMs;
+      return Math.max(0, Math.floor(diffMs / 60000));
+    } catch {
+      return 0;
+    }
   };
 
   return (

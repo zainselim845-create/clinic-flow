@@ -240,9 +240,10 @@
   font-family: var(--font-family);
 }
 
+.google-hero-focus,
 .gradient-text {
-  color: #1A73E8;
-  background: linear-gradient(135deg, #1A73E8 0%, #1557B0 60%, #0D47A1 100%);
+  color: #0B57D0;
+  background: linear-gradient(135deg, #0B57D0 0%, #1A73E8 50%, #4285F4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1361,4 +1362,57 @@
   .features-grid, .pricing-cards-grid {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* ==========================================================================
+   Apple Keynote Minimalist Hero Styles
+   ========================================================================== */
+.apple-hero-focus {
+  color: #0071E3;
+  font-weight: 800;
+}
+
+.hero-headline {
+  color: #0F172A !important;
+  font-size: 3.4rem !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+}
+
+.hero-badge {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+.btn-hero-primary {
+  background: #0071E3 !important;
+  color: #FFFFFF !important;
+  border-radius: 9999px !important;
+  padding: 0.85rem 2.25rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(0, 113, 227, 0.3) !important;
+}
+
+.btn-hero-primary:hover {
+  background: #0077ED !important;
+  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-hero-secondary {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #1E293B !important;
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+}
+
+.btn-hero-secondary:hover {
+  background: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
 }
