@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   X, Landmark, DollarSign, CreditCard, ArrowRightLeft, 
   CheckCircle2, AlertCircle, Printer, Download, User, Clock
@@ -8,7 +8,7 @@ import { getTodayDateStr } from '../utils/timeSlots';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import './ShiftHandoverModal.css';
 
-export default function ShiftHandoverModal({ isOpen, onClose }) {
+export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
   const { state, dispatch } = useApp();
   const today = getTodayDateStr();
 
@@ -88,6 +88,15 @@ export default function ShiftHandoverModal({ isOpen, onClose }) {
       action: `إغلاق وتسليم وردية الاستقبال ليوم ${today}`,
       details: `إجمالي الإيراد: ${financialTotals.totalRevenue} ج.م | النقد الفعلي: ${actualCash} ج.م | الفارق: ${discrepancy} ج.م`
     });
+
+    try {
+      const storedKey = `clinicflow_shifts_${state?.clinicInfo?.slug || 'dr-ahmed'}`;
+      const existing = JSON.parse(localStorage.getItem(storedKey) || '[]');
+      existing.unshift(shiftReport);
+      localStorage.setItem(storedKey, JSON.stringify(existing.slice(0, 50)));
+    } catch (_) {}
+
+    onSaveShift?.(shiftReport);
 
     setIsShiftSaved(true);
     setTimeout(() => {

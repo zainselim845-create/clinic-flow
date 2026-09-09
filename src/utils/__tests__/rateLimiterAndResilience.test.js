@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { RateLimiter, checkActionRateLimit } from '../rateLimiter';
 import { CircuitBreaker, CircuitState } from '../circuitBreaker';
 

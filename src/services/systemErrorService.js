@@ -73,6 +73,7 @@ export function captureSystemError({
     clinicId: resolvedClinic,
     userId: userId || 'guest',
     path: currentPath,
+    context: context && typeof context === 'object' ? context : {},
     timestamp: new Date().toISOString(),
     status: 'unresolved' // 'unresolved' | 'investigating' | 'resolved'
   };
