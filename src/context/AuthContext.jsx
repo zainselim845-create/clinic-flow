@@ -13,26 +13,38 @@ export const AuthProvider = ({ children }) => {
   const switchTenant = tenantContext?.switchTenant;
   const registerNewTenant = tenantContext?.registerNewTenant;
 
-  const [user, setUser] = useState(() => {
+  const getInitialUser = () => {
     try {
-      const saved = sessionStorage.getItem('clinicflow_auth_user');
+      const saved = localStorage.getItem('clinicflow_auth_user') || sessionStorage.getItem('clinicflow_auth_user');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
-  });
+  };
+
+  const persistUser = (userData) => {
+    if (userData) {
+      try {
+        localStorage.setItem('clinicflow_auth_user', JSON.stringify(userData));
+        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(userData));
+      } catch (_) {}
+    } else {
+      try {
+        localStorage.removeItem('clinicflow_auth_user');
+        sessionStorage.removeItem('clinicflow_auth_user');
+      } catch (_) {}
+    }
+  };
+
+  const [user, setUser] = useState(getInitialUser);
 
   const [session, setSession] = useState(null);
   const [clinic, setClinic] = useState(activeTenant || defaultClinicInfo);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState(() => {
-    const savedUser = sessionStorage.getItem('clinicflow_auth_user');
+    const savedUser = getInitialUser();
     if (savedUser) {
-      try {
-        return JSON.parse(savedUser).role || 'doctor';
-      } catch {
-        return 'doctor';
-      }
+      return savedUser.role || 'doctor';
     }
     return localStorage.getItem('clinicflow_role') || 'doctor';
   });
@@ -68,7 +80,7 @@ export const AuthProvider = ({ children }) => {
     if (user) {
       const updatedUser = { ...user, role: newRole };
       setUser(updatedUser);
-      sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(updatedUser));
+      persistUser(updatedUser);
     }
   };
 
@@ -78,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       if (registerNewTenant) {
         registerNewTenant(newTenant);
       }
-      sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(doctorUser));
+      persistUser(doctorUser);
       localStorage.setItem('clinicflow_role', doctorUser.role);
       setUser(doctorUser);
       setRole(doctorUser.role);
@@ -94,15 +106,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (isDemoMode) {
-      const saved = sessionStorage.getItem('clinicflow_auth_user');
+      const saved = getInitialUser();
       if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setUser(parsed);
-          setRole(parsed.role || 'doctor');
-        } catch {
-          setUser(null);
-        }
+        setUser(saved);
+        setRole(saved.role || 'doctor');
       }
       setLoading(false);
       return;
@@ -171,7 +178,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const authUser = authenticateUser(cleanId, cleanPass);
         if (authUser) {
-          sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(authUser));
+          persistUser(authUser);
           localStorage.setItem('clinicflow_role', authUser.role || 'doctor');
           setUser(authUser);
           setRole(authUser.role || 'doctor');
@@ -218,7 +225,7 @@ export const AuthProvider = ({ children }) => {
           allowedClinics: ['*'],
           authenticatedAt: new Date().toISOString()
         };
-        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(superAdminUser));
+        persistUser(superAdminUser);
         localStorage.setItem('clinicflow_role', 'super_admin');
         setUser(superAdminUser);
         setRole('super_admin');
@@ -240,7 +247,7 @@ export const AuthProvider = ({ children }) => {
           clinicSlug: 'dr-ahmed',
           authenticatedAt: new Date().toISOString()
         };
-        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(ownerUser));
+        persistUser(ownerUser);
         localStorage.setItem('clinicflow_role', 'doctor');
         setUser(ownerUser);
         setRole('doctor');
@@ -265,7 +272,7 @@ export const AuthProvider = ({ children }) => {
           allowedClinics: ['dr-sara'],
           authenticatedAt: new Date().toISOString()
         };
-        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(saraDoctorUser));
+        persistUser(saraDoctorUser);
         localStorage.setItem('clinicflow_role', 'doctor');
         setUser(saraDoctorUser);
         setRole('doctor');
@@ -306,7 +313,7 @@ export const AuthProvider = ({ children }) => {
           allowedClinics: ['dr-ahmed'],
           authenticatedAt: new Date().toISOString()
         };
-        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(doctorUser));
+        persistUser(doctorUser);
         localStorage.setItem('clinicflow_role', 'doctor');
         setUser(doctorUser);
         setRole('doctor');
@@ -315,7 +322,33 @@ export const AuthProvider = ({ children }) => {
         return { data: { user: doctorUser }, error: null };
       }
 
-      // 4. Check Staff Login
+      // 4. Check Dedicated Receptionist & Staff Login
+      if (cleanId === 'reception@clinicflow.com' || cleanId === 'staff@clinicflow.com' || cleanId === 'reception') {
+        if (cleanPass !== '123' && cleanPass !== 'admin' && cleanPass !== 'admin123') {
+          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب موظف الاستقبال.') };
+        }
+        const receptionStaffUser = {
+          id: 'staff-reception-master',
+          name: 'سارة كمال (استقبال العيادة)',
+          email: 'reception@clinicflow.com',
+          phone: '01012345678',
+          role: 'staff',
+          jobTitle: 'سكرتارية واستقبال العيادة',
+          permissions: ['appointments', 'patients', 'sms'],
+          clinicSlug: 'dr-ahmed',
+          allowedClinics: ['dr-ahmed'],
+          authenticatedAt: new Date().toISOString()
+        };
+        persistUser(receptionStaffUser);
+        localStorage.setItem('clinicflow_role', 'staff');
+        setUser(receptionStaffUser);
+        setRole('staff');
+        switchTenant?.('dr-ahmed');
+        isolateTenantStorage('dr-ahmed');
+        return { data: { user: receptionStaffUser }, error: null };
+      }
+
+      // 5. Check Staff Members List
       const allStaff = [
         ...(Array.isArray(currentStaff) ? currentStaff : []),
         ...(Array.isArray(defaultStaffMembers) ? defaultStaffMembers : []),
@@ -345,7 +378,7 @@ export const AuthProvider = ({ children }) => {
           allowedClinics: [staffClinicSlug],
           authenticatedAt: new Date().toISOString()
         };
-        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(staffUser));
+        persistUser(staffUser);
         localStorage.setItem('clinicflow_role', 'staff');
         setUser(staffUser);
         setRole('staff');
@@ -373,7 +406,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (personaRole = 'doctor') => {
     if (!isDemoMode && supabase?.auth?.signInWithOAuth) {
       try {
         const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined;
@@ -394,12 +427,33 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // High-speed Demo & Local Verification Mode
-    const googleDoctorUser = {
+    const personaUser = (personaRole === 'staff' || personaRole === 'reception') ? {
+      id: 'google-staff-sara',
+      email: 'sara.kamal.reception@gmail.com',
+      name: 'سارة كمال (Google Verified)',
+      role: 'staff',
+      jobTitle: 'سكرتارية واستقبال العيادة',
+      permissions: ['appointments', 'patients', 'sms'],
+      clinicSlug: 'dr-ahmed',
+      clinicId: '550e8400-e29b-41d4-a716-446655440000',
+      allowedClinics: ['dr-ahmed'],
+      authProvider: 'google',
+      isEmailVerified: true
+    } : personaRole === 'superadmin' ? {
+      id: 'google-superadmin',
+      email: 'admin.google@clinicflow.com',
+      name: 'مدير المنصة العام (Google Verified)',
+      role: 'super_admin',
+      jobTitle: 'مدير عام المنصة والسحابة السريرية',
+      allowedClinics: ['*'],
+      authProvider: 'google',
+      isEmailVerified: true
+    } : {
       id: 'google-doctor-ahmed',
       email: 'dr.ahmed.google@gmail.com',
       name: 'د. أحمد الشريف (Google Verified)',
       role: 'doctor',
+      jobTitle: 'المدير الطبي / استشاري طب وجراحة الأسنان',
       clinicSlug: 'dr-ahmed',
       clinicId: '550e8400-e29b-41d4-a716-446655440000',
       allowedClinics: ['dr-ahmed'],
@@ -407,19 +461,21 @@ export const AuthProvider = ({ children }) => {
       isEmailVerified: true
     };
 
-    sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(googleDoctorUser));
-    localStorage.setItem('clinicflow_role', 'doctor');
-    setUser(googleDoctorUser);
-    setRole('doctor');
-    if (activeTenant?.slug !== 'dr-ahmed') {
-      switchTenant?.('dr-ahmed');
+    persistUser(personaUser);
+    localStorage.setItem('clinicflow_role', personaUser.role);
+    setUser(personaUser);
+    setRole(personaUser.role);
+    if (personaUser.clinicSlug && activeTenant?.slug !== personaUser.clinicSlug) {
+      switchTenant?.(personaUser.clinicSlug);
     }
-    isolateTenantStorage('dr-ahmed');
-    return { data: { user: googleDoctorUser }, error: null };
+    if (personaUser.role !== 'super_admin' && personaUser.clinicSlug) {
+      isolateTenantStorage(personaUser.clinicSlug);
+    }
+    return { data: { user: personaUser }, error: null };
   };
 
   const signOut = async () => {
-    sessionStorage.removeItem('clinicflow_auth_user');
+    persistUser(null);
     localStorage.removeItem('clinicflow_role');
     setUser(null);
     setRole('doctor');
@@ -437,9 +493,7 @@ export const AuthProvider = ({ children }) => {
         jobTitle: newInfo.specialty || user.jobTitle
       };
       setUser(updatedUser);
-      try {
-        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(updatedUser));
-      } catch (_) {}
+      persistUser(updatedUser);
     }
   };
 

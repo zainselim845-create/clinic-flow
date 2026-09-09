@@ -3,8 +3,9 @@ import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
   UserPlus, Search, FolderOpen, Share2, RotateCcw,
-  CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark
+  CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark, CheckCircle2
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import WaitingRoomQueue from './dashboard/WaitingRoomQueue';
 import ConsultationModal from './dashboard/ConsultationModal';
@@ -21,6 +22,11 @@ import './Dashboard.css';
 const Dashboard = () => {
   const { state, dispatch } = useApp();
   const { tenant } = useTenant();
+  const { user, role } = useAuth();
+  
+  const effectiveRole = user?.role || role || 'doctor';
+  const isDoctor = effectiveRole === 'doctor' || effectiveRole === 'super_admin' || effectiveRole === 'multi_clinic_owner';
+  const isStaff = !isDoctor;
   
   const currentClinic = state.clinicInfo || {};
   const currentClinicId = tenant?.id || currentClinic?.id || '550e8400-e29b-41d4-a716-446655440000';
@@ -270,44 +276,51 @@ const Dashboard = () => {
   return (
     <div className="dashboard-page">
       
-      {/* 1. Executive Operations Hero Banner */}
-      <div className="dashboard-top-hero">
-        <div className="hero-welcome">
-          <div className="hero-title-row">
-            <h2>مرحباً، {currentClinic.doctorName || tenant?.doctorName || 'د. أحمد الشريف'} 👋</h2>
-            <span className="hero-status-pill">
-              <span className="live-pulse-dot"></span>
-              <span>العيادة تستقبل المرضى الآن</span>
+      {/* 1. Google Workspace Operational Action Bar */}
+      <div className="google-workspace-bar">
+        <div className="workspace-bar-info">
+          <div className="workspace-title-pill">
+            <span className="live-pulse-dot" />
+            <span className="workspace-title-text">
+              {isDoctor 
+                ? `العيادة والعمليات السريرية • ${user?.name || currentClinic.doctorName || 'د. أحمد الشريف'}`
+                : `مكتب الاستقبال والتنظيم • ${user?.name || 'طاقم الاستقبال'}`}
             </span>
+            <span className="workspace-role-chip">{isDoctor ? 'المدير الطبي' : 'سكرتارية واستقبال'}</span>
           </div>
-          <p className="hero-subtitle">
-            اليوم: <strong>{today}</strong> • جدول العيادة نشط وصالة الانتظار محدثة لحظياً
-          </p>
+          <div className="workspace-date-chip">
+            <CalendarDays size={14} className="date-icon" />
+            <span>{today}</span>
+            <span className="bullet-sep">•</span>
+            <span className="queue-live-count">{waitingToday.length} بالانتظار</span>
+          </div>
         </div>
 
-        <div className="hero-actions">
+        <div className="workspace-bar-actions">
           <button 
             type="button" 
             onClick={handleCopyBookingLink} 
-            className="btn-hero-icon-action" 
+            className="google-m3-tonal-btn" 
             title="نسخ رابط حجز العيادة المباشر للمرضى"
           >
             <Share2 size={15} />
             <span>{copiedBookingLink ? 'تم النسخ!' : 'رابط الحجز'}</span>
           </button>
-          <button 
-            type="button" 
-            onClick={() => setIsShiftModalOpen(true)} 
-            className="btn-hero-icon-action" 
-            title="تصفية الخزينة وتسليم الوردية"
-          >
-            <Landmark size={15} />
-            <span>الوردية</span>
-          </button>
+          {isDoctor && (
+            <button 
+              type="button" 
+              onClick={() => setIsShiftModalOpen(true)} 
+              className="google-m3-tonal-btn" 
+              title="تصفية الخزينة وتسليم الوردية"
+            >
+              <Landmark size={15} />
+              <span>الوردية</span>
+            </button>
+          )}
           <button 
             type="button" 
             onClick={() => dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' })} 
-            className="btn-hero-icon-action icon-only" 
+            className="google-m3-icon-btn" 
             title="تحديث واستعادة جدول اليوم"
           >
             <RotateCcw size={15} />
@@ -315,15 +328,15 @@ const Dashboard = () => {
           <button 
             type="button" 
             onClick={() => setIsWalkInModalOpen(true)} 
-            className="btn-hero-primary-action"
+            className="google-m3-fab-btn"
           >
-            <UserPlus size={16} />
-            <span>تسجيل مريض جديد</span>
+            <UserPlus size={17} />
+            <span>{isDoctor ? 'تسجيل مريض جديد' : 'تسجيل حضور مباشر (Walk-in)'}</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Interactive KPI Command Cards (Apple Health Minimalist) */}
+      {/* 2. Google Material 3 Unified KPI Cards Grid */}
       <div className="cockpit-stats-grid">
         
         {/* Metric 1: Total Appointments */}
@@ -396,7 +409,7 @@ const Dashboard = () => {
               <Stethoscope size={18} />
             </div>
             <span className={`stat-card-tag ${currentExamPatient ? 'in-session-tag' : 'vacant-tag'}`}>
-              {currentExamPatient ? 'قيد الفحص' : 'الغرفة شاغرة'}
+              {currentExamPatient ? (isDoctor ? 'قيد الفحص السريري' : 'داخل غرفة الكشف') : 'الغرفة شاغرة'}
             </span>
           </div>
           <div className="stat-card-body">
@@ -413,39 +426,70 @@ const Dashboard = () => {
           </div>
           <div className="stat-card-footer exam-footer">
             <span>{currentExamPatient ? currentExamPatient.type || 'كشف' : 'غرفة الكشف 1'}</span>
-            <span>مباشر</span>
+            <span>{currentExamPatient ? 'مع الطبيب' : 'مستعدة'}</span>
           </div>
         </div>
 
-        {/* Metric 4: Daily Net Revenue */}
-        <div 
-          className={`cockpit-stat-card revenue-card ${activeFilterTab === 'completed' ? 'active-filter-card' : ''}`}
-          onClick={() => setActiveFilterTab('completed')}
-          title="انقر لتصفية الجدول لعرض الحالات المسددة والمكتملة"
-        >
-          <div className="stat-card-header">
-            <div className="stat-icon-box revenue">
-              <Wallet size={18} />
+        {/* Metric 4: Daily Revenue (Doctor) OR Completed Appointments (Staff) */}
+        {isDoctor ? (
+          <div 
+            className={`cockpit-stat-card revenue-card ${activeFilterTab === 'completed' ? 'active-filter-card' : ''}`}
+            onClick={() => setActiveFilterTab('completed')}
+            title="انقر لتصفية الجدول لعرض الحالات المسددة والمكتملة"
+          >
+            <div className="stat-card-header">
+              <div className="stat-icon-box revenue">
+                <Wallet size={18} />
+              </div>
+              <span className="stat-card-tag revenue-tag">
+                <span>الخزينة والتحصيل</span>
+              </span>
             </div>
-            <span className="stat-card-tag revenue-tag">
-              <span>الخزينة اليومية</span>
-            </span>
+            <div className="stat-card-body">
+              <h3 className="stat-main-number text-success">{todayRevenue.toLocaleString('en-US')} ج.م</h3>
+              <span className="stat-card-label">إجمالي التحصيل اليوم</span>
+            </div>
+            <div className="stat-progress-bar">
+              <div 
+                className="stat-progress-fill" 
+                style={{ width: `${attendanceRate}%`, background: '#10B981' }}
+              ></div>
+            </div>
+            <div className="stat-card-footer">
+              <span>{completedToday.length} كشف مسدد</span>
+              <span>مطابق وموثق</span>
+            </div>
           </div>
-          <div className="stat-card-body">
-            <h3 className="stat-main-number text-success">{todayRevenue.toLocaleString('en-US')} ج.م</h3>
-            <span className="stat-card-label">إجمالي التحصيل اليوم</span>
+        ) : (
+          <div 
+            className={`cockpit-stat-card total-card ${activeFilterTab === 'completed' ? 'active-filter-card' : ''}`}
+            onClick={() => setActiveFilterTab('completed')}
+            title="انقر لتصفية الجدول لعرض الحالات المكتملة"
+          >
+            <div className="stat-card-header">
+              <div className="stat-icon-box total" style={{ background: '#E6F4EA', color: '#137333' }}>
+                <CheckCircle2 size={18} />
+              </div>
+              <span className="stat-card-tag" style={{ background: '#E6F4EA', color: '#137333' }}>
+                <span>كشوفات مكتملة</span>
+              </span>
+            </div>
+            <div className="stat-card-body">
+              <h3 className="stat-main-number" style={{ color: '#137333' }}>{completedToday.length}</h3>
+              <span className="stat-card-label">مريض أتموا الكشف اليوم</span>
+            </div>
+            <div className="stat-progress-bar">
+              <div 
+                className="stat-progress-fill" 
+                style={{ width: `${attendanceRate}%`, background: '#137333' }}
+              ></div>
+            </div>
+            <div className="stat-card-footer">
+              <span>نسبة الإنجاز: {attendanceRate}%</span>
+              <span>تنظيم السكرتارية</span>
+            </div>
           </div>
-          <div className="stat-progress-bar">
-            <div 
-              className="stat-progress-fill" 
-              style={{ width: `${attendanceRate}%`, background: '#10B981' }}
-            ></div>
-          </div>
-          <div className="stat-card-footer">
-            <span>{completedToday.length} كشف مسدد</span>
-            <span>مطابق وموثق</span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* 2. Cockpit Layout: 2-Column Responsive High-Density Grid */}
@@ -462,6 +506,7 @@ const Dashboard = () => {
             onOpenFinishModal={(appt) => setFinishExamAppt(appt)}
             onOpenDossier={(appt) => setDossierPatient(appt)}
             onOpenWalkInModal={() => setIsWalkInModalOpen(true)}
+            isDoctor={isDoctor}
           />
 
           {/* Schedule Table Section */}
@@ -547,10 +592,10 @@ const Dashboard = () => {
                                 onClick={() => handleStartExam(appt)}
                                 className="btn-action-primary"
                               >
-                                بدء الكشف
+                                {isDoctor ? 'بدء الكشف' : 'إدخال للطبيب'}
                               </button>
                             )}
-                            {appt.status === 'in_progress' && (
+                            {appt.status === 'in_progress' && isDoctor && (
                               <button
                                 type="button"
                                 onClick={() => setFinishExamAppt(appt)}
@@ -579,16 +624,60 @@ const Dashboard = () => {
 
         </div>
 
-        {/* Side Column: Revenue Analytics & Fast Toolkit */}
+        {/* Side Column: Revenue Analytics (Doctor) or Reception Toolkit (Staff) */}
         <div className="cockpit-side-column">
-          <RevenueAnalytics
-            weeklyData={weeklyData}
-            todayRevenue={todayRevenue}
-            attendanceRate={attendanceRate}
-            completedCount={completedToday.length}
-            onOpenExpenses={() => setIsExpensesModalOpen(true)}
-            onOpenRecalls={() => setIsRecallModalOpen(true)}
-          />
+          {isDoctor ? (
+            <RevenueAnalytics
+              weeklyData={weeklyData}
+              todayRevenue={todayRevenue}
+              attendanceRate={attendanceRate}
+              completedCount={completedToday.length}
+              onOpenExpenses={() => setIsExpensesModalOpen(true)}
+              onOpenRecalls={() => setIsRecallModalOpen(true)}
+            />
+          ) : (
+            <div className="reception-toolkit-card">
+              <div className="toolkit-header">
+                <h4>مهام مكتب الاستقبال</h4>
+                <span className="toolkit-badge">Reception Desk</span>
+              </div>
+              <div className="toolkit-actions-list">
+                <button 
+                  type="button" 
+                  onClick={() => setIsWalkInModalOpen(true)} 
+                  className="toolkit-action-btn primary"
+                >
+                  <UserPlus size={18} />
+                  <div className="btn-text">
+                    <strong>تسجيل حضور مباشر (Walk-in)</strong>
+                    <small>إضافة مريض وصل العيادة بدون حجز مسبق</small>
+                  </div>
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleCopyBookingLink} 
+                  className="toolkit-action-btn"
+                >
+                  <Share2 size={18} />
+                  <div className="btn-text">
+                    <strong>مشاركة رابط الحجز الرقمي</strong>
+                    <small>إرسال رابط العيادة للمرضى عبر الواتساب</small>
+                  </div>
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setActiveFilterTab('waiting')} 
+                  className="toolkit-action-btn"
+                >
+                  <Clock size={18} />
+                  <div className="btn-text">
+                    <strong>صالة الانتظار ({waitingToday.length} مريض)</strong>
+                    <small>ترتيب أسبقية الحضور والتجهيز للدخول</small>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
       </div>

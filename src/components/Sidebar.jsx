@@ -8,15 +8,15 @@ import {
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
-import { hasPermission } from '../utils/permissions';
+import { hasPermission, isDoctorRole } from '../utils/permissions';
 import './Sidebar.css';
 
 const Sidebar = () => {
   const { state, toggleTheme } = useApp();
-  const { signOut, user, role } = useAuth();
+  const { signOut, user } = useAuth();
   const { tenant } = useTenant();
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
-  const isDoctor = (user?.role || role || 'doctor') === 'doctor';
+  const isDoctor = isDoctorRole(user);
 
   const clinicSpecialty = tenant?.specialty || state.clinicInfo?.specialty || '';
   const isDental = !clinicSpecialty || clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('فم') || clinicSpecialty.includes('Dental');

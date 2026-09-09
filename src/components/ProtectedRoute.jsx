@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
 import { hasPermission, isDoctorRole } from '../utils/permissions';
-import { Loader2, AlertOctagon, Clock, LogOut, PhoneCall } from 'lucide-react';
+import { Loader2, AlertOctagon, Clock, LogOut, PhoneCall, ShieldAlert } from 'lucide-react';
 
 const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
   const { user, loading, role, signOut } = useAuth();
@@ -193,13 +193,163 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
     const isDoctorAllowed = allowedRoles.includes('doctor') && isDoctorRole(user);
     const isExplicitlyAllowed = allowedRoles.includes(effectiveRole);
     if (!isDoctorAllowed && !isExplicitlyAllowed) {
-      return <Navigate to="/" replace />;
+      const allowedRoleLabels = allowedRoles.map(r => {
+        if (r === 'doctor') return 'الأطباء والمدير الطبي';
+        if (r === 'super_admin') return 'إدارة المنصة العليا';
+        if (r === 'staff') return 'طاقم الاستقبال';
+        return r;
+      }).join('، ');
+
+      return (
+        <div style={{
+          minHeight: '70vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem 1rem',
+          direction: 'rtl'
+        }}>
+          <div className="access-denied-box" style={{
+            maxWidth: '520px',
+            width: '100%',
+            background: 'var(--surface, #FFFFFF)',
+            borderRadius: '24px',
+            border: '1px solid var(--border-color, #DADCE0)',
+            boxShadow: '0 2px 6px rgba(60,64,67,0.15)',
+            padding: '2.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 1.25rem',
+              borderRadius: '50%',
+              background: '#FCE8E6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#D93025'
+            }}>
+              <ShieldAlert size={36} />
+            </div>
+            <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary, #202124)', marginBottom: '0.75rem' }}>
+              غير مصرح لك بالوصول إلى هذه الصفحة
+            </h2>
+            <p style={{ color: 'var(--text-secondary, #5F6368)', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              هذا القسم مخصص لفئة ({allowedRoleLabels}) فقط.
+            </p>
+            <div style={{ background: 'var(--surface-container, #F0F4F9)', border: '1px solid var(--border-subtle, #E8EAED)', padding: '0.85rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.86rem', color: 'var(--text-primary, #202124)', textAlign: 'right' }}>
+              <div><strong>الحساب الحالي:</strong> {user?.name || 'مستخدم'}</div>
+              <div><strong>الدور الوظيفي:</strong> {user?.jobTitle || user?.role || 'طاقم العيادة'}</div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+              <a
+                href="/"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.65rem 1.5rem',
+                  background: '#0B57D0',
+                  color: '#FFFFFF',
+                  borderRadius: '24px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  textDecoration: 'none'
+                }}
+              >
+                العودة للوحة التحكم
+              </a>
+              <button
+                type="button"
+                onClick={() => signOut()}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.65rem 1.25rem',
+                  background: 'transparent',
+                  border: '1px solid var(--border-color, #DADCE0)',
+                  borderRadius: '24px',
+                  color: 'var(--text-secondary, #5F6368)',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  fontSize: '0.9rem'
+                }}
+              >
+                تسجيل الخروج
+              </button>
+            </div>
+          </div>
+        </div>
+      );
     }
   }
 
   // 3. Permission-Based Authorization
   if (requiredPermission && !hasPermission(user, requiredPermission)) {
-    return <Navigate to="/" replace />;
+    return (
+      <div style={{
+        minHeight: '70vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem 1rem',
+        direction: 'rtl'
+      }}>
+        <div style={{
+          maxWidth: '520px',
+          width: '100%',
+          background: 'var(--surface, #FFFFFF)',
+          borderRadius: '24px',
+          border: '1px solid var(--border-color, #DADCE0)',
+          boxShadow: '0 2px 6px rgba(60,64,67,0.15)',
+          padding: '2.5rem',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            margin: '0 auto 1.25rem',
+            borderRadius: '50%',
+            background: '#FCE8E6',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#D93025'
+          }}>
+            <ShieldAlert size={36} />
+          </div>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-primary, #202124)', marginBottom: '0.75rem' }}>
+            الصلاحية غير ممنوحة لحسابك
+          </h2>
+          <p style={{ color: 'var(--text-secondary, #5F6368)', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+            يتطلب هذا القسم صلاحية <strong>({requiredPermission})</strong> غير مدرجة في أذونات حسابك الحالية.
+          </p>
+          <div style={{ background: 'var(--surface-container, #F0F4F9)', border: '1px solid var(--border-subtle, #E8EAED)', padding: '0.85rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.86rem', color: 'var(--text-primary, #202124)', textAlign: 'right' }}>
+            <div><strong>المستخدم:</strong> {user?.name}</div>
+            <div><strong>الدور الوظيفي:</strong> {user?.jobTitle || user?.role}</div>
+          </div>
+          <a
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.65rem 1.5rem',
+              background: '#0B57D0',
+              color: '#FFFFFF',
+              borderRadius: '24px',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              textDecoration: 'none'
+            }}
+          >
+            العودة للوحة التحكم
+          </a>
+        </div>
+      </div>
+    );
   }
 
   return children;

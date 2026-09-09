@@ -342,3 +342,147 @@
   flex-shrink: 0;
 }
 
+/* Google Account Picker Modal */
+.google-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+}
+
+.google-picker-card {
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border-color, #DADCE0);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 440px;
+  padding: 1.75rem;
+  box-shadow: 0 8px 28px rgba(60, 64, 67, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  direction: rtl;
+}
+
+.google-picker-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.google-picker-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary, #202124);
+  margin-top: 0.25rem;
+}
+
+.google-picker-header p {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #5F6368);
+  margin: 0;
+}
+
+.google-accounts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.google-account-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: var(--surface-container, #F0F4F9);
+  border: 1px solid var(--border-subtle, #E8EAED);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.google-account-item:hover {
+  background: var(--surface-container-high, #E9EEF6);
+  border-color: var(--primary, #0B57D0);
+  transform: translateY(-1px);
+}
+
+.google-avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.google-account-item .account-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.google-account-item .account-details strong {
+  font-size: 0.88rem;
+  color: var(--text-primary, #202124);
+}
+
+.google-account-item .account-details small {
+  font-size: 0.76rem;
+  color: var(--text-secondary, #5F6368);
+  direction: ltr;
+  text-align: right;
+}
+
+.role-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  margin-top: 0.25rem;
+  width: fit-content;
+}
+
+.role-tag.doctor-tag {
+  background: #E8F0FE;
+  color: #0B57D0;
+}
+
+.role-tag.staff-tag {
+  background: #E0F2FE;
+  color: #0284C7;
+}
+
+.role-tag.admin-tag {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.btn-close-google-picker {
+  padding: 0.65rem;
+  border-radius: 20px;
+  background: transparent;
+  border: 1px solid var(--border-color, #DADCE0);
+  color: var(--text-secondary, #5F6368);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-close-google-picker:hover {
+  background: var(--surface-container, #F0F4F9);
+  color: var(--text-primary, #202124);
+}
+

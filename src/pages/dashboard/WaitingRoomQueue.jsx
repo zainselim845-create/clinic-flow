@@ -7,7 +7,8 @@ function WaitingRoomQueue({
   onStartExam,
   onOpenFinishModal,
   onOpenDossier,
-  onOpenWalkInModal
+  onOpenWalkInModal,
+  isDoctor = true
 }) {
   const calculateWaitMinutes = (checkedInAt) => {
     if (!checkedInAt) return 0;
@@ -73,15 +74,21 @@ function WaitingRoomQueue({
               )}
 
               <div className="exam-actions">
-                <button
-                  type="button"
-                  onClick={() => onOpenFinishModal(currentExamPatient)}
-                  className="btn-exam-action success"
-                  title="إنهاء الكشف واعتماد التشخيص"
-                >
-                  <Check size={16} />
-                  <span>إنهاء وحفظ الكشف</span>
-                </button>
+                {isDoctor ? (
+                  <button
+                    type="button"
+                    onClick={() => onOpenFinishModal(currentExamPatient)}
+                    className="btn-exam-action success"
+                    title="إنهاء الكشف واعتماد التشخيص والروشتة السريرية"
+                  >
+                    <Check size={16} />
+                    <span>إنهاء وحفظ الكشف</span>
+                  </button>
+                ) : (
+                  <div className="staff-consultation-guard" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.85rem', background: 'var(--surface-container, #F0F4F9)', borderRadius: '20px', fontSize: '0.82rem', color: 'var(--text-secondary, #5F6368)', fontWeight: 600 }}>
+                    <span>الكشف جاري مع الطبيب</span>
+                  </div>
+                )}
 
                 <button
                   type="button"

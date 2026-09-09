@@ -17,6 +17,7 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   // New Clinic Onboarding Form State
   const [regForm, setRegForm] = useState({
@@ -124,21 +125,36 @@ const Login = () => {
     }
   };
 
-  const handleQuickPreset = (presetId, presetPass) => {
+  const handleDirectRoleLogin = async (presetId, presetPass) => {
     if (lockoutTimer > 0) return;
     setActiveTab('login');
     setIdentifier(presetId);
     setPassword(presetPass);
     setError('');
+    setIsLoading(true);
+    try {
+      const { error: signInError } = await signIn(presetId, presetPass);
+      if (signInError) throw signInError;
+      navigate(from, { replace: true });
+    } catch (err) {
+      recordFailedAttempt(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignInClick = () => {
     if (lockoutTimer > 0) return;
+    setIsGoogleModalOpen(true);
+  };
+
+  const handleSelectGoogleAccount = async (personaRole) => {
+    setIsGoogleModalOpen(false);
     setIsLoading(true);
     setError('');
     setSuccessMessage('');
     try {
-      const { error: gError } = await signInWithGoogle();
+      const { error: gError } = await signInWithGoogle(personaRole);
       if (gError) throw gError;
       setSuccessMessage('تم التحقق والتسجيل عبر حساب Google بنجاح! جاري توجيهك للعيادة...');
       setTimeout(() => {
@@ -402,7 +418,7 @@ const Login = () => {
 
         <button 
           type="button" 
-          onClick={handleGoogleSignIn}
+          onClick={handleGoogleSignInClick}
           className="btn btn-google-login"
           disabled={isLoading || isLocked}
           aria-label="تسجيل الدخول باستخدام حساب Google"
@@ -416,75 +432,130 @@ const Login = () => {
           <span>تسجيل الدخول باستخدام Google</span>
         </button>
 
-        {/* Collapsible Developer & Demo Sandbox Helper */}
-        <details className="demo-sandbox-helper" style={{ marginTop: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.75rem 1rem', background: 'var(--bg-tertiary)' }}>
-          <summary style={{ cursor: 'pointer', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.4rem', userSelect: 'none' }}>
-            <KeyRound size={14} />
-            <span>حسابات العرض التجريبية (Demo Testing)</span>
+        {/* Google Account Picker Modal */}
+        {isGoogleModalOpen && (
+          <div className="google-picker-backdrop" onClick={() => setIsGoogleModalOpen(false)}>
+            <div className="google-picker-card" onClick={(e) => e.stopPropagation()}>
+              <div className="google-picker-header">
+                <svg className="google-icon" width="22" height="22" viewBox="0 0 18 18">
+                  <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                  <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                  <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
+                  <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+                </svg>
+                <h3>اختيار حساب Google للمتابعة</h3>
+                <p>اختر الحساب والدور المصرح به لاختبار الصلاحيات</p>
+              </div>
+
+              <div className="google-accounts-list">
+                <div 
+                  className="google-account-item" 
+                  onClick={() => handleSelectGoogleAccount('doctor')}
+                >
+                  <div className="google-avatar-circle" style={{ background: '#0B57D0', color: '#FFF' }}>أ</div>
+                  <div className="account-details">
+                    <strong>د. أحمد الشريف (حساب طبيب)</strong>
+                    <small>dr.ahmed.google@gmail.com</small>
+                    <span className="role-tag doctor-tag">صلاحيات سريرية وطبية كاملة</span>
+                  </div>
+                </div>
+
+                <div 
+                  className="google-account-item" 
+                  onClick={() => handleSelectGoogleAccount('staff')}
+                >
+                  <div className="google-avatar-circle" style={{ background: '#0284C7', color: '#FFF' }}>س</div>
+                  <div className="account-details">
+                    <strong>سارة كمال (حساب استقبال وسكرتارية)</strong>
+                    <small>sara.kamal.reception@gmail.com</small>
+                    <span className="role-tag staff-tag">صلاحيات تنظيم المواعيد والصالة فقط</span>
+                  </div>
+                </div>
+
+                <div 
+                  className="google-account-item" 
+                  onClick={() => handleSelectGoogleAccount('superadmin')}
+                >
+                  <div className="google-avatar-circle" style={{ background: '#DC2626', color: '#FFF' }}>م</div>
+                  <div className="account-details">
+                    <strong>مدير المنصة العام (Super Admin)</strong>
+                    <small>admin.google@clinicflow.com</small>
+                    <span className="role-tag admin-tag">لوحة التحكم السحابية الشاملة</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                onClick={() => setIsGoogleModalOpen(false)} 
+                className="btn-close-google-picker"
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Collapsible Fast Role Testing Helpers */}
+        <details className="demo-sandbox-helper" style={{ marginTop: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '0.85rem 1.15rem', background: 'var(--surface-container, #F0F4F9)' }}>
+          <summary style={{ cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.45rem', userSelect: 'none' }}>
+            <KeyRound size={15} className="text-primary" />
+            <span>تجربة الأدوار والصلاحيات مباشرة (الدخول الفوري بنقرة واحدة)</span>
           </summary>
-          <div className="presets-buttons-grid" style={{ marginTop: '0.75rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.6rem' }}>
+          <div className="presets-buttons-grid" style={{ marginTop: '0.85rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.65rem' }}>
             <button 
               type="button" 
-              className={`preset-btn ${identifier.includes('doctor@') ? 'active' : ''}`}
-              onClick={() => handleQuickPreset('doctor@clinicflow.com', 'admin')}
+              className="preset-btn"
+              onClick={() => handleDirectRoleLogin('doctor@clinicflow.com', 'admin')}
               disabled={isLocked}
+              title="دخول مباشر بصلاحية طبيب العيادة"
             >
               <Shield size={16} className="text-primary" />
               <div>
-                <strong>د. أحمد الشريف (أسنان)</strong>
-                <span>doctor@clinicflow.com • عيادة مقفلة</span>
+                <strong>دخول: طبيب العيادة (Doctor)</strong>
+                <span>د. أحمد الشريف • صلاحيات سريرية ومالية</span>
               </div>
             </button>
 
             <button 
               type="button" 
-              className={`preset-btn ${identifier.includes('sara.clinic') ? 'active' : ''}`}
-              onClick={() => handleQuickPreset('sara.clinic@clinicflow.com', 'admin')}
+              className="preset-btn"
+              onClick={() => handleDirectRoleLogin('reception@clinicflow.com', '123')}
               disabled={isLocked}
+              title="دخول مباشر بصلاحية موظف استقبال وسكرتارية"
             >
-              <Shield size={16} style={{ color: '#8B5CF6' }} />
+              <UserCheck size={16} style={{ color: '#0284C7' }} />
               <div>
-                <strong>د. سارة محمود (جلدية)</strong>
-                <span>sara.clinic@clinicflow.com • عيادة مقفلة</span>
+                <strong>دخول: سكرتارية واستقبال (Staff)</strong>
+                <span>سارة كمال • مواعيد وصالة انتظار فقط</span>
               </div>
             </button>
 
             <button 
               type="button" 
-              className={`preset-btn ${identifier.includes('owner') ? 'active' : ''}`}
-              onClick={() => handleQuickPreset('owner@clinicflow.com', 'admin')}
+              className="preset-btn"
+              onClick={() => handleDirectRoleLogin('owner@clinicflow.com', 'admin')}
               disabled={isLocked}
+              title="دخول مباشر بصلاحية مالك مجمع العيادات"
             >
               <Shield size={16} style={{ color: '#F59E0B' }} />
               <div>
-                <strong>مالك العيادات (متعدد العيادات)</strong>
-                <span>owner@clinicflow.com • تبديل متاح</span>
+                <strong>دخول: مالك مجمع عيادات (Owner)</strong>
+                <span>د. شريف العوضي • تبديل بين الفروع</span>
               </div>
             </button>
 
             <button 
               type="button" 
-              className={`preset-btn ${identifier.includes('superadmin') ? 'active' : ''}`}
-              onClick={() => handleQuickPreset('superadmin@clinicflow.com', 'admin')}
+              className="preset-btn"
+              onClick={() => handleDirectRoleLogin('superadmin@clinicflow.com', 'admin')}
               disabled={isLocked}
+              title="دخول مباشر بصلاحية مدير المنصة العام"
             >
               <Shield size={16} style={{ color: '#EF4444' }} />
               <div>
-                <strong>مدير المنصة (Super Admin)</strong>
-                <span>superadmin@clinicflow.com • تحكم كامل</span>
-              </div>
-            </button>
-
-            <button 
-              type="button" 
-              className={`preset-btn ${identifier === 'sara@clinic.com' ? 'active' : ''}`}
-              onClick={() => handleQuickPreset('sara@clinic.com', '123')}
-              disabled={isLocked}
-            >
-              <UserCheck size={16} className="text-emerald" />
-              <div>
-                <strong>سارة كمال (سكرتارية)</strong>
-                <span>sara@clinic.com • مقفلة</span>
+                <strong>دخول: مدير عام المنصة (Super Admin)</strong>
+                <span>تحكم كامل وسحابي في كافة العيادات</span>
               </div>
             </button>
           </div>

@@ -417,7 +417,27 @@ export function authenticateUser(identifier, password, options = {}) {
     };
   }
 
-  // 2. Check registered clinic tenant doctor credentials
+  // 2. Check built-in clinic receptionist & staff account
+  if (cleanId === 'reception@clinicflow.com' || cleanId === 'staff@clinicflow.com' || cleanId === 'reception') {
+    if (cleanPass !== '123' && cleanPass !== 'admin' && cleanPass !== 'admin123') {
+      throw new Error('كلمة المرور غير صحيحة لحساب موظف الاستقبال.');
+    }
+    return {
+      id: 'staff-reception-master',
+      name: 'سارة كمال (استقبال العيادة)',
+      email: 'reception@clinicflow.com',
+      phone: '01012345678',
+      role: 'staff',
+      jobTitle: 'سكرتارية واستقبال العيادة',
+      permissions: ['appointments', 'patients', 'sms'],
+      clinicSlug: 'dr-ahmed',
+      clinicId: '550e8400-e29b-41d4-a716-446655440000',
+      allowedClinics: ['dr-ahmed'],
+      authenticatedAt: new Date().toISOString()
+    };
+  }
+
+  // 3. Check registered clinic tenant doctor credentials
   const registeredTenants = getRegisteredTenants();
   const matchedTenant = registeredTenants.find(t => {
     const tEmail = (t.doctorEmail || '').toLowerCase();
