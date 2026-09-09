@@ -342,4 +342,43 @@ describe('Enterprise 1,000 Doctors & Clinics AuthN/AuthZ Benchmark (test-guard c
       expect(delta.subscriptionStatus).toBe('active');
     });
   });
+
+  describe('7. Google OAuth Single Sign-On (SSO) & Identity Standards Compliance', () => {
+    it('validates Google OAuth doctor session structure and tenant lock compliance', () => {
+      const googleDoctorSession = {
+        id: 'google-doctor-ahmed',
+        email: 'dr.ahmed.google@gmail.com',
+        name: 'د. أحمد الشريف (Google Verified)',
+        role: 'doctor',
+        clinicSlug: 'dr-ahmed',
+        clinicId: '550e8400-e29b-41d4-a716-446655440000',
+        allowedClinics: ['dr-ahmed'],
+        authProvider: 'google',
+        isEmailVerified: true
+      };
+
+      // 1. Identity Verification Invariants
+      expect(googleDoctorSession.authProvider).toBe('google');
+      expect(googleDoctorSession.isEmailVerified).toBe(true);
+      expect(googleDoctorSession.email).toMatch(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+
+      // 2. Strict Tenant Isolation (Single clinic doctor CANNOT switch tenants)
+      expect(canSwitchTenants(googleDoctorSession)).toBe(false);
+
+      // 3. Clinical & Financial Permissions for Doctor
+      expect(canAccessFinancials(googleDoctorSession)).toBe(true);
+      expect(canEditMedicalRecords(googleDoctorSession)).toBe(true);
+      expect(canManageStaff(googleDoctorSession)).toBe(true);
+
+      // 4. Route Access Control
+      expect(canAccessRoute(googleDoctorSession, '/dashboard')).toBe(true);
+      expect(canAccessRoute(googleDoctorSession, '/patients')).toBe(true);
+      expect(canAccessRoute(googleDoctorSession, '/invoices')).toBe(true);
+      expect(canAccessRoute(googleDoctorSession, '/settings')).toBe(true);
+
+      // 5. Zero-Trust Access Control (Doctor cannot access Super Admin Control Plane)
+      expect(canAccessRoute(googleDoctorSession, '/super-admin')).toBe(false);
+    });
+  });
 });
+

@@ -19,8 +19,7 @@ import {
 } from '../../services/reactivationService';
 import { 
   getBookingDrafts, 
-  generateLeadRecoverySmsMessage,
-  generateLeadRecoverySmsUrl 
+  generateLeadRecoverySmsMessage
 } from '../../services/leadRecoveryService';
 import { 
   getPatientPackages, 
@@ -315,7 +314,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('packages')}
           >
             <Layers size={16} />
-            <span>الباقات والجلسات ({(packagesList || []).length})</span>
+            <span>الباقات والجلسات ({stalledPackages.length > 0 ? `${stalledPackages.length} متوقفة / ${(packagesList || []).length}` : (packagesList || []).length})</span>
           </button>
 
           <button 

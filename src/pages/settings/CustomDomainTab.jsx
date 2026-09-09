@@ -9,8 +9,7 @@ import {
   Check,
   RefreshCw,
   ExternalLink,
-  HelpCircle,
-  Sparkles
+  HelpCircle
 } from 'lucide-react';
 import {
   DOMAIN_STATUS,

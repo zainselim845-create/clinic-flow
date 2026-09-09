@@ -383,6 +383,7 @@ export const TenantProvider = ({ children }) => {
   const value = useMemo(() => ({
     tenant: activeTenant,
     tenantSlug: activeTenant?.slug || 'dr-ahmed',
+    resolveTenantSlug,
     allTenants: isolatedTenantsCatalog,
     setAllTenants,
     isLoadingTenant,
@@ -394,7 +395,7 @@ export const TenantProvider = ({ children }) => {
     checkQuota,
     tier: activeTenant?.subscriptionTier || 'pro',
     isMultiTenant: true
-  }), [activeTenant, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, updateTenantStatus, hasFeature, checkQuota]);
+  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, updateTenantStatus, hasFeature, checkQuota]);
 
   return (
     <TenantContext.Provider value={value}>

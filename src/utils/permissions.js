@@ -141,9 +141,15 @@ export function hasPermission(user, permissionKey) {
 export function canAccessRoute(user, pathname) {
   if (!user) return false;
   
+  const cleanPath = pathname.split('?')[0].replace(/\/$/, '') || '/';
+
+  // Super Admin Control Plane is strictly zero-trust: only platform super_admin can access
+  if (cleanPath === '/super-admin' || cleanPath.startsWith('/super-admin/')) {
+    return user.role === 'super_admin' || user.isSuperAdmin === true;
+  }
+
   if (isDoctorRole(user)) return true;
 
-  const cleanPath = pathname.split('?')[0].replace(/\/$/, '') || '/';
   if (cleanPath === '/' || cleanPath === '/dashboard') return true;
 
   const requiredPerm = ROUTE_PERMISSION_MAP[cleanPath];

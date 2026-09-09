@@ -18,7 +18,7 @@ const InvoiceModal = ({
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
 
   // Form State if creating new
-  const [isCreatingNew, setIsCreatingNew] = useState(!invoice);
+  const isCreatingNew = !invoice;
   const [patientName, setPatientName] = useState(invoice?.patientName || '');
   const [patientPhone, setPatientPhone] = useState(invoice?.patientPhone || '');
   const [items, setItems] = useState(invoice?.items || [
