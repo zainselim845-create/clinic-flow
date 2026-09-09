@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, 
-  FileSpreadsheet
+  FileSpreadsheet, X
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
 import TreatmentPlanModal from '../../components/TreatmentPlanModal';
 import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
 import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
+import './PatientDossierDrawer.css';
+
+const STATUS_LABELS = {
+  waiting: 'في الانتظار',
+  in_progress: 'جاري الكشف',
+  completed: 'تم الكشف',
+  confirmed: 'مؤكد',
+  scheduled: 'مجدول',
+  cancelled: 'ملغي'
+};
 
 export default function PatientDossierDrawer({
   patient,
@@ -54,7 +64,14 @@ export default function PatientDossierDrawer({
               <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>رقم الملف: #{patient.fileNumber || patient.id?.slice(0, 8) || 'D-101'}</span>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="btn-close" style={{ color: '#FFFFFF' }}>×</button>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="btn-close-dossier" 
+            aria-label="إغلاق الملف"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Tab Navigation */}
@@ -206,7 +223,9 @@ export default function PatientDossierDrawer({
                           <Calendar size={14} />
                           <span>{appt.date} - {appt.time}</span>
                         </div>
-                        <span className={`status-badge ${appt.status}`}>{appt.status}</span>
+                        <span className={`status-badge ${appt.status}`}>
+                          {STATUS_LABELS[appt.status] || appt.status}
+                        </span>
                         <span className="type-badge">{appt.type || 'كشف'}</span>
                       </div>
                     ))}

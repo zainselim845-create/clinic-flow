@@ -65,31 +65,32 @@
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 0.35rem 0.75rem 0.35rem 2.2rem;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  padding: 0.4rem 0.95rem 0.4rem 2.4rem;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .search-bar:hover {
-  border-color: var(--text-tertiary);
+  border-color: var(--border-color);
   background: var(--surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .search-icon {
   position: absolute;
-  right: 0.65rem;
+  right: 0.85rem;
   color: var(--text-tertiary);
 }
 
 .search-bar input {
   background: transparent;
   border: none;
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   color: var(--text-primary);
-  width: 170px;
+  width: 180px;
   cursor: pointer;
   padding: 0;
 }
@@ -100,17 +101,17 @@
   color: var(--text-tertiary);
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+  padding: 0.1rem 0.4rem;
   margin-right: 0.4rem;
 }
 
 .theme-header-btn, .notification-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-subtle);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,9 +122,10 @@
 }
 
 .theme-header-btn:hover, .notification-btn:hover {
-  background: var(--surface);
-  color: var(--text-primary);
+  background: var(--border-subtle);
+  color: var(--primary);
   border-color: var(--border-color);
+  transform: scale(1.05);
 }
 
 .notification-badge {

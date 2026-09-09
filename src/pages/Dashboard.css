@@ -72,8 +72,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.55rem 1rem;
-  border-radius: 10px;
+  padding: 0.55rem 1.15rem;
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 0.84rem;
   cursor: pointer;
@@ -82,23 +82,24 @@
 }
 
 .btn-hero-action.secondary {
-  background: var(--bg-primary);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
 }
 .btn-hero-action.secondary:hover {
   background: var(--surface);
-  border-color: var(--text-tertiary);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .btn-hero-action.primary {
   background: var(--primary);
   color: #FFFFFF !important;
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+  box-shadow: var(--shadow-sm);
 }
 .btn-hero-action.primary:hover {
   background: var(--primary-hover);
-  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.35);
+  box-shadow: var(--shadow-md);
 }
 
 /* 2. KPI 4-Card Grid */

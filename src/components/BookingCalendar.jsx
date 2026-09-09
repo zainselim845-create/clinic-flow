@@ -173,17 +173,17 @@ const BookingCalendar = ({
         </div>
 
         {/* Days of week header */}
-        <div className="calendar-weekdays-grid">
+        <div className="calendar-weekdays-grid weekdays-grid">
           {ARABIC_WEEKDAYS.map((wd, i) => (
-            <span key={i} className="weekday-header-cell">{wd}</span>
+            <span key={i} className="weekday-header-cell weekday-cell">{wd}</span>
           ))}
         </div>
 
         {/* Calendar Days Matrix */}
-        <div className="calendar-days-matrix">
+        <div className="calendar-days-matrix days-grid">
           {/* Empty offset days */}
           {Array.from({ length: startDayOffset }).map((_, i) => (
-            <div key={`empty-${i}`} className="calendar-day-cell empty"></div>
+            <div key={`empty-${i}`} className="calendar-day-cell day-cell empty"></div>
           ))}
 
           {/* Real days */}
@@ -192,7 +192,7 @@ const BookingCalendar = ({
             const status = getDayStatus(dayNum);
             const isSelected = selectedDate === status.dateStr;
 
-            let cellClass = 'calendar-day-cell';
+            let cellClass = 'calendar-day-cell day-cell';
             if (status.isPast) cellClass += ' past';
             else if (status.isDayOff) cellClass += ' day-off';
             else if (status.isFullDayBlocked) cellClass += ' blocked';
