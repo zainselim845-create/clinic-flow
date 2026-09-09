@@ -7,6 +7,7 @@ import { useTenant } from '../context/TenantContext';
 import GlobalSearchModal from './GlobalSearchModal';
 import TenantSwitcher from './TenantSwitcher';
 import ReportIssueModal from './ReportIssueModal';
+import { isSupabaseConfigured } from '../lib/supabase';
 import './Header.css';
 
 const Header = ({ title }) => {
@@ -17,6 +18,7 @@ const Header = ({ title }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
+  const isCloudConnected = isSupabaseConfigured();
 
   // Real Logged-in User Identity (strictly reflects logged-in user or active tenant doctor)
   const effectiveRole = user?.role || role || 'doctor';
@@ -62,6 +64,42 @@ const Header = ({ title }) => {
         </div>
 
         <div className="header-actions">
+          {/* Cloud Backend vs Offline Local Mode Indicator */}
+          <div 
+            className="cloud-status-badge"
+            onClick={() => navigate('/settings')}
+            title={isCloudConnected 
+              ? 'متصل بالسحابة (Supabase): التزامن الفوري نشط والبيانات مشفرة ومحفوظة سحابياً' 
+              : 'وضع محلي فوري (Local Mode): العيادة تعمل بدون انقطاع على التخزين المحلي الآمن. اضغط لربط Supabase السحابي'}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.35rem 0.75rem',
+              borderRadius: '20px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              border: isCloudConnected ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(59, 130, 246, 0.4)',
+              background: isCloudConnected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+              color: isCloudConnected ? '#10B981' : '#3B82F6',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <span 
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: isCloudConnected ? '#10B981' : '#3B82F6',
+                display: 'inline-block',
+                boxShadow: isCloudConnected ? '0 0 8px #10B981' : '0 0 6px #3B82F6'
+              }}
+            />
+            <span>{isCloudConnected ? 'سحابي (Supabase)' : 'وضع محلي فوري'}</span>
+          </div>
+
           {/* Interactive Global Search Trigger Bar */}
           <div className="search-bar" onClick={() => setIsSearchOpen(true)} title="بحث سريع وشامل (Ctrl + K)">
             <Search size={16} className="search-icon" />

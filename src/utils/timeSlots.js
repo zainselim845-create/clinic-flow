@@ -67,13 +67,19 @@ export function formatTimeToArabic(time24) {
 }
 
 /**
- * Generate time slots array based on start time, end time, and duration
+ * Generate time slots array based on start time, end time, duration, and break time
  * @param {string} startTime24 e.g. "17:00"
  * @param {string} endTime24 e.g. "22:00"
  * @param {number} durationMinutes e.g. 30
+ * @param {Object} breakTime e.g. { enabled: true, start: "19:30", end: "20:00" }
  * @returns {string[]} e.g. ["05:00 م", "05:30 م", ...]
  */
-export function generateDynamicSlots(startTime24 = '17:00', endTime24 = '22:00', durationMinutes = 30) {
+export function generateDynamicSlots(
+  startTime24 = '17:00', 
+  endTime24 = '22:00', 
+  durationMinutes = 30,
+  breakTime = null
+) {
   const slots = [];
   const [startH, startM] = (startTime24 || '17:00').split(':').map(Number);
   const [endH, endM] = (endTime24 || '22:00').split(':').map(Number);
@@ -81,7 +87,24 @@ export function generateDynamicSlots(startTime24 = '17:00', endTime24 = '22:00',
   let currentTotalMinutes = startH * 60 + startM;
   const endTotalMinutes = endH * 60 + endM;
 
+  let breakStartMinutes = -1;
+  let breakEndMinutes = -1;
+  if (breakTime && breakTime.enabled && breakTime.start && breakTime.end) {
+    const [bsh, bsm] = breakTime.start.split(':').map(Number);
+    const [beh, bem] = breakTime.end.split(':').map(Number);
+    breakStartMinutes = bsh * 60 + bsm;
+    breakEndMinutes = beh * 60 + bem;
+  }
+
   while (currentTotalMinutes <= endTotalMinutes) {
+    // Skip slots falling inside the break window
+    if (breakStartMinutes !== -1 && breakEndMinutes !== -1) {
+      if (currentTotalMinutes >= breakStartMinutes && currentTotalMinutes < breakEndMinutes) {
+        currentTotalMinutes += durationMinutes;
+        continue;
+      }
+    }
+
     const h = Math.floor(currentTotalMinutes / 60);
     const m = currentTotalMinutes % 60;
     const time24Str = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
@@ -90,4 +113,66 @@ export function generateDynamicSlots(startTime24 = '17:00', endTime24 = '22:00',
   }
 
   return slots;
+}
+
+/**
+ * Resolves available slots and status for a specific date using scheduleConfig:
+ *  - Checks if date falls inside any vacation date ranges
+ *  - Checks day of week against workingDays
+ *  - Resolves day-specific shifts (e.g. Saturday 17:00-22:00, Tuesday 13:00-18:00)
+ *  - Excludes daily break times
+ * 
+ * @param {string} dateStr "YYYY-MM-DD"
+ * @param {Object} scheduleConfig 
+ * @returns {{ isVacation: boolean, vacationReason?: string, isDayOff: boolean, slots: string[], startTime?: string, endTime?: string, workingHoursStr?: string }}
+ */
+export function getSlotsForDate(dateStr, scheduleConfig = {}) {
+  if (!dateStr) return { isVacation: false, isDayOff: false, slots: [] };
+
+  // 1. Check vacations / annual leave
+  const vacations = scheduleConfig?.vacations || [];
+  const matchedVacation = vacations.find(v => v.startDate && v.endDate && dateStr >= v.startDate && dateStr <= v.endDate);
+  if (matchedVacation) {
+    return {
+      isVacation: true,
+      vacationReason: matchedVacation.title || 'إجازة رسمية للعيادة',
+      isDayOff: true,
+      slots: []
+    };
+  }
+
+  // 2. Check working days
+  const dateObj = parseLocalDate(dateStr);
+  const jsDay = dateObj.getDay();
+  const workingDays = scheduleConfig?.workingDays || [6, 0, 1, 2, 3, 4];
+  if (!workingDays.includes(jsDay)) {
+    return {
+      isVacation: false,
+      isDayOff: true,
+      slots: []
+    };
+  }
+
+  // 3. Resolve day-specific shift or fallback to global hours
+  const dayShifts = scheduleConfig?.dayShifts || {};
+  const dayShift = dayShifts[jsDay] || {
+    startTime: scheduleConfig?.startTime || '17:00',
+    endTime: scheduleConfig?.endTime || '22:00'
+  };
+
+  const startTime = dayShift.startTime || scheduleConfig?.startTime || '17:00';
+  const endTime = dayShift.endTime || scheduleConfig?.endTime || '22:00';
+  const slotDuration = scheduleConfig?.slotDuration || 30;
+  const breakTime = scheduleConfig?.breakTime || null;
+
+  const slots = generateDynamicSlots(startTime, endTime, slotDuration, breakTime);
+
+  return {
+    isVacation: false,
+    isDayOff: false,
+    slots,
+    startTime,
+    endTime,
+    workingHoursStr: `${formatTimeToArabic(startTime)} - ${formatTimeToArabic(endTime)}`
+  };
 }

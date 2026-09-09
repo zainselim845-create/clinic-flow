@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, Calendar as CalendarIcon, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { generateDynamicSlots, formatLocalDate, parseLocalDate, getTodayDateStr } from '../utils/timeSlots';
+import React, { useState, useMemo } from 'react';
+import { ChevronRight, ChevronLeft, Calendar as CalendarIcon, Clock, CheckCircle2, AlertCircle, Coffee } from 'lucide-react';
+import { 
+  generateDynamicSlots, 
+  getSlotsForDate, 
+  formatTimeToArabic, 
+  formatLocalDate, 
+  parseLocalDate, 
+  getTodayDateStr 
+} from '../utils/timeSlots';
 import './BookingCalendar.css';
 
 const ARABIC_MONTHS = [
@@ -32,21 +39,22 @@ const BookingCalendar = ({
     return selectedDate ? parseLocalDate(selectedDate) : new Date();
   });
 
-
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
 
   // Working days from config: default [6,0,1,2,3,4] (Sat to Thu, Fri off)
   const workingDays = scheduleConfig?.workingDays || [6, 0, 1, 2, 3, 4];
   
-  // Dynamic slots based on doctor config
-  const dynamicSlots = (availableSlots && availableSlots.length > 0)
-    ? availableSlots
-    : generateDynamicSlots(
-        scheduleConfig?.startTime || '17:00', 
-        scheduleConfig?.endTime || '22:00', 
-        scheduleConfig?.slotDuration || 30
-      );
+  // Dynamic slots based on selected date's specific shift, breaks, and vacations
+  const selectedDateResolution = useMemo(() => {
+    if (!selectedDate) return { isVacation: false, isDayOff: false, slots: [] };
+    if (availableSlots && availableSlots.length > 0) {
+      return { isVacation: false, isDayOff: false, slots: availableSlots };
+    }
+    return getSlotsForDate(selectedDate, scheduleConfig);
+  }, [selectedDate, availableSlots, scheduleConfig]);
+
+  const dynamicSlots = selectedDateResolution.slots;
 
   // Next & Prev Month Handlers
   const handlePrevMonth = () => {
@@ -80,18 +88,20 @@ const BookingCalendar = ({
     dateObj.setHours(0, 0, 0, 0);
     const isPast = dateObj < today;
     
-    // Check if day is active in clinic working days
-    const jsDay = dateObj.getDay();
-    const isDayOff = !workingDays.includes(jsDay);
+    // Resolve date-specific slots & vacation/day-off status
+    const dayRes = getSlotsForDate(dateStr, scheduleConfig);
+    const isDayOff = dayRes.isDayOff;
+    const isVacation = dayRes.isVacation;
 
-    // Check if whole day is blocked by doctor vacation
-    const isFullDayBlocked = blockedSlots.some(b => b.date === dateStr && (b.isFullDay || b.time === 'FULL_DAY' || b.time === 'ALL'));
+    // Check if whole day is blocked by doctor vacation or explicit block
+    const isExplicitBlock = blockedSlots.some(b => b.date === dateStr && (b.isFullDay || b.time === 'FULL_DAY' || b.time === 'ALL'));
+    const isFullDayBlocked = isVacation || isExplicitBlock;
 
     // Count available slots
     const dayAppointments = appointments.filter(a => a.date === dateStr && a.status !== 'cancelled');
     const dayBlockedSlots = blockedSlots.filter(b => b.date === dateStr);
 
-    const openSlotsCount = dynamicSlots.filter(slot => {
+    const openSlotsCount = dayRes.slots.filter(slot => {
       const isBooked = dayAppointments.some(a => a.time === slot);
       const isBlocked = dayBlockedSlots.some(b => b.time === slot || b.isFullDay || b.time === 'FULL_DAY');
       return !isBooked && !isBlocked;
@@ -103,6 +113,8 @@ const BookingCalendar = ({
       dateStr,
       isPast,
       isDayOff,
+      isVacation,
+      vacationReason: dayRes.vacationReason,
       isFullDayBlocked,
       openSlotsCount,
       isFullyBooked,
@@ -110,9 +122,10 @@ const BookingCalendar = ({
     };
   };
 
-  // Get available slots for the selected date
-  const isSelectedDateBlocked = blockedSlots.some(b => b.date === selectedDate && (b.isFullDay || b.time === 'FULL_DAY'));
-  const isSelectedDateDayOff = selectedDate && !workingDays.includes(parseLocalDate(selectedDate).getDay());
+  // Status for currently selected date
+  const isSelectedDateVacation = selectedDateResolution.isVacation;
+  const isSelectedDateBlocked = isSelectedDateVacation || blockedSlots.some(b => b.date === selectedDate && (b.isFullDay || b.time === 'FULL_DAY'));
+  const isSelectedDateDayOff = selectedDateResolution.isDayOff;
 
   const currentDayAppointments = appointments.filter(a => a.date === selectedDate && a.status !== 'cancelled');
   const currentDayBlocked = blockedSlots.filter(b => b.date === selectedDate);
@@ -142,57 +155,52 @@ const BookingCalendar = ({
           <div className="nav-arrows">
             <button 
               type="button" 
-              onClick={handlePrevMonth} 
-              className="nav-arrow-btn"
-              title="الشهر السابق"
+              className="cal-nav-btn" 
+              onClick={handlePrevMonth}
               aria-label="الشهر السابق"
             >
               <ChevronRight size={18} />
             </button>
             <button 
               type="button" 
-              onClick={handleNextMonth} 
-              className="nav-arrow-btn"
-              title="الشهر القادم"
-              aria-label="الشهر القادم"
+              className="cal-nav-btn" 
+              onClick={handleNextMonth}
+              aria-label="الشهر التالي"
             >
               <ChevronLeft size={18} />
             </button>
           </div>
         </div>
 
-        {/* Weekday Labels Header */}
-        <div className="weekdays-grid">
-          {ARABIC_WEEKDAYS.map((dayName, idx) => (
-            <span key={idx} className={`weekday-cell ${idx === 6 ? 'friday' : ''}`}>
-              {dayName}
-            </span>
+        {/* Days of week header */}
+        <div className="calendar-weekdays-grid">
+          {ARABIC_WEEKDAYS.map((wd, i) => (
+            <span key={i} className="weekday-header-cell">{wd}</span>
           ))}
         </div>
 
-        {/* Days Grid */}
-        <div className="days-grid">
-          {/* Empty offset days for start of month */}
-          {Array.from({ length: startDayOffset }).map((_, idx) => (
-            <div key={`empty-${idx}`} className="day-cell empty"></div>
+        {/* Calendar Days Matrix */}
+        <div className="calendar-days-matrix">
+          {/* Empty offset days */}
+          {Array.from({ length: startDayOffset }).map((_, i) => (
+            <div key={`empty-${i}`} className="calendar-day-cell empty"></div>
           ))}
 
-          {/* Actual days of current month */}
-          {Array.from({ length: daysInMonth }).map((_, idx) => {
-            const dayNum = idx + 1;
+          {/* Real days */}
+          {Array.from({ length: daysInMonth }).map((_, i) => {
+            const dayNum = i + 1;
             const status = getDayStatus(dayNum);
             const isSelected = selectedDate === status.dateStr;
-            const isToday = status.dateStr === todayStr;
 
-            let cellClass = 'day-cell';
+            let cellClass = 'calendar-day-cell';
             if (status.isPast) cellClass += ' past';
-            else if (status.isDayOff) cellClass += ' holiday';
+            else if (status.isDayOff) cellClass += ' day-off';
             else if (status.isFullDayBlocked) cellClass += ' blocked';
-            else if (status.isFullyBooked) cellClass += ' full';
+            else if (status.isFullyBooked) cellClass += ' fully-booked';
             else if (status.isAvailable) cellClass += ' available';
 
             if (isSelected) cellClass += ' selected';
-            if (isToday) cellClass += ' today';
+            if (status.dateStr === todayStr) cellClass += ' today';
 
             return (
               <button
@@ -201,22 +209,23 @@ const BookingCalendar = ({
                 className={cellClass}
                 disabled={status.isPast || status.isDayOff || status.isFullDayBlocked || status.isFullyBooked}
                 onClick={() => handleDateSelect(status.dateStr)}
-
                 title={
+                  status.isPast ? 'تاريخ سابق' :
                   status.isDayOff ? 'عطلة العيادة الأسبوعية' :
-                  status.isFullDayBlocked ? 'العيادة مغلقة / إجازة طبيب' :
-                  status.isFullyBooked ? 'جميع المواعيد محجوزة بالكامل' :
-                  `${status.openSlotsCount} موعد متاح`
+                  status.isVacation ? `إجازة رسمية: ${status.vacationReason}` :
+                  status.isFullDayBlocked ? 'العيادة مغلقة في هذا اليوم' :
+                  status.isFullyBooked ? 'جميع المواعيد مكتملة' :
+                  `${status.openSlotsCount} مواعيد متاحة`
                 }
               >
                 <span className="day-number">{dayNum}</span>
-                {status.isAvailable && (
-                  <span className="day-badge-text available">{status.openSlotsCount} متاح</span>
+                {status.isAvailable && !isSelected && (
+                  <span className="day-badge-dot"></span>
                 )}
-                {status.isDayOff && (
-                  <span className="day-badge-text holiday">عطلة</span>
+                {status.isVacation && (
+                  <span className="day-badge-text blocked">إجازة</span>
                 )}
-                {status.isFullDayBlocked && (
+                {status.isFullDayBlocked && !status.isVacation && (
                   <span className="day-badge-text blocked">إجازة</span>
                 )}
                 {status.isFullyBooked && (
@@ -257,6 +266,14 @@ const BookingCalendar = ({
               <p>هذا اليوم عطلة العيادة. يرجى اختيار يوم عمل آخر من التقويم.</p>
             </div>
           </div>
+        ) : isSelectedDateVacation ? (
+          <div className="day-off-alert" style={{ background: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.3)' }}>
+            <AlertCircle size={20} color="#F59E0B" />
+            <div>
+              <strong>إجازة رسمية: {selectedDateResolution.vacationReason}</strong>
+              <p>العيادة في عطلة رسمية / إجازة سنوية في هذا التاريخ.</p>
+            </div>
+          </div>
         ) : isSelectedDateBlocked ? (
           <div className="day-off-alert">
             <AlertCircle size={20} color="#F59E0B" />
@@ -266,7 +283,22 @@ const BookingCalendar = ({
             </div>
           </div>
         ) : (
-          <div className="interactive-time-slots-grid">
+          <>
+            {selectedDateResolution.workingHoursStr && (
+              <div className="day-shift-banner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', background: 'var(--bg-tertiary)', padding: '0.5rem 0.85rem', borderRadius: '8px', marginBottom: '0.85rem', fontSize: '0.82rem', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)' }}>
+                  <Clock size={14} className="text-primary" />
+                  <span>ساعات الاستقبال: <strong>{selectedDateResolution.workingHoursStr}</strong></span>
+                </div>
+                {scheduleConfig?.breakTime?.enabled && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: '#F59E0B', fontSize: '0.78rem' }}>
+                    <Coffee size={13} />
+                    <span>استراحة ({formatTimeToArabic(scheduleConfig.breakTime.start)} - {formatTimeToArabic(scheduleConfig.breakTime.end)})</span>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="interactive-time-slots-grid">
             {dynamicSlots.map((slot, idx) => {
               const availability = getSlotAvailability(slot);
               const isSelected = selectedTime === slot;
@@ -299,7 +331,8 @@ const BookingCalendar = ({
                 </button>
               );
             })}
-          </div>
+            </div>
+          </>
         )}
       </div>
 

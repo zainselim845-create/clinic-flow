@@ -284,6 +284,7 @@ export const getInitialDataForTenant = (tenantOrSlug) => {
       recalls: drSaraRecalls,
       notifications: drSaraNotifications,
       blockedSlots: drSaraBlockedSlots,
+      prescriptions: [],
       staffMembers: drSaraStaffMembers,
       clinicInfo: saraClinic
     };
@@ -298,6 +299,7 @@ export const getInitialDataForTenant = (tenantOrSlug) => {
     recalls,
     notifications,
     blockedSlots,
+    prescriptions: [],
     staffMembers,
     clinicInfo: demoClinics[0] || clinicInfo
   };
@@ -316,7 +318,8 @@ export const getCleanInitialDataForTenant = (tenantOrSlug) => {
     expenses: [],
     recalls: [],
     notifications: [],
-    blockedSlots: []
+    blockedSlots: [],
+    prescriptions: []
   };
 };
 

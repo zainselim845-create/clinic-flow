@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   Calendar, Lock, Unlock, Clock, CheckCircle2, 
-  CalendarDays, ChevronRight, ChevronLeft, Save 
+  CalendarDays, ChevronRight, ChevronLeft, Save,
+  Coffee, Plus, Trash2, Palmtree, SlidersHorizontal 
 } from 'lucide-react';
 
 import { 
@@ -23,6 +24,7 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
   const [blockReason, setBlockReason] = useState('');
   const [blockFeedback, setBlockFeedback] = useState(null);
   const [scheduleSaveSuccess, setScheduleSaveSuccess] = useState(false);
+  const [newVacation, setNewVacation] = useState({ title: '', startDate: '', endDate: '' });
 
   // Month navigation for interactive calendar
   const today = new Date();
@@ -52,15 +54,23 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
     workingDays: [6, 0, 1, 2, 3, 4],
     startTime: '17:00',
     endTime: '22:00',
-    slotDuration: 30
+    slotDuration: 30,
+    enableCustomDayShifts: false,
+    dayShifts: {},
+    breakTime: { enabled: false, start: '19:30', end: '20:00', label: 'استراحة الطبيب وصلاة العشاء' },
+    vacations: []
   };
 
   const workingDays = scheduleConfig.workingDays || [6, 0, 1, 2, 3, 4];
   const startTime = scheduleConfig.startTime || '17:00';
   const endTime = scheduleConfig.endTime || '22:00';
   const slotDuration = scheduleConfig.slotDuration || 30;
+  const enableCustomDayShifts = Boolean(scheduleConfig.enableCustomDayShifts);
+  const dayShifts = scheduleConfig.dayShifts || {};
+  const breakTime = scheduleConfig.breakTime || { enabled: false, start: '19:30', end: '20:00', label: 'استراحة الطبيب وصلاة العشاء' };
+  const vacations = scheduleConfig.vacations || [];
 
-  const dynamicSlots = generateDynamicSlots(startTime, endTime, slotDuration);
+  const dynamicSlots = generateDynamicSlots(startTime, endTime, slotDuration, breakTime);
 
   // Check if selected date is blocked
   const isSelectedDateFullDayBlocked = blockedSlotsList.some(
@@ -76,7 +86,11 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
         workingDays,
         startTime,
         endTime,
-        slotDuration
+        slotDuration,
+        enableCustomDayShifts,
+        dayShifts,
+        breakTime,
+        vacations
       }
     };
     if (setClinicForm) setClinicForm(updatedInfo);
@@ -86,6 +100,41 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
     });
     setScheduleSaveSuccess(true);
     setTimeout(() => setScheduleSaveSuccess(false), 3000);
+  };
+
+  const handleUpdateScheduleConfig = (partial) => {
+    const updatedConfig = { ...scheduleConfig, ...partial };
+    if (setClinicForm && clinicForm) {
+      setClinicForm({ ...clinicForm, scheduleConfig: updatedConfig });
+    }
+    dispatch({
+      type: 'UPDATE_CLINIC_INFO',
+      payload: {
+        ...(clinicForm || state.clinicInfo),
+        scheduleConfig: updatedConfig
+      }
+    });
+  };
+
+  const handleAddVacation = (e) => {
+    e?.preventDefault();
+    if (!newVacation.startDate || !newVacation.endDate) return;
+    const v = {
+      id: 'vac_' + Date.now(),
+      title: newVacation.title.trim() || 'إجازة رسمية',
+      startDate: newVacation.startDate,
+      endDate: newVacation.endDate
+    };
+    handleUpdateScheduleConfig({
+      vacations: [...vacations, v]
+    });
+    setNewVacation({ title: '', startDate: '', endDate: '' });
+  };
+
+  const handleRemoveVacation = (vacId) => {
+    handleUpdateScheduleConfig({
+      vacations: vacations.filter(v => v.id !== vacId)
+    });
   };
 
   // Toggle Day of Week
@@ -323,8 +372,213 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
           </div>
         </div>
 
+        {/* 1.1 Daily Break Time Box */}
+        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Coffee size={18} style={{ color: '#F59E0B' }} />
+              <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>فترة الراحة اليومية (Daily Break / Prayer Time):</strong>
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+              <input 
+                type="checkbox" 
+                checked={Boolean(breakTime.enabled)} 
+                onChange={(e) => handleUpdateScheduleConfig({ breakTime: { ...breakTime, enabled: e.target.checked } })}
+              />
+              <span>تفعيل استراحة أثناء اليوم</span>
+            </label>
+          </div>
+
+          {breakTime.enabled && (
+            <div className="form-grid-3col" style={{ background: 'var(--bg-secondary)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <div className="form-group">
+                <label>بدء الاستراحة:</label>
+                <input 
+                  type="time" 
+                  className="input-field" 
+                  value={breakTime.start || '19:30'} 
+                  onChange={(e) => handleUpdateScheduleConfig({ breakTime: { ...breakTime, start: e.target.value } })}
+                />
+              </div>
+              <div className="form-group">
+                <label>انتهاء الاستراحة:</label>
+                <input 
+                  type="time" 
+                  className="input-field" 
+                  value={breakTime.end || '20:00'} 
+                  onChange={(e) => handleUpdateScheduleConfig({ breakTime: { ...breakTime, end: e.target.value } })}
+                />
+              </div>
+              <div className="form-group">
+                <label>سبب / مسمى الاستراحة:</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  value={breakTime.label || 'استراحة الطبيب وصلاة العشاء'} 
+                  onChange={(e) => handleUpdateScheduleConfig({ breakTime: { ...breakTime, label: e.target.value } })}
+                  placeholder="استراحة الطبيب / صلاة"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 1.2 Per-Day Custom Working Shifts Box */}
+        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <SlidersHorizontal size={18} className="text-primary" />
+              <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>ساعات عمل مخصصة لكل يوم (Per-Day Custom Hours):</strong>
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+              <input 
+                type="checkbox" 
+                checked={enableCustomDayShifts} 
+                onChange={(e) => handleUpdateScheduleConfig({ enableCustomDayShifts: e.target.checked })}
+              />
+              <span>تخصيص ساعات مختلفة لكل يوم عمل</span>
+            </label>
+          </div>
+
+          {enableCustomDayShifts ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem', marginTop: '0.75rem' }}>
+              {ARABIC_DAYS_MAP.filter(d => workingDays.includes(d.id)).map(day => {
+                const shift = dayShifts[day.id] || { startTime, endTime };
+                return (
+                  <div key={day.id} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <strong style={{ color: 'var(--primary)', fontSize: '0.9rem' }}>يوم {day.name}</strong>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        {formatTimeToArabic(shift.startTime)} - {formatTimeToArabic(shift.endTime)}
+                      </span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      <div>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>من:</label>
+                        <input 
+                          type="time" 
+                          className="input-field"
+                          value={shift.startTime}
+                          onChange={(e) => {
+                            const updatedDayShifts = {
+                              ...dayShifts,
+                              [day.id]: { ...(dayShifts[day.id] || { startTime, endTime }), startTime: e.target.value }
+                            };
+                            handleUpdateScheduleConfig({ dayShifts: updatedDayShifts });
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>إلى:</label>
+                        <input 
+                          type="time" 
+                          className="input-field"
+                          value={shift.endTime}
+                          onChange={(e) => {
+                            const updatedDayShifts = {
+                              ...dayShifts,
+                              [day.id]: { ...(dayShifts[day.id] || { startTime, endTime }), endTime: e.target.value }
+                            };
+                            handleUpdateScheduleConfig({ dayShifts: updatedDayShifts });
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0 }}>
+              يتم تطبيق ساعات العمل العامة ({formatTimeToArabic(startTime)} إلى {formatTimeToArabic(endTime)}) على كافة أيام الأسبوع المفتوحة. فعّل الخيار بالأعلى لتخصيص ساعات محددة لكل يوم كشف.
+            </p>
+          )}
+        </div>
+
+        {/* 1.3 Annual Vacations & Holiday Ranges Box */}
+        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <Palmtree size={18} style={{ color: '#10B981' }} />
+            <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>الإجازات السنوية والرسمية ومؤتمرات الطبيب (Vacation Ranges):</strong>
+          </div>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0' }}>
+            حدد فترات الإجازات الممتدة، وسيتم حظر وقفل الحجز التلقائي في جميع أيام الفترة فوراً عبر كل بوابات المرضى.
+          </p>
+
+          {/* Add Vacation Form */}
+          <form onSubmit={handleAddVacation} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr)) 120px', gap: '0.6rem', background: 'var(--bg-secondary)', padding: '0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '0.85rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ fontSize: '0.75rem' }}>مسمى الإجازة / السبب:</label>
+              <input 
+                type="text" 
+                className="input-field" 
+                placeholder="مثال: إجازة عيد الفطر، مؤتمر دولي..." 
+                value={newVacation.title} 
+                onChange={(e) => setNewVacation({ ...newVacation, title: e.target.value })} 
+                required 
+              />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ fontSize: '0.75rem' }}>من تاريخ:</label>
+              <input 
+                type="date" 
+                className="input-field" 
+                value={newVacation.startDate} 
+                onChange={(e) => setNewVacation({ ...newVacation, startDate: e.target.value })} 
+                required 
+              />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ fontSize: '0.75rem' }}>إلى تاريخ:</label>
+              <input 
+                type="date" 
+                className="input-field" 
+                value={newVacation.endDate} 
+                onChange={(e) => setNewVacation({ ...newVacation, endDate: e.target.value })} 
+                required 
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.65rem' }}>
+                <Plus size={16} />
+                <span>إضافة إجازة</span>
+              </button>
+            </div>
+          </form>
+
+          {/* Active Vacations List */}
+          {vacations.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {vacations.map(vac => (
+                <div key={vac.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-tertiary)', padding: '0.6rem 0.85rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#F59E0B' }}></span>
+                    <strong style={{ fontSize: '0.85rem' }}>{vac.title}</strong>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      (من {vac.startDate} إلى {vac.endDate})
+                    </span>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveVacation(vac.id)}
+                    style={{ background: 'transparent', border: 'none', color: '#EF4444', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.78rem' }}
+                    title="حذف الإجازة وفتح المواعيد"
+                  >
+                    <Trash2 size={15} />
+                    <span>إلغاء</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center', padding: '0.5rem', background: 'var(--bg-secondary)', borderRadius: '6px' }}>
+              لا توجد إجازات سنوية أو رسمية مضافة حالياً.
+            </div>
+          )}
+        </div>
+
         {/* Live Slots Preview */}
-        <div className="slots-live-preview">
+        <div className="slots-live-preview" style={{ marginTop: '1.25rem' }}>
           <span className="preview-label">
              مواعيد الكشف المتولدة يومياً ({dynamicSlots.length} موعد متاح في اليوم):
           </span>

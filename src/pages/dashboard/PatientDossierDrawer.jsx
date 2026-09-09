@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, 
-  FileSpreadsheet
+  FileSpreadsheet, Pill, Printer
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
 import TreatmentPlanModal from '../../components/TreatmentPlanModal';
+import PrescriptionModal from '../../components/PrescriptionModal';
 import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
 import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
 
@@ -15,7 +16,8 @@ export default function PatientDossierDrawer({
   onClose
 }) {
   const { state } = useApp();
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'notes' | 'plans'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'notes' | 'plans' | 'prescriptions'
+  const [selectedRx, setSelectedRx] = useState(null);
 
   const [clinicalNotes, setClinicalNotes] = useState([]);
   const [treatmentPlans, setTreatmentPlans] = useState([]);
@@ -38,6 +40,23 @@ export default function PatientDossierDrawer({
     }
     loadData();
   }, [patientId]);
+
+  const patientPrescriptions = useMemo(() => {
+    const list = state.prescriptions || [];
+    const directMatches = list.filter(rx => 
+      (rx.patientId && String(rx.patientId) === String(patientId)) || 
+      (patientPhone && rx.patientPhone && rx.patientPhone.replace(/\D/g, '') === patientPhone.replace(/\D/g, '')) ||
+      (rx.patientName && patientName && rx.patientName.trim() === patientName.trim())
+    );
+    const attachedToPatient = patient.prescriptions || [];
+    const map = new Map();
+    [...attachedToPatient, ...directMatches].forEach(rx => {
+      if (rx && (rx.id || rx.rxNumber)) {
+        map.set(rx.id || rx.rxNumber, rx);
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0));
+  }, [state.prescriptions, patientId, patientPhone, patientName, patient.prescriptions]);
 
   if (!patient) return null;
 
@@ -119,6 +138,28 @@ export default function PatientDossierDrawer({
           >
             <FileSpreadsheet size={14} />
             <span>خطط العلاج ({treatmentPlans.length})</span>
+          </button>
+
+          <button
+            type="button"
+            className={`btn-dossier-tab ${activeTab === 'prescriptions' ? 'active' : ''}`}
+            onClick={() => setActiveTab('prescriptions')}
+            style={{
+              background: activeTab === 'prescriptions' ? 'var(--primary)' : 'var(--surface)',
+              color: activeTab === 'prescriptions' ? '#FFFFFF' : 'var(--text-primary)',
+              border: '1px solid var(--border-color)',
+              padding: '0.45rem 0.95rem',
+              borderRadius: 'var(--radius-md)',
+              fontWeight: 700,
+              fontSize: '0.84rem',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}
+          >
+            <Pill size={14} />
+            <span>الروشتات الطبية ℞ ({patientPrescriptions.length})</span>
           </button>
         </div>
 
@@ -274,6 +315,67 @@ export default function PatientDossierDrawer({
             </div>
           )}
 
+          {/* TAB 4: PRESCRIPTIONS (الروشتات الطبية الإلكترونية) */}
+          {activeTab === 'prescriptions' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ margin: 0, fontWeight: 800 }}>الروشتات الطبية الصادرة ({patientPrescriptions.length})</h4>
+              </div>
+
+              {patientPrescriptions.length === 0 ? (
+                <div style={{ background: '#F8FAFC', padding: '2.5rem', borderRadius: '12px', textAlign: 'center', color: '#64748B' }}>
+                  <Pill size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.3, color: 'var(--primary)' }} />
+                  <p style={{ margin: '0 0 0.35rem 0', fontWeight: 700, fontSize: '0.95rem' }}>لم تصدر أي روشتة طبية لهذا المريض حتى الآن.</p>
+                  <span style={{ fontSize: '0.82rem', opacity: 0.8 }}>يتم إنشاء الروشتات الإلكترونية وطباعتها تلقائياً عند إنهاء الكشف الطبي.</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {patientPrescriptions.map((rx) => (
+                    <div 
+                      key={rx.id || rx.rxNumber} 
+                      style={{ 
+                        background: 'var(--surface)', 
+                        border: '1px solid var(--border-color)', 
+                        borderRadius: 'var(--radius-lg)', 
+                        padding: '1.1rem 1.25rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+                          <span style={{ background: 'rgba(0, 113, 227, 0.1)', color: 'var(--primary)', padding: '3px 9px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 800 }}>
+                            {rx.rxNumber || 'RX-MED'}
+                          </span>
+                          <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                            {rx.diagnosis ? `تشخيص: ${rx.diagnosis}` : 'روشتة علاجية'}
+                          </strong>
+                        </div>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+                          <span>التاريخ: {rx.date || (rx.createdAt ? new Date(rx.createdAt).toLocaleDateString('ar-EG') : 'اليوم')}</span>
+                          <span>الأدوية الموصوفة: <strong style={{ color: 'var(--text-primary)' }}>{rx.medications?.length || 0} أصناف</strong></span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRx(rx)}
+                        className="btn btn-primary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.84rem', padding: '0.5rem 0.95rem', whiteSpace: 'nowrap' }}
+                      >
+                        <Printer size={15} />
+                        <span>عرض وطباعة ℞</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
         {/* Footer */}
@@ -292,6 +394,15 @@ export default function PatientDossierDrawer({
           plans={treatmentPlans}
           onPlansUpdate={setTreatmentPlans}
           onClose={() => setShowPlansModal(false)}
+        />
+      )}
+
+      {/* Printable E-Prescription Modal */}
+      {selectedRx && (
+        <PrescriptionModal
+          isOpen={!!selectedRx}
+          prescription={selectedRx}
+          onClose={() => setSelectedRx(null)}
         />
       )}
 
