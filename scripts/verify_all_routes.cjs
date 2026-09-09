@@ -76,7 +76,7 @@ async function runRouteVerification() {
   await page.waitForTimeout(2000);
 
   const currentUrl = page.url();
-  recordResult('/login', 'Doctor login redirects to dashboard', currentUrl.endsWith('/') || currentUrl.includes('/#'), currentUrl);
+  recordResult('/login', 'Doctor login redirects to dashboard', currentUrl.includes('/dashboard') || currentUrl.endsWith('/') || currentUrl.includes('/#'), currentUrl);
 
   console.log('\n--- 2. Testing Clinical Dashboard (/) ---');
   await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
