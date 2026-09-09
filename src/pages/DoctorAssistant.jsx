@@ -102,25 +102,26 @@ const DoctorAssistant = () => {
 
   // Execute Clinical Action helper
   const executeDoctorAction = (actionResult) => {
+    const activeClinicId = currentClinic?.id || null;
     if (actionResult.actionType === 'BLOCK_FULL_DAY') {
       dispatch({ type: 'BLOCK_FULL_DAY', payload: actionResult.payload });
       if (useSupabase) {
-        blockedSlotsService.blockSlotInDb(actionResult.payload.date, 'FULL_DAY', actionResult.payload.reason || 'إجازة الطبيب', true).catch(console.error);
+        blockedSlotsService.blockSlotInDb(actionResult.payload.date, 'FULL_DAY', actionResult.payload.reason || 'إجازة الطبيب', true, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'UNBLOCK_FULL_DAY') {
       dispatch({ type: 'UNBLOCK_FULL_DAY', payload: actionResult.payload });
       if (useSupabase) {
-        blockedSlotsService.unblockFullDayInDb(actionResult.payload.date).catch(console.error);
+        blockedSlotsService.unblockFullDayInDb(actionResult.payload.date, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'BLOCK_SLOT') {
       dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: actionResult.payload });
       if (useSupabase) {
-        blockedSlotsService.blockSlotInDb(actionResult.payload.date, actionResult.payload.time, actionResult.payload.reason || 'حظر مخصص', false).catch(console.error);
+        blockedSlotsService.blockSlotInDb(actionResult.payload.date, actionResult.payload.time, actionResult.payload.reason || 'حظر مخصص', false, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'UNBLOCK_SLOT') {
       dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: actionResult.payload });
       if (useSupabase) {
-        blockedSlotsService.unblockSlotInDb(actionResult.payload.date, actionResult.payload.time).catch(console.error);
+        blockedSlotsService.unblockSlotInDb(actionResult.payload.date, actionResult.payload.time, activeClinicId).catch(console.error);
       }
     }
   };

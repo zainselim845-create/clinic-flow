@@ -24,7 +24,6 @@
 
 .main-content {
   flex: 1;
-  margin-right: 240px;
   margin-inline-start: 240px;
   display: flex;
   flex-direction: column;

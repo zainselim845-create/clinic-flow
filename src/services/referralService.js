@@ -1,6 +1,7 @@
 import { safeStorage } from '../utils/safeStorage';
 
 const REFERRALS_STORAGE_KEY = 'clinicflow_referrals_ledger';
+const getReferralsKey = (clinicId) => clinicId ? `clinicflow_referrals_ledger_${clinicId}` : REFERRALS_STORAGE_KEY;
 
 /**
  * Generate a unique referral code for a patient
@@ -22,9 +23,10 @@ export function getPatientReferralLink(patientId) {
 /**
  * Retrieve referral logs & stats
  */
-export function getReferralsLedger() {
+export function getReferralsLedger(clinicId = null) {
   try {
-    const data = safeStorage.getItem(REFERRALS_STORAGE_KEY);
+    const key = getReferralsKey(clinicId);
+    const data = safeStorage.getItem(key);
     if (!data) return [];
     return typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
   } catch (e) {
@@ -36,11 +38,12 @@ export function getReferralsLedger() {
 /**
  * Record a new referral when an appointment is booked with a referral code
  */
-export function recordReferral(referralCode, referredPatientName, referredPhone) {
+export function recordReferral(referralCode, referredPatientName, referredPhone, clinicId = null) {
   try {
-    const existing = getReferralsLedger();
+    const existing = getReferralsLedger(clinicId);
     const newEntry = {
       id: 'ref_' + Date.now(),
+      clinicId: clinicId || null,
       referralCode,
       referredPatientName,
       referredPhone,
@@ -50,7 +53,7 @@ export function recordReferral(referralCode, referredPatientName, referredPhone)
       createdAt: new Date().toISOString()
     };
     const updated = [newEntry, ...existing];
-    safeStorage.setItem(REFERRALS_STORAGE_KEY, JSON.stringify(updated));
+    safeStorage.setItem(getReferralsKey(clinicId), JSON.stringify(updated));
     return newEntry;
   } catch (e) {
     console.error('Failed to record referral', e);

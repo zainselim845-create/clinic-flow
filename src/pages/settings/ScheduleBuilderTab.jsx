@@ -172,13 +172,14 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
 
     if (isSupabaseConfigured()) {
       try {
+        const clinicId = clinicForm?.id || state.clinicInfo?.id || null;
         const isCurrentlyBlocked = blockedSlotsList.some(
           b => b.date === selectedBlockDate && b.time === slotTime
         );
         if (isCurrentlyBlocked) {
-          await blockedSlotsService.unblockSlotInDb(selectedBlockDate, slotTime);
+          await blockedSlotsService.unblockSlotInDb(selectedBlockDate, slotTime, clinicId);
         } else {
-          await blockedSlotsService.blockSlotInDb(selectedBlockDate, slotTime, reason, false);
+          await blockedSlotsService.blockSlotInDb(selectedBlockDate, slotTime, reason, false, clinicId);
         }
       } catch (err) {
         console.error('Failed to sync slot block with Supabase:', err);
@@ -202,6 +203,7 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
       b => b.date === dateToToggle && (b.isFullDay || b.time === 'FULL_DAY' || b.time === 'ALL')
     );
     const reason = blockReason.trim() || 'إجازة الطبيب بالكامل';
+    const clinicId = clinicForm?.id || state.clinicInfo?.id || null;
 
     if (isBlocked) {
       dispatch({
@@ -209,7 +211,7 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
         payload: { date: dateToToggle }
       });
       if (isSupabaseConfigured()) {
-        await blockedSlotsService.unblockFullDayInDb(dateToToggle).catch(console.error);
+        await blockedSlotsService.unblockFullDayInDb(dateToToggle, clinicId).catch(console.error);
       }
       setBlockFeedback({
         type: 'unblock',
@@ -221,7 +223,7 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
         payload: { date: dateToToggle, reason }
       });
       if (isSupabaseConfigured()) {
-        await blockedSlotsService.blockSlotInDb(dateToToggle, 'FULL_DAY', reason, true).catch(console.error);
+        await blockedSlotsService.blockSlotInDb(dateToToggle, 'FULL_DAY', reason, true, clinicId).catch(console.error);
       }
       setBlockFeedback({
         type: 'block',

@@ -43,14 +43,15 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
 
   const handleAddExpense = (e) => {
     e.preventDefault();
-    if (!title.trim() || !amount) return;
+    const parsedAmount = Math.round(Math.abs(Number(amount)) * 100) / 100;
+    if (!title.trim() || isNaN(parsedAmount) || parsedAmount <= 0) return;
 
     const newExpense = {
-      id: 'exp-' + Date.now(),
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'exp-' + Date.now(),
       clinicId: currentClinicId,
       clinic_id: currentClinicId,
       title: title.trim(),
-      amount: Number(amount) || 0,
+      amount: parsedAmount,
       category,
       date,
       notes: notes.trim(),

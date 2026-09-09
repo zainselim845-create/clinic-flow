@@ -173,10 +173,10 @@ const ManageBooking = () => {
       const dbName = (a.patientName || '').trim().toLowerCase();
       const dbParts = dbName.split(/\s+/).filter(Boolean);
       
-      // Exact match or sub-phrase match
-      if (dbName === cleanName || dbName.includes(cleanName)) return true;
+      // Exact full name match
+      if (dbName === cleanName) return true;
       
-      // Two-part match
+      // Strict two-part name match (e.g., first and second names must match)
       if (inputParts.length >= 2 && dbParts.length >= 2) {
         return inputParts[0] === dbParts[0] && inputParts[1] === dbParts[1];
       }

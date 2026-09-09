@@ -178,7 +178,7 @@ const Appointments = () => {
   const handleBlockFullDay = async (date, reason = 'إجازة الطبيب') => {
     if (useSupabase) {
       try {
-        await blockedSlotsService.blockSlotInDb(date, 'FULL_DAY', reason, true);
+        await blockedSlotsService.blockSlotInDb(date, 'FULL_DAY', reason, true, currentClinicId);
       } catch (err) {
         console.error('Failed to block full day in Supabase:', err);
       }
@@ -190,7 +190,7 @@ const Appointments = () => {
   const handleUnblockFullDay = async (date) => {
     if (useSupabase) {
       try {
-        await blockedSlotsService.unblockFullDayInDb(date);
+        await blockedSlotsService.unblockFullDayInDb(date, currentClinicId);
       } catch (err) {
         console.error('Failed to unblock full day in Supabase:', err);
       }

@@ -36,26 +36,30 @@ export async function getPatientWalletHistory(patientId) {
   }
 }
 
-export async function addWalletTransaction(patientId, { type, amount, notes, referenceId }) {
+export async function addWalletTransaction(patientId, { type, amount, notes, referenceId, clinicId = null }) {
   if (!isSupabaseConfigured()) {
     return { success: true, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
     const { balance } = await getPatientWalletHistory(patientId);
+    const cleanAmount = Math.abs(Number(amount) || 0);
     let newBalance = balance;
-    if (type === 'deposit') newBalance += Math.abs(Number(amount));
-    else if (type === 'deduction') newBalance = Math.max(0, newBalance - Math.abs(Number(amount)));
-    else if (type === 'refund') newBalance += Math.abs(Number(amount));
+    if (type === 'deposit') newBalance += cleanAmount;
+    else if (type === 'deduction') newBalance = Math.max(0, newBalance - cleanAmount);
+    else if (type === 'refund') newBalance += cleanAmount;
 
-    const { data, error } = await supabase.from('patient_wallet').insert({
+    const payload = {
       patient_id: patientId,
       transaction_type: type,
-      amount: Number(amount),
+      amount: cleanAmount,
       balance_after: newBalance,
       reference_id: referenceId || null,
       notes: notes || ''
-    }).select().single();
+    };
+    if (clinicId) payload.clinic_id = clinicId;
+
+    const { data, error } = await supabase.from('patient_wallet').insert(payload).select().single();
 
     if (error) throw error;
     return { data: fromDbWalletTransaction(data), newBalance, error: null };

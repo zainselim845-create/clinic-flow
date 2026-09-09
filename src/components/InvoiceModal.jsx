@@ -27,12 +27,13 @@ const InvoiceModal = ({
   const [discount, setDiscount] = useState(invoice?.discount || 0);
   const [taxPercent, setTaxPercent] = useState(invoice?.taxPercentage || 0);
 
-  // Totals calculations
-  const subtotal = items.reduce((acc, it) => acc + (Number(it.unitPrice || 0) * Number(it.quantity || 1)), 0);
-  const cleanDiscount = Math.min(subtotal, Math.max(0, Number(discount) || 0));
+  // Totals calculations with 2-decimal rounding and non-negative clamping
+  const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
+  const subtotal = round2(items.reduce((acc, it) => acc + (Math.max(0, Number(it.unitPrice || 0)) * Math.max(1, Number(it.quantity || 1))), 0));
+  const cleanDiscount = round2(Math.min(subtotal, Math.max(0, Number(discount) || 0)));
   const taxableAmount = Math.max(0, subtotal - cleanDiscount);
-  const taxAmount = taxableAmount * (Math.max(0, Number(taxPercent) || 0) / 100);
-  const grandTotal = Math.max(0, taxableAmount + taxAmount);
+  const taxAmount = round2(taxableAmount * (Math.max(0, Number(taxPercent) || 0) / 100));
+  const grandTotal = round2(Math.max(0, taxableAmount + taxAmount));
   const patientShare = grandTotal;
 
   const handleAddItem = () => {
@@ -48,9 +49,11 @@ const InvoiceModal = ({
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
       if (field === 'quantity' || field === 'unitPrice') {
-        const qty = Number(field === 'quantity' ? value : updated[index].quantity || 1);
-        const price = Number(field === 'unitPrice' ? value : updated[index].unitPrice || 0);
-        updated[index].total = qty * price;
+        const qty = Math.max(1, Number(field === 'quantity' ? value : updated[index].quantity || 1));
+        const price = Math.max(0, Number(field === 'unitPrice' ? value : updated[index].unitPrice || 0));
+        updated[index].quantity = qty;
+        updated[index].unitPrice = price;
+        updated[index].total = round2(qty * price);
       }
       return updated;
     });

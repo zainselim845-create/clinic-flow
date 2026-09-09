@@ -60,7 +60,7 @@ const Sidebar = () => {
         <h2>{brandTitle}</h2>
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav" onClick={() => setMobileNavOpen(false)}>
         <NavLink to="/" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'} end>
           <LayoutDashboard size={19} />
           <span>لوحة التحكم</span>
