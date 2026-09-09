@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
     "lint": "oxlint",
-    "test": "vitest run --pool=threads",
+    "test": "node --max-old-space-size=4096 ./node_modules/vitest/vitest.mjs run --pool=threads",
     "audit": "node scripts/browser-audit/run-audit.cjs",
     "preview": "vite preview"
   },

@@ -23,7 +23,6 @@ export const initialState = {
   blockedSlots: [],
   expenses: [],
   recalls: [],
-  prescriptions: [],
   staffMembers: [],
   clinicInfo: null,
   theme: 'light',
@@ -48,8 +47,7 @@ export function appReducer(state, action) {
         notifications: [],
         blockedSlots: [],
         expenses: [],
-        recalls: [],
-        prescriptions: []
+        recalls: []
       };
     case 'INIT_DATA':
       return { 
@@ -77,7 +75,6 @@ export function appReducer(state, action) {
         expenses: [],
         recalls: [],
         invoices: [],
-        prescriptions: [],
         notifications: [
           {
             id: 'notif-fresh-start',
@@ -132,8 +129,7 @@ export function appReducer(state, action) {
         patients: state.patients.filter(p => p.id !== action.payload),
         appointments: state.appointments.filter(a => a.patientId !== action.payload),
         recalls: (state.recalls || []).filter(r => r.patientId !== action.payload),
-        invoices: (state.invoices || []).filter(inv => inv.patientId !== action.payload),
-        prescriptions: (state.prescriptions || []).filter(rx => rx.patientId !== action.payload)
+        invoices: (state.invoices || []).filter(inv => inv.patientId !== action.payload)
       };
     case 'SET_PATIENTS':
       return { ...state, patients: action.payload };
@@ -400,44 +396,6 @@ export function appReducer(state, action) {
         recalls: (state.recalls || []).filter(r => r.id !== action.payload)
       };
 
-    // E-Prescriptions (الروشتات الطبية الإلكترونية)
-    case 'ADD_PRESCRIPTION': {
-      const newRx = {
-        id: action.payload.id || 'rx-' + Date.now(),
-        createdAt: action.payload.createdAt || new Date().toISOString(),
-        ...action.payload
-      };
-      const notif = {
-        id: 'notif-' + Date.now(),
-        type: 'prescription',
-        title: 'إصدار روشتة طبية ℞',
-        message: `تم إصدار روشتة إلكترونية للمريض ${newRx.patientName || ''} برقم ${newRx.rxNumber || ''}`,
-        timestamp: new Date().toISOString(),
-        read: false
-      };
-      return {
-        ...state,
-        prescriptions: [newRx, ...(state.prescriptions || [])],
-        notifications: [notif, ...(state.notifications || [])].slice(0, 100),
-        patients: (state.patients || []).map(p => {
-          if (p.id === newRx.patientId || (newRx.patientPhone && p.phone === newRx.patientPhone)) {
-            const pPrescriptions = p.prescriptions || [];
-            return {
-              ...p,
-              prescriptions: [newRx, ...pPrescriptions],
-              lastPrescription: newRx
-            };
-          }
-          return p;
-        })
-      };
-    }
-    case 'DELETE_PRESCRIPTION':
-      return {
-        ...state,
-        prescriptions: (state.prescriptions || []).filter(rx => rx.id !== action.payload)
-      };
-
     // UI Settings
     case 'SET_THEME':
       return { ...state, theme: action.payload };
@@ -457,8 +415,7 @@ export function appReducer(state, action) {
         notifications: [],
         blockedSlots: [],
         expenses: [],
-        recalls: [],
-        prescriptions: []
+        recalls: []
       };
     }
 
@@ -569,7 +526,6 @@ export function AppProvider({ children }) {
               blockedSlots: parsed.blockedSlots || seedData.blockedSlots,
               expenses: (parsed.expenses && parsed.expenses.length > 0) ? parsed.expenses : seedData.expenses,
               recalls: (parsed.recalls && parsed.recalls.length > 0) ? parsed.recalls : seedData.recalls,
-              prescriptions: (parsed.prescriptions && Array.isArray(parsed.prescriptions)) ? parsed.prescriptions : (seedData.prescriptions || []),
               staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : seedData.staffMembers,
               clinicInfo: activeTenant || parsed.clinicInfo || seedData.clinicInfo,
               useSupabase: false,
@@ -637,8 +593,7 @@ export function AppProvider({ children }) {
           staffMembers: state.staffMembers,
           clinicInfo: state.clinicInfo,
           expenses: state.expenses,
-          recalls: state.recalls,
-          prescriptions: state.prescriptions || []
+          recalls: state.recalls
         });
         localStorage.setItem(scopedKey, payload);
         if (currentSlug === 'dr-ahmed') {
@@ -656,8 +611,7 @@ export function AppProvider({ children }) {
             staffMembers: state.staffMembers,
             clinicInfo: state.clinicInfo,
             expenses: state.expenses,
-            recalls: state.recalls,
-            prescriptions: (state.prescriptions || []).slice(0, 50)
+            recalls: state.recalls
           };
           localStorage.setItem(scopedKey, JSON.stringify(compactedState));
           if (currentSlug === 'dr-ahmed') {

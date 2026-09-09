@@ -158,51 +158,5 @@ describe('appReducer Clinical Lifecycle', () => {
     expect(clearedState.patients).toHaveLength(0);
     expect(clearedState.appointments).toHaveLength(0);
     expect(clearedState.notifications).toHaveLength(0);
-    expect(clearedState.prescriptions).toHaveLength(0);
-  });
-
-  it('adds an e-prescription, updates patient dossier, and records notification', () => {
-    const existingPatient = {
-      id: 'p-100',
-      name: 'سارة عبد الله',
-      phone: '01012345678',
-      prescriptions: []
-    };
-
-    const stateWithPatient = {
-      ...initialState,
-      patients: [existingPatient],
-      prescriptions: []
-    };
-
-    const newRx = {
-      id: 'rx-2026',
-      rxNumber: 'RX-9901',
-      patientId: 'p-100',
-      patientName: 'سارة عبد الله',
-      diagnosis: 'نزلة معوية حادة',
-      medications: [
-        { name: 'Augmentin 1g', dosage: 'قرص كل 12 ساعة', duration: '7 أيام' },
-        { name: 'Flagyl 500mg', dosage: 'قرص كل 8 ساعات', duration: '5 أيام' }
-      ]
-    };
-
-    const stateAfterRx = appReducer(stateWithPatient, {
-      type: 'ADD_PRESCRIPTION',
-      payload: newRx
-    });
-
-    expect(stateAfterRx.prescriptions).toHaveLength(1);
-    expect(stateAfterRx.prescriptions[0].rxNumber).toBe('RX-9901');
-    expect(stateAfterRx.patients[0].prescriptions).toHaveLength(1);
-    expect(stateAfterRx.patients[0].lastPrescription.rxNumber).toBe('RX-9901');
-    expect(stateAfterRx.notifications[0].title).toContain('روشتة');
-
-    // Deleting prescription
-    const stateAfterDelete = appReducer(stateAfterRx, {
-      type: 'DELETE_PRESCRIPTION',
-      payload: 'rx-2026'
-    });
-    expect(stateAfterDelete.prescriptions).toHaveLength(0);
   });
 });
