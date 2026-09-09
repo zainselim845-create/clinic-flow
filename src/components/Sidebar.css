@@ -5,11 +5,13 @@
 .sidebar {
   position: fixed;
   right: 0;
+  inset-inline-start: 0;
   top: 0;
   width: 240px;
   height: 100vh;
   background: var(--surface-container, #F8FAFD);
   border-left: 1px solid var(--border-color, #DADCE0);
+  border-inline-end: 1px solid var(--border-color, #DADCE0);
   display: flex;
   flex-direction: column;
   padding: 1.25rem 0.85rem 1rem 0.85rem;
@@ -30,8 +32,8 @@
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: #C2E7FF;
-  color: #001D35;
+  background: var(--primary-container, #C2E7FF);
+  color: var(--on-primary-container, #001D35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,6 +56,7 @@
   flex-grow: 1;
   overflow-y: auto;
   padding-right: 2px;
+  padding-inline-end: 2px;
 }
 
 /* Google M3 Navigation Indicator Items */
@@ -62,38 +65,45 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.65rem 1.15rem;
-  color: #444746;
+  color: var(--text-secondary, #5F6368);
   text-decoration: none;
   border-radius: 28px;
   transition: all var(--transition-fast);
   font-weight: 500;
   font-size: 0.88rem;
   position: relative;
+  cursor: pointer;
 }
 
 .nav-item:hover {
-  background: #E9EEF6;
-  color: #1F1F1F;
+  background: var(--surface-container-high, #E9EEF6);
+  color: var(--text-primary, #1F1F1F);
+}
+
+.nav-item:active {
+  transform: scale(0.98);
 }
 
 .nav-item.active {
-  background: #C2E7FF !important;
-  color: #001D35 !important;
+  background: var(--primary-container, #C2E7FF) !important;
+  color: var(--on-primary-container, #001D35) !important;
   font-weight: 700;
 }
 
 .nav-item.active svg {
-  color: #001D35 !important;
+  color: var(--on-primary-container, #001D35) !important;
 }
 
-.badge {
-  background: #B3261E;
+/* Scoped sidebar badge — prevents global .badge override */
+.sidebar .badge {
+  background: var(--error, #B3261E);
   color: #FFFFFF;
   font-size: 0.68rem;
   font-weight: 700;
   padding: 0.15rem 0.45rem;
   border-radius: 9999px;
   margin-right: auto;
+  margin-inline-start: auto;
 }
 
 .sidebar-footer {
@@ -112,7 +122,7 @@
   padding: 0.55rem 0.95rem;
   border-radius: 28px;
   background: transparent;
-  color: #444746;
+  color: var(--text-secondary, #5F6368);
   font-size: 0.84rem;
   font-weight: 500;
   transition: all var(--transition-fast);
@@ -121,15 +131,26 @@
 }
 
 .theme-toggle:hover {
-  background: #E9EEF6;
-  color: #1F1F1F;
+  background: var(--surface-container-high, #E9EEF6);
+  color: var(--text-primary, #1F1F1F);
 }
 
 .logout-btn {
-  color: #B3261E;
+  color: var(--error, #D93025);
 }
 
 .logout-btn:hover {
-  background: #FCE8E6;
-  color: #B3261E;
+  background: var(--error-container, #FCE8E6);
+  color: var(--error, #D93025);
+}
+
+/* Mobile: slide sidebar off-screen, reveal with .mobile-open */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(100%);
+    box-shadow: var(--shadow-xl);
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
 }

@@ -24,7 +24,8 @@
 
 .main-content {
   flex: 1;
-  margin-right: 220px;
+  margin-right: 240px;
+  margin-inline-start: 240px;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -75,6 +76,7 @@
 @media (max-width: 768px) {
   .main-content {
     margin-right: 0;
+    margin-inline-start: 0;
     padding-bottom: 70px;
   }
 

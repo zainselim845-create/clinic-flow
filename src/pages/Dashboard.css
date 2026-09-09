@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ClinicFlow — Apple-Tier Executive Dashboard Comprehensive Stylesheet
+   ClinicFlow — Google Material 3 Executive Dashboard Comprehensive Stylesheet
    ========================================================================== */
 
 .dashboard-page {
@@ -70,7 +70,7 @@
 }
 
 .workspace-date-chip .queue-live-count {
-  color: #B06000;
+  color: var(--warning-dark, #B06000);
   font-weight: 700;
 }
 
@@ -87,7 +87,7 @@
   gap: 0.5rem;
   padding: 0.55rem 1.25rem;
   border-radius: 24px;
-  background: #0B57D0;
+  background: var(--primary, #0B57D0);
   color: #FFFFFF !important;
   font-size: 0.86rem;
   font-weight: 600;
@@ -98,7 +98,7 @@
 }
 
 .google-m3-fab-btn:hover {
-  background: #0842A0;
+  background: var(--primary-hover, #0842A0);
   box-shadow: 0 2px 6px rgba(60, 64, 67, 0.2);
   transform: translateY(-1px);
 }
@@ -111,7 +111,7 @@
   padding: 0.5rem 0.95rem;
   border-radius: 20px;
   background: var(--surface-container, #F0F4F9);
-  color: #444746;
+  color: var(--text-secondary, #444746);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -121,7 +121,7 @@
 
 .google-m3-tonal-btn:hover {
   background: var(--surface-container-high, #E9EEF6);
-  color: #1F1F1F;
+  color: var(--text-primary, #1F1F1F);
   border-color: var(--border-color, #DADCE0);
 }
 
@@ -141,7 +141,7 @@
 
 .google-m3-icon-btn:hover {
   background: var(--surface-container-high, #E9EEF6);
-  color: #1F1F1F;
+  color: var(--text-primary, #1F1F1F);
   border-color: var(--border-color, #DADCE0);
 }
 
@@ -180,12 +180,16 @@
 .cockpit-stat-card:hover {
   box-shadow: 0 4px 12px rgba(60, 64, 67, 0.12);
   transform: translateY(-2px);
-  border-color: #BDC1C6;
+  border-color: var(--border-color);
+}
+
+.cockpit-stat-card:active {
+  transform: scale(0.99);
 }
 
 .cockpit-stat-card.active-filter-card {
-  border-color: #1A73E8;
-  background: #FCFDFF;
+  border-color: var(--primary);
+  background: var(--primary-light);
 }
 
 .stat-card-header {
@@ -204,24 +208,24 @@
   flex-shrink: 0;
 }
 
-.stat-icon-box.total { background: #E8F0FE; color: #0B57D0; }
-.stat-icon-box.waiting { background: #FEF7E0; color: #B06000; }
-.stat-icon-box.exam { background: #F3E8FD; color: #7C3AED; }
-.stat-icon-box.revenue { background: #E6F4EA; color: #137333; }
+.stat-icon-box.total { background: var(--primary-light); color: var(--primary); }
+.stat-icon-box.waiting { background: var(--warning-light); color: var(--warning-dark); }
+.stat-icon-box.exam { background: var(--surface-container-high); color: var(--primary); }
+.stat-icon-box.revenue { background: var(--success-light); color: var(--success-dark); }
 
 .stat-card-tag {
   font-size: 0.72rem;
   font-weight: 600;
-  color: #5F6368;
-  background: #F1F3F4;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
   padding: 0.25rem 0.65rem;
   border-radius: 8px;
 }
 
-.stat-card-tag.waiting-tag { background: #FEF7E0; color: #B06000; }
-.stat-card-tag.in-session-tag { background: #F3E8FD; color: #7C3AED; }
-.stat-card-tag.vacant-tag { background: #E6F4EA; color: #137333; }
-.stat-card-tag.paid-tag { background: #E6F4EA; color: #137333; }
+.stat-card-tag.waiting-tag { background: var(--warning-light); color: var(--warning-dark); }
+.stat-card-tag.in-session-tag { background: var(--surface-container-high); color: var(--primary); }
+.stat-card-tag.vacant-tag { background: var(--success-light); color: var(--success-dark); }
+.stat-card-tag.paid-tag { background: var(--success-light); color: var(--success-dark); }
 
 .stat-card-body {
   display: flex;

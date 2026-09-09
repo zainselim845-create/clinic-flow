@@ -154,15 +154,29 @@ h1, h2, h3, h4, h5, h6 {
   --md-sys-color-primary-container: var(--primary-light);
   --md-sys-color-on-primary-container: #041E49;
 
+  /* Material 3 Container Colors */
+  --primary-container: #C2E7FF;
+  --on-primary-container: #001D35;
+  --secondary-container: #DDE3EA;
+  --on-secondary-container: #151C23;
+  --error-container: #FCE8E6;
+  --on-error-container: #410E0B;
+  --success-container: #CEEAD6;
+  --on-success-container: #0D3B1C;
+
   /* Cross-System Compatibility Aliases */
   --primary-color: var(--primary);
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);
+  --primary-subtle: var(--primary-light);
   --danger-color: var(--error);
   --color-error: var(--error);
   --warning-color: var(--warning);
   --success-color: var(--success);
   --info-color: var(--info);
+  --text-main: var(--text-primary);
+  --bg-surface: var(--surface);
+  --font-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --gradient-emerald: linear-gradient(135deg, #1E8E3E 0%, #34A853 100%);
 }
 
@@ -228,6 +242,14 @@ h1, h2, h3, h4, h5, h6 {
   
   --border-color: #3C4043;     /* Google Dark Divider */
   --border-subtle: #303134;
+
+  /* Dark Mode Container Colors */
+  --primary-container: rgba(138, 180, 248, 0.2);
+  --on-primary-container: #C2E7FF;
+  --secondary-container: rgba(196, 199, 197, 0.15);
+  --on-secondary-container: #DEE3E1;
+  --error-container: rgba(242, 184, 181, 0.15);
+  --on-error-container: #F2B8B5;
   
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
