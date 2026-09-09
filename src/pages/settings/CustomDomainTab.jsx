@@ -233,9 +233,49 @@ export default function CustomDomainTab() {
         <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 700 }}>
           تعيين أو تغيير النطاق المخصص
         </h4>
-        <p style={{ margin: '0 0 1rem 0', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+        <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
           أدخل اسم النطاق التجاري الخاص بك (مثل: <code style={{ direction: 'ltr', display: 'inline-block' }}>dr-sara.com</code> أو <code style={{ direction: 'ltr', display: 'inline-block' }}>booking.dr-sara.com</code>).
         </p>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>تجربة سريعة:</span>
+          <button
+            type="button"
+            className="demo-domain-chip"
+            onClick={() => setDomainInput('dr-ahmed-dental.com')}
+            style={{
+              background: 'var(--surface-container, #F0F4F9)',
+              border: '1px solid var(--border-color, #DADCE0)',
+              borderRadius: '16px',
+              padding: '0.25rem 0.75rem',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              color: '#0B57D0',
+              fontFamily: 'monospace'
+            }}
+          >
+            dr-ahmed-dental.com
+          </button>
+          <button
+            type="button"
+            className="demo-domain-chip"
+            onClick={() => setDomainInput('drsara-clinic.com')}
+            style={{
+              background: 'var(--surface-container, #F0F4F9)',
+              border: '1px solid var(--border-color, #DADCE0)',
+              borderRadius: '16px',
+              padding: '0.25rem 0.75rem',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              color: '#0B57D0',
+              fontFamily: 'monospace'
+            }}
+          >
+            drsara-clinic.com
+          </button>
+        </div>
 
         <form onSubmit={handleSaveDomain}>
           <div className="domain-input-box">
@@ -276,6 +316,44 @@ export default function CustomDomainTab() {
           </div>
         </form>
       </div>
+
+      {/* SSL Certificate Details Banner (when ACTIVE) */}
+      {domainConfig.sslStatus === DOMAIN_STATUS.ACTIVE && (
+        <div className="settings-card" style={{ border: '1.5px solid #A7F3D0', background: '#F0FDF4' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.85rem' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#16A34A' }}>
+              <ShieldCheck size={22} />
+            </div>
+            <div>
+              <h4 style={{ margin: 0, color: '#166534', fontSize: '1.05rem', fontWeight: 800 }}>
+                شهادة الأمان SSL نشطة ومحمية بالكامل
+              </h4>
+              <span style={{ fontSize: '0.84rem', color: '#15803D' }}>
+                النطاق يعمل الآن ببروتوكول HTTPS المشفر بتوافق كامل مع معايير الأمان العالمية
+              </span>
+            </div>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', background: '#FFFFFF', padding: '1rem', borderRadius: '12px', border: '1px solid #BBF7D0', fontSize: '0.84rem' }}>
+            <div>
+              <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.76rem', marginBottom: '2px' }}>نوع التشفير</span>
+              <strong style={{ color: '#166534' }}>TLS 1.3 / ECC 256-bit</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.76rem', marginBottom: '2px' }}>جهة الإصدار التلقائي</span>
+              <strong style={{ color: '#166534' }}>Let's Encrypt / Cloudflare Edge</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.76rem', marginBottom: '2px' }}>التجديد التلقائي</span>
+              <strong style={{ color: '#166534' }}>مفعل آلياً (Auto-Renew)</strong>
+            </div>
+            <div>
+              <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.76rem', marginBottom: '2px' }}>وضع العزل للعيادة</span>
+              <strong style={{ color: '#0B57D0' }}>مفعل (White-Label Dedicated)</strong>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Required DNS Records Table */}
       {cleanDomain && (
