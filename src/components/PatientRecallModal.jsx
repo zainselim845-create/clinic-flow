@@ -142,7 +142,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
           </div>
           <div className="rec-stat-pill">
             <span>إجمالي خطط الاستدعاء:</span>
-            <strong>{recalls.length} استدعاء</strong>
+            <strong>{clinicRecalls.length} استدعاء</strong>
           </div>
         </div>
 

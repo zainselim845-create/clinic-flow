@@ -1,4 +1,4 @@
-﻿.modal-backdrop-shift {
+.modal-backdrop-shift {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.65);
@@ -184,13 +184,51 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.6rem 1rem;
-  background: #f8fafc;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-weight: 700;
+  padding: 0.6rem 1.15rem;
+  background: var(--surface-container, #F0F4F9);
+  border: 1px solid var(--border-color, #DADCE0);
+  border-radius: 20px;
+  font-weight: 600;
   font-size: 0.85rem;
+  color: var(--text-primary, #202124);
   cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-print-shift:hover {
+  background: var(--surface-container-high, #E9EEF6);
+}
+
+.shift-footer-actions .btn-secondary {
+  padding: 0.6rem 1.25rem;
+  border-radius: 20px;
+  background: transparent;
+  border: 1px solid var(--border-color, #DADCE0);
+  color: var(--text-primary, #202124);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.shift-footer-actions .btn-secondary:hover {
+  background: var(--surface-container, #F0F4F9);
+}
+
+.shift-footer-actions .btn-primary {
+  padding: 0.6rem 1.4rem;
+  border-radius: 20px;
+  background: var(--primary, #0B57D0);
+  color: #FFFFFF;
+  border: none;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.shift-footer-actions .btn-primary:hover {
+  background: #0842A0;
 }
 
 .shift-success-view {
