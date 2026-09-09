@@ -9,14 +9,15 @@ import { availableSlots } from '../data/demoData';
 import { getTodayDateStr } from '../utils/timeSlots';
 import * as appointmentsService from '../services/appointmentsService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
+import { isDoctorRole } from '../utils/permissions';
 import './Appointments.css';
 
 
 const Appointments = () => {
   const { state, dispatch, useSupabase } = useApp();
   const { tenant } = useTenant();
-  const { role, user } = useAuth();
-  const isDoctor = (user?.role || role || 'doctor') === 'doctor';
+  const { user } = useAuth();
+  const isDoctor = isDoctorRole(user);
   const { appointments = [], patients = [], blockedSlots = [] } = state;
   const currentClinicId = tenant?.id || state.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
 

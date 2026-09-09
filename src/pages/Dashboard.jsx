@@ -17,15 +17,15 @@ import PatientRecallModal from '../components/PatientRecallModal';
 import ShiftHandoverModal from '../components/ShiftHandoverModal';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
+import { isDoctorRole } from '../utils/permissions';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const { state, dispatch } = useApp();
   const { tenant } = useTenant();
-  const { user, role } = useAuth();
+  const { user } = useAuth();
   
-  const effectiveRole = user?.role || role || 'doctor';
-  const isDoctor = effectiveRole === 'doctor' || effectiveRole === 'super_admin' || effectiveRole === 'multi_clinic_owner';
+  const isDoctor = isDoctorRole(user);
   const isStaff = !isDoctor;
   
   const currentClinic = state.clinicInfo || {};
