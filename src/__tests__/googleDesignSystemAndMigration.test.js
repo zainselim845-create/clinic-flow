@@ -68,7 +68,7 @@ describe('Google Material Design 3 & State Auto-Healing Quality Gate', () => {
 
       expect(css).toContain('--primary: #1A73E8;');
       expect(css).toContain('--radius-full: 9999px;');
-      expect(css).toContain('--bg-primary: #F8F9FA;');
+      expect(css).toContain('--bg-primary: #F8FAFC;');
       expect(css).toContain('Google Sans');
     });
   });

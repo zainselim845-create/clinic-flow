@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ClinicFlow — Google Material 3 Top App Bar (Header)
+   ClinicFlow — Clean Minimalist Top App Bar (Header)
    ========================================================================== */
 
 .header {
@@ -7,9 +7,11 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.65rem 1.25rem;
-  background: var(--surface, #FFFFFF);
-  border-bottom: 1px solid var(--border-color, #DADCE0);
+  padding: 0.6rem 1.25rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -129,9 +131,9 @@
 }
 
 .search-bar:hover {
-  background: var(--surface-container-high, #E9EEF6);
-  border-color: var(--border-color, #DADCE0);
-  box-shadow: 0 1px 3px rgba(60, 64, 67, 0.08);
+  background: var(--surface-container-high);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .search-icon {
@@ -199,24 +201,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
 }
 
-/* Google Account Style Profile Chip */
+/* Clean Minimalist Profile Chip */
 .doctor-profile {
   display: flex;
   align-items: center;
   gap: 0.65rem;
   padding: 0.25rem 0.65rem 0.25rem 0.35rem;
   border-radius: 24px;
-  background: var(--surface-container, #F0F4F9);
-  border: 1px solid var(--border-subtle, #E8EAED);
+  background: var(--surface-container);
+  border: 1px solid var(--border-subtle);
   transition: all var(--transition-fast);
 }
 
 .doctor-profile:hover {
-  background: var(--surface-container-high, #E9EEF6);
-  border-color: var(--border-color, #DADCE0);
+  background: var(--surface-container-high);
+  border-color: var(--border-color);
 }
 
 .doctor-profile .avatar {

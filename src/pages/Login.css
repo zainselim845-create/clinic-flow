@@ -5,8 +5,6 @@
   align-items: center;
   justify-content: center;
   background-color: var(--bg-primary);
-  background-image: radial-gradient(circle at top right, var(--primary-light), transparent 40%),
-                    radial-gradient(circle at bottom left, var(--accent-light), transparent 40%);
   padding: var(--spacing-xl) var(--spacing-md);
   direction: rtl;
   margin: 0 auto;

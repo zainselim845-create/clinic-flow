@@ -57,39 +57,48 @@
   padding-inline-end: 2px;
 }
 
-/* Google M3 Navigation Indicator Items */
+/* Minimalist Navigation Items */
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.65rem 1.15rem;
-  color: var(--text-secondary, #5F6368);
+  gap: 0.75rem;
+  padding: 0.58rem 0.85rem;
+  color: var(--text-secondary);
   text-decoration: none;
-  border-radius: 28px;
+  border-radius: 10px;
   transition: all var(--transition-fast);
   font-weight: 500;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   position: relative;
   cursor: pointer;
 }
 
 .nav-item:hover {
-  background: var(--surface-container-high, #E9EEF6);
-  color: var(--text-primary, #1F1F1F);
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .nav-item:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
 .nav-item.active {
-  background: var(--primary-container, #C2E7FF) !important;
-  color: var(--on-primary-container, #001D35) !important;
-  font-weight: 700;
+  background: rgba(2, 132, 199, 0.09) !important;
+  color: var(--primary) !important;
+  font-weight: 600;
+}
+
+[data-theme="dark"] .nav-item.active {
+  background: rgba(56, 189, 248, 0.12) !important;
+  color: var(--primary) !important;
 }
 
 .nav-item.active svg {
-  color: var(--on-primary-container, #001D35) !important;
+  color: var(--primary) !important;
 }
 
 /* Scoped sidebar badge — prevents global .badge override */

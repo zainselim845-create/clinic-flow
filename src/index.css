@@ -182,68 +182,71 @@ h1, h2, h3, h4, h5, h6 {
   --gradient-emerald: linear-gradient(135deg, #1E8E3E 0%, #34A853 100%);
 }
 
-/* Light Theme (Google Material You / Clean Workspace Canvas) */
+/* Light Theme (Clean Minimalist Workspace Canvas) */
 [data-theme="light"], :root {
-  --bg-primary: #F8F9FA;       /* Google Canvas */
+  --bg-primary: #F8FAFC;       /* Clean Minimalist Canvas (Slate 50) */
   --bg-secondary: #FFFFFF;     /* Pure White Card */
-  --bg-tertiary: #F1F3F4;      /* Google Pill Button / Search field */
+  --bg-tertiary: #F1F5F9;      /* Soft Pill Button / Input fill */
   --surface: #FFFFFF;
   --card-bg: #FFFFFF;
-  --surface-container: #F0F4F9;
-  --surface-container-high: #E9EEF6;
+  --surface-container: #F1F5F9;
+  --surface-container-high: #E2E8F0;
   
-  --text-primary: #202124;     /* Google High Emphasis */
-  --text-secondary: #5F6368;   /* Google Medium Emphasis */
-  --text-tertiary: #80868B;    /* Google Low Emphasis */
+  --text-primary: #0F172A;     /* Slate 900 - High Contrast & Clean */
+  --text-secondary: #475569;   /* Slate 600 - Medium Emphasis */
+  --text-tertiary: #94A3B8;    /* Slate 400 - Low Emphasis */
   
-  --border-color: #DADCE0;     /* Google standard divider */
-  --border-subtle: #E8EAED;    /* Google subtle border */
+  --border-color: #E2E8F0;     /* Slate 200 - Minimal Hairline Divider */
+  --border-subtle: #F1F5F9;    /* Slate 100 - Extra Subtle Border */
   
-  /* Google Ambient + Key Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-  --shadow-md: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
-  --shadow-lg: 0 2px 6px 2px rgba(60,64,67,0.15), 0 1px 2px 0 rgba(60,64,67,0.3);
-  --shadow-xl: 0 4px 12px 0 rgba(60,64,67,0.2), 0 8px 24px 4px rgba(60,64,67,0.12);
-  --shadow-2xl: 0 8px 28px 0 rgba(60,64,67,0.25), 0 16px 40px 6px rgba(60,64,67,0.15);
-  --shadow-card: 0 1px 3px 0 rgba(60,64,67,0.15), 0 1px 2px 0 rgba(60,64,67,0.1);
-  --shadow-card-hover: 0 2px 6px 2px rgba(60,64,67,0.15), 0 1px 2px 0 rgba(60,64,67,0.3);
+  /* Featherweight Minimalist Shadows (Linear / Stripe style) */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 10px 24px -4px rgba(0, 0, 0, 0.06), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 20px 36px -6px rgba(0, 0, 0, 0.08);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  --shadow-card-hover: 0 8px 24px -4px rgba(0, 0, 0, 0.07);
 
-  --glass-bg: rgba(255, 255, 255, 0.94);
-  --glass-border: #DADCE0;
-  --glass-sidebar: #F8F9FA;
+  --glass-bg: rgba(255, 255, 255, 0.88);
+  --glass-border: #E2E8F0;
+  --glass-sidebar: #F8FAFC;
 
-  --bg-hover: #F1F3F4;
-  --text-muted: #80868B;
-  --color-bg: #F8F9FA;
+  --bg-hover: #F1F5F9;
+  --text-muted: #64748B;
+  --color-bg: #F8FAFC;
   --color-card: #FFFFFF;
   --bg-card: #FFFFFF;
-  --color-border: #DADCE0;
-  --color-text: #202124;
+  --color-border: #E2E8F0;
+  --color-text: #0F172A;
 }
 
-/* Dark Theme (Google Dark Theme - YouTube / Drive / Android 14) */
+/* Dark Theme (Minimalist Deep Slate / Obsidian) */
 [data-theme="dark"] {
-  --bg-primary: #1F1F1F;       /* Google Dark Background */
-  --bg-secondary: #28292A;     /* Google Surface Container */
-  --bg-tertiary: #303134;      /* Google Surface Container High */
-  --surface: #28292A;
-  --card-bg: #28292A;
-  --surface-container: #303134;
-  --surface-container-high: #3C4043;
+  --bg-primary: #0B0F19;       /* Deep Obsidian Canvas */
+  --bg-secondary: #131B2E;     /* Elevated Card Surface */
+  --bg-tertiary: #1E293B;      /* Pill / Field Fill */
+  --surface: #131B2E;
+  --card-bg: #131B2E;
+  --surface-container: #1E293B;
+  --surface-container-high: #27354E;
   
-  --primary: #8AB4F8;          /* Google Blue Dark Mode */
-  --primary-hover: #AECBFA;
-  --primary-dark: #1A73E8;
-  --primary-light: rgba(138, 180, 248, 0.15);
-  --primary-glow: rgba(138, 180, 248, 0.3);
-  --gradient-primary: linear-gradient(135deg, #1A73E8 0%, #8AB4F8 100%);
+  --primary: #38BDF8;          /* Sky 400 - Calm & Accessible */
+  --primary-hover: #7DD3FC;
+  --primary-dark: #0284C7;
+  --primary-light: rgba(56, 189, 248, 0.12);
+  --primary-glow: rgba(56, 189, 248, 0.25);
+  --gradient-primary: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
 
-  --text-primary: #E8EAED;     /* Google Dark Primary Text */
-  --text-secondary: #9AA0A6;   /* Google Dark Secondary Text */
-  --text-tertiary: #80868B;    /* Google Dark Tertiary Text */
+  --text-primary: #F8FAFC;     /* Slate 50 */
+  --text-secondary: #94A3B8;   /* Slate 400 */
+  --text-tertiary: #64748B;    /* Slate 500 */
   
-  --border-color: #3C4043;     /* Google Dark Divider */
-  --border-subtle: #303134;
+  --border-color: rgba(255, 255, 255, 0.09); /* Hairline subtle divider */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-card-hover: 0 8px 24px -4px rgba(0, 0, 0, 0.6);
 
   /* Dark Mode Container Colors */
   --primary-container: rgba(138, 180, 248, 0.2);
