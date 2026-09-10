@@ -35,6 +35,13 @@ class ErrorBoundary extends React.Component {
     window.location.reload();
   };
 
+  handleSafeReset = () => {
+    try {
+      sessionStorage.clear();
+    } catch (_) {}
+    window.location.href = '/';
+  };
+
   handleReportSubmit = (e) => {
     e.preventDefault();
     if (!this.state.reportText.trim()) return;
@@ -90,12 +97,21 @@ class ErrorBoundary extends React.Component {
               عذراً، حدث خطأ غير متوقع في هذه الشاشة
             </h2>
 
-            <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+            <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               تم رصد المشكلة وتسجيل تقرير تشخيصي آلي برقم كود:{' '}
               <code style={{ background: '#0f172a', padding: '0.2rem 0.5rem', borderRadius: '4px', color: '#38bdf8' }}>
                 {this.state.errorId || 'ERR-SYS'}
               </code>
             </p>
+
+            {this.state.error && (
+              <details style={{ marginBottom: '1.5rem', textAlign: 'left', background: 'rgba(0, 0, 0, 0.25)', padding: '0.65rem 0.85rem', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <summary style={{ cursor: 'pointer', color: '#cbd5e1', direction: 'rtl', textAlign: 'right', fontWeight: 600 }}>عرض التفاصيل التقنية للخطأ</summary>
+                <pre style={{ margin: '0.5rem 0 0', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace', color: '#f87171' }}>
+                  {this.state.error.toString()}
+                </pre>
+              </details>
+            )}
 
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button
@@ -104,18 +120,38 @@ class ErrorBoundary extends React.Component {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  padding: '0.75rem 1.5rem',
+                  padding: '0.75rem 1.25rem',
                   background: 'var(--primary, #0284c7)',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '10px',
                   fontWeight: 700,
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                   cursor: 'pointer'
                 }}
               >
-                <RefreshCw size={18} />
-                <span>إعادة تحديث الصفحة</span>
+                <RefreshCw size={17} />
+                <span>إعادة تحديث</span>
+              </button>
+
+              <button
+                onClick={this.handleSafeReset}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1.25rem',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  color: '#fca5a5',
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+                title="مسح الجلسة المعلقة والعودة للصفحة الرئيسية بأمان"
+              >
+                <span>العودة للرئيسية (Safe Reset)</span>
               </button>
 
               <button
@@ -124,18 +160,18 @@ class ErrorBoundary extends React.Component {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  padding: '0.75rem 1.25rem',
+                  padding: '0.75rem 1.15rem',
                   background: 'transparent',
                   color: '#cbd5e1',
                   border: '1px solid rgba(255, 255, 255, 0.15)',
                   borderRadius: '10px',
                   fontWeight: 600,
-                  fontSize: '0.95rem',
+                  fontSize: '0.9rem',
                   cursor: 'pointer'
                 }}
               >
-                <MessageSquare size={18} />
-                <span>إبلاغ الدعم الفني عن المشكلة</span>
+                <MessageSquare size={17} />
+                <span>إبلاغ الدعم الفني</span>
               </button>
             </div>
 

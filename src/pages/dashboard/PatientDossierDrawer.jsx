@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
+import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, 
   FileSpreadsheet, X, Edit3
@@ -50,230 +53,242 @@ export default function PatientDossierDrawer({
     loadData();
   }, [patientId]);
 
-  if (!patient) return null;
-
   return (
-    <div className="modal-backdrop">
-      <div className="modal-content dossier-drawer" style={{ maxWidth: '880px', width: '95%' }}>
-        
-        {/* Drawer Header */}
-        <div className="modal-header" style={{ background: 'var(--primary)', color: '#FFFFFF' }}>
-          <div className="title-row">
-            <FolderOpen style={{ color: 'var(--accent)' }} size={22} />
-            <div>
-              <h3 style={{ color: '#FFFFFF', margin: 0 }}>الملف الطبي السريري: {patientName}</h3>
-              <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>رقم الملف: #{patient.fileNumber || patient.id?.slice(0, 8) || 'D-101'}</span>
+    <Dialog.Root open={!!patient} onOpenChange={(details) => !details.open && onClose()}>
+      <Portal>
+        <Dialog.Backdrop className="modal-backdrop" />
+        <Dialog.Positioner className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <Dialog.Content className="modal-content dossier-drawer" style={{ maxWidth: '880px', width: '95%' }}>
+            
+            {/* Drawer Header */}
+            <div className="modal-header" style={{ background: 'var(--primary)', color: '#FFFFFF' }}>
+              <div className="title-row">
+                <FolderOpen style={{ color: 'var(--accent)' }} size={22} />
+                <div>
+                  <Dialog.Title asChild>
+                    <h3 style={{ color: '#FFFFFF', margin: 0 }}>الملف الطبي السريري: {patientName}</h3>
+                  </Dialog.Title>
+                  <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>رقم الملف: #{patient?.fileNumber || patient?.id?.slice(0, 8) || 'D-101'}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {onEdit && (
+                  <button 
+                    type="button" 
+                    onClick={() => { onClose(); onEdit(patient); }}
+                    className="btn-edit-dossier"
+                    title="تعديل بيانات المريض"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.2)',
+                      border: '1px solid rgba(255, 255, 255, 0.35)',
+                      color: '#FFFFFF',
+                      padding: '0.35rem 0.75rem',
+                      borderRadius: '8px',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Edit3 size={14} />
+                    <span>تعديل البيانات</span>
+                  </button>
+                )}
+                <Dialog.CloseTrigger asChild>
+                  <button 
+                    type="button" 
+                    onClick={onClose} 
+                    className="btn-close-dossier" 
+                    aria-label="إغلاق الملف"
+                  >
+                    <X size={18} />
+                  </button>
+                </Dialog.CloseTrigger>
+              </div>
             </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {onEdit && (
-              <button 
-                type="button" 
-                onClick={() => { onClose(); onEdit(patient); }}
-                className="btn-edit-dossier"
-                title="تعديل بيانات المريض"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.35)',
-                  color: '#FFFFFF',
-                  padding: '0.35rem 0.75rem',
-                  borderRadius: '8px',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px'
-                }}
-              >
-                <Edit3 size={14} />
-                <span>تعديل البيانات</span>
-              </button>
-            )}
-            <button 
-              type="button" 
-              onClick={onClose} 
-              className="btn-close-dossier" 
-              aria-label="إغلاق الملف"
+
+            {/* Ark UI Tabs Root */}
+            <Tabs.Root 
+              value={activeTab} 
+              onValueChange={(details) => setActiveTab(details.value)}
+              style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
             >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
+              {/* Tab Navigation */}
+              <Tabs.List style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-tertiary)', padding: '0.6rem 1.25rem', borderBottom: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+                <Tabs.Trigger value="overview" asChild>
+                  <button
+                    type="button"
+                    className={`btn-dossier-tab ${activeTab === 'overview' ? 'active' : ''}`}
+                    style={{
+                      background: activeTab === 'overview' ? 'var(--primary)' : 'var(--surface)',
+                      color: activeTab === 'overview' ? '#FFFFFF' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      padding: '0.45rem 0.95rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 700,
+                      fontSize: '0.84rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    نظرة عامة والزيارات
+                  </button>
+                </Tabs.Trigger>
 
-        {/* Tab Navigation */}
-        <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-tertiary)', padding: '0.6rem 1.25rem', borderBottom: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className={`btn-dossier-tab ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-            style={{
-              background: activeTab === 'overview' ? 'var(--primary)' : 'var(--surface)',
-              color: activeTab === 'overview' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              padding: '0.45rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: 700,
-              fontSize: '0.84rem',
-              cursor: 'pointer'
-            }}
-          >
-            نظرة عامة والزيارات
-          </button>
+                <Tabs.Trigger value="notes" asChild>
+                  <button
+                    type="button"
+                    className={`btn-dossier-tab ${activeTab === 'notes' ? 'active' : ''}`}
+                    style={{
+                      background: activeTab === 'notes' ? 'var(--primary)' : 'var(--surface)',
+                      color: activeTab === 'notes' ? '#FFFFFF' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      padding: '0.45rem 0.95rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 700,
+                      fontSize: '0.84rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <FileText size={14} />
+                    <span>الملاحظات السريرية ({clinicalNotes.length})</span>
+                  </button>
+                </Tabs.Trigger>
 
-          <button
-            type="button"
-            className={`btn-dossier-tab ${activeTab === 'notes' ? 'active' : ''}`}
-            onClick={() => setActiveTab('notes')}
-            style={{
-              background: activeTab === 'notes' ? 'var(--primary)' : 'var(--surface)',
-              color: activeTab === 'notes' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              padding: '0.45rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: 700,
-              fontSize: '0.84rem',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem'
-            }}
-          >
-            <FileText size={14} />
-            <span>الملاحظات السريرية ({clinicalNotes.length})</span>
-          </button>
-
-          <button
-            type="button"
-            className={`btn-dossier-tab ${activeTab === 'plans' ? 'active' : ''}`}
-            onClick={() => setActiveTab('plans')}
-            style={{
-              background: activeTab === 'plans' ? 'var(--primary)' : 'var(--surface)',
-              color: activeTab === 'plans' ? '#FFFFFF' : 'var(--text-primary)',
-              border: '1px solid var(--border-color)',
-              padding: '0.45rem 0.95rem',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: 700,
-              fontSize: '0.84rem',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem'
-            }}
-          >
-            <FileSpreadsheet size={14} />
-            <span>خطط العلاج ({treatmentPlans.length})</span>
-          </button>
-        </div>
+                <Tabs.Trigger value="plans" asChild>
+                  <button
+                    type="button"
+                    className={`btn-dossier-tab ${activeTab === 'plans' ? 'active' : ''}`}
+                    style={{
+                      background: activeTab === 'plans' ? 'var(--primary)' : 'var(--surface)',
+                      color: activeTab === 'plans' ? '#FFFFFF' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      padding: '0.45rem 0.95rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 700,
+                      fontSize: '0.84rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <FileSpreadsheet size={14} />
+                    <span>خطط العلاج ({treatmentPlans.length})</span>
+                  </button>
+                </Tabs.Trigger>
+              </Tabs.List>
 
         <div className="dossier-body" style={{ maxHeight: '72vh', overflowY: 'auto', padding: '1.25rem' }}>
           
           {/* TAB 1: OVERVIEW */}
-          {activeTab === 'overview' && (
-            <>
-              {/* Patient Main Card */}
-              <div className="patient-main-card">
-                <div className="avatar-circle">
-                  {patientName.charAt(0) || 'م'}
-                </div>
-                <div className="meta">
-                  <h4>{patientName}</h4>
-                  <div className="contact-row">
-                    <a href={`tel:${patientPhone}`} className="btn-contact">
-                      <Phone size={14} />
-                      <span dir="ltr">{patientPhone}</span>
-                    </a>
-                    <a
-                      href={`sms:+2${patientPhone.replace(/\D/g, '')}`}
-                      className="btn-contact sms"
-                    >
-                      <MessageCircle size={14} />
-                      <span>إرسال SMS</span>
-                    </a>
-                  </div>
+          <Tabs.Content value="overview">
+            {/* Patient Main Card */}
+            <div className="patient-main-card">
+              <div className="avatar-circle">
+                {patientName.charAt(0) || 'م'}
+              </div>
+              <div className="meta">
+                <h4>{patientName}</h4>
+                <div className="contact-row">
+                  <a href={`tel:${patientPhone}`} className="btn-contact">
+                    <Phone size={14} />
+                    <span dir="ltr">{patientPhone}</span>
+                  </a>
+                  <a
+                    href={`sms:+2${patientPhone.replace(/\D/g, '')}`}
+                    className="btn-contact sms"
+                  >
+                    <MessageCircle size={14} />
+                    <span>إرسال SMS</span>
+                  </a>
                 </div>
               </div>
+            </div>
 
-              <div className="dossier-stats-row">
-                <div className="dossier-stat">
-                  <span>السن والنوع:</span>
-                  <strong>{patient.age ? `${patient.age} سنة` : 'غير محدد'} • {patient.gender || 'ذكر'}</strong>
-                </div>
-                <div className="dossier-stat">
-                  <span>فصيلة الدم:</span>
-                  <strong>{patient.bloodType || 'غير محددة'}</strong>
-                </div>
-                <div className="dossier-stat">
-                  <span>إجمالي الزيارات:</span>
-                  <strong>{patient.visitsCount || patient.totalVisits || patientAppointments.length || 1} زيارات</strong>
-                </div>
-                <div className="dossier-stat">
-                  <span>آخر زيارة:</span>
-                  <strong>{patient.lastVisit || patient.date || 'اليوم'}</strong>
-                </div>
+            <div className="dossier-stats-row">
+              <div className="dossier-stat">
+                <span>السن والنوع:</span>
+                <strong>{patient?.age ? `${patient.age} سنة` : 'غير محدد'} • {patient?.gender || 'ذكر'}</strong>
               </div>
+              <div className="dossier-stat">
+                <span>فصيلة الدم:</span>
+                <strong>{patient?.bloodType || 'غير محددة'}</strong>
+              </div>
+              <div className="dossier-stat">
+                <span>إجمالي الزيارات:</span>
+                <strong>{patient?.visitsCount || patient?.totalVisits || patientAppointments.length || 1} زيارات</strong>
+              </div>
+              <div className="dossier-stat">
+                <span>آخر زيارة:</span>
+                <strong>{patient?.lastVisit || patient?.date || 'اليوم'}</strong>
+              </div>
+            </div>
 
-              {patient.medicalAlerts && (
-                <div className="clinical-history-box" style={{ background: '#FEF2F2', borderColor: '#FCA5A5' }}>
-                  <h5 style={{ color: '#991B1B' }}>تنبيهات طبية وحساسيات (Medical Alerts):</h5>
-                  <p style={{ color: '#7F1D1D' }}>{patient.medicalAlerts}</p>
-                </div>
-              )}
+            {patient?.medicalAlerts && (
+              <div className="clinical-history-box" style={{ background: '#FEF2F2', borderColor: '#FCA5A5' }}>
+                <h5 style={{ color: '#991B1B' }}>تنبيهات طبية وحساسيات (Medical Alerts):</h5>
+                <p style={{ color: '#7F1D1D' }}>{patient.medicalAlerts}</p>
+              </div>
+            )}
 
-              {patient.diagnosis && (
-                <div className="clinical-history-box">
-                  <h5>التشخيص الطبي الأولي:</h5>
-                  <p>{patient.diagnosis}</p>
-                </div>
-              )}
+            {patient?.diagnosis && (
+              <div className="clinical-history-box">
+                <h5>التشخيص الطبي الأولي:</h5>
+                <p>{patient.diagnosis}</p>
+              </div>
+            )}
 
-              {patient.notes && (
-                <div className="clinical-history-box">
-                  <h5>ملاحظات إضافية:</h5>
-                  <p>{patient.notes}</p>
-                </div>
-              )}
+            {patient?.notes && (
+              <div className="clinical-history-box">
+                <h5>ملاحظات إضافية:</h5>
+                <p>{patient.notes}</p>
+              </div>
+            )}
 
-              {/* Past Appointments Timeline */}
-              <div className="past-appointments-history" style={{ marginTop: '1.25rem' }}>
-                <h5 style={{ margin: '0 0 0.75rem 0', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Calendar size={16} className="text-primary" />
-                  <span>سجل المواعيد والزيارات السابقة:</span>
-                </h5>
-                {patientAppointments.length === 0 ? (
-                  <p className="no-history-text">لا توجد زيارات سابقة مسجلة لهذا المريض.</p>
-                ) : (
-                  <div className="appointments-history-list">
-                    {patientAppointments.map((appt, i) => (
-                      <div key={appt.id || i} className="history-item">
-                        <div className="history-date">
-                          <Calendar size={14} />
-                          <span>{appt.date} - {appt.time}</span>
-                        </div>
-                        <span className={`status-badge ${appt.status}`}>
-                          {STATUS_LABELS[appt.status] || appt.status}
-                        </span>
-                        <span className="type-badge">{appt.type || 'كشف'}</span>
+            {/* Past Appointments Timeline */}
+            <div className="past-appointments-history" style={{ marginTop: '1.25rem' }}>
+              <h5 style={{ margin: '0 0 0.75rem 0', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Calendar size={16} className="text-primary" />
+                <span>سجل المواعيد والزيارات السابقة:</span>
+              </h5>
+              {patientAppointments.length === 0 ? (
+                <p className="no-history-text">لا توجد زيارات سابقة مسجلة لهذا المريض.</p>
+              ) : (
+                <div className="appointments-history-list">
+                  {patientAppointments.map((appt, i) => (
+                    <div key={appt.id || i} className="history-item">
+                      <div className="history-date">
+                        <Calendar size={14} />
+                        <span>{appt.date} - {appt.time}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+                      <span className={`status-badge ${appt.status}`}>
+                        {STATUS_LABELS[appt.status] || appt.status}
+                      </span>
+                      <span className="type-badge">{appt.type || 'كشف'}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Tabs.Content>
 
           {/* TAB 2: CLINICAL NOTES */}
-          {activeTab === 'notes' && (
+          <Tabs.Content value="notes">
             <ClinicalNotesPanel
               patientId={patientId}
               doctorName={state.clinicInfo?.doctorName || 'الطبيب المعالج'}
               notes={clinicalNotes}
               onNotesUpdate={setClinicalNotes}
             />
-          )}
+          </Tabs.Content>
 
           {/* TAB 3: TREATMENT PLANS */}
-          {activeTab === 'plans' && (
+          <Tabs.Content value="plans">
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h4 style={{ margin: 0, fontWeight: 800 }}>خطط العلاج المسجلة للمريض ({treatmentPlans.length})</h4>
@@ -318,18 +333,23 @@ export default function PatientDossierDrawer({
                 </div>
               )}
             </div>
-          )}
+          </Tabs.Content>
 
         </div>
+            </Tabs.Root>
 
-        {/* Footer */}
-        <div className="modal-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '0.75rem 1.25rem', borderTop: '1px solid #E2E8F0' }}>
-          <button type="button" onClick={onClose} className="btn btn-secondary">
-            إغلاق الملف
-          </button>
-        </div>
+            {/* Footer */}
+            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', padding: '0.75rem 1.25rem', borderTop: '1px solid #E2E8F0' }}>
+              <Dialog.CloseTrigger asChild>
+                <button type="button" onClick={onClose} className="btn btn-secondary">
+                  إغلاق الملف
+                </button>
+              </Dialog.CloseTrigger>
+            </div>
 
-      </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
 
       {/* Treatment Plan Management Modal */}
       {showPlansModal && (
@@ -340,7 +360,6 @@ export default function PatientDossierDrawer({
           onClose={() => setShowPlansModal(false)}
         />
       )}
-
-    </div>
+    </Dialog.Root>
   );
 }

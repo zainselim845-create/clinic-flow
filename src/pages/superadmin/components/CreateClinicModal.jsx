@@ -1,4 +1,7 @@
 import React from 'react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
+import { X } from 'lucide-react';
 import { slugifyClinic } from '../../../services/authService';
 
 export function CreateClinicModal({
@@ -8,22 +11,27 @@ export function CreateClinicModal({
   setNewClinic,
   onSubmit
 }) {
-  if (!isOpen) return null;
-
   return (
-    <div className="saas-modal-backdrop" onClick={onClose}>
-      <div className="saas-modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="create-clinic-title">
-        <div className="saas-modal-header">
-          <h3 id="create-clinic-title">تسجيل عيادة جديدة في المنصة (Provision Tenant)</h3>
-          <button 
-            type="button" 
-            onClick={onClose} 
-            className="close-modal-btn"
-            aria-label="إغلاق النافذة"
-          >
-            ✕
-          </button>
-        </div>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+      <Portal>
+        <Dialog.Backdrop className="saas-modal-backdrop" />
+        <Dialog.Positioner className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <Dialog.Content className="saas-modal-card" role="dialog" aria-modal="true" aria-labelledby="create-clinic-title">
+            <div className="saas-modal-header">
+              <Dialog.Title id="create-clinic-title" asChild>
+                <h3>تسجيل عيادة جديدة في المنصة (Provision Tenant)</h3>
+              </Dialog.Title>
+              <Dialog.CloseTrigger asChild>
+                <button 
+                  type="button" 
+                  onClick={onClose} 
+                  className="close-modal-btn"
+                  aria-label="إغلاق النافذة"
+                >
+                  <X size={18} />
+                </button>
+              </Dialog.CloseTrigger>
+            </div>
 
         <form onSubmit={onSubmit} className="saas-modal-form">
           <div className="form-group">
@@ -151,7 +159,9 @@ export function CreateClinicModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import { reportUserBug } from '../services/systemErrorService';
 import { useTenant } from '../context/TenantContext';
 import { useAuth } from '../context/AuthContext';
@@ -14,8 +16,6 @@ const ReportIssueModal = ({ isOpen, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-
-  if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -53,71 +53,90 @@ const ReportIssueModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 9999,
-      background: 'rgba(0, 0, 0, 0.65)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '1.5rem',
-      direction: 'rtl'
-    }}>
-      <div style={{
-        maxWidth: '520px',
-        width: '100%',
-        background: 'var(--bg-secondary, #1e293b)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        borderRadius: '16px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-        overflow: 'hidden'
-      }}>
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '1.25rem 1.5rem',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          background: 'rgba(255, 255, 255, 0.02)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '8px',
-              background: 'rgba(239, 68, 68, 0.15)',
-              color: '#ef4444',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <AlertCircle size={18} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-                مركز بلاغات وأعطال النظام
-              </h3>
-              <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
-                أرسل ملاحظتك أو مشكلتك مباشرة لمهندسي المنصة
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
+    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+      <Portal>
+        <Dialog.Backdrop 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(0, 0, 0, 0.65)',
+            backdropFilter: 'blur(4px)'
+          }}
+        />
+        <Dialog.Positioner
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            direction: 'rtl'
+          }}
+        >
+          <Dialog.Content
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#94a3b8',
-              cursor: 'pointer',
-              padding: '0.25rem'
+              maxWidth: '520px',
+              width: '100%',
+              background: 'var(--bg-secondary, #1e293b)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '16px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+              overflow: 'hidden'
             }}
           >
-            <X size={20} />
-          </button>
-        </div>
+            {/* Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1.25rem 1.5rem',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'rgba(255, 255, 255, 0.02)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '8px',
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  color: '#ef4444',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <AlertCircle size={18} />
+                </div>
+                <div>
+                  <Dialog.Title asChild>
+                    <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+                      مركز بلاغات وأعطال النظام
+                    </h3>
+                  </Dialog.Title>
+                  <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>
+                    أرسل ملاحظتك أو مشكلتك مباشرة لمهندسي المنصة
+                  </span>
+                </div>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="إغلاق النافذة"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#94a3b8',
+                    cursor: 'pointer',
+                    padding: '0.25rem'
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </Dialog.CloseTrigger>
+            </div>
 
         {/* Body */}
         <div style={{ padding: '1.5rem' }}>
@@ -277,8 +296,10 @@ const ReportIssueModal = ({ isOpen, onClose }) => {
             </form>
           )}
         </div>
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 
