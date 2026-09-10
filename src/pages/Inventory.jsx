@@ -229,7 +229,11 @@ const Inventory = () => {
                       <strong>{item.name}</strong>
                       {item.lotNumber && <span className="lot-tag">{item.lotNumber}</span>}
                     </td>
-                    <td><span className="category-badge">{item.category}</span></td>
+                    <td>
+                      <span className="category-badge">
+                        {INVENTORY_CATEGORIES.find(c => c.id === item.category)?.labelAr || item.category}
+                      </span>
+                    </td>
                     <td>{item.unit}</td>
                     <td>
                       <span className={`qty-indicator ${isLow ? 'critical' : 'normal'}`}>

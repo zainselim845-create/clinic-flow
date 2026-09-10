@@ -12,7 +12,6 @@ export function fromDbClinic(row) {
     address: row.address || 'القاهرة — التجمع الخامس، ميديكال بارك سنتر',
     phone: row.phone || '01006285031',
     doctorEmail: row.doctor_email || 'doctor@clinicflow.com',
-    doctorPassword: row.doctor_password || 'admin123',
     regularFee: row.regular_fee || '300 ج.م',
     consultationFee: row.consultation_fee || '150 ج.م',
     workingHours: row.working_hours || 'السبت - الخميس: ٥:٠٠ م - ١٠:٠٠ م',

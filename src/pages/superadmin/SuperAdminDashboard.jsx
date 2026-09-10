@@ -4,7 +4,7 @@ import { useTenant } from '../../context/TenantContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Building2, Plus, CreditCard, Activity, ShieldCheck, 
-  ExternalLink, CheckCircle2, AlertTriangle, ArrowRight, 
+  ExternalLink, CheckCircle2, AlertTriangle, ArrowLeft, 
   Search, HardDrive, Copy, CheckCheck,
   AlertOctagon, Clock, Ban, Check, Bug, RefreshCw, Trash2, LogOut
 } from 'lucide-react';
@@ -156,7 +156,7 @@ export default function SuperAdminDashboard() {
       <header className="super-admin-header">
         <div className="header-brand-group">
           <button onClick={() => navigate('/')} className="back-to-app-btn" title="العودة إلى العيادة">
-            <ArrowRight size={18} />
+            <ArrowLeft size={18} />
             <span>لوحة العيادة</span>
           </button>
           <div className="header-title-text">

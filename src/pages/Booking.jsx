@@ -7,21 +7,19 @@ import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import { saveBookingDraft, completeBookingDraft, getBookingDrafts } from '../services/leadRecoveryService';
 import { recordReferral } from '../services/referralService';
-import { 
-  MapPin, Phone, Stethoscope, 
-  MessageCircle, Copy, Check, CalendarPlus, AlertCircle,
-  Sparkles, Users, UserPlus, Loader2,
-  RefreshCw, CheckCircle, ArrowRight, ShieldCheck, ChevronLeft,
-  Search, Award, Globe, Building2
-} from 'lucide-react';
+import { Check } from 'lucide-react';
 
-import BookingCalendar from '../components/BookingCalendar';
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../utils/phoneValidation';
 import { patientIndex } from '../services/indexedSearchService';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { checkActionRateLimit } from '../utils/rateLimiter';
-import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
-import { parseArabicTime } from '../utils/parseArabicTime';
+
+import BookingHeader from './booking/BookingHeader';
+import ClinicDiscoveryView from './booking/ClinicDiscoveryView';
+import SuspendedClinicView from './booking/SuspendedClinicView';
+import PhoneCheckStep from './booking/PhoneCheckStep';
+import AppointmentDetailsStep from './booking/AppointmentDetailsStep';
+import BookingSuccessStep from './booking/BookingSuccessStep';
 
 import './Booking.css';
 
@@ -102,8 +100,6 @@ const Booking = () => {
     }
   }, [resumeId]);
 
-
-
   const [phoneError, setPhoneError] = useState('');
   const [bookingError, setBookingError] = useState('');
   const [isCheckingPhone, setIsCheckingPhone] = useState(false);
@@ -143,7 +139,7 @@ const Booking = () => {
     try {
       let foundPatient = null;
 
-      // 1. O(1) Instantaneous Index Lookup (Optimized for 100,000+ patients)
+      // 1. O(1) Instantaneous Index Lookup
       if (!patientIndex.isIndexed || patientIndex.patientCount !== clinicPatients.length || patientIndex.currentClinicId !== currentClinic?.id) {
         patientIndex.buildIndex(clinicPatients, currentClinic?.id);
       }
@@ -181,7 +177,6 @@ const Booking = () => {
       }
 
       if (foundPatient) {
-        // EXISTING CLIENT: Recognize and pre-fill name
         setIsExistingClient(true);
         setRecognizedPatient(foundPatient);
         setIsFamilyMemberBooking(false);
@@ -192,7 +187,6 @@ const Booking = () => {
           gender: foundPatient.gender || 'ذكر'
         }));
       } else {
-        // NEW CLIENT: Clear name so they can enter their details first
         setIsExistingClient(false);
         setRecognizedPatient(null);
         setIsFamilyMemberBooking(false);
@@ -214,12 +208,10 @@ const Booking = () => {
       });
 
       setCurrentStep('appointment_details');
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (err) {
       console.error('Error during phone lookup:', err);
-      // Fallback: Proceed as new client
       setIsExistingClient(false);
       setRecognizedPatient(null);
       setCurrentStep('appointment_details');
@@ -294,7 +286,6 @@ const Booking = () => {
       if (isExistingClient && recognizedPatient && !isFamilyMemberBooking) {
         patientId = recognizedPatient.id;
       } else {
-        // Create new patient record for new client or family member
         patientId = generateUuid();
         const newPatientData = {
           id: patientId,
@@ -355,18 +346,14 @@ const Booking = () => {
       }
 
       dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
-
-      // Complete lead recovery draft
       completeBookingDraft(cleanedPhone);
 
-      // Record referral if ref code present
       if (refCode) {
         recordReferral(refCode, formData.name.trim(), cleanedPhone);
       }
 
       setCreatedBooking(newAppointment);
       setCurrentStep('success');
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (err) {
@@ -377,34 +364,6 @@ const Booking = () => {
     }
   };
 
-  // Google Calendar Link
-  const getGoogleCalendarUrl = (booking) => {
-    if (!booking || !booking.date || !booking.time) return '#';
-    const parsed = parseArabicTime(booking.time);
-    const hours = parsed ? parsed.hours : 18;
-    const minutes = parsed ? parsed.minutes : 0;
-
-    const dateFormatted = booking.date.replace(/-/g, '');
-    const startHourStr = String(hours).padStart(2, '0');
-    const startMinStr = String(minutes).padStart(2, '0');
-    const endHour = (hours + 1) % 24;
-    const endHourStr = String(endHour).padStart(2, '0');
-
-    const startIso = `${dateFormatted}T${startHourStr}${startMinStr}00`;
-    const endIso = `${dateFormatted}T${endHourStr}${startMinStr}00`;
-
-    const title = encodeURIComponent(`موعد كشف في ${currentClinic.name}`);
-    const details = encodeURIComponent(`كود الحجز: ${booking.bookingCode}\nالنوع: ${booking.type}\nالعنوان: ${currentClinic.address}`);
-    const location = encodeURIComponent(currentClinic.address || '');
-
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${location}`;
-  };
-
-  const getGoogleMapsUrl = (address, clinicName) => {
-    const query = address ? `${address} (${clinicName || ''})` : (clinicName || 'عيادة');
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-  };
-
   const copyBookingCode = () => {
     if (createdBooking?.bookingCode) {
       navigator.clipboard.writeText(createdBooking.bookingCode);
@@ -413,501 +372,64 @@ const Booking = () => {
     }
   };
 
-  // =========================================================================
-  // VIEW 0: GENERAL PLATFORM CLINIC DISCOVERY & SELECTOR (/booking on main domain)
-  // =========================================================================
-  if (!hasDirectClinic) {
-    const activeClinics = allTenants.filter(t => t.subscriptionStatus !== 'suspended');
-    const filteredClinics = activeClinics.filter(clinic => {
-      const matchSearch = 
-        !discoverySearch.trim() ||
-        (clinic.name || '').toLowerCase().includes(discoverySearch.toLowerCase()) ||
-        (clinic.doctorName || '').toLowerCase().includes(discoverySearch.toLowerCase()) ||
-        (clinic.address || '').toLowerCase().includes(discoverySearch.toLowerCase()) ||
-        (clinic.specialty || '').toLowerCase().includes(discoverySearch.toLowerCase());
-
-      const matchSpec = matchesSpecialtyFilter(clinic.specialty, discoverySpecialty);
-
-      return matchSearch && matchSpec;
+  const resetBookingForm = () => {
+    setCurrentStep('phone_check');
+    setCreatedBooking(null);
+    setFormData({
+      phone: '',
+      name: '',
+      age: '',
+      gender: 'ذكر',
+      date: todayStr,
+      time: '',
+      type: currentClinic.services?.[0]?.name || 'كشف وفحص تشخيصي شامل',
+      notes: ''
     });
+    setIsExistingClient(false);
+    setRecognizedPatient(null);
+  };
 
+  // VIEW 0: GENERAL PLATFORM CLINIC DISCOVERY & SELECTOR (/booking on main domain)
+  if (!hasDirectClinic) {
     return (
-      <div className="nebras-booking-page" dir="rtl">
-        {/* Top Brand Bar */}
-        <header className="nebras-top-bar">
-          <div className="nebras-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <Stethoscope size={24} className="brand-logo-icon" />
-            <div>
-              <span className="brand-title">منظومة كلينيك فلو (ClinicFlow)</span>
-              <span className="brand-subtitle">بوابة حجز المواعيد الطبية الذكية</span>
-            </div>
-          </div>
-          <div className="nebras-bar-links">
-            <button onClick={() => navigate('/manage-booking')} className="nebras-nav-btn">
-              <span>تعديل موعد سابق</span>
-            </button>
-            <button onClick={() => navigate('/login')} className="nebras-nav-btn outline">
-              <span>بوابة العيادة</span>
-            </button>
-          </div>
-        </header>
-
-        <div className="nebras-body-container" style={{ maxWidth: '1080px', margin: '0 auto', padding: '2rem 1.5rem' }}>
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.35rem 0.9rem',
-              borderRadius: '9999px',
-              background: 'rgba(2, 132, 199, 0.12)',
-              color: '#0284c7',
-              border: '1px solid rgba(2, 132, 199, 0.25)',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              marginBottom: '1rem'
-            }}>
-              <Building2 size={15} />
-              <span>دليل العيادات والمراكز الطبية المعتمدة</span>
-            </div>
-            <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-primary, #0f172a)', marginBottom: '0.75rem' }}>
-              اختر عيادتك أو ابحث عن طبيبك لحجز موعد فوري
-            </h1>
-            <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '1.05rem', maxWidth: '640px', margin: '0 auto' }}>
-              لكل عيادة على منظومة كلينيك فلو رابط حجز مستقل ومحمي. ابحث عن طبيبك أدناه للانتقال لصفحة الحجز المعتمدة:
-            </p>
-          </div>
-
-          {/* Search Controls */}
-          <div style={{ maxWidth: '720px', margin: '0 auto 2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <Search size={20} style={{ position: 'absolute', right: '1.25rem', color: '#94a3b8' }} />
-              <input
-                type="text"
-                id="booking-discovery-search"
-                name="bookingDiscoverySearch"
-                aria-label="ابحث باسم العيادة، اسم الطبيب، التخصص، أو العنوان"
-                value={discoverySearch}
-                onChange={(e) => setDiscoverySearch(e.target.value)}
-                placeholder="ابحث باسم العيادة، اسم الطبيب، التخصص، أو العنوان..."
-                style={{
-                  width: '100%',
-                  padding: '0.95rem 3.25rem 0.95rem 1.25rem',
-                  background: 'var(--bg-secondary, #ffffff)',
-                  border: '1px solid var(--border-color, #e2e8f0)',
-                  borderRadius: '12px',
-                  fontSize: '1rem',
-                  color: 'var(--text-primary, #0f172a)',
-                  outline: 'none',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
-                }}
-              />
-              {discoverySearch && (
-                <button
-                  onClick={() => setDiscoverySearch('')}
-                  style={{
-                    position: 'absolute',
-                    left: '1rem',
-                    background: '#f1f5f9',
-                    border: 'none',
-                    padding: '0.25rem 0.65rem',
-                    borderRadius: '6px',
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    color: '#64748b'
-                  }}
-                >
-                  إلغاء
-                </button>
-              )}
-            </div>
-
-            {/* Specialty Pills */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {['الكل', 'طب وجراحة الأسنان', 'الأمراض الجلدية والتجميل', 'طب الأطفال', 'جراحة العظام', 'أمراض الباطنة'].map(spec => (
-                <button
-                  key={spec}
-                  onClick={() => setDiscoverySpecialty(spec)}
-                  style={{
-                    padding: '0.4rem 0.9rem',
-                    borderRadius: '8px',
-                    border: discoverySpecialty === spec ? '1px solid #0284c7' : '1px solid var(--border-color, #e2e8f0)',
-                    background: discoverySpecialty === spec ? '#0284c7' : 'var(--bg-secondary, #ffffff)',
-                    color: discoverySpecialty === spec ? '#ffffff' : 'var(--text-secondary, #64748b)',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    cursor: 'pointer'
-                  }}
-                >
-                  {spec}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Clinics Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: '1.5rem'
-          }}>
-            {filteredClinics.length > 0 ? (
-              filteredClinics.map(clinic => (
-                <div
-                  key={clinic.id || clinic.slug}
-                  style={{
-                    background: 'var(--bg-secondary, #ffffff)',
-                    border: '1px solid var(--border-color, #e2e8f0)',
-                    borderRadius: '16px',
-                    padding: '1.5rem',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    gap: '1.25rem',
-                    boxShadow: '0 4px 20px -4px rgba(0, 0, 0, 0.05)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                    <div style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '12px',
-                      background: 'rgba(2, 132, 199, 0.1)',
-                      color: '#0284c7',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
-                      <Stethoscope size={24} />
-                    </div>
-                    <div>
-                      <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary, #0f172a)', margin: 0, marginBottom: '0.2rem' }}>
-                        {clinic.name}
-                      </h3>
-                      <span style={{ fontSize: '0.88rem', color: 'var(--text-secondary, #64748b)', fontWeight: 600 }}>
-                        {clinic.doctorName}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem',
-                    background: 'var(--bg-primary, #f8fafc)',
-                    padding: '0.85rem',
-                    borderRadius: '10px',
-                    fontSize: '0.85rem',
-                    color: 'var(--text-secondary, #64748b)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Award size={15} color="#0284c7" />
-                      <span>{clinic.specialty}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <MapPin size={15} color="#0284c7" />
-                      <span>{clinic.address}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Globe size={15} color="#0284c7" />
-                      <span dir="ltr" style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#0284c7' }}>
-                        {clinic.customDomain || `/c/${clinic.slug}/booking`}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => navigate(`/c/${clinic.slug}/booking`)}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem 1rem',
-                      background: 'linear-gradient(135deg, #0284c7, #2563eb)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontWeight: 700,
-                      fontSize: '0.95rem',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem'
-                    }}
-                  >
-                    <span>احجز موعدك في هذه العيادة</span>
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div style={{
-                gridColumn: '1 / -1',
-                textAlign: 'center',
-                padding: '3rem 1.5rem',
-                background: 'var(--bg-secondary, #ffffff)',
-                borderRadius: '16px',
-                border: '1px dashed var(--border-color, #cbd5e1)'
-              }}>
-                <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '1.05rem', marginBottom: '1rem' }}>
-                  لم يتم العثور على أي عيادة تطابق "{discoverySearch}".
-                </p>
-                <button
-                  onClick={() => { setDiscoverySearch(''); setDiscoverySpecialty('الكل'); }}
-                  style={{
-                    padding: '0.5rem 1.25rem',
-                    background: '#0284c7',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  إعادة ضبط البحث
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <ClinicDiscoveryView
+        allTenants={allTenants}
+        discoverySearch={discoverySearch}
+        setDiscoverySearch={setDiscoverySearch}
+        discoverySpecialty={discoverySpecialty}
+        setDiscoverySpecialty={setDiscoverySpecialty}
+        onSelectClinic={(clinic) => navigate(`/c/${clinic.slug}/booking`)}
+        onNavigate={navigate}
+      />
     );
   }
 
-  // =========================================================================
   // GUARD: SUSPENDED CLINIC NOTICE
-  // =========================================================================
   if (currentClinic?.subscriptionStatus === 'suspended') {
-    return (
-      <div className="nebras-booking-page" dir="rtl">
-        <header className="nebras-top-bar">
-          <div className="nebras-brand">
-            <Stethoscope size={24} className="brand-logo-icon" />
-            <span className="brand-title">{currentClinic.name}</span>
-          </div>
-        </header>
-        <div className="nebras-body-container" style={{ maxWidth: '580px', margin: '4rem auto', textAlign: 'center', background: 'var(--bg-secondary)', padding: '3rem 2rem', borderRadius: '16px', border: '1px solid #fecaca' }}>
-          <div style={{ width: '64px', height: '64px', margin: '0 auto 1.5rem', borderRadius: '50%', background: '#fee2e2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <AlertCircle size={36} />
-          </div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#991b1b', marginBottom: '0.75rem' }}>
-            الحجز الإلكتروني متوقف مؤقتاً
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-            نعتذر، خدمة الحجز الإلكتروني عبر الإنترنت لعيادة <strong>{currentClinic.name}</strong> متوقفة مؤقتاً حالياً. يرجى التواصل مباشرة مع إدارة العيادة هاتفياً لتسجيل موعدك.
-          </p>
-          {currentClinic.phone && (
-            <a href={`tel:${currentClinic.phone}`} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', textDecoration: 'none', borderRadius: '10px' }}>
-              <Phone size={18} />
-              <span>الاتصال بالعيادة ({currentClinic.phone})</span>
-            </a>
-          )}
-        </div>
-      </div>
-    );
+    return <SuspendedClinicView clinic={currentClinic} />;
   }
 
-  // =========================================================================
-  // VIEW 3: SUCCESS CONFIRMATION TICKET (NEBRAS STYLE)
-  // =========================================================================
+  // VIEW 3: SUCCESS CONFIRMATION TICKET
   if (currentStep === 'success' && createdBooking) {
-    const cleanPhone = (createdBooking.patientPhone || '').replace(/^0/, '20').replace(/\D/g, '');
-    const clinicPhoneClean = (currentClinic.phone || '').replace(/^0/, '20').replace(/\D/g, '');
-    const smsMsg = encodeURIComponent(
-      `مرحباً، تم حجز موعد كشف باسم: ${createdBooking.patientName}\n` +
-      `كود الحجز: ${createdBooking.bookingCode}\n` +
-      `الموعد: ${createdBooking.date} الساعة ${createdBooking.time}\n` +
-      `الخدمة: ${createdBooking.type}\n` +
-      `العنوان: ${currentClinic.address}`
-    );
-    const smsUrl = `sms:+${clinicPhoneClean || cleanPhone}?body=${smsMsg}`;
-
     return (
-      <div className="nebras-booking-page">
-        
-        {/* Nebras Top Brand Bar */}
-        <header className="nebras-top-bar">
-          <div className="nebras-brand">
-            <Stethoscope size={24} className="brand-logo-icon" />
-            <span className="brand-title">{currentClinic.name}</span>
-          </div>
-          <div className="nebras-bar-links">
-            <button onClick={() => navigate('/manage-booking')} className="nebras-nav-btn">
-              <span>تعديل موعد سابق</span>
-            </button>
-            <button onClick={() => navigate('/login')} className="nebras-nav-btn outline">
-              <span>بوابة العيادة</span>
-            </button>
-          </div>
-        </header>
-
-        <div className="nebras-body-container" style={{ maxWidth: '650px' }}>
-          
-          {/* Visual Progress Stepper (Success State) */}
-          <div className="booking-visual-stepper">
-            <div className="stepper-step completed">
-              <span className="step-num"><Check size={14} /></span>
-              <span className="step-title">التحقق من الهاتف</span>
-            </div>
-            <div className="stepper-line filled"></div>
-            <div className="stepper-step completed">
-              <span className="step-num"><Check size={14} /></span>
-              <span className="step-title">اختيار الخدمة والموعد</span>
-            </div>
-            <div className="stepper-line filled"></div>
-            <div className="stepper-step active">
-              <span className="step-num"><Check size={14} /></span>
-              <span className="step-title">تأكيد وتذكرة الحجز</span>
-            </div>
-          </div>
-
-          <div className="nebras-card">
-            <div className="nebras-card-header">
-              <h3>تم تأكيد حجز موعدك بنجاح</h3>
-            </div>
-
-
-            <div className="nebras-card-body text-center">
-              <div className="nebras-success-icon-wrap">
-                <CheckCircle size={52} className="text-nebras-orange" />
-              </div>
-
-              <h4 className="success-headline">شكراً لثقتكم بنا</h4>
-              <p className="success-subtext">تم تسجيل وتثبيت حجزك في العيادة بنجاح وتجهيز ملفك الطبي.</p>
-
-              {/* Digital Pass */}
-              <div className="nebras-ticket-box">
-                <div className="nebras-ticket-header">
-                  <span>كود الحجز المرجعي:</span>
-                  <div className="ticket-code-group">
-                    <strong className="ticket-code-text">{createdBooking.bookingCode}</strong>
-                    <button onClick={copyBookingCode} className="nebras-btn-copy" title="نسخ الكود">
-                      {copiedCode ? <Check size={15} /> : <Copy size={15} />}
-                      <span>{copiedCode ? 'تم النسخ' : 'نسخ'}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="nebras-ticket-grid">
-                  <div className="ticket-row">
-                    <span className="ticket-lbl">اسم المريض:</span>
-                    <strong className="ticket-val">{createdBooking.patientName}</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span className="ticket-lbl">رقم الهاتف:</span>
-                    <strong className="ticket-val" dir="ltr">{createdBooking.patientPhone}</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span className="ticket-lbl">تاريخ الموعد:</span>
-                    <strong className="ticket-val">{createdBooking.date}</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span className="ticket-lbl">التوقيت:</span>
-                    <strong className="ticket-val text-nebras-orange">{createdBooking.time}</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span className="ticket-lbl">نوع الخدمة:</span>
-                    <strong className="ticket-val">{createdBooking.type}</strong>
-                  </div>
-                  <div className="ticket-row">
-                    <span className="ticket-lbl">قيمة الكشف:</span>
-                    <strong className="ticket-val text-nebras-orange">{createdBooking.fee}</strong>
-                  </div>
-                </div>
-
-                <a 
-                  href={getGoogleMapsUrl(currentClinic.address, currentClinic.name)}
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="nebras-ticket-address"
-                  title="عرض موقع العيادة والاتجاهات على خرائط جوجل"
-                  style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '8px' }}
-                >
-                  <MapPin size={16} />
-                  <span>{currentClinic.address}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600, marginRight: 'auto' }}>
-                    (الاتجاهات عبر Google Maps 📍)
-                  </span>
-                </a>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="nebras-actions-row">
-                <a href={smsUrl} className="nebras-action-btn sms">
-                  <MessageCircle size={18} />
-                  <span>إرسال تفاصيل الموعد عبر SMS</span>
-                </a>
-                <a href={getGoogleCalendarUrl(createdBooking)} target="_blank" rel="noopener noreferrer" className="nebras-action-btn calendar">
-                  <CalendarPlus size={18} />
-                  <span>إضافة إلى تقويم جوجل</span>
-                </a>
-              </div>
-
-              <div className="nebras-success-footer">
-                <button 
-                  onClick={() => {
-                    setCurrentStep('phone_check');
-                    setCreatedBooking(null);
-                    setFormData({
-                      phone: '',
-                      name: '',
-                      age: '',
-                      gender: 'ذكر',
-                      date: todayStr,
-                      time: '',
-                      type: currentClinic.services?.[0]?.name || 'كشف وفحص تشخيصي شامل للأسنان',
-                      notes: ''
-                    });
-                    setIsExistingClient(false);
-                    setRecognizedPatient(null);
-                  }} 
-                  className="nebras-link-btn"
-                >
-                  <RefreshCw size={14} />
-                  <span>حجز موعد جديد</span>
-                </button>
-                <button onClick={() => navigate('/manage-booking')} className="nebras-link-btn secondary">
-                  <span>إدارة أو تعديل الموعد</span>
-                </button>
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-
-      </div>
+      <BookingSuccessStep
+        createdBooking={createdBooking}
+        currentClinic={currentClinic}
+        copiedCode={copiedCode}
+        onCopyBookingCode={copyBookingCode}
+        onNewBooking={resetBookingForm}
+        onManageBooking={() => navigate('/manage-booking')}
+        onNavigate={navigate}
+      />
     );
   }
 
-  // =========================================================================
-  // MAIN BOOKING PORTAL (EXACT NEBRAS DENTALORE CLONE)
-  // =========================================================================
+  // MAIN BOOKING PORTAL (STEPS 1 & 2)
   return (
     <div className="nebras-booking-page">
-      
-      {/* Top Brand Bar */}
-      <header className="nebras-top-bar">
-        <div className="nebras-brand">
-          <Stethoscope size={24} className="brand-logo-icon" />
-          <div>
-            <span className="brand-title">{currentClinic.name}</span>
-            <span className="brand-subtitle">{currentClinic.doctorName} — {currentClinic.specialty}</span>
-          </div>
-        </div>
-        <div className="nebras-bar-links">
-          <button onClick={() => navigate('/manage-booking')} className="nebras-nav-btn">
-            <span>تعديل موعد سابق</span>
-          </button>
-          <button onClick={() => navigate('/login')} className="nebras-nav-btn outline">
-            <span>بوابة العيادة</span>
-          </button>
-        </div>
-      </header>
+      <BookingHeader clinic={currentClinic} onNavigate={navigate} />
 
-      {/* Main Content Area */}
       <div className="nebras-body-container">
-
         {/* Visual Progress Stepper */}
         <div className="booking-visual-stepper">
           <div className={`stepper-step ${currentStep === 'phone_check' ? 'active' : 'completed'}`}>
@@ -926,326 +448,43 @@ const Booking = () => {
           </div>
         </div>
 
-        {/* ================================================================= */}
-        {/* STEP 1: PHONE SEARCH CARD (SEARCH PATIENT)                         */}
-        {/* ================================================================= */}
+        {/* STEP 1: PHONE SEARCH CARD */}
         {currentStep === 'phone_check' && (
-
-          <div className="nebras-card search-card">
-            
-            {/* Dark Navy Header */}
-            <div className="nebras-card-header">
-              <p>حجز موعد أونلاين / Online Booking</p>
-            </div>
-
-            {/* White Body */}
-            <div className="nebras-card-body">
-              
-              <div className="search-instruction">
-                <h4>أدخل رقم هاتفك المحمول للبدء</h4>
-                <p>سنتحقق فوراً من قاعدة البيانات: إذا كنت مسجلاً مسبقاً ستتمكن من اختيار موعدك مباشرة، وإذا كانت زيارتك الأولى ستسجل بياناتك أولاً.</p>
-              </div>
-
-              <form onSubmit={handlePhoneSubmit} className="nebras-search-form">
-                
-                <div className="nebras-input-group">
-                  <label htmlFor="SearchPhoneNumber" className="nebras-label">رقم الهاتف المحمول (مصر) *</label>
-                  <div className="nebras-input-wrap">
-                    <input 
-                      type="tel"
-                      id="SearchPhoneNumber"
-                      name="phone"
-                      aria-label="رقم الهاتف المحمول للمريض"
-                      className={`nebras-input ${phoneError ? 'error-border' : ''}`}
-                      placeholder="01012345678"
-                      dir="ltr"
-                      value={formData.phone}
-                      onChange={(e) => {
-                        const clean = e.target.value.replace(/\s+/g, '');
-                        setFormData(prev => ({ ...prev, phone: clean }));
-                        setPhoneError('');
-                      }}
-                      maxLength={11}
-                      autoFocus
-                      required
-                    />
-                    <Phone size={18} className="nebras-field-icon" />
-                  </div>
-                  {phoneError && (
-                    <span className="nebras-error-msg">
-                      <AlertCircle size={14} />
-                      <span>{phoneError}</span>
-                    </span>
-                  )}
-                </div>
-
-                <div className="nebras-btn-wrap">
-                  <button 
-                    type="submit" 
-                    id="searchPatient"
-                    className="default-custom-btn"
-                    disabled={isCheckingPhone || !formData.phone || formData.phone.length < 11}
-                  >
-                    {isCheckingPhone ? (
-                      <>
-                        <Loader2 size={16} className="spinner" />
-                        <span>جاري التحقق من قاعدة البيانات...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>متابعة</span>
-                        <ChevronLeft size={18} />
-                      </>
-                    )}
-                  </button>
-                </div>
-
-              </form>
-
-              <div className="nebras-privacy-badge">
-                <ShieldCheck size={16} />
-                <span>بياناتك الطبية والشخصية مشفرة ومحمية بالكامل.</span>
-              </div>
-
-            </div>
-
-          </div>
+          <PhoneCheckStep
+            formData={formData}
+            setFormData={setFormData}
+            phoneError={phoneError}
+            setPhoneError={setPhoneError}
+            isCheckingPhone={isCheckingPhone}
+            onSubmit={handlePhoneSubmit}
+          />
         )}
 
-        {/* ================================================================= */}
-        {/* STEP 2: APPOINTMENT DETAILS (CONDITIONAL FLOW)                     */}
-        {/* ================================================================= */}
+        {/* STEP 2: APPOINTMENT DETAILS */}
         {currentStep === 'appointment_details' && (
-          <div className="nebras-card details-card">
-            
-            {/* Dark Navy Header */}
-            <div className="nebras-card-header flex-between">
-              <p>{isExistingClient && !isFamilyMemberBooking ? 'بيانات الموعد (عميل مسجل)' : 'تسجيل مريض جديد وتحديد الموعد'}</p>
-              <button 
-                type="button" 
-                onClick={() => setCurrentStep('phone_check')}
-                className="nebras-header-back-btn"
-              >
-                <ArrowRight size={14} />
-                <span>تغيير الرقم ({formData.phone})</span>
-              </button>
-            </div>
-
-            {/* White Body */}
-            <div className="nebras-card-body">
-              
-              <form onSubmit={handleFinalSubmit} className="nebras-booking-form">
-
-                {/* --------------------------------------------------------- */}
-                {/* BRANCH 1: EXISTING CLIENT WELCOME (NO PERSONAL INPUTS!)   */}
-                {/* --------------------------------------------------------- */}
-                {isExistingClient && recognizedPatient && !isFamilyMemberBooking && (
-                  <div className="nebras-patient-recognized-box">
-                    <div className="recognized-info">
-                      <Sparkles size={22} className="text-nebras-orange" />
-                      <div>
-                        <h4>أهلاً بك مجدداً يا أستاذ/ {recognizedPatient.name}</h4>
-                        <p>رقم الهاتف: <span dir="ltr">{formData.phone}</span> • ملفك الطبي مسجل لدينا في العيادة. يمكنك اختيار موعدك بالأسفل مباشرةً.</p>
-                      </div>
-                    </div>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        setIsFamilyMemberBooking(true);
-                        setFormData(prev => ({ ...prev, name: '', age: '' }));
-                      }}
-                      className="nebras-family-btn"
-                    >
-                      <Users size={13} />
-                      <span>حجز لشخص آخر من العائلة بنفس الرقم؟</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* --------------------------------------------------------- */}
-                {/* BRANCH 2: NEW CLIENT (OR FAMILY) -> FILL INFO FIRST       */}
-                {/* --------------------------------------------------------- */}
-                {(!isExistingClient || isFamilyMemberBooking) && (
-                  <div className="nebras-new-patient-section">
-                    <div className="new-patient-title">
-                      <UserPlus size={18} className="text-nebras-orange" />
-                      <h5>{isFamilyMemberBooking ? 'بيانات فرد العائلة' : 'البيانات الشخصية للمريض الأول مرة'}</h5>
-                    </div>
-
-                    <div className="nebras-form-grid">
-                      <div className="nebras-input-group">
-                        <label htmlFor="patientFullName" className="nebras-label">الاسم بالكامل (الاسم الثلاثي) *</label>
-                        <input 
-                          type="text" 
-                          id="patientFullName"
-                          name="fullName"
-                          aria-label="الاسم بالكامل"
-                          className="nebras-input"
-                          placeholder="أدخل اسمك الثلاثي"
-                          value={formData.name}
-                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                          required 
-                          autoFocus
-                        />
-                      </div>
-
-                      <div className="nebras-row-2">
-                        <div className="nebras-input-group">
-                          <label htmlFor="patientAge" className="nebras-label">السن (العمر)</label>
-                          <input 
-                            type="number" 
-                            id="patientAge"
-                            name="age"
-                            aria-label="السن"
-                            className="nebras-input"
-                            placeholder="مثال: 30"
-                            value={formData.age}
-                            onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                            min="1"
-                            max="120"
-                          />
-                        </div>
-                        <div className="nebras-input-group">
-                          <label htmlFor="patientGender" className="nebras-label">النوع</label>
-                          <select 
-                            id="patientGender"
-                            name="gender"
-                            aria-label="النوع"
-                            className="nebras-input nebras-select"
-                            value={formData.gender}
-                            onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-                          >
-                            <option value="ذكر">ذكر</option>
-                            <option value="أنثى">أنثى</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* --------------------------------------------------------- */}
-                {/* SERVICE SELECTION                                         */}
-                {/* --------------------------------------------------------- */}
-                <div className="nebras-section">
-                  <label htmlFor="patientService" className="nebras-section-heading">الخدمة الطبية المطلوبة</label>
-                  <div className="nebras-input-group">
-                    <select 
-                      id="patientService"
-                      name="service"
-                      aria-label="الخدمة الطبية المطلوبة"
-                      className="nebras-input nebras-select"
-                      value={formData.type}
-                      onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-                    >
-                      {(currentClinic.services && currentClinic.services.length > 0 ? currentClinic.services : [
-                        { id: '1', name: 'كشف وفحص تشخيصي شامل للأسنان' },
-                        { id: '2', name: 'استشارة ومتابعة بعد العلاج' },
-                        { id: '3', name: 'جلسة تنظيف وتلميع وإزالة جير الأسنان' },
-                        { id: '4', name: 'حشو تجميلي كومبوزيت ليزر' },
-                        { id: '5', name: 'علاج جذور وعصب السن (RCT)' },
-                        { id: '6', name: 'خلع ضرس عادي أو مخلخل' },
-                        { id: '7', name: 'طربوش / تاج زيركون تجميلي عالي الدقة' },
-                        { id: '8', name: 'تبييض أسنان احترافي بالعيادة (Laser/LED)' },
-                        { id: '9', name: 'زراعة سن تيتانيوم ألماني فوري' }
-                      ])
-                      .filter(s => !s.name?.includes('طوارئ'))
-                      .map(s => (
-                        <option key={s.id} value={s.name}>
-                          {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* --------------------------------------------------------- */}
-                {/* CALENDAR & TIME SLOTS SELECTION                           */}
-                {/* --------------------------------------------------------- */}
-                <div className="nebras-section">
-                  <h5 className="nebras-section-heading">اختر يوم ووقت الكشف المناسب</h5>
-                  
-                  <BookingCalendar 
-                    selectedDate={formData.date}
-                    onSelectDate={(newDate) => {
-                      setFormData(prev => ({ ...prev, date: newDate, time: '' }));
-                      setBookingError('');
-                    }}
-                    onDateSelect={(newDate) => {
-                      setFormData(prev => ({ ...prev, date: newDate, time: '' }));
-                      setBookingError('');
-                    }}
-                    selectedTime={formData.time}
-                    onSelectTime={(newTime) => {
-                      setFormData(prev => ({ ...prev, time: newTime }));
-                      setBookingError('');
-                    }}
-                    onTimeSelect={(newTime) => {
-                      setFormData(prev => ({ ...prev, time: newTime }));
-                      setBookingError('');
-                    }}
-                    appointments={clinicAppointments}
-                    blockedSlots={blockedSlots}
-                    availableSlots={availableSlots}
-                    scheduleConfig={currentClinic.scheduleConfig}
-                  />
-                </div>
-
-                {/* --------------------------------------------------------- */}
-                {/* NOTES & SUBMIT                                            */}
-                {/* --------------------------------------------------------- */}
-                <div className="nebras-section">
-                  <label htmlFor="bookingNotes" className="nebras-section-heading">ملاحظات إضافية (اختياري)</label>
-                  <textarea 
-                    id="bookingNotes"
-                    name="notes"
-                    aria-label="ملاحظات إضافية للكشف"
-                    className="nebras-input nebras-textarea"
-                    rows="2"
-                    placeholder="اكتب هنا أي تفاصيل أو أعراض ترغب في إبلاغ الطبيب بها مسبقاً..."
-                    value={formData.notes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  ></textarea>
-
-                  {bookingError && (
-                    <div className="nebras-error-banner">
-                      <AlertCircle size={18} />
-                      <span>{bookingError}</span>
-                    </div>
-                  )}
-
-                  <div className="nebras-btn-wrap" style={{ marginTop: '25px' }}>
-                    <button 
-                      type="submit" 
-                      className="default-custom-btn full-width"
-                      disabled={!formData.time || !formData.date || !formData.name || isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 size={18} className="spinner" />
-                          <span>جاري تأكيد حجزك...</span>
-                        </>
-                      ) : (
-                        <span>{formData.time ? `تأكيد حجز الموعد (${formData.date} — الساعة ${formData.time})` : 'يرجى اختيار وقت من الجدول أعلاه'}</span>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-              </form>
-
-            </div>
-
-          </div>
+          <AppointmentDetailsStep
+            formData={formData}
+            setFormData={setFormData}
+            isExistingClient={isExistingClient}
+            recognizedPatient={recognizedPatient}
+            isFamilyMemberBooking={isFamilyMemberBooking}
+            setIsFamilyMemberBooking={setIsFamilyMemberBooking}
+            currentClinic={currentClinic}
+            clinicAppointments={clinicAppointments}
+            blockedSlots={blockedSlots}
+            availableSlots={availableSlots}
+            bookingError={bookingError}
+            setBookingError={setBookingError}
+            isSubmitting={isSubmitting}
+            onSubmit={handleFinalSubmit}
+            onBackToPhone={() => setCurrentStep('phone_check')}
+          />
         )}
-
       </div>
 
-      {/* Nebras Subtle Footer */}
       <footer className="nebras-footer">
         <p>نظام الحجز الإلكتروني • {currentClinic.name} • {currentClinic.address}</p>
       </footer>
-
     </div>
   );
 };

@@ -68,9 +68,10 @@ export async function getAppointments(clinicId, filters = {}) {
       .from('appointments')
       .select('*');
 
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
+    if (!clinicId) {
+      return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
     }
+    query = query.eq('clinic_id', clinicId);
     if (filters.status) {
       query = query.eq('status', filters.status);
     }

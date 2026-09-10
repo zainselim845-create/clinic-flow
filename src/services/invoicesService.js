@@ -54,14 +54,17 @@ export async function getInvoices(clinicId, { limit = 200 } = {}) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
   try {
     let query = supabase
       .from('invoices')
       .select('*')
+      .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false })
       .limit(limit);
-
-    if (clinicId) query = query.eq('clinic_id', clinicId);
 
     const { data, error } = await query;
     if (error) throw error;
@@ -73,11 +76,15 @@ export async function getInvoices(clinicId, { limit = 200 } = {}) {
 }
 
 /**
- * Get paginated invoices for high scale (1M+ financial records)
+ * Get paginated invoices for high scale (financial records)
  */
 export async function getInvoicesPaginated({ clinicId, page = 1, pageSize = 25, paymentStatus = null } = {}) {
   if (!isSupabaseConfigured()) {
     return { data: [], total: 0, page, pageSize, totalPages: 1, error: NOT_CONFIGURED_ERROR };
+  }
+
+  if (!clinicId) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
   }
 
   try {
@@ -87,10 +94,10 @@ export async function getInvoicesPaginated({ clinicId, page = 1, pageSize = 25, 
     let query = supabase
       .from('invoices')
       .select('*', { count: 'exact' })
+      .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false })
       .range(from, to);
 
-    if (clinicId) query = query.eq('clinic_id', clinicId);
     if (paymentStatus) query = query.eq('payment_status', paymentStatus);
 
     const { data, count, error } = await query;

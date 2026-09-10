@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   Users, Sparkles, RefreshCw, Send,
   AlertTriangle, Layers, MessageCircle, 
-  Search, CheckCircle2, ChevronRight, UserPlus,
+  Search, CheckCircle2, ChevronLeft, UserPlus,
   Zap, Star, Copy, Check,
   Cake, Activity, Bot, ShieldCheck, HeartHandshake, Smile
 } from 'lucide-react';
@@ -361,7 +361,7 @@ export const MarketingCrmHub = () => {
               </div>
               <div className="card-bot">
                 <span>{crmStats.newCount} جديد • {crmStats.vipCount} VIP</span>
-                <ChevronRight size={16} />
+                <ChevronLeft size={16} />
               </div>
             </div>
 
@@ -376,7 +376,7 @@ export const MarketingCrmHub = () => {
               </div>
               <div className="card-bot">
                 <span>جاهزون لـ 3 مراحل تذكير وخصم</span>
-                <ChevronRight size={16} />
+                <ChevronLeft size={16} />
               </div>
             </div>
 
@@ -391,7 +391,7 @@ export const MarketingCrmHub = () => {
               </div>
               <div className="card-bot">
                 <span>حشو عصب • تركيبات • تبييض</span>
-                <ChevronRight size={16} />
+                <ChevronLeft size={16} />
               </div>
             </div>
 
@@ -406,7 +406,7 @@ export const MarketingCrmHub = () => {
               </div>
               <div className="card-bot">
                 <span>استعادة برابط مباشر فوري</span>
-                <ChevronRight size={16} />
+                <ChevronLeft size={16} />
               </div>
             </div>
 

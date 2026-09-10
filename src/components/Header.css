@@ -101,7 +101,6 @@
   box-shadow: 0 0 6px rgba(26, 115, 232, 0.5);
 }
 
-/* Google Material 3 Global Search Bar */
 .search-bar {
   position: relative;
   display: flex;
@@ -109,10 +108,14 @@
   background: var(--surface-container, #F0F4F9);
   border: 1px solid transparent;
   border-radius: 24px;
-  padding: 0.45rem 1rem 0.45rem 2.6rem;
+  padding-block: 0.45rem;
+  padding-inline-start: 2.3rem;
+  padding-inline-end: 3.6rem;
   cursor: pointer;
   transition: all var(--transition-fast);
-  width: 310px;
+  width: 320px;
+  text-align: start;
+  font: inherit;
 }
 
 .search-bar:hover {
@@ -123,28 +126,24 @@
 
 .search-icon {
   position: absolute;
-  right: 0.85rem;
+  inset-inline-start: 0.85rem;
   color: var(--text-secondary, #5F6368);
+  pointer-events: none;
 }
 
-.search-bar input {
-  background: transparent;
-  border: none;
-  font-size: 0.86rem;
-  color: var(--text-primary, #202124);
-  width: 100%;
-  cursor: pointer;
-  padding: 0;
-  font-family: inherit;
-}
-
-.search-bar input:focus {
-  outline: none;
+.search-placeholder {
+  font-size: 0.84rem;
+  color: var(--text-secondary, #5F6368);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 195px;
 }
 
 .search-kbd-shortcut {
   position: absolute;
-  left: 0.65rem;
+  inset-inline-end: 0.65rem;
   font-size: 0.68rem;
   font-weight: 600;
   color: var(--text-tertiary, #80868B);
@@ -152,6 +151,7 @@
   border: 1px solid var(--border-color, #DADCE0);
   border-radius: 6px;
   padding: 0.1rem 0.4rem;
+  pointer-events: none;
 }
 
 /* Google M3 Icon Buttons */

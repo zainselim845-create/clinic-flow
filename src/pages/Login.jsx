@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, ArrowRight, AlertTriangle, KeyRound } from 'lucide-react';
+import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, ArrowLeft, AlertTriangle, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
@@ -564,7 +564,7 @@ const Login = () => {
         <div className="login-footer">
           <a href="/booking" className="public-booking-redirect" target="_blank" rel="noreferrer">
             <span>هل أنت مريض وتريد حجز موعد؟ اضغط هنا للانتقال لصفحة الحجز</span>
-            <ArrowRight size={14} />
+            <ArrowLeft size={14} />
           </a>
         </div>
 

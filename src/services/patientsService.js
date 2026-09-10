@@ -70,9 +70,10 @@ export async function getPatients(clinicId, options = {}) {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
+    if (!clinicId) {
+      return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
     }
+    query = query.eq('clinic_id', clinicId);
 
     const limit = options?.limit || 300;
     query = query.limit(limit);

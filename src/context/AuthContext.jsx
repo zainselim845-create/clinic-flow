@@ -274,9 +274,6 @@ export const AuthProvider = ({ children }) => {
       const ahmedClinic = demoClinics.find(c => c.slug === 'dr-ahmed') || currentClinic || defaultClinicInfo;
       const doctorEmail = (ahmedClinic.doctorEmail || 'doctor@clinicflow.com').toLowerCase();
       const doctorPhone = (ahmedClinic.phone || '01006285031').replace(/\D/g, '');
-      const cleanPhoneInput = cleanId.replace(/\D/g, '');
-      const doctorPassword = ahmedClinic.doctorPassword || 'admin';
-
       const isDoctorIdentifier = cleanId === doctorEmail || 
         cleanId === 'doctor' || 
         cleanId === 'admin' ||
@@ -284,7 +281,9 @@ export const AuthProvider = ({ children }) => {
         (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === doctorPhone);
 
       if (isDoctorIdentifier) {
-        if (cleanPass !== doctorPassword && cleanPass !== 'admin' && cleanPass !== 'admin123') {
+        // In demo mode, accept demo admin passwords without storing plain passwords on tenant models
+        const isDemoDoctorPass = cleanPass === 'admin' || cleanPass === 'admin123';
+        if (!isDemoDoctorPass) {
           return {
             data: null,
             error: new Error('كلمة المرور غير صحيحة لحساب الطبيب.')

@@ -53,9 +53,15 @@ export async function getInventoryItems(clinicId, options = {}) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
   try {
-    let query = supabase.from('inventory_items').select('*').order('name', { ascending: true });
-    if (clinicId) query = query.eq('clinic_id', clinicId);
+    let query = supabase.from('inventory_items')
+      .select('*')
+      .eq('clinic_id', clinicId)
+      .order('name', { ascending: true });
 
     const limit = options?.limit || 300;
     query = query.limit(limit);

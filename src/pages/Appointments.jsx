@@ -312,13 +312,36 @@ const Appointments = () => {
             </button>
           </div>
 
-          <input 
-            type="date" 
-            className="input-field" 
-            style={{ width: 'auto', minWidth: '135px', padding: '0.45rem 0.75rem' }}
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <input 
+              type="date" 
+              className="input-field" 
+              style={{ width: 'auto', minWidth: '135px', padding: '0.45rem 0.75rem' }}
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              aria-label="تصفية المواعيد حسب التاريخ"
+              title="تصفية المواعيد حسب التاريخ المحدد"
+            />
+            {filterDate && (
+              <button
+                type="button"
+                onClick={() => setFilterDate('')}
+                style={{
+                  padding: '0.45rem 0.65rem',
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  background: 'var(--surface-container, #F0F4F9)',
+                  cursor: 'pointer',
+                  color: 'var(--text-primary)'
+                }}
+                title="إلغاء تصفية التاريخ وعرض كافة المواعيد"
+              >
+                عرض كل الأيام
+              </button>
+            )}
+          </div>
           <div className="search-box">
             <Search size={18} className="search-icon" />
             <input 

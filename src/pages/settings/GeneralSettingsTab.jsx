@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Building2, Save, CheckCircle2, Phone, Mail, Clock, KeyRound, 
+  Building2, Save, CheckCircle2, Phone, Mail, Clock, 
   CalendarDays, ArrowLeft, Plus, Trash2, Stethoscope, Globe
 } from 'lucide-react';
 
@@ -454,21 +454,6 @@ export default function GeneralSettingsTab({
               value={clinicForm.doctorEmail || ''} 
               onChange={(e) => setClinicForm({ ...clinicForm, doctorEmail: e.target.value })}
               placeholder="doctor@clinicflow.com" 
-            />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="doctorPassword">كلمة المرور الخاصة بالطبيب</label>
-          <div className="input-with-icon">
-            <KeyRound size={18} />
-            <input 
-              id="doctorPassword"
-              name="doctorPassword"
-              type="password" 
-              value={clinicForm.doctorPassword || ''} 
-              onChange={(e) => setClinicForm({ ...clinicForm, doctorPassword: e.target.value })}
-              placeholder="••••••••" 
             />
           </div>
         </div>

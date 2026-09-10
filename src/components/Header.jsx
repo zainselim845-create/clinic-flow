@@ -86,16 +86,17 @@ const Header = ({ title }) => {
           </div>
 
           {/* Google Material 3 Global Search Trigger Bar */}
-          <div className="search-bar" onClick={() => setIsSearchOpen(true)} title="بحث سريع وشامل (Ctrl + K)">
-            <Search size={17} className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="بحث في العيادة (اسم، هاتف، موعد)..." 
-              readOnly 
-              style={{ cursor: 'pointer' }}
-            />
+          <button 
+            type="button" 
+            className="search-bar" 
+            onClick={() => setIsSearchOpen(true)} 
+            title="بحث سريع وشامل (Ctrl + K)"
+            aria-label="فتح نافذة البحث السريع والشامل"
+          >
+            <Search size={17} className="search-icon" aria-hidden="true" />
+            <span className="search-placeholder">بحث في العيادة (اسم، هاتف، موعد)...</span>
             <span className="search-kbd-shortcut">Ctrl K</span>
-          </div>
+          </button>
 
           <button className="theme-header-btn" onClick={toggleTheme} title="تبديل الوضع الليلي / الفاتح">
             {state.theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}

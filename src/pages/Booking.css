@@ -4,6 +4,8 @@
 
 .nebras-booking-page {
   width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -621,4 +623,66 @@
   color: var(--text-tertiary);
   font-size: 0.8rem;
   border-top: 1px solid var(--border-subtle);
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 640px) {
+  .nebras-top-bar {
+    padding: 0.65rem 0.85rem;
+    gap: 0.5rem;
+  }
+  .nebras-brand {
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+  }
+  .brand-title {
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brand-subtitle {
+    font-size: 0.68rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .nebras-bar-links {
+    gap: 0.35rem;
+    flex-shrink: 0;
+  }
+  .nebras-nav-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.74rem;
+    white-space: nowrap;
+    border-radius: 12px;
+  }
+  .nebras-body-container {
+    width: 95%;
+    margin: 1rem auto 2rem auto;
+  }
+  .booking-visual-stepper {
+    padding: 0.25rem 0.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .stepper-step .step-title {
+    display: none;
+  }
+  .stepper-step.active .step-title {
+    display: inline;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+  .stepper-line {
+    min-width: 14px;
+    max-width: 32px;
+    margin: 0 0.35rem;
+  }
+  .nebras-card-body {
+    padding: 1.25rem 1rem;
+  }
+  .nebras-card-header {
+    padding: 1rem 1rem 0.5rem 1rem;
+  }
 }

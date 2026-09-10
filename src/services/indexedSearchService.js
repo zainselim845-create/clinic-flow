@@ -139,11 +139,23 @@ export class PatientIndexEngine {
 export const patientIndex = new PatientIndexEngine();
 
 /**
- * Enterprise Partitioned Index Engine designed for 1,000,000+ Records
- * Uses telecom operator prefix sharding (010, 011, 012, 015) and clinic isolation
- * to achieve sub-millisecond O(1) lookups and memory efficiency.
+ * High-Speed Partitioned Working-Set Cache Engine
+ * 
+ * ARCHITECTURAL NOTICE:
+ * In a true production deployment, holding 100,000 to 1,000,000 full records directly in
+ * browser JavaScript heap memory (~150MB-300MB) can exhaust device RAM and trigger
+ * browser tab crashes (OOM) on mobile and low-spec machines.
+ * 
+ * True million-record search must rely on PostgreSQL server-side indexed queries
+ * (e.g. Supabase `CREATE INDEX idx_patients_phone ON patients(clinic_id, phone)` or pg_trgm).
+ * 
+ * This class provides a fast, partitioned O(1) in-memory working-set cache for active
+ * clinic sessions, utilizing operator prefix buckets (010, 011, 012, 015) with automatic
+ * tenant isolation.
  */
 export class MillionUserPartitionedIndex {
+  static MAX_CACHE_RECORDS = 50000;
+
   constructor() {
     this.totalCount = 0;
     // Operator prefix shards: '010', '011', '012', '015', 'other'

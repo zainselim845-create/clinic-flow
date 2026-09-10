@@ -315,9 +315,14 @@
 
 .create-inv-btn-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 1.5rem;
-  padding-bottom: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--surface-container-low, #F8F9FA);
+  border-top: 1px solid var(--border-color, #E2E8F0);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .btn-confirm-new-inv {

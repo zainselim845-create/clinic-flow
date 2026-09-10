@@ -1,0 +1,358 @@
+/* ==========================================================================
+   ClinicFlow — Ark UI + Google Material 3 Design System
+   Headless Accessible Primitives with Arabic RTL Native Styling
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Dialog / Modal (M3 Container & Surface Elevation 3)
+   -------------------------------------------------------------------------- */
+.ark-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1050;
+  animation: arkFadeIn 0.2s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ark-dialog-positioner {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1051;
+  overflow-y: auto;
+}
+
+.ark-dialog-content {
+  background: var(--surface, #FFFFFF);
+  color: var(--text-primary, #202124);
+  border-radius: var(--radius-2xl, 28px);
+  border: 1px solid var(--border-color, #DADCE0);
+  box-shadow: 0 12px 32px rgba(11, 87, 208, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-width: 540px;
+  width: 100%;
+  padding: 1.75rem;
+  direction: rtl;
+  position: relative;
+  outline: none;
+  animation: arkZoomIn 0.22s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ark-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.ark-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-primary, #202124);
+}
+
+.ark-dialog-description {
+  font-size: 0.92rem;
+  color: var(--text-secondary, #5F6368);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.ark-dialog-close-btn {
+  background: transparent;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full, 9999px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #5F6368);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ark-dialog-close-btn:hover {
+  background: var(--surface-container, #F1F3F4);
+  color: var(--text-primary, #202124);
+}
+
+/* --------------------------------------------------------------------------
+   2. Tabs (M3 Pill & Underline Navigation)
+   -------------------------------------------------------------------------- */
+.ark-tabs-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  direction: rtl;
+}
+
+.ark-tabs-list {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--border-color, #DADCE0);
+  position: relative;
+  padding-bottom: 0.25rem;
+}
+
+.ark-tab-trigger {
+  background: transparent;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary, #5F6368);
+  cursor: pointer;
+  border-radius: var(--radius-full, 9999px);
+  transition: all 0.2s cubic-bezier(0, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.ark-tab-trigger:hover {
+  color: var(--primary, #0B57D0);
+  background: var(--primary-light, #E8F0FE);
+}
+
+.ark-tab-trigger[data-selected] {
+  color: var(--primary, #0B57D0);
+  background: var(--primary-container, #C2E7FF);
+  font-weight: 700;
+}
+
+.ark-tab-content {
+  padding-top: 1rem;
+  outline: none;
+  animation: arkFadeIn 0.2s ease;
+}
+
+/* --------------------------------------------------------------------------
+   3. Tooltip (M3 Inverse Surface Pill)
+   -------------------------------------------------------------------------- */
+.ark-tooltip-content {
+  background: #2D3135;
+  color: #F1F3F4;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm, 8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1200;
+  direction: rtl;
+  line-height: 1.4;
+  pointer-events: none;
+  animation: arkTooltipFade 0.15s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ark-tooltip-arrow {
+  --arrow-background: #2D3135;
+}
+
+/* --------------------------------------------------------------------------
+   4. Switch / Toggle (Google Material 3 Physical/Logical Thumb & Track)
+   -------------------------------------------------------------------------- */
+.ark-switch-root {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+  direction: rtl;
+}
+
+.ark-switch-control {
+  width: 50px;
+  height: 30px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--surface-container-high, #E0E2EC);
+  border: 2px solid var(--border-color, #C4C7C5);
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  transition: all 0.25s cubic-bezier(0, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.ark-switch-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--text-secondary, #747775);
+  transition: transform 0.25s cubic-bezier(0, 0, 0.2, 1), background-color 0.25s ease;
+  transform: translateX(0);
+}
+
+.ark-switch-root[data-checked] .ark-switch-control {
+  background: var(--primary, #0B57D0);
+  border-color: var(--primary, #0B57D0);
+}
+
+.ark-switch-root[data-checked] .ark-switch-thumb {
+  background: #FFFFFF;
+  transform: translateX(-20px);
+}
+
+.ark-switch-label {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary, #202124);
+}
+
+/* --------------------------------------------------------------------------
+   5. Accordion (M3 Expandable Card)
+   -------------------------------------------------------------------------- */
+.ark-accordion-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  direction: rtl;
+}
+
+.ark-accordion-item {
+  border: 1px solid var(--border-color, #DADCE0);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--surface, #FFFFFF);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.ark-accordion-item[data-state="open"] {
+  border-color: var(--primary, #0B57D0);
+  box-shadow: 0 2px 8px rgba(11, 87, 208, 0.08);
+}
+
+.ark-accordion-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--text-primary, #202124);
+  cursor: pointer;
+  text-align: right;
+  gap: 1rem;
+}
+
+.ark-accordion-trigger:hover {
+  background: var(--surface-container, #F8FAFD);
+}
+
+.ark-accordion-indicator {
+  transition: transform 0.2s cubic-bezier(0, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary, #5F6368);
+}
+
+.ark-accordion-item[data-state="open"] .ark-accordion-indicator {
+  transform: rotate(180deg);
+  color: var(--primary, #0B57D0);
+}
+
+.ark-accordion-content {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+  color: var(--text-secondary, #5F6368);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  animation: arkAccordionDown 0.2s ease-out;
+}
+
+/* --------------------------------------------------------------------------
+   6. Menu / Dropdown (M3 Floating Card)
+   -------------------------------------------------------------------------- */
+.ark-menu-content {
+  background: var(--surface, #FFFFFF);
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--border-color, #DADCE0);
+  box-shadow: 0 8px 24px rgba(60, 64, 67, 0.15);
+  padding: 0.5rem;
+  min-width: 200px;
+  direction: rtl;
+  z-index: 1100;
+  outline: none;
+  animation: arkZoomIn 0.18s cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ark-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-md, 12px);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary, #202124);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  outline: none;
+}
+
+.ark-menu-item:hover,
+.ark-menu-item[data-highlighted] {
+  background: var(--primary-light, #E8F0FE);
+  color: var(--primary, #0B57D0);
+}
+
+.ark-menu-separator {
+  height: 1px;
+  background: var(--border-color, #DADCE0);
+  margin: 0.4rem 0;
+}
+
+/* --------------------------------------------------------------------------
+   Keyframes
+   -------------------------------------------------------------------------- */
+@keyframes arkFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes arkZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes arkTooltipFade {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes arkAccordionDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
