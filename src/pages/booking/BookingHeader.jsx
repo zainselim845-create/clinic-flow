@@ -4,7 +4,12 @@ import { Stethoscope } from 'lucide-react';
 export default function BookingHeader({ clinic, onNavigate }) {
   return (
     <header className="nebras-top-bar">
-      <div className="nebras-brand">
+      <div 
+        className="nebras-brand" 
+        onClick={() => onNavigate('/booking')} 
+        style={{ cursor: 'pointer' }}
+        title="دليل العيادات والمراكز المعتمدة"
+      >
         <Stethoscope size={24} className="brand-logo-icon" />
         <div style={{ minWidth: 0, overflow: 'hidden' }}>
           <span className="brand-title" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

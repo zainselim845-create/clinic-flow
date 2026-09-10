@@ -30,16 +30,22 @@ export default function ClinicDiscoveryView({
     <div className="nebras-booking-page" dir="rtl" style={{ minHeight: '100vh', background: 'var(--bg-primary, #f8fafc)' }}>
       {/* Top Bar */}
       <header className="nebras-top-bar" style={{ background: 'var(--bg-secondary, #ffffff)', borderBottom: '1px solid var(--border-color, #e2e8f0)' }}>
-        <div className="nebras-brand">
+        <div className="nebras-brand" onClick={() => onNavigate('/')} style={{ cursor: 'pointer' }}>
           <Stethoscope size={24} className="brand-logo-icon" />
           <span className="brand-title">منظومة كلينيك فلو الموحدة</span>
         </div>
         <div className="nebras-bar-links">
+          <button onClick={() => onNavigate('/')} className="nebras-nav-btn">
+            <span>الرئيسية</span>
+          </button>
           <button onClick={() => onNavigate('/manage-booking')} className="nebras-nav-btn">
             <span>تعديل موعد سابق</span>
           </button>
-          <button onClick={() => onNavigate('/login')} className="nebras-nav-btn outline">
-            <span>بوابة العيادة</span>
+          <button onClick={() => onNavigate('/login?portal=clinic')} className="nebras-nav-btn outline">
+            <span>دخول العيادات</span>
+          </button>
+          <button onClick={() => onNavigate('/login?portal=admin')} className="nebras-nav-btn" style={{ color: '#dc2626', borderColor: '#fca5a5' }}>
+            <span>إدارة الساس</span>
           </button>
         </div>
       </header>
