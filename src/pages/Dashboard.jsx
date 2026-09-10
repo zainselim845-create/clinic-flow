@@ -685,40 +685,32 @@ const Dashboard = () => {
         regularFee={currentClinic.regularFee || '300 ج.م'}
       />
 
-      {finishExamAppt && (
-        <ConsultationModal
-          isOpen={!!finishExamAppt}
-          appointment={finishExamAppt}
-          onClose={() => setFinishExamAppt(null)}
-          onComplete={handleFinishConsultation}
-        />
-      )}
+      <ConsultationModal
+        isOpen={!!finishExamAppt}
+        appointment={finishExamAppt}
+        onClose={() => setFinishExamAppt(null)}
+        onComplete={handleFinishConsultation}
+      />
 
-      {dossierPatient && (
-        <PatientDossierDrawer
-          patient={dossierPatient}
-          onClose={() => setDossierPatient(null)}
-        />
-      )}
+      <PatientDossierDrawer
+        patient={dossierPatient}
+        onClose={() => setDossierPatient(null)}
+      />
 
       <ExpensesModal
         isOpen={isExpensesModalOpen}
         onClose={() => setIsExpensesModalOpen(false)}
       />
 
-      {isRecallModalOpen && (
-        <PatientRecallModal
-          isOpen={isRecallModalOpen}
-          onClose={() => setIsRecallModalOpen(false)}
-        />
-      )}
+      <PatientRecallModal
+        isOpen={isRecallModalOpen}
+        onClose={() => setIsRecallModalOpen(false)}
+      />
 
-      {isShiftModalOpen && (
-        <ShiftHandoverModal
-          isOpen={isShiftModalOpen}
-          onClose={() => setIsShiftModalOpen(false)}
-        />
-      )}
+      <ShiftHandoverModal
+        isOpen={isShiftModalOpen}
+        onClose={() => setIsShiftModalOpen(false)}
+      />
     </div>
   );
 };

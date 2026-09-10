@@ -64,7 +64,7 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose?.()}>
+    <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose?.()} lazyMount unmountOnExit>
       <Portal>
         <Dialog.Backdrop className="modal-overlay" />
         <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">

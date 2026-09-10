@@ -12,7 +12,7 @@ export function CreateClinicModal({
   onSubmit
 }) {
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()} lazyMount unmountOnExit>
       <Portal>
         <Dialog.Backdrop className="saas-modal-backdrop" />
         <Dialog.Positioner className="fixed inset-0 z-[1000] flex items-center justify-center p-4">

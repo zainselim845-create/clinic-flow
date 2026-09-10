@@ -53,7 +53,7 @@ const ReportIssueModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()} lazyMount unmountOnExit>
       <Portal>
         <Dialog.Backdrop 
           style={{

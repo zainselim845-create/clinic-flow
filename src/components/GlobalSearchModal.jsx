@@ -99,7 +99,7 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
   const hasAnyResults = matchingPatients.length > 0 || matchingAppointments.length > 0 || matchingStaff.length > 0 || (cleanQuery && matchingActions.length > 0);
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }} lazyMount unmountOnExit>
       <Portal>
         <Dialog.Backdrop className="global-search-overlay" />
         <Dialog.Positioner className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">

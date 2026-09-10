@@ -299,7 +299,7 @@ const Patients = () => {
       )}
 
       {/* Add/Edit Modal */}
-      <Dialog.Root open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)}>
+      <Dialog.Root open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)} lazyMount unmountOnExit>
         <Portal>
           <Dialog.Backdrop className="modal-overlay" />
           <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">

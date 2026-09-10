@@ -412,7 +412,7 @@ const Appointments = () => {
       )}
 
       {/* Modal 1: Add Appointment */}
-      <Dialog.Root open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)}>
+      <Dialog.Root open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)} lazyMount unmountOnExit>
         <Portal>
           <Dialog.Backdrop className="modal-overlay" />
           <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
@@ -519,7 +519,7 @@ const Appointments = () => {
       </Dialog.Root>
 
       {/* Modal 2: Secretary Slot Blocker */}
-      <Dialog.Root open={isBlockerModalOpen} onOpenChange={(e) => setIsBlockerModalOpen(e.open)}>
+      <Dialog.Root open={isBlockerModalOpen} onOpenChange={(e) => setIsBlockerModalOpen(e.open)} lazyMount unmountOnExit>
         <Portal>
           <Dialog.Backdrop className="modal-overlay" />
           <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">

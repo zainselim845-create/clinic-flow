@@ -160,7 +160,7 @@ const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitT
       </div>
 
       {/* Add / Edit Modal */}
-      <Dialog.Root open={showAddModal} onOpenChange={(e) => setShowAddModal(e.open)}>
+      <Dialog.Root open={showAddModal} onOpenChange={(e) => setShowAddModal(e.open)} lazyMount unmountOnExit>
         <Portal>
           <Dialog.Backdrop className="types-modal-overlay" />
           <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">

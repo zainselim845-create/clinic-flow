@@ -26,7 +26,7 @@ const DialogComponent: React.FC<DialogFunctionalProps> = ({
   showClose = true
 }) => {
   return (
-    <ArkDialog.Root open={open} onOpenChange={onOpenChange}>
+    <ArkDialog.Root open={open} onOpenChange={onOpenChange} lazyMount unmountOnExit>
       {trigger && <ArkDialog.Trigger asChild>{trigger}</ArkDialog.Trigger>}
       <Portal>
         <ArkDialog.Backdrop className="ark-dialog-backdrop" />
@@ -56,7 +56,9 @@ const DialogComponent: React.FC<DialogFunctionalProps> = ({
 };
 
 export const Dialog = Object.assign(DialogComponent, {
-  Root: ArkDialog.Root,
+  Root: ({ lazyMount = true, unmountOnExit = true, ...props }: ArkDialog.RootProps) => (
+    <ArkDialog.Root lazyMount={lazyMount} unmountOnExit={unmountOnExit} {...props} />
+  ),
   Trigger: ArkDialog.Trigger,
   Backdrop: ({ className = '', ...props }: ArkDialog.BackdropProps) => (
     <ArkDialog.Backdrop

@@ -144,10 +144,8 @@ const InvoiceModal = ({
     `المدفوع: ${currentInv.paidAmount} ج.م\n` +
     `المتبقي: ${currentInv.remainingBalance} ج.م`;
 
-  if (!isOpen) return null;
-
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()} lazyMount unmountOnExit>
       <Dialog.Backdrop className="invoice-modal-overlay" />
       <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
         <Dialog.Content className="invoice-modal-card">

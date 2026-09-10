@@ -62,9 +62,6 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
     return clinicRecalls.filter(r => r.dueDate <= today && r.status !== 'completed').length;
   }, [clinicRecalls, today]);
 
-
-  if (!isOpen) return null;
-
   const handleAddRecall = (e) => {
     e.preventDefault();
     if (!targetPatient) return;
@@ -122,10 +119,8 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
     return `sms:+2${cleanPhone}?body=${encodeURIComponent(message)}`;
   };
 
-  if (!isOpen) return null;
-
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()} lazyMount unmountOnExit>
       <Dialog.Backdrop className="recall-modal-overlay" />
       <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
         <Dialog.Content className="recall-modal-card glass-card">

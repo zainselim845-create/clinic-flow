@@ -38,7 +38,7 @@ export default function WalkInRegistrationModal({
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }} lazyMount unmountOnExit>
       <Portal>
         <Dialog.Backdrop className="modal-backdrop" />
         <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">

@@ -8,6 +8,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   return (
     <Dialog.Root 
       open={isOpen} 
+      lazyMount
+      unmountOnExit
       onOpenChange={(details) => {
         if (!details.open && onClose) {
           onClose();

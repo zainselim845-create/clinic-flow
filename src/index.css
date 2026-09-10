@@ -589,6 +589,22 @@ h1, h2, h3, h4, h5, h6 {
   overflow-y: auto !important;
 }
 
+/* Critical pointer-events and visibility protection for closed dialogs */
+.modal-backdrop[data-state="closed"],
+.modal-backdrop[hidden],
+.modal-overlay[data-state="closed"],
+.modal-overlay[hidden],
+[data-scope="dialog"][data-part="positioner"][data-state="closed"],
+[data-scope="dialog"][data-part="backdrop"][data-state="closed"],
+[data-scope="dialog"][data-part="positioner"][hidden],
+[data-scope="dialog"][data-part="backdrop"][hidden],
+.ark-dialog-backdrop[data-state="closed"],
+.ark-dialog-positioner[data-state="closed"] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
 @keyframes modalFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

@@ -69,7 +69,7 @@ export default function ConsultationModal({
   const isModalOpen = isOpen !== undefined ? isOpen : !!appointment;
 
   return (
-    <Dialog.Root open={isModalOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+    <Dialog.Root open={isModalOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }} lazyMount unmountOnExit>
       <Portal>
         <Dialog.Backdrop className="modal-backdrop" />
         <Dialog.Positioner className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
@@ -78,7 +78,7 @@ export default function ConsultationModal({
               <div className="consultation-title">
                 <Stethoscope className="text-primary" size={22} />
                 <Dialog.Title asChild>
-                  <h3>إنهاء كشف المريض: {appointment.patientName}</h3>
+                  <h3>إنهاء كشف المريض: {appointment?.patientName || ''}</h3>
                 </Dialog.Title>
               </div>
               <Dialog.CloseTrigger asChild>
@@ -91,15 +91,15 @@ export default function ConsultationModal({
             <div className="patient-quick-badge">
               <div className="badge-item">
                 <span className="badge-label">نوع الزيارة</span>
-                <strong className="badge-value">{appointment.type || 'كشف عادي'}</strong>
+                <strong className="badge-value">{appointment?.type || 'كشف عادي'}</strong>
               </div>
               <div className="badge-item">
                 <span className="badge-label">رقم الهاتف</span>
-                <strong className="badge-value" style={{ direction: 'ltr', textAlign: 'right' }}>{appointment.patientPhone}</strong>
+                <strong className="badge-value" style={{ direction: 'ltr', textAlign: 'right' }}>{appointment?.patientPhone || ''}</strong>
               </div>
               <div className="badge-item">
                 <span className="badge-label">رسوم الكشف</span>
-                <strong className="badge-value" style={{ color: '#1E8E3E' }}>{appointment.fee || '300 ج.م'}</strong>
+                <strong className="badge-value" style={{ color: '#1E8E3E' }}>{appointment?.fee || '300 ج.م'}</strong>
               </div>
             </div>
 

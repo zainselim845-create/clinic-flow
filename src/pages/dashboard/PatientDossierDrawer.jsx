@@ -54,7 +54,7 @@ export default function PatientDossierDrawer({
   }, [patientId]);
 
   return (
-    <Dialog.Root open={!!patient} onOpenChange={(details) => !details.open && onClose()}>
+    <Dialog.Root open={!!patient} onOpenChange={(details) => !details.open && onClose()} lazyMount unmountOnExit>
       <Portal>
         <Dialog.Backdrop className="modal-backdrop" />
         <Dialog.Positioner className="fixed inset-0 z-[1000] flex items-center justify-center p-4">

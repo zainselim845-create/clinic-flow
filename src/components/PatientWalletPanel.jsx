@@ -112,7 +112,7 @@ const PatientWalletPanel = ({ patientId, patientName }) => {
       </div>
 
       {/* Deposit Modal */}
-      <Dialog.Root open={showDepositModal} onOpenChange={(e) => setShowDepositModal(e.open)}>
+      <Dialog.Root open={showDepositModal} onOpenChange={(e) => setShowDepositModal(e.open)} lazyMount unmountOnExit>
         <Portal>
           <Dialog.Backdrop className="wallet-modal-overlay" />
           <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">

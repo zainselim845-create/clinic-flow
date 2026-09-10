@@ -27,6 +27,19 @@
   overflow-y: auto;
 }
 
+.ark-dialog-backdrop[data-state="closed"],
+.ark-dialog-backdrop[hidden],
+.ark-dialog-positioner[data-state="closed"],
+.ark-dialog-positioner[hidden],
+[data-scope="dialog"][data-part="positioner"][data-state="closed"],
+[data-scope="dialog"][data-part="backdrop"][data-state="closed"],
+[data-scope="dialog"][data-part="positioner"][hidden],
+[data-scope="dialog"][data-part="backdrop"][hidden] {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
 .ark-dialog-content {
   background: var(--surface, #FFFFFF);
   color: var(--text-primary, #202124);

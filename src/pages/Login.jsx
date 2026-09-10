@@ -582,7 +582,7 @@ const Login = () => {
         </button>
 
         {/* Ark UI Google Account Picker Modal */}
-        <Dialog.Root open={isGoogleModalOpen} onOpenChange={(details) => setIsGoogleModalOpen(details.open)}>
+        <Dialog.Root open={isGoogleModalOpen} onOpenChange={(details) => setIsGoogleModalOpen(details.open)} lazyMount unmountOnExit>
           <Dialog.Backdrop className="google-picker-backdrop" />
           <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <Dialog.Content className="google-picker-card">
