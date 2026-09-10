@@ -43,6 +43,19 @@ export function arabicTimeToDate(dateStr, timeStr) {
   const parsed = parseArabicTime(timeStr);
   if (!parsed) return new Date(NaN);
 
+  if (typeof dateStr === 'string') {
+    const parts = dateStr.trim().split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+        const localDate = new Date(year, month, day, parsed.hours, parsed.minutes, 0, 0);
+        if (!isNaN(localDate.getTime())) return localDate;
+      }
+    }
+  }
+
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return new Date(NaN);
 

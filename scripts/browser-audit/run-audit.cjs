@@ -242,6 +242,13 @@ async function runUiAudit() {
   await page.goto(BASE + '/booking', { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
 
+  // If on discovery view, select first clinic to enter the clinic-specific booking portal
+  const selectClinicBtn = await page.$('button:has-text("احجز موعدك في هذه العيادة")');
+  if (selectClinicBtn) {
+    await selectClinicBtn.click();
+    await page.waitForTimeout(600);
+  }
+
   try {
     await page.fill('input[type="tel"]', '01029384756');
     hit('view-booking-portal', 'booking-phone-input');

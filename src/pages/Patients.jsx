@@ -5,6 +5,8 @@ import {
   Plus, Search, LayoutGrid, List, X, Download, 
   ChevronLeft, ChevronRight 
 } from 'lucide-react';
+import { Dialog } from '../components/ui/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import PatientCard from '../components/PatientCard';
 import PatientRecallModal from '../components/PatientRecallModal';
 import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
@@ -280,123 +282,129 @@ const Patients = () => {
       )}
 
       {/* Add/Edit Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content glass-card">
-            <div className="modal-header">
-              <h3>{selectedPatient ? 'تعديل بيانات المريض' : 'إضافة مريض جديد'}</h3>
-              <button className="close-btn" onClick={() => setIsModalOpen(false)}>
-                <X size={24} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="modal-form">
-              <div className="form-group">
-                <label>الاسم بالكامل</label>
-                <input 
-                  type="text" 
-                  className="input-field"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required
-                />
+      <Dialog.Root open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)}>
+        <Portal>
+          <Dialog.Backdrop className="modal-overlay" />
+          <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <Dialog.Content className="modal-content glass-card" style={{ maxWidth: '640px', width: '100%' }}>
+              <div className="modal-header">
+                <Dialog.Title asChild>
+                  <h3>{selectedPatient ? 'تعديل بيانات المريض' : 'إضافة مريض جديد'}</h3>
+                </Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <button className="close-btn" type="button" aria-label="إغلاق">
+                    <X size={24} />
+                  </button>
+                </Dialog.CloseTrigger>
               </div>
-
-              <div className="form-row">
+              
+              <form onSubmit={handleSubmit} className="modal-form">
                 <div className="form-group">
-                  <label>العمر</label>
+                  <label>الاسم بالكامل</label>
                   <input 
-                    type="number" 
+                    type="text" 
                     className="input-field"
-                    value={formData.age}
-                    onChange={(e) => setFormData({...formData, age: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>الجنس</label>
-                  <select 
-                    className="input-field"
-                    value={formData.gender}
-                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                  >
-                    <option value="ذكر">ذكر</option>
-                    <option value="أنثى">أنثى</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>رقم الهاتف</label>
-                  <input 
-                    type="tel" 
-                    className="input-field"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label>فصيلة الدم</label>
-                  <select 
-                    className="input-field"
-                    value={formData.bloodType || ''}
-                    onChange={(e) => setFormData({...formData, bloodType: e.target.value})}
-                  >
-                    <option value="">غير معروف</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                  </select>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>العمر</label>
+                    <input 
+                      type="number" 
+                      className="input-field"
+                      value={formData.age}
+                      onChange={(e) => setFormData({...formData, age: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>الجنس</label>
+                    <select 
+                      className="input-field"
+                      value={formData.gender}
+                      onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                    >
+                      <option value="ذكر">ذكر</option>
+                      <option value="أنثى">أنثى</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <div className="form-group">
-                <label>التشخيص والشكوى المبدئية</label>
-                <input 
-                  type="text" 
-                  className="input-field"
-                  placeholder="مثال: ألم في الأسنان، فحص دوري..."
-                  value={formData.diagnosis || ''}
-                  onChange={(e) => setFormData({...formData, diagnosis: e.target.value})}
-                />
-              </div>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>رقم الهاتف</label>
+                    <input 
+                      type="tel" 
+                      className="input-field"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>فصيلة الدم</label>
+                    <select 
+                      className="input-field"
+                      value={formData.bloodType || ''}
+                      onChange={(e) => setFormData({...formData, bloodType: e.target.value})}
+                    >
+                      <option value="">غير معروف</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                    </select>
+                  </div>
+                </div>
 
-              <div className="form-group">
-                <label style={{ color: '#DC2626', fontWeight: 800 }}>تنبيهات طبية وحساسيات (Medical Alerts)</label>
-                <input 
-                  type="text" 
-                  className="input-field"
-                  placeholder="مثال: حساسية بنسلين، ضغط، سكري، أدوية سيولة..."
-                  value={formData.medicalAlerts || ''}
-                  onChange={(e) => setFormData({...formData, medicalAlerts: e.target.value})}
-                />
-              </div>
+                <div className="form-group">
+                  <label>التشخيص والشكوى المبدئية</label>
+                  <input 
+                    type="text" 
+                    className="input-field"
+                    placeholder="مثال: ألم في الأسنان، فحص دوري..."
+                    value={formData.diagnosis || ''}
+                    onChange={(e) => setFormData({...formData, diagnosis: e.target.value})}
+                  />
+                </div>
 
-              <div className="form-group">
-                <label>ملاحظات إضافية</label>
-                <textarea 
-                  className="input-field"
-                  rows="2"
-                  value={formData.notes || ''}
-                  onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                ></textarea>
-              </div>
+                <div className="form-group">
+                  <label style={{ color: '#DC2626', fontWeight: 800 }}>تنبيهات طبية وحساسيات (Medical Alerts)</label>
+                  <input 
+                    type="text" 
+                    className="input-field"
+                    placeholder="مثال: حساسية بنسلين، ضغط، سكري، أدوية سيولة..."
+                    value={formData.medicalAlerts || ''}
+                    onChange={(e) => setFormData({...formData, medicalAlerts: e.target.value})}
+                  />
+                </div>
 
+                <div className="form-group">
+                  <label>ملاحظات إضافية</label>
+                  <textarea 
+                    className="input-field"
+                    rows="2"
+                    value={formData.notes || ''}
+                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                  ></textarea>
+                </div>
 
-              <div className="modal-actions">
-                <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>إلغاء</button>
-                <button type="submit" className="btn-primary">حفظ</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                <div className="modal-actions">
+                  <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>إلغاء</button>
+                  <button type="submit" className="btn-primary">حفظ</button>
+                </div>
+              </form>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
 
       {/* Patient Clinical Dossier (Clinical Notes, Treatment Plans) */}
       {isDetailModalOpen && selectedPatient && (

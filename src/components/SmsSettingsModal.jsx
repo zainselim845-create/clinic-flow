@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, Smartphone, Send, CheckCircle2, AlertCircle, Key, Link as LinkIcon, Radio, Info, Building2 } from 'lucide-react';
+import { Dialog } from './ui/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import { getSmsConfig, saveSmsConfig, sendSMS } from '../services/smsService';
 import './SmsSettingsModal.css';
 
@@ -62,17 +64,24 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content glass-card sms-settings-modal">
-        <div className="modal-header">
-          <div className="modal-title-with-icon">
-            <Smartphone size={24} className="text-primary" />
-            <h3>إعدادات وتجربة بوابة الرسائل النصية (Open-Source SMS)</h3>
-          </div>
-          <button className="close-btn" onClick={onClose}>
-            <X size={24} />
-          </button>
-        </div>
+    <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose?.()}>
+      <Portal>
+        <Dialog.Backdrop className="modal-overlay" />
+        <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <Dialog.Content className="modal-content glass-card sms-settings-modal" style={{ maxWidth: '720px', width: '100%' }}>
+            <div className="modal-header">
+              <div className="modal-title-with-icon">
+                <Smartphone size={24} className="text-primary" />
+                <Dialog.Title asChild>
+                  <h3>إعدادات وتجربة بوابة الرسائل النصية (Open-Source SMS)</h3>
+                </Dialog.Title>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button className="close-btn" onClick={onClose} type="button" aria-label="إغلاق">
+                  <X size={24} />
+                </button>
+              </Dialog.CloseTrigger>
+            </div>
 
         <div className="sms-modal-body">
           {/* Information banner */}
@@ -356,8 +365,10 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
             إغلاق
           </button>
         </div>
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

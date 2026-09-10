@@ -4,8 +4,10 @@ import {
   AlertTriangle, Layers, MessageCircle, 
   Search, CheckCircle2, ChevronLeft, UserPlus,
   Zap, Star, Copy, Check,
-  Cake, Activity, Bot, ShieldCheck, HeartHandshake, Smile
+  Cake, Activity, Bot, ShieldCheck, HeartHandshake, Smile, X
 } from 'lucide-react';
+import { Dialog } from '../../components/ui/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -1135,80 +1137,89 @@ export const MarketingCrmHub = () => {
       )}
 
       {/* Add Package Modal */}
-      {isAddPackageModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>إضافة باقة علاجية أو ليزر لمريض</h3>
-              <button className="close-btn" onClick={() => setIsAddPackageModalOpen(false)}>✕</button>
-            </div>
-            <form onSubmit={handleAddPackageSubmit} className="modal-form">
-              <div className="form-group">
-                <label>اختر المريض:</label>
-                <select 
-                  value={newPackageData.patientId} 
-                  onChange={(e) => setNewPackageData(prev => ({ ...prev, patientId: e.target.value }))}
-                  required
-                >
-                  <option value="">-- اختر المريض من القائمة --</option>
-                  {(patients || []).map(p => (
-                    <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
-                  ))}
-                </select>
+      <Dialog.Root open={isAddPackageModalOpen} onOpenChange={(e) => setIsAddPackageModalOpen(e.open)}>
+        <Portal>
+          <Dialog.Backdrop className="modal-overlay" />
+          <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <Dialog.Content className="modal-content" style={{ maxWidth: '560px', width: '100%' }}>
+              <div className="modal-header">
+                <Dialog.Title asChild>
+                  <h3>إضافة باقة علاجية أو ليزر لمريض</h3>
+                </Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <button className="close-btn" onClick={() => setIsAddPackageModalOpen(false)} type="button" aria-label="إغلاق">
+                    <X size={20} />
+                  </button>
+                </Dialog.CloseTrigger>
               </div>
-
-              <div className="form-group">
-                <label>اسم الباقة:</label>
-                <input 
-                  type="text"
-                  value={newPackageData.packageName}
-                  onChange={(e) => setNewPackageData(prev => ({ ...prev, packageName: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div className="form-row">
+              <form onSubmit={handleAddPackageSubmit} className="modal-form">
                 <div className="form-group">
-                  <label>إجمالي الجلسات:</label>
+                  <label>اختر المريض:</label>
+                  <select 
+                    value={newPackageData.patientId} 
+                    onChange={(e) => setNewPackageData(prev => ({ ...prev, patientId: e.target.value }))}
+                    required
+                  >
+                    <option value="">-- اختر المريض من القائمة --</option>
+                    {(patients || []).map(p => (
+                      <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>اسم الباقة:</label>
                   <input 
-                    type="number" 
-                    min="1" 
-                    max="20"
-                    value={newPackageData.totalSessions}
-                    onChange={(e) => setNewPackageData(prev => ({ ...prev, totalSessions: e.target.value }))}
+                    type="text"
+                    value={newPackageData.packageName}
+                    onChange={(e) => setNewPackageData(prev => ({ ...prev, packageName: e.target.value }))}
                     required
                   />
                 </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>إجمالي الجلسات:</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="20"
+                      value={newPackageData.totalSessions}
+                      onChange={(e) => setNewPackageData(prev => ({ ...prev, totalSessions: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>الجلسات المنجزة:</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max={newPackageData.totalSessions}
+                      value={newPackageData.completedSessions}
+                      onChange={(e) => setNewPackageData(prev => ({ ...prev, completedSessions: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div className="form-group">
-                  <label>الجلسات المنجزة:</label>
+                  <label>السعر الإجمالي:</label>
                   <input 
-                    type="number" 
-                    min="0" 
-                    max={newPackageData.totalSessions}
-                    value={newPackageData.completedSessions}
-                    onChange={(e) => setNewPackageData(prev => ({ ...prev, completedSessions: e.target.value }))}
-                    required
+                    type="text"
+                    value={newPackageData.price}
+                    onChange={(e) => setNewPackageData(prev => ({ ...prev, price: e.target.value }))}
                   />
                 </div>
-              </div>
 
-              <div className="form-group">
-                <label>السعر الإجمالي:</label>
-                <input 
-                  type="text"
-                  value={newPackageData.price}
-                  onChange={(e) => setNewPackageData(prev => ({ ...prev, price: e.target.value }))}
-                />
-              </div>
-
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setIsAddPackageModalOpen(false)}>إلغاء</button>
-                <button type="submit" className="btn btn-primary">حفظ وتفعيل التتبع</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setIsAddPackageModalOpen(false)}>إلغاء</button>
+                  <button type="submit" className="btn btn-primary">حفظ وتفعيل التتبع</button>
+                </div>
+              </form>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
 
     </div>
   );

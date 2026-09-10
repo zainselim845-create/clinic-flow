@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Wallet, ArrowDownLeft, ArrowUpRight, Plus, 
-  Clock, CheckCircle2 
+  Clock, CheckCircle2, X 
 } from 'lucide-react';
+import { Dialog } from './ui/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import { getPatientWalletHistory, addWalletTransaction } from '../services/walletService';
 import './PatientWalletPanel.css';
 
@@ -110,53 +112,62 @@ const PatientWalletPanel = ({ patientId, patientName }) => {
       </div>
 
       {/* Deposit Modal */}
-      {showDepositModal && (
-        <div className="wallet-modal-overlay">
-          <div className="wallet-modal-card">
-            <div className="wallet-modal-header">
-              <h5>إيداع رصيد في محفظة {patientName || 'المريض'}</h5>
-              <button onClick={() => setShowDepositModal(false)} className="btn-close-sm">×</button>
-            </div>
-
-            <form onSubmit={handleDepositSubmit} className="wallet-modal-body">
-              <div className="field-group">
-                <label>المبلغ المراد شحنه (ج.م) *</label>
-                <input
-                  type="number"
-                  min="10"
-                  step="10"
-                  required
-                  placeholder="مثال: 1000"
-                  className="input-field"
-                  value={depositAmount}
-                  onChange={(e) => setDepositAmount(e.target.value)}
-                />
+      <Dialog.Root open={showDepositModal} onOpenChange={(e) => setShowDepositModal(e.open)}>
+        <Portal>
+          <Dialog.Backdrop className="wallet-modal-overlay" />
+          <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <Dialog.Content className="wallet-modal-card" style={{ maxWidth: '480px', width: '100%' }}>
+              <div className="wallet-modal-header">
+                <Dialog.Title asChild>
+                  <h5>إيداع رصيد في محفظة {patientName || 'المريض'}</h5>
+                </Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <button className="btn-close-sm" type="button" aria-label="إغلاق">
+                    <X size={16} />
+                  </button>
+                </Dialog.CloseTrigger>
               </div>
 
-              <div className="field-group">
-                <label>ملاحظات السداد أو سند القبض</label>
-                <input
-                  type="text"
-                  placeholder="مثال: دفعة مقدمة لخطة تقويم / تركيبات..."
-                  className="input-field"
-                  value={depositNotes}
-                  onChange={(e) => setDepositNotes(e.target.value)}
-                />
-              </div>
+              <form onSubmit={handleDepositSubmit} className="wallet-modal-body">
+                <div className="field-group">
+                  <label>المبلغ المراد شحنه (ج.م) *</label>
+                  <input
+                    type="number"
+                    min="10"
+                    step="10"
+                    required
+                    placeholder="مثال: 1000"
+                    className="input-field"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                  />
+                </div>
 
-              <div className="wallet-modal-footer">
-                <button type="button" onClick={() => setShowDepositModal(false)} className="btn-cancel">
-                  إلغاء
-                </button>
-                <button type="submit" disabled={isSubmitting} className="btn-save">
-                  <CheckCircle2 size={16} />
-                  <span>{isSubmitting ? 'جاري الإيداع...' : 'تأكيد شحن المحفظة'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                <div className="field-group">
+                  <label>ملاحظات السداد أو سند القبض</label>
+                  <input
+                    type="text"
+                    placeholder="مثال: دفعة مقدمة لخطة تقويم / تركيبات..."
+                    className="input-field"
+                    value={depositNotes}
+                    onChange={(e) => setDepositNotes(e.target.value)}
+                  />
+                </div>
+
+                <div className="wallet-modal-footer">
+                  <button type="button" onClick={() => setShowDepositModal(false)} className="btn-cancel">
+                    إلغاء
+                  </button>
+                  <button type="submit" disabled={isSubmitting} className="btn-save">
+                    <CheckCircle2 size={16} />
+                    <span>{isSubmitting ? 'جاري الإيداع...' : 'تأكيد شحن المحفظة'}</span>
+                  </button>
+                </div>
+              </form>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
 
     </div>
   );

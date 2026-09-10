@@ -89,6 +89,16 @@ const Sidebar = () => {
             <span>المخزون والمستلزمات</span>
           </NavLink>
         )}
+        {hasPermission(user, 'labs') && (
+          <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Layers size={19} />
+            <span>المعامل والتركيبات</span>
+          </NavLink>
+        )}
+        <NavLink to="/attendance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+          <UserCheck size={19} />
+          <span>الحضور والانصراف</span>
+        </NavLink>
         {isDoctor && (
           <NavLink to="/doctor-agent" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Bot size={19} />

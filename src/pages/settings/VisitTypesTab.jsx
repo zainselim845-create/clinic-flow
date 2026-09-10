@@ -6,6 +6,8 @@ import {
   Plus, Trash2, Edit2, CheckCircle2, 
   DollarSign, Globe, Check, X 
 } from 'lucide-react';
+import { Dialog } from '../../components/ui/dialog';
+import { Portal } from '@ark-ui/react/portal';
 
 import './VisitTypesTab.css';
 
@@ -158,100 +160,103 @@ const VisitTypesTab = ({ visitTypes = DEFAULT_DENTAL_VISIT_TYPES, onUpdateVisitT
       </div>
 
       {/* Add / Edit Modal */}
-      {showAddModal && (
-        <div className="types-modal-overlay">
-          <div className="types-modal-box">
-            
-            <div className="types-modal-header">
-              <h5>{editingType ? 'تعديل نوع الخدمة / الكشف' : 'إضافة خدمة أو نوع كشف جديد'}</h5>
-              <button onClick={() => setShowAddModal(false)} className="btn-modal-x">
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSave} className="types-modal-body">
-              
-              <div className="form-row-2">
-                <div className="field-box">
-                  <label>الاسم بالعربية *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.nameAr}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nameAr: e.target.value }))}
-                    placeholder="مثال: حشو تجميلي كومبوزيت"
-                  />
-                </div>
-                <div className="field-box">
-                  <label>الاسم بالإنجليزية</label>
-                  <input
-                    type="text"
-                    value={formData.nameEn}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nameEn: e.target.value }))}
-                    placeholder="Composite Filling"
-                  />
-                </div>
+      <Dialog.Root open={showAddModal} onOpenChange={(e) => setShowAddModal(e.open)}>
+        <Portal>
+          <Dialog.Backdrop className="types-modal-overlay" />
+          <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+            <Dialog.Content className="types-modal-box" style={{ maxWidth: '580px', width: '100%' }}>
+              <div className="types-modal-header">
+                <Dialog.Title asChild>
+                  <h5>{editingType ? 'تعديل نوع الخدمة / الكشف' : 'إضافة خدمة أو نوع كشف جديد'}</h5>
+                </Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <button onClick={() => setShowAddModal(false)} className="btn-modal-x" type="button" aria-label="إغلاق">
+                    <X size={16} />
+                  </button>
+                </Dialog.CloseTrigger>
               </div>
 
-              <div className="form-row-2">
-                <div className="field-box">
-                  <label>الرسوم المعتمدة (ج.م) *</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="50"
-                    required
-                    value={formData.standardFee}
-                    onChange={(e) => setFormData(prev => ({ ...prev, standardFee: Number(e.target.value) }))}
-                  />
-                </div>
-                <div className="field-box">
-                  <label>اللون المميز بالتقويم</label>
-                  <div className="color-picker-row">
+              <form onSubmit={handleSave} className="types-modal-body">
+                <div className="form-row-2">
+                  <div className="field-box">
+                    <label>الاسم بالعربية *</label>
                     <input
-                      type="color"
-                      value={formData.colorCode}
-                      onChange={(e) => setFormData(prev => ({ ...prev, colorCode: e.target.value }))}
+                      type="text"
+                      required
+                      value={formData.nameAr}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nameAr: e.target.value }))}
+                      placeholder="مثال: حشو تجميلي كومبوزيت"
                     />
-                    <span className="color-hex-text">{formData.colorCode}</span>
+                  </div>
+                  <div className="field-box">
+                    <label>الاسم بالإنجليزية</label>
+                    <input
+                      type="text"
+                      value={formData.nameEn}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nameEn: e.target.value }))}
+                      placeholder="Composite Filling"
+                    />
                   </div>
                 </div>
-              </div>
 
-              <div className="checkboxes-row">
-                <label className="type-checkbox-lbl">
-                  <input
-                    type="checkbox"
-                    checked={formData.isOnline}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isOnline: e.target.checked }))}
-                  />
-                  <span>إظهار في بوابة الحجز الإلكتروني للمرضى</span>
-                </label>
-                <label className="type-checkbox-lbl">
-                  <input
-                    type="checkbox"
-                    checked={formData.isDefault}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
-                  />
-                  <span>تعيين كخيار افتراضي أولي</span>
-                </label>
-              </div>
+                <div className="form-row-2">
+                  <div className="field-box">
+                    <label>الرسوم المعتمدة (ج.م) *</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="50"
+                      required
+                      value={formData.standardFee}
+                      onChange={(e) => setFormData(prev => ({ ...prev, standardFee: Number(e.target.value) }))}
+                    />
+                  </div>
+                  <div className="field-box">
+                    <label>اللون المميز بالتقويم</label>
+                    <div className="color-picker-row">
+                      <input
+                        type="color"
+                        value={formData.colorCode}
+                        onChange={(e) => setFormData(prev => ({ ...prev, colorCode: e.target.value }))}
+                      />
+                      <span className="color-hex-text">{formData.colorCode}</span>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="types-modal-footer">
-                <button type="button" onClick={() => setShowAddModal(false)} className="btn-cancel">
-                  إلغاء
-                </button>
-                <button type="submit" className="btn-save">
-                  <CheckCircle2 size={16} />
-                  <span>حفظ التعديلات</span>
-                </button>
-              </div>
+                <div className="checkboxes-row">
+                  <label className="type-checkbox-lbl">
+                    <input
+                      type="checkbox"
+                      checked={formData.isOnline}
+                      onChange={(e) => setFormData(prev => ({ ...prev, isOnline: e.target.checked }))}
+                    />
+                    <span>إظهار في بوابة الحجز الإلكتروني للمرضى</span>
+                  </label>
+                  <label className="type-checkbox-lbl">
+                    <input
+                      type="checkbox"
+                      checked={formData.isDefault}
+                      onChange={(e) => setFormData(prev => ({ ...prev, isDefault: e.target.checked }))}
+                    />
+                    <span>تعيين كخيار افتراضي أولي</span>
+                  </label>
+                </div>
 
-            </form>
-
-          </div>
-        </div>
-      )}
+                <div className="types-modal-footer">
+                  <button type="button" onClick={() => setShowAddModal(false)} className="btn-cancel">
+                    إلغاء
+                  </button>
+                  <button type="submit" className="btn-save">
+                    <CheckCircle2 size={16} />
+                    <span>حفظ التعديلات</span>
+                  </button>
+                </div>
+              </form>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
 
     </div>
   );

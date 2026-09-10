@@ -1,8 +1,45 @@
-﻿import React from 'react';
+import React from 'react';
 import { Tooltip as ArkTooltip } from '@ark-ui/react/tooltip';
 import { Portal } from '@ark-ui/react/portal';
+import './ark-ui.css';
 
-export const Tooltip = {
+export interface TooltipFunctionalProps {
+  content?: React.ReactNode;
+  children: React.ReactElement;
+  openDelay?: number;
+  closeDelay?: number;
+  positioning?: any;
+  disabled?: boolean;
+}
+
+const TooltipComponent: React.FC<TooltipFunctionalProps> = ({
+  content,
+  children,
+  openDelay = 300,
+  closeDelay = 150,
+  positioning = { placement: 'top' },
+  disabled = false
+}) => {
+  if (disabled || !content) return children;
+
+  return (
+    <ArkTooltip.Root openDelay={openDelay} closeDelay={closeDelay} positioning={positioning}>
+      <ArkTooltip.Trigger asChild>{children}</ArkTooltip.Trigger>
+      <Portal>
+        <ArkTooltip.Positioner>
+          <ArkTooltip.Content className="ark-tooltip-content">
+            <ArkTooltip.Arrow className="ark-tooltip-arrow">
+              <ArkTooltip.ArrowTip />
+            </ArkTooltip.Arrow>
+            {content}
+          </ArkTooltip.Content>
+        </ArkTooltip.Positioner>
+      </Portal>
+    </ArkTooltip.Root>
+  );
+};
+
+export const Tooltip = Object.assign(TooltipComponent, {
   Root: ArkTooltip.Root,
   Trigger: ArkTooltip.Trigger,
   Positioner: ({ className = '', ...props }: ArkTooltip.PositionerProps) => (
@@ -22,6 +59,6 @@ export const Tooltip = {
   ),
   Arrow: ArkTooltip.Arrow,
   ArrowTip: ArkTooltip.ArrowTip
-};
+});
 
 export default Tooltip;

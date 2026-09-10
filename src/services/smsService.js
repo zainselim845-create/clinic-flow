@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { safeStorage } from '../utils/safeStorage';
+import { checkActionRateLimit } from '../utils/rateLimiter';
 
 /**
  * Get active SMS gateway configuration from LocalStorage or Environment variables.
@@ -227,6 +228,17 @@ export async function sendSMS(phone, message) {
   const config = getSmsConfig();
   const formattedPhone = formatEgyptianPhone(phone);
   const plainPhone = formattedPhone.replace(/^\+/, '');
+
+  if (plainPhone) {
+    const limitCheck = checkActionRateLimit('sms_dispatch', plainPhone, 5, 60000);
+    if (!limitCheck.allowed) {
+      return {
+        success: false,
+        isRateLimited: true,
+        error: `تم تجاوز حد إرسال الرسائل لهذا الرقم. يرجى الانتظار ${limitCheck.retryAfterSeconds} ثانية.`
+      };
+    }
+  }
 
   try {
     if (config.provider === 'easysendsms' && config.easysendsmsApiKey) {

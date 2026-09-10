@@ -263,8 +263,8 @@ export async function saveClinicDomainSettings(clinicId, domainConfig) {
           custom_domain_verified_at: domainConfig.verifiedAt || null
         })
         .eq('id', clinicId);
-    } catch {
-      // Offline fallback
+    } catch (err) {
+      console.warn('[customDomainService] Failed to sync domain to Supabase, fallback to safeStorage:', err);
     }
   }
 

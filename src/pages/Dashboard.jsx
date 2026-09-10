@@ -29,7 +29,7 @@ const Dashboard = () => {
   const isStaff = !isDoctor;
   
   const currentClinic = state.clinicInfo || {};
-  const currentClinicId = tenant?.id || currentClinic?.id || '550e8400-e29b-41d4-a716-446655440000';
+  const currentClinicId = tenant?.id || currentClinic?.id || null;
   const today = getTodayDateStr();
 
   // Modals & Drawers state
@@ -58,7 +58,7 @@ const Dashboard = () => {
     return (state.appointments || []).filter(a => {
       if (a.date !== today) return false;
       if (a.clinicId && currentClinicId) return a.clinicId === currentClinicId;
-      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+      return !currentClinicId || a.clinicId === currentClinicId;
     });
   }, [state.appointments, today, currentClinicId]);
 
@@ -291,17 +291,15 @@ const Dashboard = () => {
             <Share2 size={15} />
             <span>{copiedBookingLink ? 'تم النسخ!' : 'رابط الحجز'}</span>
           </button>
-          {isDoctor && (
-            <button 
-              type="button" 
-              onClick={() => setIsShiftModalOpen(true)} 
-              className="google-m3-tonal-btn" 
-              title="تصفية الخزينة وتسليم الوردية"
-            >
-              <Landmark size={15} />
-              <span>الوردية</span>
-            </button>
-          )}
+          <button 
+            type="button" 
+            onClick={() => setIsShiftModalOpen(true)} 
+            className="google-m3-tonal-btn" 
+            title="تصفية الخزينة وتسليم وردية الاستقبال"
+          >
+            <Landmark size={15} />
+            <span>تسليم وردية الاستقبال</span>
+          </button>
           <button 
             type="button" 
             onClick={() => dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' })} 

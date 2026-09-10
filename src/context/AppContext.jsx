@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { getInitialData, getInitialDataForTenant } from '../data/demoData';
+import { getInitialData, getInitialDataForTenant, demoClinics } from '../data/demoData';
 import TenantContext from './TenantContext';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import * as patientsService from '../services/patientsService';
@@ -465,8 +465,8 @@ export function AppProvider({ children }) {
   // Resolve active tenant from TenantContext
   const tenantContext = useContext(TenantContext);
   const activeTenant = tenantContext?.tenant;
-  const tenantSlug = tenantContext?.tenantSlug || activeTenant?.slug || 'dr-ahmed';
-  const tenantId = activeTenant?.id || (tenantSlug === 'dr-sara' ? '550e8400-e29b-41d4-a716-446655440099' : '550e8400-e29b-41d4-a716-446655440000');
+  const resolvedClinic = (demoClinics || []).find(c => c.slug === tenantSlug);
+  const tenantId = activeTenant?.id || resolvedClinic?.id || (tenantSlug ? `tenant-${tenantSlug}` : 'tenant-default');
 
   useEffect(() => {
     stateRef.current = state;

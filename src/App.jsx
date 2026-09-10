@@ -23,10 +23,9 @@ const lazyWithRetry = (componentImport) =>
       window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
       return component;
     } catch (error) {
-      if (!pageHasAlreadyBeenForceRefreshed) {
-        window.sessionStorage.setItem('page-has-been-force-refreshed', 'true');
+      if (!pageHasAlreadyBeenForceRefreshed && typeof window !== 'undefined' && window.location?.reload) {
+        window.sessionStorage?.setItem('page-has-been-force-refreshed', 'true');
         window.location.reload();
-        return new Promise(() => {});
       }
       throw error;
     }
@@ -219,6 +218,12 @@ function App() {
             <Route path="/inventory" element={
               <ProtectedRoute requiredPermission="inventory"><Inventory /></ProtectedRoute>
             } />
+            <Route path="/labs" element={
+              <ProtectedRoute requiredPermission="labs"><Labs /></ProtectedRoute>
+            } />
+            <Route path="/attendance" element={
+              <ProtectedRoute><Attendance /></ProtectedRoute>
+            } />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/doctor-agent" element={
               <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
@@ -229,8 +234,6 @@ function App() {
           </Route>
 
           {/* 3. Removed Routes Redirects */}
-          <Route path="/labs" element={<Navigate to="/" replace />} />
-          <Route path="/attendance" element={<Navigate to="/" replace />} />
           <Route path="/insurance" element={<Navigate to="/" replace />} />
 
           {/* 4. Fallback unknown paths */}

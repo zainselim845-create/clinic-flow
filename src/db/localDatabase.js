@@ -118,8 +118,8 @@ export const localDb = {
 
       request.onsuccess = () => {
         const all = request.result || [];
-        if (!clinicId) return resolve(all);
-        resolve(all.filter(p => !p.clinicId || p.clinicId === clinicId));
+        if (!clinicId) return resolve([]);
+        resolve(all.filter(p => p.clinicId === clinicId));
       };
       request.onerror = () => reject(request.error);
     });
@@ -146,8 +146,8 @@ export const localDb = {
 
       request.onsuccess = () => {
         const all = request.result || [];
-        if (!clinicId) return resolve(all);
-        resolve(all.filter(a => !a.clinicId || a.clinicId === clinicId));
+        if (!clinicId) return resolve([]);
+        resolve(all.filter(a => a.clinicId === clinicId));
       };
       request.onerror = () => reject(request.error);
     });

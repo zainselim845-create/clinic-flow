@@ -329,13 +329,16 @@ export function provisionStaffAccount({
   name,
   phone,
   email,
-  password = '123',
+  password,
   role = 'receptionist',
   permissions,
   shift = 'مسائي (04:00 م - 10:00 م)'
 }) {
   if (!name?.trim() || !phone?.trim()) {
     throw new Error('يرجى إدخال اسم ورقم هاتف الموظف.');
+  }
+  if (!password || password.trim().length < 4) {
+    throw new Error('يرجى إدخال كلمة مرور للموظف (4 أحرف على الأقل).');
   }
 
   const cleanPhone = phone.trim().replace(/\D/g, '');
@@ -408,7 +411,7 @@ export function authenticateUser(identifier, password, options = {}) {
     if (matchedUser.status === 'inactive') {
       throw new Error('هذا الحساب معطل حالياً من قِبل إدارة العيادة.');
     }
-    if (matchedUser.password !== cleanPass && cleanPass !== 'admin123') {
+    if (matchedUser.password !== cleanPass) {
       throw new Error('كلمة المرور غير صحيحة.');
     }
     return {
@@ -417,25 +420,8 @@ export function authenticateUser(identifier, password, options = {}) {
     };
   }
 
-  // 2. Check built-in clinic receptionist & staff account
-  if (cleanId === 'reception@clinicflow.com' || cleanId === 'staff@clinicflow.com' || cleanId === 'reception') {
-    if (cleanPass !== '123' && cleanPass !== 'admin' && cleanPass !== 'admin123') {
-      throw new Error('كلمة المرور غير صحيحة لحساب موظف الاستقبال.');
-    }
-    return {
-      id: 'staff-reception-master',
-      name: 'سارة كمال (استقبال العيادة)',
-      email: 'reception@clinicflow.com',
-      phone: '01012345678',
-      role: 'staff',
-      jobTitle: 'سكرتارية واستقبال العيادة',
-      permissions: ['appointments', 'patients', 'sms'],
-      clinicSlug: 'dr-ahmed',
-      clinicId: '550e8400-e29b-41d4-a716-446655440000',
-      allowedClinics: ['dr-ahmed'],
-      authenticatedAt: new Date().toISOString()
-    };
-  }
+  // Built-in demo staff accounts removed for production security.
+  // Staff must be provisioned through provisionStaffAccount().
 
   // 3. Check registered clinic tenant doctor credentials
   const registeredTenants = getRegisteredTenants();
@@ -447,8 +433,8 @@ export function authenticateUser(identifier, password, options = {}) {
   });
 
   if (matchedTenant) {
-    const validPass = matchedTenant.doctorPassword || 'admin';
-    if (cleanPass !== validPass && cleanPass !== 'admin123' && cleanPass !== 'admin') {
+    const validPass = matchedTenant.doctorPassword;
+    if (!validPass || cleanPass !== validPass) {
       throw new Error('كلمة المرور غير صحيحة لحساب الطبيب.');
     }
     return {
