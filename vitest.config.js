@@ -5,10 +5,8 @@ export default defineConfig({
     testTimeout: 30000,
     fileParallelism: false,
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        execArgv: ['--max-old-space-size=4096']
-      }
+    forks: {
+      execArgv: ['--max-old-space-size=4096']
     }
   }
 });
