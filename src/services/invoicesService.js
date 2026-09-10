@@ -122,6 +122,10 @@ export async function addInvoice(invoice) {
     return { data: invoice, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!invoice || (!invoice.clinicId && !invoice.clinic_id)) {
+    return { data: null, error: new Error('Clinic ID is strictly required to add an invoice') };
+  }
+
   try {
     const row = toDbInvoice(invoice);
     const { data, error } = await supabase
@@ -143,30 +147,45 @@ export async function recordPayment(invoiceId, paymentData) {
     return { data: paymentData, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!invoiceId) {
+    return { success: false, error: new Error('Invoice ID is required to record a payment') };
+  }
+
   try {
-    // 1. Insert payment row
+    // 1. Fetch current invoice to guarantee isolation and get clinic_id
+    const { data: currentInv, error: fetchErr } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', invoiceId)
+      .single();
+
+    if (fetchErr || !currentInv) {
+      throw fetchErr || new Error('Invoice not found');
+    }
+
+    const clinicId = paymentData.clinicId || paymentData.clinic_id || currentInv.clinic_id;
+
+    // 2. Insert payment row with strict clinic_id scoping
     await supabase.from('payments').insert({
+      clinic_id: clinicId,
       invoice_id: invoiceId,
-      patient_id: paymentData.patientId,
+      patient_id: paymentData.patientId || currentInv.patient_id,
       amount: Number(paymentData.amount),
       payment_method: paymentData.paymentMethod || 'cash',
       transaction_ref: paymentData.transactionRef || '',
       notes: paymentData.notes || ''
     });
 
-    // 2. Update invoice status
-    const { data: currentInv } = await supabase.from('invoices').select('*').eq('id', invoiceId).single();
-    if (currentInv) {
-      const newPaid = Number(currentInv.paid_amount || 0) + Number(paymentData.amount);
-      const remaining = Math.max(0, Number(currentInv.patient_share || currentInv.total) - newPaid);
-      const newStatus = remaining <= 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'unpaid');
+    // 3. Update invoice status
+    const newPaid = Number(currentInv.paid_amount || 0) + Number(paymentData.amount);
+    const remaining = Math.max(0, Number(currentInv.patient_share || currentInv.total) - newPaid);
+    const newStatus = remaining <= 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'unpaid');
 
-      await supabase.from('invoices').update({
-        paid_amount: newPaid,
-        remaining_balance: remaining,
-        payment_status: newStatus
-      }).eq('id', invoiceId);
-    }
+    await supabase.from('invoices').update({
+      paid_amount: newPaid,
+      remaining_balance: remaining,
+      payment_status: newStatus
+    }).eq('id', invoiceId);
 
     return { success: true, error: null };
   } catch (error) {

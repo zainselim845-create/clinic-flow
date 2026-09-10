@@ -63,15 +63,15 @@ export async function getAppointments(clinicId, filters = {}) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
   try {
     let query = supabase
       .from('appointments')
-      .select('*');
-
-    if (!clinicId) {
-      return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
-    }
-    query = query.eq('clinic_id', clinicId);
+      .select('*')
+      .eq('clinic_id', clinicId);
     if (filters.status) {
       query = query.eq('status', filters.status);
     }
@@ -99,6 +99,10 @@ export async function getAppointments(clinicId, filters = {}) {
 export async function addAppointment(appointment) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
+  }
+
+  if (!appointment || (!appointment.clinicId && !appointment.clinic_id)) {
+    return { data: null, error: new Error('Clinic ID is strictly required to add an appointment') };
   }
 
   try {
@@ -197,18 +201,17 @@ export async function getBookedSlotsForDate(clinicId, date) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to get booked slots') };
+  }
+
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from('appointments')
       .select('time')
+      .eq('clinic_id', clinicId)
       .eq('date', date)
       .neq('status', 'cancelled');
-
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
-
-    const { data, error } = await query;
 
     if (error) throw error;
     return { data: data ? data.map(d => d.time) : [], error: null };
@@ -250,6 +253,10 @@ export async function getAppointmentsPaginated({ clinicId, page = 1, pageSize = 
     return { data: [], total: 0, page, pageSize, totalPages: 1, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: new Error('Clinic ID is strictly required to fetch paginated appointments') };
+  }
+
   try {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -257,11 +264,10 @@ export async function getAppointmentsPaginated({ clinicId, page = 1, pageSize = 
     let query = supabase
       .from('appointments')
       .select('*', { count: 'exact' })
+      .eq('clinic_id', clinicId)
       .order('date', { ascending: false })
       .order('time', { ascending: true })
       .range(from, to);
-
-    if (clinicId) query = query.eq('clinic_id', clinicId);
     if (date) query = query.eq('date', date);
     if (status) query = query.eq('status', status);
 

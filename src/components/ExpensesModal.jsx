@@ -19,13 +19,14 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
   const [category, setCategory] = useState(expenseCategories[0]);
   const [date, setDate] = useState(today);
   const [notes, setNotes] = useState('');
-  const currentClinicId = state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
+  const currentClinicId = state?.clinicInfo?.id;
   const [filterCategory, setFilterCategory] = useState('all');
 
   const clinicExpenses = useMemo(() => {
+    if (!currentClinicId) return [];
     return (state.expenses || []).filter(e => {
-      if (e.clinicId) return e.clinicId === currentClinicId;
-      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+      const eClinicId = e.clinicId || e.clinic_id;
+      return eClinicId === currentClinicId;
     });
   }, [state.expenses, currentClinicId]);
 

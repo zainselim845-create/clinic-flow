@@ -576,3 +576,410 @@
 .btn-confirm-provision:hover {
   background: #005bb5;
 }
+
+/* SuperAdmin Header & Logout */
+.btn-superadmin-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  color: #ef4444;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.btn-superadmin-logout:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Tabs Navigation */
+.saas-tabs-nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  padding-bottom: 0.75rem;
+}
+
+.saas-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--bg-secondary, #ffffff);
+  color: var(--text-secondary, #64748b);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saas-tab-btn.active-clinics {
+  background: var(--primary, #0284c7);
+  color: #ffffff;
+}
+
+.saas-tab-btn.active-telemetry {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+/* Table Row Highlights */
+.saas-tenant-row.is-suspended {
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.saas-tenant-row.is-pending {
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.tenant-suspension-note {
+  font-size: 0.72rem;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.saas-empty-row {
+  text-align: center;
+  padding: 2.5rem !important;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+/* Status Badges */
+.saas-status-pill.suspended {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.saas-status-pill.pending {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* Tenant Actions */
+.tenant-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-approve-clinic {
+  background: #10B981;
+  color: #ffffff;
+  border: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: opacity 0.2s;
+}
+
+.btn-approve-clinic:hover {
+  opacity: 0.9;
+}
+
+.btn-suspend-clinic {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s;
+}
+
+.btn-suspend-clinic:hover {
+  background: #fecaca;
+}
+
+.btn-reactivate-clinic {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s;
+}
+
+.btn-reactivate-clinic:hover {
+  background: #bbf7d0;
+}
+
+/* Telemetry & Bug Reports Center */
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.telemetry-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.telemetry-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.telemetry-refresh-btn:hover {
+  background: #f1f5f9;
+}
+
+.telemetry-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.telemetry-clear-btn:hover {
+  background: #fecaca;
+}
+
+.telemetry-sub-section {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.telemetry-sub-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.telemetry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.telemetry-card {
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.telemetry-card.system-error-card.is-unresolved {
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 1px 4px rgba(239, 68, 68, 0.08);
+}
+
+.telemetry-card.system-error-card.is-resolved {
+  opacity: 0.65;
+}
+
+.telemetry-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.telemetry-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.telemetry-category-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.telemetry-category-badge.bug {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.telemetry-category-badge.performance {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.telemetry-category-badge.feature {
+  background: rgba(56, 189, 248, 0.15);
+  color: #0284c7;
+}
+
+.telemetry-severity-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.telemetry-severity-badge.critical {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.telemetry-severity-badge.warning {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.telemetry-type-pill {
+  font-family: monospace;
+  font-size: 0.75rem;
+  background: var(--bg-secondary, #f1f5f9);
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  color: #0284c7;
+}
+
+.telemetry-card-title {
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.telemetry-card-desc {
+  color: #475569;
+  font-size: 0.92rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.telemetry-status-select {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-secondary, #f8fafc);
+  color: #1e293b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.telemetry-meta-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  border-top: 1px solid var(--border-color, #f1f5f9);
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.telemetry-meta-footer code {
+  background: #f1f5f9;
+  padding: 1px 4px;
+  border-radius: 4px;
+  color: #0284c7;
+}
+
+.telemetry-error-stack {
+  background: #0f172a;
+  color: #f87171;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  overflow-x: auto;
+  max-height: 120px;
+  direction: ltr;
+  text-align: left;
+}
+
+.btn-resolve-error {
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  border: none;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-resolve-error:hover {
+  opacity: 0.9;
+}
+
+.resolved-check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #10b981;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.telemetry-empty-state {
+  text-align: center;
+  padding: 2.5rem;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+

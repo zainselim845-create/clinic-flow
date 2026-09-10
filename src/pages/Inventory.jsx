@@ -14,8 +14,7 @@ import './Inventory.css';
 
 const Inventory = () => {
   const { state } = useApp();
-  const { tenant } = useTenant();
-  const currentClinicId = tenant?.id || state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
+  const currentClinicId = tenant?.id || state?.clinicInfo?.id;
 
   const [items, setItems] = useState([
     {
@@ -92,8 +91,9 @@ const Inventory = () => {
   const filteredItems = useMemo(() => {
     return items.filter(it => {
       // Tenant scoping
-      const matchesClinic = it.clinicId ? it.clinicId === currentClinicId : (currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1');
-      if (!matchesClinic) return false;
+      if (!currentClinicId) return false;
+      const itClinicId = it.clinicId || it.clinic_id;
+      if (itClinicId && itClinicId !== currentClinicId) return false;
 
       const matchesSearch = 
         it.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

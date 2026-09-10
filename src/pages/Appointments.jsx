@@ -21,7 +21,7 @@ const Appointments = () => {
   const { user } = useAuth();
   const isDoctor = isDoctorRole(user);
   const { appointments = [], patients = [], blockedSlots = [] } = state;
-  const currentClinicId = tenant?.id || state.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
+  const currentClinicId = tenant?.id || state.clinicInfo?.id;
 
   const todayStr = getTodayDateStr();
 
@@ -247,19 +247,7 @@ const Appointments = () => {
   return (
     <div className="appointments-page">
       {toastMessage && (
-        <div className={`appointments-toast-banner ${toastMessage.type}`} style={{
-          background: toastMessage.type === 'warning' ? '#fef3c7' : toastMessage.type === 'success' ? '#dcfce7' : '#e0f2fe',
-          border: `1px solid ${toastMessage.type === 'warning' ? '#fcd34d' : toastMessage.type === 'success' ? '#86efac' : '#7dd3fc'}`,
-          color: toastMessage.type === 'warning' ? '#92400e' : toastMessage.type === 'success' ? '#166534' : '#0369a1',
-          padding: '0.75rem 1.25rem',
-          borderRadius: '8px',
-          marginBottom: '1rem',
-          fontWeight: 600,
-          fontSize: '0.9rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
-        }}>
+        <div className={`appointments-toast-banner ${toastMessage.type}`}>
           <span>{toastMessage.text}</span>
         </div>
       )}
@@ -294,11 +282,11 @@ const Appointments = () => {
           <button className={filterStatus === 'cancelled' ? 'active' : ''} onClick={() => { setFilterStatus('cancelled'); setCurrentPage(1); }}>ملغي ({appointments.filter(a => a.status === 'cancelled').length})</button>
         </div>
         
-        <div className="other-filters" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <div className="view-mode-toggle-group" style={{ display: 'flex', background: 'var(--bg-primary)', borderRadius: '8px', padding: '2px', border: '1px solid var(--border-color)' }}>
+        <div className="other-filters">
+          <div className="view-mode-toggle-group">
             <button 
               type="button"
-              style={{ padding: '0.35rem 0.65rem', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, background: viewMode === 'grid' ? 'var(--surface)' : 'transparent', color: viewMode === 'grid' ? 'var(--primary)' : 'var(--text-secondary)', boxShadow: viewMode === 'grid' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none' }}
+              className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
               onClick={() => setViewMode('grid')}
             >
               <LayoutGrid size={14} />
@@ -306,7 +294,7 @@ const Appointments = () => {
             </button>
             <button 
               type="button"
-              style={{ padding: '0.35rem 0.65rem', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 700, background: viewMode === 'chairs' ? 'var(--surface)' : 'transparent', color: viewMode === 'chairs' ? 'var(--primary)' : 'var(--text-secondary)', boxShadow: viewMode === 'chairs' ? '0 1px 2px rgba(0,0,0,0.08)' : 'none' }}
+              className={`view-mode-btn ${viewMode === 'chairs' ? 'active' : ''}`}
               onClick={() => setViewMode('chairs')}
             >
               <Armchair size={14} />
@@ -314,11 +302,10 @@ const Appointments = () => {
             </button>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <div className="date-filter-group">
             <input 
               type="date" 
-              className="input-field" 
-              style={{ width: 'auto', minWidth: '135px', padding: '0.45rem 0.75rem' }}
+              className="input-field date-filter-input" 
               value={filterDate}
               onChange={(e) => setFilterDate(e.target.value)}
               aria-label="تصفية المواعيد حسب التاريخ"
@@ -328,16 +315,7 @@ const Appointments = () => {
               <button
                 type="button"
                 onClick={() => setFilterDate('')}
-                style={{
-                  padding: '0.45rem 0.65rem',
-                  fontSize: '0.78rem',
-                  fontWeight: 600,
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  background: 'var(--surface-container, #F0F4F9)',
-                  cursor: 'pointer',
-                  color: 'var(--text-primary)'
-                }}
+                className="btn-clear-date"
                 title="إلغاء تصفية التاريخ وعرض كافة المواعيد"
               >
                 عرض كل الأيام

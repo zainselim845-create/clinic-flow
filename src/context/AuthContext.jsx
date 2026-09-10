@@ -201,7 +201,7 @@ export const AuthProvider = ({ children }) => {
 
       // 1. Check Super Admin Login
       if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
-        if (cleanPass !== 'admin' && cleanPass !== 'admin123') {
+        if (cleanPass !== 'admin') {
           return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام.') };
         }
         const superAdminUser = {
@@ -223,7 +223,7 @@ export const AuthProvider = ({ children }) => {
 
       // 2. Check Multi-Clinic Owner Login
       if (cleanId === 'owner@clinicflow.com' || cleanId === 'multidoctor@clinicflow.com' || cleanId === 'owner') {
-        if (cleanPass !== 'admin' && cleanPass !== 'admin123') {
+        if (cleanPass !== 'admin') {
           return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مالك مجمع العيادات.') };
         }
         const ownerUser = {
@@ -246,7 +246,7 @@ export const AuthProvider = ({ children }) => {
       // 3. Check Single-Clinic Doctor Logins across demoClinics
       // Match Dr. Sara
       if (cleanId === 'sara.clinic@clinicflow.com' || cleanId === 'dr-sara') {
-        if (cleanPass !== 'admin' && cleanPass !== 'admin123') {
+        if (cleanPass !== 'admin') {
           return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب د. سارة محمود.') };
         }
         const saraClinic = demoClinics.find(c => c.slug === 'dr-sara') || demoClinics[1];
@@ -281,8 +281,8 @@ export const AuthProvider = ({ children }) => {
         (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === doctorPhone);
 
       if (isDoctorIdentifier) {
-        // In demo mode, accept demo admin passwords without storing plain passwords on tenant models
-        const isDemoDoctorPass = cleanPass === 'admin' || cleanPass === 'admin123';
+        // In demo mode, require exact doctor admin password
+        const isDemoDoctorPass = cleanPass === 'admin';
         if (!isDemoDoctorPass) {
           return {
             data: null,
@@ -312,7 +312,7 @@ export const AuthProvider = ({ children }) => {
 
       // 4. Check Dedicated Receptionist & Staff Login
       if (cleanId === 'reception@clinicflow.com' || cleanId === 'staff@clinicflow.com' || cleanId === 'reception') {
-        if (cleanPass !== '123' && cleanPass !== 'admin' && cleanPass !== 'admin123') {
+        if (cleanPass !== '123') {
           return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب موظف الاستقبال.') };
         }
         const receptionStaffUser = {
@@ -346,7 +346,7 @@ export const AuthProvider = ({ children }) => {
       const matchedStaff = allStaff.find(s => {
         const staffEmail = (s.email || '').toLowerCase();
         const staffPhone = (s.phone || '').replace(/\D/g, '');
-        return (cleanId === staffEmail || (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === staffPhone)) && (s.password === cleanPass || cleanPass === '123' || cleanPass === 'admin');
+        return (cleanId === staffEmail || (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === staffPhone)) && (s.password === cleanPass);
       });
 
       if (matchedStaff) {

@@ -64,16 +64,16 @@ export async function getPatients(clinicId, options = {}) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
   try {
     let query = supabase
       .from('patients')
       .select('*')
+      .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false });
-
-    if (!clinicId) {
-      return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
-    }
-    query = query.eq('clinic_id', clinicId);
 
     const limit = options?.limit || 300;
     query = query.limit(limit);
@@ -93,6 +93,10 @@ export async function getPatients(clinicId, options = {}) {
 export async function addPatient(patient) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
+  }
+
+  if (!patient || (!patient.clinicId && !patient.clinic_id)) {
+    return { data: null, error: new Error('Clinic ID is strictly required to add a patient') };
   }
 
   try {
@@ -167,6 +171,10 @@ export async function findPatientByPhone(clinicId, phone) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: null, error: new Error('Clinic ID is strictly required to find patients by phone') };
+  }
+
   try {
     const raw = (phone || '').trim();
     const cleanDigits = raw.replace(/\D/g, '');
@@ -176,11 +184,8 @@ export async function findPatientByPhone(clinicId, phone) {
     let query = supabase
       .from('patients')
       .select('*')
+      .eq('clinic_id', clinicId)
       .or(`phone.eq.${raw},phone.eq.${standard11},phone.eq.${withCountry},phone.eq.${cleanDigits}`);
-
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
 
     const { data, error } = await query.limit(1);
     if (error) throw error;
@@ -200,6 +205,10 @@ export async function getPatientsPaginated({ clinicId, page = 1, pageSize = 25, 
     return { data: [], total: 0, page, pageSize, totalPages: 1, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: new Error('Clinic ID is strictly required to fetch paginated patients') };
+  }
+
   try {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -207,12 +216,9 @@ export async function getPatientsPaginated({ clinicId, page = 1, pageSize = 25, 
     let query = supabase
       .from('patients')
       .select('*', { count: 'exact' })
+      .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false })
       .range(from, to);
-
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
 
     if (searchQuery && searchQuery.trim()) {
       const q = searchQuery.trim();

@@ -166,3 +166,98 @@
   align-items: center;
   gap: 0.4rem;
 }
+
+/* Toast Notifications */
+.appointments-toast-banner {
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md, 10px);
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.appointments-toast-banner.warning {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+
+.appointments-toast-banner.success {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #166534;
+}
+
+.appointments-toast-banner.info {
+  background: #e0f2fe;
+  border: 1px solid #7dd3fc;
+  color: #0369a1;
+}
+
+/* View Mode Toggle */
+.view-mode-toggle-group {
+  display: flex;
+  background: var(--bg-primary, #f8fafc);
+  border-radius: 10px;
+  padding: 3px;
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.view-mode-btn {
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: transparent;
+  color: var(--text-secondary, #64748b);
+  transition: all 0.2s ease;
+}
+
+.view-mode-btn:hover {
+  color: var(--text-primary, #0f172a);
+}
+
+.view-mode-btn.active {
+  background: var(--surface, #ffffff);
+  color: var(--primary, #0284c7);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Date Filter Controls */
+.date-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.date-filter-input {
+  width: auto;
+  min-width: 140px;
+  padding: 0.45rem 0.75rem;
+}
+
+.btn-clear-date {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  background: var(--surface-container, #F0F4F9);
+  cursor: pointer;
+  color: var(--text-primary, #0f172a);
+  transition: all 0.15s ease;
+}
+
+.btn-clear-date:hover {
+  background: var(--border-color, #e2e8f0);
+}
+

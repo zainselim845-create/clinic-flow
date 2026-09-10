@@ -11,19 +11,21 @@ import './PatientRecallModal.css';
 export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
   const { state, dispatch } = useApp();
   const today = getTodayDateStr();
-  const currentClinicId = state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
+  const currentClinicId = state?.clinicInfo?.id;
 
   const patients = useMemo(() => {
+    if (!currentClinicId) return [];
     return (state?.patients || []).filter(p => {
-      if (p.clinicId) return p.clinicId === currentClinicId;
-      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+      const pClinicId = p.clinicId || p.clinic_id;
+      return pClinicId === currentClinicId;
     });
   }, [state?.patients, currentClinicId]);
 
   const clinicRecalls = useMemo(() => {
+    if (!currentClinicId) return [];
     return (state?.recalls || []).filter(r => {
-      if (r.clinicId) return r.clinicId === currentClinicId;
-      return currentClinicId === '550e8400-e29b-41d4-a716-446655440000' || currentClinicId === 'clinic-1';
+      const rClinicId = r.clinicId || r.clinic_id;
+      return rClinicId === currentClinicId;
     });
   }, [state?.recalls, currentClinicId]);
 

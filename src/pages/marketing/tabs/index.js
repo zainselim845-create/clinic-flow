@@ -1,0 +1,11 @@
+export { CrmOverviewTab } from './CrmOverviewTab';
+export { SegmentationTab } from './SegmentationTab';
+export { ReactivationTab } from './ReactivationTab';
+export { CrossSellTab } from './CrossSellTab';
+export { RecoveryTab } from './RecoveryTab';
+export { FeedbackTab } from './FeedbackTab';
+export { TreatmentPlansTab } from './TreatmentPlansTab';
+export { PackagesTab } from './PackagesTab';
+export { OccasionsTab } from './OccasionsTab';
+export { ReferralsTab } from './ReferralsTab';
+export { AiComposerTab } from './AiComposerTab';
