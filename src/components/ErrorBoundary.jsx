@@ -34,7 +34,9 @@ class ErrorBoundary extends React.Component {
   }
 
   handleReload = () => {
-    window.location.reload();
+    const url = new URL(window.location.href);
+    url.searchParams.set('_t', Date.now().toString());
+    window.location.href = url.toString();
   };
 
   handleCopyError = () => {
@@ -57,7 +59,7 @@ class ErrorBoundary extends React.Component {
       localStorage.removeItem('clinicflow_active_tenant_slug');
       localStorage.removeItem('activeClinic');
     } catch (_) {}
-    window.location.href = '/';
+    window.location.href = '/?_t=' + Date.now();
   };
 
   handleReportSubmit = (e) => {
