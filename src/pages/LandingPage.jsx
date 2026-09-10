@@ -368,7 +368,7 @@ const LandingPage = () => {
             )}
           </div>
 
-          <div className="specialty-chips">
+          <div className="specialty-chips" id="specialties">
             {SPECIALTY_OPTIONS.map(spec => (
               <button 
                 key={spec}
