@@ -58,6 +58,7 @@ const Patients = () => {
     phone: '',
     bloodType: '',
     diagnosis: '',
+    medicalAlerts: '',
     notes: ''
   });
 
@@ -70,10 +71,25 @@ const Patients = () => {
   const totalPatientsCount = searchResult.total;
   const totalPages = searchResult.totalPages;
 
-
   const handleOpenDetail = (patient) => {
     setSelectedPatient(patient);
     setIsDetailModalOpen(true);
+  };
+
+  const handleEditPatient = (patient, e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setSelectedPatient(patient);
+    setFormData({
+      name: patient.name || '',
+      age: patient.age || '',
+      gender: patient.gender || 'ذكر',
+      phone: patient.phone || '',
+      bloodType: patient.bloodType || '',
+      diagnosis: patient.diagnosis || '',
+      medicalAlerts: patient.medicalAlerts || '',
+      notes: patient.notes || ''
+    });
+    setIsModalOpen(true);
   };
 
   const handleSubmit = async (e) => {
@@ -227,7 +243,7 @@ const Patients = () => {
         {paginatedPatients.length > 0 ? (
           paginatedPatients.map(patient => (
             <div key={patient.id} onClick={() => handleOpenDetail(patient)}>
-              <PatientCard patient={patient} />
+              <PatientCard patient={patient} onEdit={handleEditPatient} />
             </div>
           ))
         ) : (
@@ -413,6 +429,7 @@ const Patients = () => {
           patient={selectedPatient}
           patientAppointments={getPatientAppointments(selectedPatient.id)}
           onClose={() => setIsDetailModalOpen(false)}
+          onEdit={handleEditPatient}
         />
       )}
 

@@ -14,6 +14,7 @@ import './Inventory.css';
 
 const Inventory = () => {
   const { state } = useApp();
+  const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id;
 
   const [items, setItems] = useState([

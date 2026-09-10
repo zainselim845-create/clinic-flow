@@ -261,3 +261,136 @@
   background: var(--border-color, #e2e8f0);
 }
 
+/* Blocker Modal Styles */
+.blocker-modal {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.blocker-body {
+  overflow-y: auto;
+  max-height: 65vh;
+  padding: 0.5rem 0.25rem;
+}
+
+.blocker-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary, #64748b);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.blocker-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.blocker-slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface, #ffffff);
+  transition: all 0.2s ease;
+}
+
+.blocker-slot-item.is-booked {
+  background: rgba(37, 99, 235, 0.04);
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.blocker-slot-item.is-blocked {
+  background: rgba(239, 68, 68, 0.04);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.blocker-slot-item.is-available {
+  background: rgba(16, 185, 129, 0.03);
+  border-color: rgba(16, 185, 129, 0.15);
+}
+
+.slot-item-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.slot-time-badge {
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.25rem 0.6rem;
+  background: var(--bg-tertiary, #f1f5f9);
+  border-radius: 6px;
+  color: var(--text-primary, #0f172a);
+}
+
+.slot-patient-note {
+  font-size: 0.85rem;
+  color: #1d4ed8;
+}
+
+.slot-blocked-note {
+  font-size: 0.82rem;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.slot-available-note {
+  font-size: 0.82rem;
+  color: #059669;
+  font-weight: 600;
+}
+
+.badge-booked {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.btn-lock {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background 0.15s ease;
+}
+
+.btn-lock:hover {
+  background: #b91c1c;
+}
+
+.btn-unlock {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: background 0.15s ease;
+}
+
+.btn-unlock:hover {
+  background: #059669;
+}
+

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Calendar, Hash, MessageCircle } from 'lucide-react';
+import { Phone, Calendar, Hash, MessageCircle, Edit3 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './PatientCard.css';
 
@@ -9,7 +9,7 @@ const formatLastVisit = (dateStr) => {
   return dateStr.split('T')[0] || 'لا يوجد';
 };
 
-const PatientCard = ({ patient, onClick }) => {
+const PatientCard = ({ patient, onClick, onEdit }) => {
   const { state } = useApp();
   if (!patient) return null;
 
@@ -37,16 +37,29 @@ const PatientCard = ({ patient, onClick }) => {
           </span>
         </div>
 
-        {patient.phone && (
-          <button 
-            type="button"
-            className="patient-card-sms-btn"
-            onClick={handleSendSms}
-            title="إرسال رسالة SMS سريعة"
-          >
-            <MessageCircle size={15} />
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {onEdit && (
+            <button 
+              type="button"
+              className="patient-card-edit-btn"
+              onClick={(e) => { e.stopPropagation(); onEdit(patient); }}
+              title="تعديل بيانات المريض"
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex', alignItems: 'center' }}
+            >
+              <Edit3 size={15} />
+            </button>
+          )}
+          {patient.phone && (
+            <button 
+              type="button"
+              className="patient-card-sms-btn"
+              onClick={handleSendSms}
+              title="إرسال رسالة SMS سريعة"
+            >
+              <MessageCircle size={15} />
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Body */}

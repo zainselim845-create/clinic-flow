@@ -108,7 +108,7 @@ const AdminLayout = () => {
   const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true;
 
   return (
-    <div className="app-wrapper" data-theme={state.theme}>
+    <div className={`app-wrapper ${isSuperAdmin ? 'has-saas-banner' : ''}`} data-theme={state.theme}>
       {isSuperAdmin && (
         <aside className="saas-admin-floating-banner" aria-label="شريط مدير الساس">
           <div className="saas-admin-banner-inner">

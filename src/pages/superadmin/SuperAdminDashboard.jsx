@@ -19,6 +19,7 @@ import {
   TelemetryBugsCenter,
   CreateClinicModal
 } from './components';
+import { saveRegisteredTenant, saveRegisteredUser } from '../../services/authService';
 import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {
@@ -142,6 +143,28 @@ export default function SuperAdminDashboard() {
       ]
     };
 
+    // 1. Persist tenant to persistent storage (localStorage)
+    saveRegisteredTenant(created);
+
+    // 2. If doctor credentials provided, persist doctor user account for login
+    if (newClinic.doctorEmail && newClinic.doctorPassword) {
+      saveRegisteredUser({
+        id: `doc-${created.id}`,
+        name: newClinic.doctorName || 'دكتور العيادة',
+        email: newClinic.doctorEmail.toLowerCase().trim(),
+        phone: newClinic.phone || '',
+        password: newClinic.doctorPassword,
+        role: 'doctor',
+        isClinicOwner: true,
+        jobTitle: newClinic.specialty || 'المدير الطبي واستشاري العيادة',
+        clinicId: created.id,
+        clinicSlug: created.slug,
+        allowedClinics: [created.slug],
+        permissions: ['*'],
+        authenticatedAt: new Date().toISOString()
+      });
+    }
+
     setAllTenants(prev => [...prev, created]);
     setIsCreateModalOpen(false);
     setNewClinic({
@@ -150,7 +173,9 @@ export default function SuperAdminDashboard() {
       specialty: 'طب وجراحة الأسنان',
       phone: '01000000000',
       slug: '',
-      subscriptionTier: 'pro'
+      subscriptionTier: 'pro',
+      doctorEmail: '',
+      doctorPassword: ''
     });
   };
 

@@ -14,6 +14,7 @@ import './Labs.css';
 
 const Labs = () => {
   const { state } = useApp();
+  const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id;
 
   const [orders, setOrders] = useState([

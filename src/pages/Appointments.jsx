@@ -307,14 +307,14 @@ const Appointments = () => {
               type="date" 
               className="input-field date-filter-input" 
               value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
+              onChange={(e) => { setFilterDate(e.target.value); setCurrentPage(1); }}
               aria-label="تصفية المواعيد حسب التاريخ"
               title="تصفية المواعيد حسب التاريخ المحدد"
             />
             {filterDate && (
               <button
                 type="button"
-                onClick={() => setFilterDate('')}
+                onClick={() => { setFilterDate(''); setCurrentPage(1); }}
                 className="btn-clear-date"
                 title="إلغاء تصفية التاريخ وعرض كافة المواعيد"
               >
@@ -329,7 +329,7 @@ const Appointments = () => {
               placeholder="بحث باسم المريض..." 
               className="input-field"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             />
           </div>
         </div>

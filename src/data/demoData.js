@@ -540,17 +540,33 @@ export const getInitialDataForTenant = (tenantOrSlug) => {
     };
   }
 
-  // Default to Dr. Ahmed's clinic (dental)
+  if (slug === 'dr-ahmed' || targetId === '550e8400-e29b-41d4-a716-446655440000' || !tenantOrSlug) {
+    // Default demo clinic (Dr. Ahmed dental)
+    return {
+      patients: getSeedPatientsAhmed().map(p => ({ ...p, clinicId: '550e8400-e29b-41d4-a716-446655440000' })),
+      appointments: getSeedAppointmentsAhmed().map(a => ({ ...a, clinicId: '550e8400-e29b-41d4-a716-446655440000' })),
+      invoices: getSeedInvoicesAhmed(),
+      expenses: getSeedExpensesAhmed(),
+      recalls,
+      notifications,
+      blockedSlots,
+      staffMembers,
+      clinicInfo: demoClinics[0] || clinicInfo
+    };
+  }
+
+  // Any custom or newly provisioned clinic gets a clean, strictly isolated state
+  const targetClinic = typeof tenantOrSlug === 'object' ? tenantOrSlug : { slug, name: slug };
   return {
-    patients: getSeedPatientsAhmed().map(p => ({ ...p, clinicId: '550e8400-e29b-41d4-a716-446655440000' })),
-    appointments: getSeedAppointmentsAhmed().map(a => ({ ...a, clinicId: '550e8400-e29b-41d4-a716-446655440000' })),
-    invoices: getSeedInvoicesAhmed(),
-    expenses: getSeedExpensesAhmed(),
-    recalls,
-    notifications,
-    blockedSlots,
-    staffMembers,
-    clinicInfo: demoClinics[0] || clinicInfo
+    patients: [],
+    appointments: [],
+    invoices: [],
+    expenses: [],
+    recalls: [],
+    notifications: [],
+    blockedSlots: [],
+    staffMembers: [],
+    clinicInfo: targetClinic
   };
 };
 

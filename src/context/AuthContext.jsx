@@ -162,6 +162,7 @@ export const AuthProvider = ({ children }) => {
     if (isDemoMode) {
       const cleanId = (identifier || '').trim().toLowerCase();
       const cleanPass = (password || '').trim();
+      const cleanPhoneInput = cleanId.replace(/\D/g, '');
 
       // Priority 0: Authenticate against registered users & custom tenants
       try {

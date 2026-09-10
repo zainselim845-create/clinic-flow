@@ -110,6 +110,15 @@
   animation: fadeIn 0.25s ease;
 }
 
+.app-wrapper.has-saas-banner {
+  padding-top: 42px;
+}
+
+.app-wrapper.has-saas-banner .sidebar {
+  top: 42px;
+  height: calc(100vh - 42px);
+}
+
 .saas-admin-banner-inner {
   max-width: 1540px;
   margin: 0 auto;

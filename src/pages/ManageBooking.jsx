@@ -167,16 +167,28 @@ const ManageBooking = () => {
       return;
     }
 
-    // Check if patient name matches accurately (prevent single-word fuzzy enumeration)
-    const inputParts = cleanName.split(/\s+/).filter(Boolean);
+    // Arabic normalization helper for resilient name matching (handles alef, taa marbouta, tashkeel)
+    const normalizeArabic = (str) => (str || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[أإآء]/g, 'ا')
+      .replace(/ة/g, 'ه')
+      .replace(/ى/g, 'ي')
+      .replace(/[\u064B-\u065F]/g, '')
+      .replace(/\s+/g, ' ');
+
+    const normalizedInput = normalizeArabic(cleanName);
+    const inputParts = normalizedInput.split(/\s+/).filter(Boolean);
+
     const nameMatchedAppt = matchingAppts.find(a => {
       const dbName = (a.patientName || '').trim().toLowerCase();
-      const dbParts = dbName.split(/\s+/).filter(Boolean);
+      const normalizedDb = normalizeArabic(dbName);
+      const dbParts = normalizedDb.split(/\s+/).filter(Boolean);
       
-      // Exact full name match
-      if (dbName === cleanName) return true;
+      // Exact or normalized full name match
+      if (dbName === cleanName || normalizedDb === normalizedInput) return true;
       
-      // Strict two-part name match (e.g., first and second names must match)
+      // Strict two-part name match (first and second names must match)
       if (inputParts.length >= 2 && dbParts.length >= 2) {
         return inputParts[0] === dbParts[0] && inputParts[1] === dbParts[1];
       }

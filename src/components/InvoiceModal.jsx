@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { recordPayment } from '../services/invoicesService';
+import { useApp } from '../context/AppContext';
 
 import './InvoiceModal.css';
 
@@ -14,6 +15,8 @@ const InvoiceModal = ({
   onClose, 
   onSaveInvoice 
 }) => {
+  const { state } = useApp();
+  const registeredPatients = state?.patients || [];
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
@@ -66,7 +69,7 @@ const InvoiceModal = ({
 
     const newInv = {
       id: 'inv_' + Date.now(),
-      invoiceNumber: 'INV-' + Math.floor(1000 + Math.random() * 9000),
+      invoiceNumber: 'INV-' + Date.now().toString().slice(-6) + '-' + Math.floor(100 + Math.random() * 900),
       patientName,
       patientPhone,
       items,
@@ -199,16 +202,29 @@ const InvoiceModal = ({
           {isCreatingNew ? (
             <div className="invoice-patient-banner editor" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '8px', marginBottom: '1rem' }}>
               <div className="banner-item" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>اسم المريض *</label>
+                <label className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>اسم المريض * (اختر من السجل أو اكتب اسماً جديداً)</label>
                 <input 
                   type="text" 
+                  list="registered-patients-list"
                   className="table-txt-input" 
-                  placeholder="اسم المريض بالكامل..." 
+                  placeholder="ابحث بالاسم أو اكتب مريض جديد..." 
                   value={patientName} 
-                  onChange={(e) => setPatientName(e.target.value)} 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPatientName(val);
+                    const matched = registeredPatients.find(p => p.name === val);
+                    if (matched && matched.phone) {
+                      setPatientPhone(matched.phone);
+                    }
+                  }} 
                   required 
                   style={{ padding: '8px 12px', borderRadius: '6px' }}
                 />
+                <datalist id="registered-patients-list">
+                  {registeredPatients.map(p => (
+                    <option key={p.id} value={p.name}>{p.phone ? `(${p.phone})` : ''}</option>
+                  ))}
+                </datalist>
               </div>
               <div className="banner-item" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <label className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>رقم هاتف المريض</label>

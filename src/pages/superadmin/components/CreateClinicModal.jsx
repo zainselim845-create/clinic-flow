@@ -1,4 +1,5 @@
 import React from 'react';
+import { slugifyClinic } from '../../../services/authService';
 
 export function CreateClinicModal({
   isOpen,
@@ -37,7 +38,7 @@ export function CreateClinicModal({
                 setNewClinic(prev => ({ 
                   ...prev, 
                   name: val,
-                  slug: prev.slug ? prev.slug : val.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-')
+                  slug: prev.slugManual ? prev.slug : slugifyClinic(val, prev.specialty)
                 }));
               }}
               required
@@ -46,41 +47,71 @@ export function CreateClinicModal({
 
           <div className="form-row-2">
             <div className="form-group">
-              <label htmlFor="clinic-doctor-input">اسم الطبيب المدير</label>
+              <label htmlFor="clinic-doctor-input">اسم الطبيب المدير *</label>
               <input 
                 id="clinic-doctor-input"
                 type="text" 
                 placeholder="مثال: د. كريم محمود" 
                 value={newClinic.doctorName}
                 onChange={(e) => setNewClinic(prev => ({ ...prev, doctorName: e.target.value }))}
+                required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="clinic-specialty-input">التخصص الطبي</label>
+              <label htmlFor="clinic-specialty-input">التخصص الطبي *</label>
               <input 
                 id="clinic-specialty-input"
                 type="text" 
                 placeholder="مثال: طب الأطفال وحديثي الولادة" 
                 value={newClinic.specialty}
                 onChange={(e) => setNewClinic(prev => ({ ...prev, specialty: e.target.value }))}
+                required
               />
             </div>
           </div>
 
           <div className="form-row-2">
             <div className="form-group">
-              <label htmlFor="clinic-slug-input">المسار المخصص (URL Slug) *</label>
+              <label htmlFor="clinic-email-input">البريد الإلكتروني لدخول الطبيب *</label>
               <input 
-                id="clinic-slug-input"
-                type="text" 
-                placeholder="el-nokhba" 
+                id="clinic-email-input"
+                type="email" 
+                placeholder="doctor@elnokhba.com" 
                 dir="ltr"
-                value={newClinic.slug}
-                onChange={(e) => setNewClinic(prev => ({ ...prev, slug: e.target.value }))}
+                value={newClinic.doctorEmail || ''}
+                onChange={(e) => setNewClinic(prev => ({ ...prev, doctorEmail: e.target.value }))}
                 required
               />
-              <small className="help-text">سيكون رابط الحجز: /c/{newClinic.slug || 'slug'}/booking</small>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="clinic-password-input">كلمة المرور لحساب الطبيب *</label>
+              <input 
+                id="clinic-password-input"
+                type="password" 
+                placeholder="••••••••" 
+                dir="ltr"
+                value={newClinic.doctorPassword || ''}
+                onChange={(e) => setNewClinic(prev => ({ ...prev, doctorPassword: e.target.value }))}
+                required
+                minLength={6}
+              />
+            </div>
+          </div>
+
+          <div className="form-row-2">
+            <div className="form-group">
+              <label htmlFor="clinic-phone-input">رقم الهاتف المحمول *</label>
+              <input 
+                id="clinic-phone-input"
+                type="tel" 
+                placeholder="01012345678" 
+                dir="ltr"
+                value={newClinic.phone || ''}
+                onChange={(e) => setNewClinic(prev => ({ ...prev, phone: e.target.value }))}
+                required
+              />
             </div>
 
             <div className="form-group">
@@ -97,12 +128,26 @@ export function CreateClinicModal({
             </div>
           </div>
 
+          <div className="form-group">
+            <label htmlFor="clinic-slug-input">المسار المخصص (URL Slug) *</label>
+            <input 
+              id="clinic-slug-input"
+              type="text" 
+              placeholder="el-nokhba" 
+              dir="ltr"
+              value={newClinic.slug}
+              onChange={(e) => setNewClinic(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'), slugManual: true }))}
+              required
+            />
+            <small className="help-text">سيكون رابط الحجز المباشر: /c/{newClinic.slug || 'slug'}/booking</small>
+          </div>
+
           <div className="modal-actions">
             <button type="button" className="btn-cancel" onClick={onClose}>
               إلغاء
             </button>
             <button type="submit" className="btn-confirm-provision">
-              تجهيز وحفظ العيادة
+              تجهيز وتدشين العيادة
             </button>
           </div>
         </form>

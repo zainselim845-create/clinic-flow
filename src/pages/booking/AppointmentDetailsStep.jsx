@@ -4,6 +4,14 @@ import {
 } from 'lucide-react';
 import BookingCalendar from '../../components/BookingCalendar';
 
+const maskName = (name) => {
+  if (!name) return 'عميلنا العزيز';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2) return `${parts[0]} ${parts[1][0]}***`;
+  return `${parts[0]} ${parts[1][0]}*** ${parts[parts.length - 1][0]}***`;
+};
+
 export default function AppointmentDetailsStep({
   formData,
   setFormData,
@@ -46,7 +54,7 @@ export default function AppointmentDetailsStep({
               <div className="recognized-info">
                 <Sparkles size={22} className="text-nebras-orange" />
                 <div>
-                  <h4>أهلاً بك مجدداً يا أستاذ/ {recognizedPatient.name}</h4>
+                  <h4>أهلاً بك مجدداً ({maskName(recognizedPatient.name)})</h4>
                   <p>رقم الهاتف: <span dir="ltr">{formData.phone}</span> • ملفك الطبي مسجل لدينا في العيادة. يمكنك اختيار موعدك بالأسفل مباشرةً.</p>
                 </div>
               </div>
@@ -137,14 +145,14 @@ export default function AppointmentDetailsStep({
                 onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
               >
                 {(currentClinic?.services && currentClinic.services.length > 0 ? currentClinic.services : [
-                  { id: '1', name: 'كشف وفحص تشخيصي شامل' },
-                  { id: '2', name: 'استشارة ومتابعة بعد العلاج' },
-                  { id: '3', name: 'جلسة فحص دوري' }
+                  { id: '1', name: 'كشف وفحص تشخيصي شامل', price: '300 ج.م' },
+                  { id: '2', name: 'استشارة ومتابعة بعد العلاج', price: '150 ج.م' },
+                  { id: '3', name: 'جلسة فحص دوري', price: '200 ج.م' }
                 ])
                 .filter(s => !s.name?.includes('طوارئ'))
                 .map(s => (
                   <option key={s.id} value={s.name}>
-                    {s.name}
+                    {s.name} {s.price ? `— (${s.price}${typeof s.price === 'number' ? ' ج.م' : ''})` : ''}
                   </option>
                 ))}
               </select>
