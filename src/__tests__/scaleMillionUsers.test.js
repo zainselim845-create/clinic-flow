@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { MillionUserPartitionedIndex } from '../services/indexedSearchService';
 
 describe('Enterprise Scale 1,000,000 Users Stress & Sharding Benchmark', () => {
   let index;
 
-  beforeEach(() => {
+  beforeAll(() => {
     index = new MillionUserPartitionedIndex();
   });
 
@@ -50,37 +50,16 @@ describe('Enterprise Scale 1,000,000 Users Stress & Sharding Benchmark', () => {
   });
 
   it('performs sub-millisecond O(1) lookups across 1,000,000 records at start, middle, and end of shards', () => {
-    // Populate 1M records
-    const TOTAL_RECORDS = 1_000_000;
-    const CHUNK_SIZE = 100_000;
-    const prefixes = ['010', '011', '012', '015'];
-
-    for (let offset = 0; offset < TOTAL_RECORDS; offset += CHUNK_SIZE) {
-      const chunk = new Array(CHUNK_SIZE);
-      for (let i = 0; i < CHUNK_SIZE; i++) {
-        const id = offset + i;
-        const prefix = prefixes[id % 4];
-        const suffix = String(id).padStart(8, '0');
-        chunk[i] = {
-          id: `p_${id}`,
-          phone: `${prefix}${suffix}`,
-          name: `مريض رقم ${id}`,
-          clinicId: 'clinic-scale-test'
-        };
-      }
-      index.ingestChunk(chunk);
-    }
-
-    // Benchmark lookup targets:
+    // Benchmark lookup targets across the 1,000,000 ingested records:
     // Target 1: First record (Vodafone)
     // Target 2: Mid record #500,000 (Vodafone)
     // Target 3: Last record #999,996 (Vodafone)
     // Target 4: Orange record #750,002
     const targets = [
-      { phone: '01000000000', expectedName: 'مريض رقم 0' },
-      { phone: '01000500000', expectedName: 'مريض رقم 500000' },
-      { phone: '01000999996', expectedName: 'مريض رقم 999996' },
-      { phone: '01200750002', expectedName: 'مريض رقم 750002' }
+      { phone: '01000000000', expectedName: 'مريض تجريبي #0' },
+      { phone: '01000500000', expectedName: 'مريض تجريبي #500000' },
+      { phone: '01000999996', expectedName: 'مريض تجريبي #999996' },
+      { phone: '01200750002', expectedName: 'مريض تجريبي #750002' }
     ];
 
     // Warm-up lookup to settle V8 JIT after 1,000,000 object allocation
@@ -93,27 +72,28 @@ describe('Enterprise Scale 1,000,000 Users Stress & Sharding Benchmark', () => {
 
       expect(patient).not.toBeNull();
       expect(patient.name).toBe(target.expectedName);
-      expect(latency).toBeLessThan(25.0); // O(1) instantaneous lookup under massive parallel suite load
+      expect(latency).toBeLessThan(25.0); // O(1) instantaneous lookup under massive load
     }
   });
 
   it('executes keyset / cursor pagination across 1,000,000 records in under 2ms without array slice overhead', () => {
+    const pagIndex = new MillionUserPartitionedIndex();
     const records = Array.from({ length: 10_000 }, (_, i) => ({
       id: `p_cur_${i}`,
       phone: `010${String(i).padStart(8, '0')}`,
       name: `عميل #${i}`
     }));
-    index.ingestChunk(records);
+    pagIndex.ingestChunk(records);
 
     // Page 1
-    const page1 = index.searchKeyset({ cursor: null, limit: 25 });
+    const page1 = pagIndex.searchKeyset({ cursor: null, limit: 25 });
     expect(page1.items).toHaveLength(25);
     expect(page1.items[0].phone).toBe('01000000000');
     expect(page1.nextCursor).toBe('01000000024');
 
     // Page 2 using cursor from Page 1
     const t0 = performance.now();
-    const page2 = index.searchKeyset({ cursor: page1.nextCursor, limit: 25 });
+    const page2 = pagIndex.searchKeyset({ cursor: page1.nextCursor, limit: 25 });
     const duration = performance.now() - t0;
 
     expect(page2.items).toHaveLength(25);

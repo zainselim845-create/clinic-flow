@@ -16,8 +16,6 @@ export default function WalkInRegistrationModal({
   const [notes, setNotes] = useState('');
   const [phoneError, setPhoneError] = useState('');
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;

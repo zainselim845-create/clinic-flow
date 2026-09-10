@@ -37,7 +37,7 @@ export default function PatientDossierDrawer({
 
   const patientName = patient?.name || patient?.patientName || '';
   const patientPhone = patient?.phone || patient?.patientPhone || '';
-  const patientId = patient?.id || patient?.patientId || (patientPhone ? 'pat_' + patientPhone.replace(/\D/g, '') : '');
+  const patientId = patient?.id || patient?.patientId || (patientPhone ? 'pat_' + String(patientPhone).replace(/\D/g, '') : '');
 
   // Load clinical records
   useEffect(() => {
@@ -200,7 +200,7 @@ export default function PatientDossierDrawer({
                     <span dir="ltr">{patientPhone}</span>
                   </a>
                   <a
-                    href={`sms:+2${patientPhone.replace(/\D/g, '')}`}
+                    href={`sms:+2${String(patientPhone).replace(/\D/g, '')}`}
                     className="btn-contact sms"
                   >
                     <MessageCircle size={14} />

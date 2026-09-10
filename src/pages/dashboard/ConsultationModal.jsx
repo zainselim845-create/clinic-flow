@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Stethoscope, Check, CalendarPlus, BellRing } from 'lucide-react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
+import { Stethoscope, Check, CalendarPlus, BellRing, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import './ConsultationModal.css';
 
 export default function ConsultationModal({
+  isOpen,
   appointment,
   onClose,
   onComplete
@@ -63,16 +66,25 @@ export default function ConsultationModal({
     });
   };
 
+  const isModalOpen = isOpen !== undefined ? isOpen : !!appointment;
+
   return (
-    <div className="modal-backdrop">
-      <div className="modal-content consultation-modal consultation-modal-box">
-        <div className="consultation-header">
-          <div className="consultation-title">
-            <Stethoscope className="text-primary" size={22} />
-            <h3>إنهاء كشف المريض: {appointment.patientName}</h3>
-          </div>
-          <button type="button" onClick={onClose} className="btn-close" aria-label="إغلاق">×</button>
-        </div>
+    <Dialog.Root open={isModalOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop className="modal-backdrop" />
+        <Dialog.Positioner className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+          <Dialog.Content className="modal-content consultation-modal consultation-modal-box">
+            <div className="consultation-header">
+              <div className="consultation-title">
+                <Stethoscope className="text-primary" size={22} />
+                <Dialog.Title asChild>
+                  <h3>إنهاء كشف المريض: {appointment.patientName}</h3>
+                </Dialog.Title>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button type="button" onClick={onClose} className="btn-close" aria-label="إغلاق"><X size={20} /></button>
+              </Dialog.CloseTrigger>
+            </div>
 
         <form onSubmit={handleSubmit} className="consultation-form">
           <div className="consultation-scroll-body">
@@ -212,16 +224,20 @@ export default function ConsultationModal({
           </div>
 
           <div className="modal-actions consultation-footer">
-            <button type="button" onClick={onClose} className="btn-cancel-consultation">
-              إلغاء
-            </button>
+            <Dialog.CloseTrigger asChild>
+              <button type="button" onClick={onClose} className="btn-cancel-consultation">
+                إلغاء
+              </button>
+            </Dialog.CloseTrigger>
             <button type="submit" className="btn-submit-consultation">
               <Check size={18} />
               <span>تأكيد إتمام الكشف وحفظ السجل</span>
             </button>
           </div>
         </form>
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

@@ -82,7 +82,10 @@ const Dashboard = () => {
   // Calculate today's revenue strictly from completed appointments
   const todayRevenue = useMemo(() => {
     return completedToday.reduce((sum, a) => {
-      const numericFee = a.fee ? parseInt(a.fee.replace(/\D/g, ''), 10) : 300;
+      const rawFee = a.fee ?? a.paidAmount;
+      const numericFee = typeof rawFee === 'number'
+        ? rawFee
+        : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) : 300);
       return sum + (isNaN(numericFee) ? 300 : numericFee);
     }, 0);
   }, [completedToday]);
@@ -101,7 +104,10 @@ const Dashboard = () => {
           if (counts[dayName] !== undefined) {
             counts[dayName]++;
             if (appt.status === 'completed') {
-              const fee = parseInt((appt.fee || '300').replace(/\D/g, ''), 10) || 300;
+              const rawFee = appt.fee ?? appt.paidAmount;
+              const fee = typeof rawFee === 'number'
+                ? rawFee
+                : (parseInt(String(rawFee || '300').replace(/\D/g, ''), 10) || 300);
               revenues[dayName] += fee;
             }
           }
@@ -672,14 +678,12 @@ const Dashboard = () => {
       </div>
 
       {/* Modals & Drawers */}
-      {isWalkInModalOpen && (
-        <WalkInRegistrationModal
-          isOpen={isWalkInModalOpen}
-          onClose={() => setIsWalkInModalOpen(false)}
-          onSubmit={handleWalkInSubmit}
-          regularFee={currentClinic.regularFee || '300 ج.م'}
-        />
-      )}
+      <WalkInRegistrationModal
+        isOpen={isWalkInModalOpen}
+        onClose={() => setIsWalkInModalOpen(false)}
+        onSubmit={handleWalkInSubmit}
+        regularFee={currentClinic.regularFee || '300 ج.م'}
+      />
 
       {finishExamAppt && (
         <ConsultationModal
@@ -692,18 +696,15 @@ const Dashboard = () => {
 
       {dossierPatient && (
         <PatientDossierDrawer
-          isOpen={!!dossierPatient}
           patient={dossierPatient}
           onClose={() => setDossierPatient(null)}
         />
       )}
 
-      {isExpensesModalOpen && (
-        <ExpensesModal
-          isOpen={isExpensesModalOpen}
-          onClose={() => setIsExpensesModalOpen(false)}
-        />
-      )}
+      <ExpensesModal
+        isOpen={isExpensesModalOpen}
+        onClose={() => setIsExpensesModalOpen(false)}
+      />
 
       {isRecallModalOpen && (
         <PatientRecallModal

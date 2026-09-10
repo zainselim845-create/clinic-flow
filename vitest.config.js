@@ -6,7 +6,7 @@ export default defineConfig({
     fileParallelism: false,
     pool: 'forks',
     forks: {
-      execArgv: ['--max-old-space-size=4096']
+      execArgv: ['--max-old-space-size=8192']
     }
   }
 });

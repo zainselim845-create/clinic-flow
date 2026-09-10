@@ -22,7 +22,10 @@ function RevenueAnalytics({
     let electronic = 0;
 
     completed.forEach(a => {
-      const fee = parseInt((a.fee || '300').replace(/\D/g, ''), 10) || 300;
+      const rawFee = a.fee ?? a.paidAmount;
+      const fee = typeof rawFee === 'number'
+        ? rawFee
+        : (parseInt(String(rawFee || '300').replace(/\D/g, ''), 10) || 300);
       if (a.paymentMethod === 'card' || a.paymentMethod === 'instapay') {
         electronic += fee;
       } else {

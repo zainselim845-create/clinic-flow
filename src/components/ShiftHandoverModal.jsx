@@ -67,8 +67,6 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
   const actualCash = Number(actualCashCounted) || 0;
   const discrepancy = actualCashCounted !== '' ? actualCash - financialTotals.expectedDrawerCash : 0;
 
-  if (!isOpen) return null;
-
   const handleSaveShift = (e) => {
     e.preventDefault();
 

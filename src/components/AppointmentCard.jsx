@@ -85,7 +85,7 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
             type="button"
             className="appt-btn-sms" 
             onClick={() => {
-              const cleanPhone = appointment.patientPhone.replace(/^0/, '20').replace(/\D/g, '');
+              const cleanPhone = String(appointment.patientPhone || '').replace(/^0/, '20').replace(/\D/g, '');
               const clinicName = state.clinicInfo?.name || 'العيادة';
               const docName = state.clinicInfo?.doctorName || 'الطبيب المعالج';
               const msg = `مرحباً أ/ ${appointment.patientName}، نذكركم بموعدكم في ${clinicName} (${docName}) يوم ${appointment.date} الساعة ${appointment.time}. نتمنى لكم دوام الصحة والعافية!`;
