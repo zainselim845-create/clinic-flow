@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, X } from 'lucide-react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../../utils/phoneValidation';
-
 import { getTodayDateStr } from '../../utils/timeSlots';
 
 export default function WalkInRegistrationModal({
@@ -39,15 +40,24 @@ export default function WalkInRegistrationModal({
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-content walk-in-modal">
-        <div className="modal-header">
-          <div className="title-row">
-            <UserPlus className="text-primary" size={20} />
-            <h3>تسجيل حضور مريض مباشر (Walk-in)</h3>
-          </div>
-          <button type="button" onClick={onClose} className="btn-close">×</button>
-        </div>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop className="modal-backdrop" />
+        <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Dialog.Content className="modal-content walk-in-modal">
+            <div className="modal-header">
+              <div className="title-row">
+                <UserPlus className="text-primary" size={20} />
+                <Dialog.Title asChild>
+                  <h3>تسجيل حضور مريض مباشر (Walk-in)</h3>
+                </Dialog.Title>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button type="button" onClick={onClose} className="btn-close" aria-label="إغلاق النافذة">
+                  <X size={18} />
+                </button>
+              </Dialog.CloseTrigger>
+            </div>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -102,15 +112,19 @@ export default function WalkInRegistrationModal({
           </div>
 
           <div className="modal-actions">
-            <button type="button" onClick={onClose} className="btn btn-secondary">
-              إلغاء
-            </button>
+            <Dialog.CloseTrigger asChild>
+              <button type="button" onClick={onClose} className="btn btn-secondary">
+                إلغاء
+              </button>
+            </Dialog.CloseTrigger>
             <button type="submit" className="btn btn-primary">
               تسجيل وإضافة لصالة الانتظار
             </button>
           </div>
         </form>
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

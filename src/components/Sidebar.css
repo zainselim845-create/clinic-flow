@@ -152,3 +152,29 @@
     transform: translateX(0);
   }
 }
+
+/* SaaS Admin Special Link */
+.saas-admin-nav-item {
+  border-inline-start: 3px solid #7C3AED !important;
+  background: rgba(124, 58, 237, 0.08) !important;
+  color: #7C3AED !important;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.saas-admin-nav-item:hover {
+  background: rgba(124, 58, 237, 0.16) !important;
+  color: #6D28D9 !important;
+}
+
+.saas-badge-tag {
+  margin-inline-start: auto;
+  font-size: 0.65rem;
+  font-weight: 800;
+  background: #7C3AED;
+  color: #FFFFFF;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-full, 9999px);
+  letter-spacing: 0.03em;
+}
+

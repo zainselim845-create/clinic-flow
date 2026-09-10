@@ -23,6 +23,12 @@
   gap: 20px;
 }
 
+.header-nav-shortcuts {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .back-to-app-btn {
   display: flex;
   align-items: center;
@@ -41,6 +47,39 @@
 .back-to-app-btn:hover {
   background: #e2e8f0;
   color: #0f172a;
+}
+
+.back-to-app-btn.clinic-portal-btn {
+  background: #e0f2fe;
+  border-color: #bae6fd;
+  color: #0284c7;
+}
+
+.back-to-app-btn.clinic-portal-btn:hover {
+  background: #bae6fd;
+  color: #0369a1;
+}
+
+.back-to-app-btn.landing-portal-btn {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.back-to-app-btn.landing-portal-btn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.back-to-app-btn.booking-portal-btn {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #16a34a;
+}
+
+.back-to-app-btn.booking-portal-btn:hover {
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .platform-tag {

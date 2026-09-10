@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon, LogOut, Bug, Menu } from 'lucide-react';
+import { Search, Bell, Sun, Moon, LogOut, Bug, Menu, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -106,6 +106,19 @@ const Header = ({ title }) => {
             <Bell size={18} />
             {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
           </button>
+
+          {/* Quick SaaS Admin Switcher Button (Super Admin Only) */}
+          {(user?.role === 'super_admin' || user?.isSuperAdmin) && (
+            <button 
+              type="button" 
+              className="btn-saas-header-switch"
+              onClick={() => navigate('/super-admin')}
+              title="الانتقال إلى لوحة تحكم إدارة الساس (SaaS Control Plane)"
+            >
+              <ShieldCheck size={16} />
+              <span>إدارة الساس</span>
+            </button>
+          )}
 
           {/* Unified Google-Style Profile Chip */}
           <div className="doctor-profile">

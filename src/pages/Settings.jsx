@@ -17,6 +17,7 @@ import DatabaseSyncTab from './settings/DatabaseSyncTab';
 import CustomDomainTab from './settings/CustomDomainTab';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
+import { Tabs } from '../components/ui/tabs';
 import './Settings.css';
 
 const Settings = () => {
@@ -86,140 +87,136 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="settings-tabs-nav">
-        <button 
-          type="button"
-          className={`tab-btn ${activeTab === 'clinic' ? 'active' : ''}`}
-          onClick={() => setActiveTab('clinic')}
-        >
-          <Building2 size={18} />
-          <span>ملف العيادة والتسعير</span>
-        </button>
+      <Tabs.Root
+        value={activeTab}
+        onValueChange={(details) => setActiveTab(details.value)}
+        className="w-full"
+      >
+        <Tabs.List className="settings-tabs-nav">
+          <Tabs.Trigger 
+            value="clinic"
+            className={`tab-btn ${activeTab === 'clinic' ? 'active' : ''}`}
+          >
+            <Building2 size={18} />
+            <span>ملف العيادة والتسعير</span>
+          </Tabs.Trigger>
 
-        <button 
-          type="button"
-          className={`tab-btn ${activeTab === 'schedule' ? 'active' : ''}`}
-          onClick={() => setActiveTab('schedule')}
-        >
-          <CalendarDays size={18} />
-          <span>الجدول والإجازات والحظر</span>
-        </button>
+          <Tabs.Trigger 
+            value="schedule"
+            className={`tab-btn ${activeTab === 'schedule' ? 'active' : ''}`}
+          >
+            <CalendarDays size={18} />
+            <span>الجدول والإجازات والحظر</span>
+          </Tabs.Trigger>
 
-        <button 
-          type="button"
-          className={`tab-btn ${activeTab === 'visitTypes' ? 'active' : ''}`}
-          onClick={() => setActiveTab('visitTypes')}
-        >
-          <Stethoscope size={18} />
-          <span>أنواع الزيارات (Visit Types)</span>
-        </button>
+          <Tabs.Trigger 
+            value="visitTypes"
+            className={`tab-btn ${activeTab === 'visitTypes' ? 'active' : ''}`}
+          >
+            <Stethoscope size={18} />
+            <span>أنواع الزيارات (Visit Types)</span>
+          </Tabs.Trigger>
 
-        <button 
-          type="button"
-          className={`tab-btn ${activeTab === 'staff' ? 'active' : ''}`}
-          onClick={() => setActiveTab('staff')}
-        >
-          <Users size={18} />
-          <span>فريق العمل والاستقبال</span>
-        </button>
+          <Tabs.Trigger 
+            value="staff"
+            className={`tab-btn ${activeTab === 'staff' ? 'active' : ''}`}
+          >
+            <Users size={18} />
+            <span>فريق العمل والاستقبال</span>
+          </Tabs.Trigger>
 
+          <Tabs.Trigger 
+            value="sms"
+            className={`tab-btn ${activeTab === 'sms' ? 'active' : ''}`}
+          >
+            <Smartphone size={18} />
+            <span>بوابات الـ SMS</span>
+          </Tabs.Trigger>
 
-        <button 
-          type="button"
-          className={`tab-btn ${activeTab === 'sms' ? 'active' : ''}`}
-          onClick={() => setActiveTab('sms')}
-        >
-          <Smartphone size={18} />
-          <span>بوابات الـ SMS</span>
-        </button>
+          <Tabs.Trigger 
+            value="ai"
+            className={`tab-btn ${activeTab === 'ai' ? 'active' : ''}`}
+          >
+            <Bot size={18} />
+            <span>الذكاء الاصطناعي (AI)</span>
+          </Tabs.Trigger>
 
-        <button 
-          type="button"
-          className={`tab-btn ${activeTab === 'ai' ? 'active' : ''}`}
-          onClick={() => setActiveTab('ai')}
-        >
-          <Bot size={18} />
-          <span>الذكاء الاصطناعي (AI)</span>
-        </button>
+          <Tabs.Trigger 
+            value="database"
+            className={`tab-btn ${activeTab === 'database' ? 'active' : ''}`}
+          >
+            <Database size={18} />
+            <span>السحابة والنسخ الاحتياطي</span>
+          </Tabs.Trigger>
 
-        <button 
-          type="button"
-          className={`tab-btn ${activeTab === 'database' ? 'active' : ''}`}
-          onClick={() => setActiveTab('database')}
-        >
-          <Database size={18} />
-          <span>السحابة والنسخ الاحتياطي</span>
-        </button>
+          <Tabs.Trigger 
+            value="customDomain"
+            className={`tab-btn ${activeTab === 'customDomain' ? 'active' : ''}`}
+          >
+            <Globe size={18} />
+            <span>الدومين والـ SSL</span>
+          </Tabs.Trigger>
+        </Tabs.List>
 
-        <button 
-          type="button"
-          className={`tab-btn ${activeTab === 'customDomain' ? 'active' : ''}`}
-          onClick={() => setActiveTab('customDomain')}
-        >
-          <Globe size={18} />
-          <span>الدومين والـ SSL</span>
-        </button>
-      </div>
+        <div className="settings-content-wrapper">
+          <Tabs.Content value="clinic">
+            <GeneralSettingsTab
+              clinicForm={clinicForm}
+              setClinicForm={setClinicForm}
+              handleSaveClinic={handleSaveClinic}
+              clinicSaveSuccess={clinicSaveSuccess}
+              onNavigateToSchedule={() => setActiveTab('schedule')}
+            />
+          </Tabs.Content>
 
-      <div className="settings-content-wrapper">
-        {activeTab === 'clinic' && (
-          <GeneralSettingsTab
-            clinicForm={clinicForm}
-            setClinicForm={setClinicForm}
-            handleSaveClinic={handleSaveClinic}
-            clinicSaveSuccess={clinicSaveSuccess}
-            onNavigateToSchedule={() => setActiveTab('schedule')}
-          />
-        )}
+          <Tabs.Content value="schedule">
+            <ScheduleBuilderTab
+              state={state}
+              dispatch={dispatch}
+              clinicForm={clinicForm}
+              setClinicForm={setClinicForm}
+            />
+          </Tabs.Content>
 
-        {activeTab === 'schedule' && (
-          <ScheduleBuilderTab
-            state={state}
-            dispatch={dispatch}
-            clinicForm={clinicForm}
-            setClinicForm={setClinicForm}
-          />
-        )}
+          <Tabs.Content value="visitTypes">
+            <VisitTypesTab
+              visitTypes={state.clinicInfo?.services || []}
+              onUpdateVisitTypes={(newTypes) => {
+                dispatch({
+                  type: 'UPDATE_CLINIC_INFO',
+                  payload: { services: newTypes }
+                });
+              }}
+            />
+          </Tabs.Content>
 
-        {activeTab === 'visitTypes' && (
-          <VisitTypesTab
-            visitTypes={state.clinicInfo?.services || []}
-            onUpdateVisitTypes={(newTypes) => {
-              dispatch({
-                type: 'UPDATE_CLINIC_INFO',
-                payload: { services: newTypes }
-              });
-            }}
-          />
-        )}
+          <Tabs.Content value="staff">
+            <StaffManagementTab
+              staffMembers={state.staffMembers || []}
+              dispatch={dispatch}
+            />
+          </Tabs.Content>
 
-        {activeTab === 'staff' && (
+          <Tabs.Content value="sms">
+            <SmsConfigTab />
+          </Tabs.Content>
 
-          <StaffManagementTab
-            staffMembers={state.staffMembers || []}
-            dispatch={dispatch}
-          />
-        )}
+          <Tabs.Content value="ai">
+            <AiAssistantConfigTab />
+          </Tabs.Content>
 
-        {activeTab === 'sms' && (
-          <SmsConfigTab />
-        )}
+          <Tabs.Content value="database">
+            <DatabaseSyncTab
+              state={state}
+              dispatch={dispatch}
+            />
+          </Tabs.Content>
 
-        {activeTab === 'ai' && (
-          <AiAssistantConfigTab />
-        )}
-
-        {activeTab === 'database' && (
-          <DatabaseSyncTab
-            state={state}
-            dispatch={dispatch}
-          />
-        )}
-
-        {activeTab === 'customDomain' && (
-          <CustomDomainTab />
-        )}
-      </div>
+          <Tabs.Content value="customDomain">
+            <CustomDomainTab />
+          </Tabs.Content>
+        </div>
+      </Tabs.Root>
     </div>
   );
 };

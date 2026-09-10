@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { INVENTORY_CATEGORIES } from '../services/inventoryService';
 import { Package, X, CheckCircle2 } from 'lucide-react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import './InventoryItemModal.css';
-
 
 const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
   const [name, setName] = useState('');
@@ -40,24 +41,31 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="inventory-modal-overlay">
-      <div className="inventory-modal-card">
-        
-        <div className="modal-header-navy">
-          <div className="hdr-flex">
-            <Package size={20} className="text-nebras-orange" />
-            <div>
-              <h4>إضافة صنف مخزون جديد (New Inventory Item)</h4>
-              <p>تسجيل مستلزم طبي أو مادة علاجية مع تحديد حد الأمان وتاريخ الصلاحية</p>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop className="inventory-modal-overlay" />
+        <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Dialog.Content className="inventory-modal-card">
+            
+            <div className="modal-header-navy">
+              <div className="hdr-flex">
+                <Package size={20} className="text-nebras-orange" />
+                <div>
+                  <Dialog.Title asChild>
+                    <h4>إضافة صنف مخزون جديد (New Inventory Item)</h4>
+                  </Dialog.Title>
+                  <Dialog.Description asChild>
+                    <p>تسجيل مستلزم طبي أو مادة علاجية مع تحديد حد الأمان وتاريخ الصلاحية</p>
+                  </Dialog.Description>
+                </div>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button onClick={onClose} className="btn-close-navy" aria-label="إغلاق النافذة" type="button">
+                  <X size={16} />
+                </button>
+              </Dialog.CloseTrigger>
             </div>
-          </div>
-          <button onClick={onClose} className="btn-close-navy">
-            <X size={16} />
-          </button>
-        </div>
 
         <form onSubmit={handleSubmit} className="modal-body-form">
           
@@ -158,9 +166,11 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
           </div>
 
           <div className="modal-footer-row">
-            <button type="button" onClick={onClose} className="btn-cancel">
-              إلغاء
-            </button>
+            <Dialog.CloseTrigger asChild>
+              <button type="button" onClick={onClose} className="btn-cancel">
+                إلغاء
+              </button>
+            </Dialog.CloseTrigger>
             <button type="submit" disabled={isSubmitting} className="btn-save">
               <CheckCircle2 size={16} />
               <span>إضافة الصنف للمخزن</span>
@@ -169,8 +179,10 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
 
         </form>
 
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

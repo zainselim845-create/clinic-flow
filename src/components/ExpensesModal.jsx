@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { 
   X, Plus, Trash2, Wallet, Download 
 } from 'lucide-react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
 
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
@@ -87,19 +89,26 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="expenses-modal-overlay">
-      <div className="expenses-modal-card glass-card">
-        
-        {/* Header */}
-        <div className="modal-header">
-          <div className="brand-title">
-            <Wallet size={22} className="text-danger" />
-            <h3>سجل مصروفات العيادة والخزينة (Expenses Ledger)</h3>
-          </div>
-          <button type="button" className="btn-close-modal" onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop className="expenses-modal-overlay" />
+        <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Dialog.Content className="expenses-modal-card glass-card">
+            
+            {/* Header */}
+            <div className="modal-header">
+              <div className="brand-title">
+                <Wallet size={22} className="text-danger" />
+                <Dialog.Title asChild>
+                  <h3>سجل مصروفات العيادة والخزينة (Expenses Ledger)</h3>
+                </Dialog.Title>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button type="button" className="btn-close-modal" onClick={onClose} aria-label="إغلاق النافذة">
+                  <X size={20} />
+                </button>
+              </Dialog.CloseTrigger>
+            </div>
 
         {/* Quick Stats Banner */}
         <div className="expenses-stats-strip">
@@ -274,13 +283,17 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
 
         {/* Footer */}
         <div className="modal-footer-actions">
-          <button type="button" onClick={onClose} className="btn btn-secondary">
-            إغلاق
-          </button>
+          <Dialog.CloseTrigger asChild>
+            <button type="button" onClick={onClose} className="btn btn-secondary">
+              إغلاق
+            </button>
+          </Dialog.CloseTrigger>
         </div>
 
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 export default ExpensesModal;

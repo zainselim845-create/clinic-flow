@@ -6,6 +6,8 @@ import {
   Search, User, Calendar, Clock, ArrowLeft, X, 
   Smartphone, Users, Plus, CheckCircle2, AlertCircle, ShieldCheck
 } from 'lucide-react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
 
 import './GlobalSearchModal.css';
 
@@ -97,15 +99,20 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
   const hasAnyResults = matchingPatients.length > 0 || matchingAppointments.length > 0 || matchingStaff.length > 0 || (cleanQuery && matchingActions.length > 0);
 
   return (
-    <div className="global-search-overlay" onClick={onClose}>
-      <div className="global-search-modal glass-card" onClick={(e) => e.stopPropagation()}>
-        
-        {/* Search Input Bar */}
-        <div className="search-input-header">
-          <Search size={20} className="search-modal-icon" />
-          <input
-            ref={inputRef}
-            type="text"
+    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop className="global-search-overlay" />
+        <Dialog.Positioner className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
+          <Dialog.Content className="global-search-modal glass-card">
+            <Dialog.Title className="sr-only">البحث الشامل في النظام</Dialog.Title>
+            <Dialog.Description className="sr-only">ابحث عن المرضى والمواعيد والموظفين والإجراءات السريعة</Dialog.Description>
+            
+            {/* Search Input Bar */}
+            <div className="search-input-header">
+              <Search size={20} className="search-modal-icon" />
+              <input
+                ref={inputRef}
+                type="text"
             className="search-modal-input"
             placeholder="ابحث عن مريض، موعد، سكرتير، أو إجراء سريع... (اكتب اسم أو رقم هاتف)"
             value={query}
@@ -247,8 +254,10 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
           <span>ClinicFlow Global Search</span>
         </div>
 
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

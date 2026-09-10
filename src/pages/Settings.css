@@ -73,7 +73,8 @@
   transform: translateY(-1px);
 }
 
-.settings-tabs-nav .tab-btn.active {
+.settings-tabs-nav .tab-btn.active,
+.settings-tabs-nav .tab-btn[data-selected] {
   background: var(--primary);
   color: #FFFFFF;
   border-color: var(--primary);

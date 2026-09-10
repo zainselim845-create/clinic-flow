@@ -1,7 +1,9 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { Routes, Route, useLocation, Navigate, Outlet } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate, Navigate, Outlet } from 'react-router-dom';
 import { useApp } from './context/AppContext';
 import { useAuth } from './context/AuthContext';
+import { useTenant } from './context/TenantContext';
+import { ShieldCheck, ArrowLeft } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -99,10 +101,41 @@ const PageLoader = () => (
 // Admin Dashboard & Protected Layout Wrapper
 const AdminLayout = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { state } = useApp();
+  const { user } = useAuth();
+  const { tenant } = useTenant();
+
+  const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true;
 
   return (
     <div className="app-wrapper" data-theme={state.theme}>
+      {isSuperAdmin && (
+        <aside className="saas-admin-floating-banner" aria-label="شريط مدير الساس">
+          <div className="saas-admin-banner-inner">
+            <div className="saas-admin-meta">
+              <span className="saas-admin-badge">
+                <ShieldCheck size={14} />
+                <span>وضع مدير الساس (SaaS Admin)</span>
+              </span>
+              <span className="saas-admin-text">
+                أنت تعاين حالياً عيادة العميل: <strong>{tenant?.name || 'عيادة تجريبية'}</strong>
+              </span>
+            </div>
+            <div className="saas-admin-actions">
+              <button 
+                type="button" 
+                onClick={() => navigate('/super-admin')} 
+                className="btn-return-to-saas-admin"
+                title="العودة إلى لوحة تحكم إدارة الساس المركزية"
+              >
+                <ArrowLeft size={14} />
+                <span>العودة للوحة إدارة الساس (Control Plane)</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
       <Sidebar />
       <div className="main-content">
         <Header title={pageTitles[location.pathname] || 'لوحة التحكم'} />
@@ -158,12 +191,14 @@ function App() {
             <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
           } />
 
-          {/* Super Admin Control Plane */}
+          {/* Super Admin Control Plane & SaaS Admin Aliases */}
           <Route path="/super-admin" element={
             <ProtectedRoute allowedRoles={['super_admin']}>
               <SuperAdminDashboard />
             </ProtectedRoute>
           } />
+          <Route path="/admin" element={<Navigate to="/super-admin" replace />} />
+          <Route path="/saas-admin" element={<Navigate to="/super-admin" replace />} />
 
           {/* 2. Admin Protected Routes with Sidebar & Header Layout */}
           <Route element={

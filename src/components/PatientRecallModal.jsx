@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   X, Plus, BellRing, MessageCircle, Trash2
 } from 'lucide-react';
+import { Dialog } from './ui/dialog';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { recallPresets } from '../data/demoData';
@@ -119,20 +120,24 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
     return `sms:+2${cleanPhone}?body=${encodeURIComponent(message)}`;
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="recall-modal-overlay">
-      <div className="recall-modal-card glass-card">
-        
-        {/* Header */}
-        <div className="modal-header">
-          <div className="brand-title">
-            <BellRing size={22} className="text-primary" />
-            <h3>نظام استدعاء ومتابعة المرضى الدوري (Patient Recall System)</h3>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+      <Dialog.Backdrop className="recall-modal-overlay" />
+      <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+        <Dialog.Content className="recall-modal-card glass-card">
+          
+          {/* Header */}
+          <div className="modal-header">
+            <div className="brand-title">
+              <BellRing size={22} className="text-primary" />
+              <h3>نظام استدعاء ومتابعة المرضى الدوري (Patient Recall System)</h3>
+            </div>
+            <Dialog.CloseTrigger className="btn-close-modal" onClick={onClose} aria-label="إغلاق النافذة">
+              <X size={20} />
+            </Dialog.CloseTrigger>
           </div>
-          <button type="button" className="btn-close-modal" onClick={onClose}>
-            <X size={20} />
-          </button>
-        </div>
 
         {/* Stats Strip */}
         <div className="recall-stats-strip">
@@ -343,8 +348,9 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
           </button>
         </div>
 
-      </div>
-    </div>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 };
 export default PatientRecallModal;

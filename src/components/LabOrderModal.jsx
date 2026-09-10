@@ -3,6 +3,8 @@ import {
   DENTAL_WORK_TYPES, TOOTH_SHADES 
 } from '../services/labsService';
 import { Layers, X, CheckCircle2 } from 'lucide-react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import './LabOrderModal.css';
 
 const LabOrderModal = ({ 
@@ -50,24 +52,31 @@ const LabOrderModal = ({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="lab-modal-overlay">
-      <div className="lab-modal-card">
-        
-        <div className="lab-modal-header">
-          <div className="hdr-flex">
-            <Layers size={20} className="text-nebras-orange" />
-            <div>
-              <h4>إصدار طلب معمل تركيبات جديد (Lab Order)</h4>
-              <p>طلب تاج، جسر، أو طقم من معمل الأسنان الخارجي مع تحديد اللون والسن</p>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop className="lab-modal-overlay" />
+        <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Dialog.Content className="lab-modal-card">
+            
+            <div className="lab-modal-header">
+              <div className="hdr-flex">
+                <Layers size={20} className="text-nebras-orange" />
+                <div>
+                  <Dialog.Title asChild>
+                    <h4>طلب معمل أسنان جديد (Dental Lab Order)</h4>
+                  </Dialog.Title>
+                  <Dialog.Description asChild>
+                    <p>إرسال ومتابعة التركيبات الثابتة والمتحركة بدقة سريرية</p>
+                  </Dialog.Description>
+                </div>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button onClick={onClose} className="btn-close-sm" aria-label="إغلاق النافذة" type="button">
+                  <X size={16} />
+                </button>
+              </Dialog.CloseTrigger>
             </div>
-          </div>
-          <button onClick={onClose} className="btn-close-sm">
-            <X size={16} />
-          </button>
-        </div>
 
         <form onSubmit={handleSubmit} className="lab-modal-body">
           
@@ -179,9 +188,11 @@ const LabOrderModal = ({
           </div>
 
           <div className="lab-modal-footer">
-            <button type="button" onClick={onClose} className="btn-cancel">
-              إلغاء
-            </button>
+            <Dialog.CloseTrigger asChild>
+              <button type="button" onClick={onClose} className="btn-cancel">
+                إلغاء
+              </button>
+            </Dialog.CloseTrigger>
             <button type="submit" disabled={isSubmitting} className="btn-save">
               <CheckCircle2 size={16} />
               <span>إرسال وتوثيق الطلب</span>
@@ -190,8 +201,10 @@ const LabOrderModal = ({
 
         </form>
 
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   Printer, Plus, CheckCircle2, X, MapPin, Phone, Send 
 } from 'lucide-react';
+import { Dialog } from './ui/dialog';
 import { recordPayment } from '../services/invoicesService';
 
 import './InvoiceModal.css';
@@ -143,34 +144,36 @@ const InvoiceModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="invoice-modal-overlay">
-      <div className="invoice-modal-card">
-        
-        {/* Modal Controls Top Bar */}
-        <div className="invoice-controls-bar">
-          <div className="ctrl-left">
-            <button 
-              type="button" 
-              onClick={() => window.print()} 
-              className="btn-inv-action print"
-            >
-              <Printer size={16} />
-              <span>طباعة إيصال الفاتورة</span>
-            </button>
-            {cleanPhone && (
-              <a
-                href={`sms:+2${cleanPhone}?body=${encodeURIComponent(smsReceipt)}`}
-                className="btn-inv-action sms"
+    <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()}>
+      <Dialog.Backdrop className="invoice-modal-overlay" />
+      <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+        <Dialog.Content className="invoice-modal-card">
+          
+          {/* Modal Controls Top Bar */}
+          <div className="invoice-controls-bar">
+            <div className="ctrl-left">
+              <button 
+                type="button" 
+                onClick={() => window.print()} 
+                className="btn-inv-action print"
               >
-                <Send size={16} />
-                <span>إرسال إيصال SMS</span>
-              </a>
-            )}
+                <Printer size={16} />
+                <span>طباعة إيصال الفاتورة</span>
+              </button>
+              {cleanPhone && (
+                <a
+                  href={`sms:+2${cleanPhone}?body=${encodeURIComponent(smsReceipt)}`}
+                  className="btn-inv-action sms"
+                >
+                  <Send size={16} />
+                  <span>إرسال إيصال SMS</span>
+                </a>
+              )}
+            </div>
+            <Dialog.CloseTrigger className="btn-inv-close" onClick={onClose} aria-label="إغلاق الفاتورة">
+              <X size={18} />
+            </Dialog.CloseTrigger>
           </div>
-          <button onClick={onClose} className="btn-inv-close">
-            <X size={18} />
-          </button>
-        </div>
 
         {/* Printable Official Invoice Sheet */}
         <div className="printable-invoice-sheet">
@@ -434,8 +437,9 @@ const InvoiceModal = ({
 
         </div>
 
-      </div>
-    </div>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 };
 

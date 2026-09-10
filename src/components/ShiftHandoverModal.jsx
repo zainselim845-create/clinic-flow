@@ -3,6 +3,8 @@ import {
   X, Landmark, DollarSign, CreditCard, ArrowRightLeft, 
   CheckCircle2, AlertCircle, Printer, Download, User, Clock
 } from 'lucide-react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
@@ -115,20 +117,29 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
   };
 
   return (
-    <div className="modal-backdrop-shift">
-      <div className="shift-modal-card glass-card">
-        
-        {/* Header */}
-        <div className="shift-modal-header">
-          <div className="shift-title-group">
-            <Landmark className="text-primary" size={24} />
-            <div>
-              <h3>تسليم وردية الاستقبال ومطابقة الخزينة (Shift Reconciliation)</h3>
-              <p className="subtitle">تصفية العهدة النقدية ومطابقة إيرادات اليوم: {today}</p>
+    <Dialog.Root open={isOpen} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop className="modal-backdrop-shift" />
+        <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Dialog.Content className="shift-modal-card glass-card">
+            
+            {/* Header */}
+            <div className="shift-modal-header">
+              <div className="shift-title-group">
+                <Landmark className="text-primary" size={24} />
+                <div>
+                  <Dialog.Title asChild>
+                    <h3>تسليم وردية الاستقبال ومطابقة الخزينة (Shift Reconciliation)</h3>
+                  </Dialog.Title>
+                  <Dialog.Description asChild>
+                    <p className="subtitle">تصفية العهدة النقدية ومطابقة إيرادات اليوم: {today}</p>
+                  </Dialog.Description>
+                </div>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button type="button" className="btn-close" onClick={onClose} aria-label="إغلاق النافذة"><X size={20} /></button>
+              </Dialog.CloseTrigger>
             </div>
-          </div>
-          <button type="button" className="btn-close" onClick={onClose}><X size={20} /></button>
-        </div>
 
         {isShiftSaved ? (
           <div className="shift-success-view">
@@ -239,9 +250,11 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
                 <span>طباعة تقرير الإغلاق</span>
               </button>
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button type="button" className="btn-secondary" onClick={onClose}>
-                  إلغاء
-                </button>
+                <Dialog.CloseTrigger asChild>
+                  <button type="button" className="btn-secondary" onClick={onClose}>
+                    إلغاء
+                  </button>
+                </Dialog.CloseTrigger>
                 <button type="submit" className="btn-primary">
                   تأكيد وإغلاق الوردية
                 </button>
@@ -251,7 +264,9 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
           </form>
         )}
 
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }

@@ -6,7 +6,7 @@ import {
   Building2, Plus, CreditCard, Activity, ShieldCheck, 
   ExternalLink, CheckCircle2, AlertTriangle, ArrowLeft, 
   Search, HardDrive, Copy, CheckCheck,
-  AlertOctagon, Clock, Ban, Check, Bug, RefreshCw, Trash2, LogOut
+  AlertOctagon, Clock, Ban, Check, Bug, RefreshCw, Trash2, LogOut, Globe
 } from 'lucide-react';
 import { 
   getSystemErrors, 
@@ -105,7 +105,7 @@ export default function SuperAdminDashboard() {
 
   const handleSwitchAndVisit = (slug) => {
     switchTenant(slug);
-    navigate('/');
+    navigate('/dashboard');
   };
 
   const handleCreateClinic = (e) => {
@@ -155,10 +155,33 @@ export default function SuperAdminDashboard() {
       {/* Top Bar */}
       <header className="super-admin-header">
         <div className="header-brand-group">
-          <button onClick={() => navigate('/')} className="back-to-app-btn" title="العودة إلى العيادة">
-            <ArrowLeft size={18} />
-            <span>لوحة العيادة</span>
-          </button>
+          <div className="header-nav-shortcuts">
+            <button 
+              onClick={() => navigate('/dashboard')} 
+              className="back-to-app-btn clinic-portal-btn" 
+              title="معاينة بوابة العيادات والأطباء (Client Clinics Portal)"
+            >
+              <Building2 size={16} />
+              <span>بوابة العيادات</span>
+            </button>
+            <button 
+              onClick={() => navigate('/')} 
+              className="back-to-app-btn landing-portal-btn" 
+              title="زيارة الصفحة الرئيسية العامة للموقع"
+            >
+              <Globe size={16} />
+              <span>الموقع العام</span>
+            </button>
+            <button 
+              onClick={() => window.open('/booking', '_blank')} 
+              className="back-to-app-btn booking-portal-btn" 
+              title="فتح بوابة حجز واستعلام المرضى في نافذة جديدة"
+            >
+              <ExternalLink size={15} />
+              <span>بوابة المرضى</span>
+            </button>
+          </div>
+
           <div className="header-title-text">
             <div className="platform-tag">
               <ShieldCheck size={14} />
@@ -408,6 +431,16 @@ export default function SuperAdminDashboard() {
                           >
                             {copiedSlug === t.slug ? <CheckCheck size={14} color="#10B981" /> : <Copy size={14} />}
                           </button>
+                          <a 
+                            href={`/c/${t.slug}/booking`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="btn-icon-copy"
+                            title="فتح بوابة حجز العيادة للمرضى"
+                            style={{ display: 'inline-flex', alignItems: 'center', color: '#64748b' }}
+                          >
+                            <ExternalLink size={13} />
+                          </a>
                         </div>
                       </td>
 

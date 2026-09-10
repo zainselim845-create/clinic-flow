@@ -182,6 +182,136 @@
   color: #1557B0;
 }
 
+.guest-nav-group,
+.logged-in-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.btn-nav-booking {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.52rem 0.95rem;
+  background: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.btn-nav-booking:hover {
+  background: #DCFCE7;
+  color: #15803D;
+  border-color: #86EFAC;
+}
+
+.btn-nav-saas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.52rem 0.95rem;
+  background: #FFFFFF;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.btn-nav-saas:hover {
+  background: #FEF2F2;
+  color: #B91C1C;
+  border-color: #FCA5A5;
+}
+
+.btn-nav-saas-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1.15rem;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  border-radius: 9999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.btn-nav-saas-admin:hover {
+  background: #FEE2E2;
+  color: #B91C1C;
+  transform: translateY(-1px);
+}
+
+/* Hero Quick Portal Pills */
+.hero-portal-pills-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-top: 1.35rem;
+  flex-wrap: wrap;
+}
+
+.pills-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #5F6368;
+}
+
+.hero-portal-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.hero-portal-pill.clinic-pill {
+  background: #F0F4F9;
+  color: #1A73E8;
+  border-color: #D2E3FC;
+}
+
+.hero-portal-pill.clinic-pill:hover {
+  background: #E8F0FE;
+  color: #1557B0;
+  transform: translateY(-1px);
+}
+
+.hero-portal-pill.saas-pill {
+  background: #FEF2F2;
+  color: #DC2626;
+  border-color: #FECACA;
+}
+
+.hero-portal-pill.saas-pill:hover {
+  background: #FEE2E2;
+  color: #B91C1C;
+  transform: translateY(-1px);
+}
+
+.pill-dot {
+  color: #DADCE0;
+  font-size: 0.8rem;
+}
+
 /* 3. HERO SECTION (Google Clean White / Material You Canvas) */
 .landing-hero-section {
   position: relative;
@@ -1242,8 +1372,8 @@
   max-width: 1280px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 3.5rem;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  gap: 2.5rem;
   margin-bottom: 3.5rem;
 }
 

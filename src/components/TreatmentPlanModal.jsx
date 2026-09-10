@@ -4,6 +4,8 @@ import { addInvoice } from '../services/invoicesService';
 import { 
   FileSpreadsheet, Plus, Trash2, CheckCircle2, X, Receipt 
 } from 'lucide-react';
+import { Dialog } from '@ark-ui/react/dialog';
+import { Portal } from '@ark-ui/react/portal';
 import './TreatmentPlanModal.css';
 
 
@@ -150,21 +152,30 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
   };
 
   return (
-    <div className="treatment-plan-modal-overlay">
-      <div className="treatment-plan-modal-card">
-        
-        <div className="modal-header-navy">
-          <div className="header-title-flex">
-            <FileSpreadsheet size={22} className="text-nebras-orange" />
-            <div>
-              <h3>خطط العلاج والتأهيل (Treatment Plans)</h3>
-              <p>تخطيط الإجراءات السريرية، تسعير الجلسات، وتتبع نسبة الإنجاز</p>
+    <Dialog.Root open={true} onOpenChange={(details) => { if (!details.open && onClose) onClose(); }}>
+      <Portal>
+        <Dialog.Backdrop className="treatment-plan-modal-overlay" />
+        <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <Dialog.Content className="treatment-plan-modal-card">
+            
+            <div className="modal-header-navy">
+              <div className="header-title-flex">
+                <FileSpreadsheet size={22} className="text-nebras-orange" />
+                <div>
+                  <Dialog.Title asChild>
+                    <h3>خطط العلاج والتأهيل (Treatment Plans)</h3>
+                  </Dialog.Title>
+                  <Dialog.Description asChild>
+                    <p>تخطيط الإجراءات السريرية، تسعير الجلسات، وتتبع نسبة الإنجاز</p>
+                  </Dialog.Description>
+                </div>
+              </div>
+              <Dialog.CloseTrigger asChild>
+                <button onClick={onClose} className="btn-close-navy" aria-label="إغلاق النافذة" type="button">
+                  <X size={18} />
+                </button>
+              </Dialog.CloseTrigger>
             </div>
-          </div>
-          <button onClick={onClose} className="btn-close-navy">
-            <X size={18} />
-          </button>
-        </div>
 
         <div className="modal-body-scrollable">
           
@@ -482,8 +493,10 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
 
         </div>
 
-      </div>
-    </div>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 };
 

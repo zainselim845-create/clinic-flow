@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, 
   Stethoscope, LogOut, Smartphone, Bot, Receipt, Layers, 
-  Package, UserCheck, Sparkles
+  Package, UserCheck, Sparkles, ShieldCheck
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -104,6 +104,17 @@ const Sidebar = () => {
           <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Smartphone size={19} />
             <span>إدارة وإعدادات العيادة</span>
+          </NavLink>
+        )}
+        {(user?.role === 'super_admin' || user?.isSuperAdmin) && (
+          <NavLink 
+            to="/super-admin" 
+            className={({isActive}) => isActive ? 'nav-item active saas-admin-nav-item' : 'nav-item saas-admin-nav-item'}
+            title="الانتقال إلى لوحة تحكم إدارة الساس المركزية"
+          >
+            <ShieldCheck size={19} className="text-purple-400" />
+            <span>إدارة منصة الساس</span>
+            <span className="saas-badge-tag">Admin</span>
           </NavLink>
         )}
         <a 

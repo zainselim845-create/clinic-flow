@@ -6,7 +6,8 @@ import {
   Stethoscope, ShieldCheck, Sparkles, Globe, 
   ArrowLeft, CheckCircle2, ChevronDown, 
   Search, MapPin, Phone, Lock, 
-  Activity, DollarSign, Cpu, Award, Clock
+  Activity, DollarSign, Cpu, Award, Clock,
+  Building2, Shield
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import './LandingPage.css';
@@ -137,20 +138,44 @@ const LandingPage = () => {
 
           <div className="landing-nav-actions">
             {user ? (
-              <button onClick={() => navigate('/dashboard')} className="btn-nav-dashboard">
-                <span>لوحة التحكم الخاصة بك</span>
-                <ArrowLeft size={16} />
-              </button>
+              <div className="logged-in-nav-group">
+                {(user.role === 'super_admin' || user.isSuperAdmin) ? (
+                  <>
+                    <button onClick={() => navigate('/super-admin')} className="btn-nav-saas-admin" title="التحكم السحابي للمنصة">
+                      <ShieldCheck size={15} />
+                      <span>إدارة الساس (SaaS Admin)</span>
+                    </button>
+                    <button onClick={() => navigate('/dashboard')} className="btn-nav-dashboard">
+                      <Building2 size={15} />
+                      <span>معاينة العيادات</span>
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={() => navigate('/dashboard')} className="btn-nav-dashboard">
+                    <span>لوحة تحكم عيادتك</span>
+                    <ArrowLeft size={16} />
+                  </button>
+                )}
+              </div>
             ) : (
-              <>
-                <button onClick={() => navigate('/login')} className="btn-nav-login">
-                  <span>دخول الطاقم</span>
+              <div className="guest-nav-group">
+                <button onClick={() => navigate('/booking')} className="btn-nav-booking" title="بوابة حجز واستعلام المرضى">
+                  <Search size={14} />
+                  <span>بوابة المرضى</span>
+                </button>
+                <button onClick={() => navigate('/login?portal=clinic')} className="btn-nav-login" title="تسجيل دخول الأطباء وطاقم العيادات">
+                  <Building2 size={14} />
+                  <span>دخول العيادات</span>
+                </button>
+                <button onClick={() => navigate('/login?portal=admin')} className="btn-nav-saas" title="بوابة إدارة منصة الساس (SaaS Admin)">
+                  <ShieldCheck size={14} />
+                  <span>إدارة الساس</span>
                 </button>
                 <button onClick={() => navigate('/login?tab=register')} className="btn-nav-register">
-                  <Sparkles size={15} />
-                  <span>سجل عيادتك مجاناً</span>
+                  <Sparkles size={14} />
+                  <span>سجل عيادتك</span>
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -178,13 +203,27 @@ const LandingPage = () => {
 
           <div className="hero-cta-group">
             <button onClick={() => navigate('/login?tab=register')} className="btn-hero-primary">
-              <span>ابدأ تجربتك المجانية (14 يوماً)</span>
+              <Sparkles size={18} />
+              <span>سجل عيادتك مجاناً (14 يوماً)</span>
               <ArrowLeft size={18} />
             </button>
-            <a href="#discovery" className="btn-hero-secondary">
+            <button onClick={() => navigate('/booking')} className="btn-hero-secondary">
               <Search size={18} />
-              <span>ابحث عن عيادتك لحجز موعد</span>
-            </a>
+              <span>دليل العيادات وحجز موعد (المرضى)</span>
+            </button>
+          </div>
+
+          <div className="hero-portal-pills-row">
+            <span className="pills-label">بوابات الدخول السريع:</span>
+            <button onClick={() => navigate('/login?portal=clinic')} className="hero-portal-pill clinic-pill" title="دخول أطباء وموظفي العيادات المشتركة">
+              <Building2 size={13} />
+              <span>بوابة العيادات والأطباء (العملاء)</span>
+            </button>
+            <span className="pill-dot">•</span>
+            <button onClick={() => navigate('/login?portal=admin')} className="hero-portal-pill saas-pill" title="لوحة التحكم السحابية للمدير العام">
+              <ShieldCheck size={13} />
+              <span>إدارة المنصة (SaaS Admin)</span>
+            </button>
           </div>
 
           <div className="hero-trust-metrics">
@@ -398,7 +437,7 @@ const LandingPage = () => {
       {/* 4. ENTERPRISE SAAS FEATURES GRID */}
       <section id="features" className="features-section">
         <div className="section-header">
-          <span className="section-pill">دليل العيادات المعتمدة</span>
+          <span className="section-pill">المعايير والمميزات الهندسية</span>
           <h2 className="section-title">كل ما تحتاجه عيادتك في منظومة سحابية واحدة</h2>
           <p className="section-desc">
             صممت المنظومة لتمنحك استقلالية تامة، أماناً بنكياً، وتجربة سلسة لطاقمك ومرضاك:
@@ -477,7 +516,7 @@ const LandingPage = () => {
       {/* 5. PRICING SECTION */}
       <section id="pricing" className="pricing-section">
         <div className="section-header">
-          <span className="section-pill">دليل العيادات المعتمدة</span>
+          <span className="section-pill">خطط الاشتراك والتسعير</span>
           <h2 className="section-title">اختر الباقة المناسبة لحجم ونمو عيادتك</h2>
           <p className="section-desc">
             جميع الباقات تشمل فترة تجريبية مجانية لمدة 14 يوماً مع تدريب كامل لطاقمك الطبي والإداري.
@@ -511,7 +550,13 @@ const LandingPage = () => {
 
               <div className="plan-cta">
                 <button 
-                  onClick={() => navigate('/login?tab=register')} 
+                  onClick={() => {
+                    if (plan.id === 'enterprise') {
+                      window.open('https://wa.me/201006285031?text=' + encodeURIComponent('مرحباً، أود الاستفسار عن باقة المراكز والمستشفيات في منصة ClinicFlow'), '_blank');
+                    } else {
+                      navigate(`/login?tab=register&plan=${plan.id}`);
+                    }
+                  }} 
                   className={`btn-plan-select ${plan.highlight ? 'primary' : 'outline'}`}
                 >
                   {plan.cta}
@@ -525,7 +570,7 @@ const LandingPage = () => {
       {/* 6. FAQ SECTION */}
       <section id="faq" className="faq-section">
         <div className="section-header">
-          <span className="section-pill">دليل العيادات المعتمدة</span>
+          <span className="section-pill">الأسئلة الأكثر شيوعاً</span>
           <h2 className="section-title">كل ما تود معرفته عن منظومة كلينيك فلو</h2>
         </div>
 
@@ -578,7 +623,7 @@ const LandingPage = () => {
             </div>
             <p className="footer-about">
               المنظومة السحابية الرائدة لإدارة العيادات والمراكز الطبية في مصر والشرق الأوسط. 
-              معمارية آمنة، عزل تام، وأداء استثنائي.
+              معمارية آمنة، عزل تام، وأداء استثنائي لخدمة مليون مستخدم.
             </p>
             <div className="footer-badges">
               <span className="compliance-tag">🛡️ HIPAA Compliant</span>
@@ -588,30 +633,40 @@ const LandingPage = () => {
           </div>
 
           <div className="footer-links-col">
-            <h4>روابط المنصة</h4>
+            <h4>بوابة المرضى والجمهور</h4>
             <ul>
-              <li><a href="#features">المميزات السريرية</a></li>
-              <li><a href="#discovery">دليل العيادات</a></li>
-              <li><a href="#pricing">باقات الاشتراك</a></li>
-              <li><Link to="/booking">بوابة الحجز العامة</Link></li>
-              <li><Link to="/super-admin">بورتال تحكم الشركة</Link></li>
+              <li><Link to="/booking">دليل العيادات والأطباء</Link></li>
+              <li><Link to="/c/dr-ahmed/booking">حجز موعد عيادة الأسنان</Link></li>
+              <li><Link to="/c/dr-sara/booking">حجز موعد عيادة الجلدية</Link></li>
+              <li><Link to="/manage-booking">إدارة وتعديل موعد حجزك</Link></li>
+              <li><a href="#discovery">استكشاف العيادات بالمدينة</a></li>
             </ul>
           </div>
 
           <div className="footer-links-col">
-            <h4>للأطباء والمراكز</h4>
+            <h4>بوابة العيادات (العملاء)</h4>
             <ul>
-              <li><Link to="/login?tab=register">تسجيل عيادة جديدة</Link></li>
-              <li><Link to="/login">تسجيل دخول الطاقم</Link></li>
-              <li><Link to="/manage-booking">بوابة تعديل المواعيد للمرضى</Link></li>
-              <li><a href="https://wa.me/201006285031" target="_blank" rel="noreferrer">الدعم الفني المباشر</a></li>
+              <li><Link to="/login?tab=register">تسجيل عيادة وطبيب جديد</Link></li>
+              <li><Link to="/login?portal=clinic">تسجيل دخول الطاقم والعيادات</Link></li>
+              <li><a href="#pricing">باقات الاشتراك والأسعار</a></li>
+              <li><a href="https://wa.me/201006285031" target="_blank" rel="noreferrer">الدعم الفني المباشر (واتساب)</a></li>
+            </ul>
+          </div>
+
+          <div className="footer-links-col">
+            <h4>إدارة المنصة (SaaS Admin)</h4>
+            <ul>
+              <li><Link to="/login?portal=admin">لوحة تحكم الساس (Control Plane)</Link></li>
+              <li><Link to="/super-admin">إدارة التراخيص وتيليمتري النظام</Link></li>
+              <li><a href="#features">معايير عزل البيانات البنكية (RLS)</a></li>
+              <li><a href="#faq">الأسئلة الشائعة والأمان</a></li>
             </ul>
           </div>
         </div>
 
         <div className="footer-bottom">
           <p>© {new Date().getFullYear()} جميع الحقوق محفوظة لشركة كلينيك فلو (ClinicFlow Technologies Ltd).</p>
-          <p className="footer-dev-tag">Built with Enterprise Multi-Tenant Architecture & Highest Standards.</p>
+          <p className="footer-dev-tag">Enterprise Multi-Tenant Medical Cloud • Isolated Databases & Subdomains.</p>
         </div>
       </footer>
 
