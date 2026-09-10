@@ -161,14 +161,18 @@ function App() {
           {/* 1. Public Pages (Clean Canvas Layout) */}
           <Route path="/" element={
             user ? (
-              <ProtectedRoute>
-                <AdminLayout />
-              </ProtectedRoute>
+              (user.role === 'super_admin' || user.isSuperAdmin) ? (
+                <Navigate to="/super-admin" replace />
+              ) : (
+                <ProtectedRoute>
+                  <AdminLayout />
+                </ProtectedRoute>
+              )
             ) : (
               <LandingPage />
             )
           }>
-            {user && <Route index element={<Dashboard />} />}
+            {user && !user.isSuperAdmin && user.role !== 'super_admin' && <Route index element={<Dashboard />} />}
           </Route>
 
           <Route path="/login" element={

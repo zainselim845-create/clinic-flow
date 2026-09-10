@@ -67,7 +67,7 @@ export default function NotFound() {
             }}
           >
             <Home size={16} />
-            <span>لوحة التحكم</span>
+            <span>الصفحة الرئيسية</span>
           </Link>
 
           <Link

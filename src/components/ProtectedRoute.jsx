@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
 import { hasPermission, isDoctorRole } from '../utils/permissions';
@@ -243,8 +243,8 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
               <div><strong>الدور الوظيفي:</strong> {user?.jobTitle || user?.role || 'طاقم العيادة'}</div>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-              <a
-                href="/"
+              <Link
+                to="/"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -259,7 +259,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
                 }}
               >
                 العودة للوحة التحكم
-              </a>
+              </Link>
               <button
                 type="button"
                 onClick={() => signOut()}
@@ -330,8 +330,8 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
             <div><strong>المستخدم:</strong> {user?.name}</div>
             <div><strong>الدور الوظيفي:</strong> {user?.jobTitle || user?.role}</div>
           </div>
-          <a
-            href="/"
+          <Link
+            to="/"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -346,7 +346,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
             }}
           >
             العودة للوحة التحكم
-          </a>
+          </Link>
         </div>
       </div>
     );

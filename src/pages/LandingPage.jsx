@@ -7,7 +7,7 @@ import {
   ArrowLeft, CheckCircle2, ChevronDown, 
   Search, MapPin, Phone, Lock, 
   Activity, DollarSign, Cpu, Award, Clock,
-  Building2, Shield
+  Building2, Shield, Calendar
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import './LandingPage.css';
@@ -163,13 +163,13 @@ const LandingPage = () => {
                   <Search size={14} />
                   <span>بوابة المرضى</span>
                 </button>
+                <button onClick={() => navigate('/manage-booking')} className="btn-nav-manage" title="متابعة أو تعديل موعد حجزك">
+                  <Calendar size={14} />
+                  <span>متابعة الحجز</span>
+                </button>
                 <button onClick={() => navigate('/login?portal=clinic')} className="btn-nav-login" title="تسجيل دخول الأطباء وطاقم العيادات">
                   <Building2 size={14} />
                   <span>دخول العيادات</span>
-                </button>
-                <button onClick={() => navigate('/login?portal=admin')} className="btn-nav-saas" title="بوابة إدارة منصة الساس (SaaS Admin)">
-                  <ShieldCheck size={14} />
-                  <span>إدارة الساس</span>
                 </button>
                 <button onClick={() => navigate('/login?tab=register')} className="btn-nav-register">
                   <Sparkles size={14} />

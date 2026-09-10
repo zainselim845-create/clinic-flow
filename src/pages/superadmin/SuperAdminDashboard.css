@@ -983,3 +983,45 @@
   font-weight: 500;
 }
 
+/* Responsive Styles for Super Admin Control Plane */
+@media (max-width: 1024px) {
+  .super-admin-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+  }
+  .header-brand-group {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .saas-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .super-admin-content {
+    padding: 1.5rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .super-admin-header {
+    padding: 1rem;
+  }
+  .header-nav-shortcuts {
+    flex-wrap: wrap;
+  }
+  .saas-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .table-filters-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .super-admin-content {
+    padding: 1rem !important;
+  }
+  .clinics-table-container {
+    overflow-x: auto;
+  }
+}
+

@@ -244,6 +244,12 @@ const Dashboard = () => {
     dispatch({ type: 'ADD_APPOINTMENT', payload: newBooking });
   };
 
+  const handleRefreshToday = () => {
+    if (window.confirm('تنبيه: هل أنت متأكد من رغبتك في إعادة ضبط واستعادة جدول مواعيد اليوم للحالة الأولية؟')) {
+      dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' });
+    }
+  };
+
   // Schedule filtering (Memoized for high performance)
   const filteredAppointments = useMemo(() => {
     const query = scheduleSearchQuery.trim().toLowerCase();
@@ -302,7 +308,7 @@ const Dashboard = () => {
           </button>
           <button 
             type="button" 
-            onClick={() => dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' })} 
+            onClick={handleRefreshToday} 
             className="google-m3-icon-btn" 
             title="تحديث واستعادة جدول اليوم"
           >

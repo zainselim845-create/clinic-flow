@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, 
   Stethoscope, LogOut, Smartphone, Bot, Receipt, Layers, 
-  Package, UserCheck, Sparkles, ShieldCheck
+  Package, UserCheck, Sparkles, ShieldCheck, Settings
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -112,7 +112,7 @@ const Sidebar = () => {
         </NavLink>
         {isDoctor && (
           <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-            <Smartphone size={19} />
+            <Settings size={19} />
             <span>إدارة وإعدادات العيادة</span>
           </NavLink>
         )}

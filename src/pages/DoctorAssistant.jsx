@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { 
   Bot, Send, Sparkles, Users, MessageSquare, CheckSquare, 
   Square, Stethoscope, RefreshCw, CheckCircle2, MessageCircle, Filter, Trash2
@@ -56,6 +56,11 @@ const DoctorAssistant = () => {
   });
 
   const [viewMode, setViewMode] = useState('crm'); // 'crm' | 'chat'
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isAiGenerating]);
 
 
   // Automatically save chat history across tab switches & page navigation
@@ -459,6 +464,7 @@ const DoctorAssistant = () => {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Quick Doctor Prompts Chips */}
