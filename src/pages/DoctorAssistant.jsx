@@ -56,12 +56,19 @@ const DoctorAssistant = () => {
   });
 
   const [viewMode, setViewMode] = useState('crm'); // 'crm' | 'chat'
+  const [inputText, setInputText] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedPatientIds, setSelectedPatientIds] = useState(new Set());
+  const [selectedTemplateId, setSelectedTemplateId] = useState('post_care');
+  const [customMessage, setCustomMessage] = useState(CAMPAIGN_TEMPLATES[0].template);
+  const [isBroadcastingSms, setIsBroadcastingSms] = useState(false);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [broadcastResults, setBroadcastResults] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isAiGenerating]);
-
 
   // Automatically save chat history across tab switches & page navigation
   useEffect(() => {
@@ -91,14 +98,6 @@ const DoctorAssistant = () => {
       }
     }
   };
-  const [inputText, setInputText] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [selectedPatientIds, setSelectedPatientIds] = useState(new Set());
-  const [selectedTemplateId, setSelectedTemplateId] = useState('post_care');
-  const [customMessage, setCustomMessage] = useState(CAMPAIGN_TEMPLATES[0].template);
-  const [isBroadcastingSms, setIsBroadcastingSms] = useState(false);
-  const [isAiGenerating, setIsAiGenerating] = useState(false);
-  const [broadcastResults, setBroadcastResults] = useState(null);
 
   // Target Patients List
   const targetPatients = useMemo(() => {
