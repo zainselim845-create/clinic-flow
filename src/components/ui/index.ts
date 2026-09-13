@@ -30,10 +30,19 @@ export { Tooltip as ArkTooltip } from './tooltip';
 
 // Apple Human Interface & Advanced Glassmorphism Primitives
 export { AppleGlassCard, default as AppleGlassCardDefault } from './AppleGlassCard';
-export { AppleGlassButton, default as AppleGlassButtonDefault } from './AppleGlassButton';
+export { AppleGlassButton, AppleButton, default as AppleGlassButtonDefault } from './AppleGlassButton';
 export { AppleGlassDock, default as AppleGlassDockDefault } from './AppleGlassDock';
-export { AppleGlassSegmentedControl, default as AppleGlassSegmentedControlDefault } from './AppleGlassSegmentedControl';
+export { AppleGlassSegmentedControl, AppleSegmentedControl, default as AppleGlassSegmentedControlDefault } from './AppleGlassSegmentedControl';
+export { AppleInsetGroupedList, AppleInsetItem, AppleInsetGroupedCard, default as AppleInsetGroupedListDefault } from './AppleInsetGroupedList';
+export { AppleSheetModal, default as AppleSheetModalDefault } from './AppleSheetModal';
+export { AppleNavigationBar, default as AppleNavigationBarDefault } from './AppleNavigationBar';
+export { AppleTabBar, default as AppleTabBarDefault } from './AppleTabBar';
+
 export type { AppleMaterialTier } from './AppleGlassCard';
-export type { AppleButtonVariant, AppleButtonSize } from './AppleGlassButton';
+export type { AppleButtonVariant, AppleButtonSize, AppleButtonShape } from './AppleGlassButton';
 export type { AppleDockItem } from './AppleGlassDock';
 export type { SegmentOption } from './AppleGlassSegmentedControl';
+export type { AppleSystemColor, AppleInsetItemProps, AppleInsetGroupedListProps } from './AppleInsetGroupedList';
+export type { AppleSheetModalProps } from './AppleSheetModal';
+export type { AppleNavigationBarProps } from './AppleNavigationBar';
+export type { AppleTabBarProps, AppleTabItem } from './AppleTabBar';

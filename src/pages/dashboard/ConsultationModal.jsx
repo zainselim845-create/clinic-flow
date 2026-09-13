@@ -182,6 +182,7 @@ export default function ConsultationModal({
         <Dialog.Backdrop className="modal-backdrop" />
         <Dialog.Positioner className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
           <Dialog.Content className="modal-content consultation-modal consultation-modal-box">
+            <div className="apple-sheet-grabber" style={{ marginBottom: '8px' }} />
             <div className="consultation-header">
               <div className="consultation-title">
                 <Stethoscope className="text-primary" size={22} />

@@ -292,8 +292,14 @@ export default function Onboarding() {
           setErrorMessage('يرجى إدخال رقم هاتف صحيح للموظف ليتمكن من تسجيل الدخول به.');
           return false;
         }
-        if (!initialStaffPassword.trim()) {
-          setErrorMessage('يرجى تحديد كلمة مرور لحساب الموظف.');
+        const cleanDocPhone = (phone || '').replace(/\D/g, '');
+        const cleanStaffPhone = initialStaffPhone.trim().replace(/\D/g, '');
+        if (cleanDocPhone && cleanStaffPhone && cleanDocPhone === cleanStaffPhone) {
+          setErrorMessage('لا يمكن استخدام نفس رقم هاتف الطبيب لحساب الموظف. يرجى إدخال رقم هاتف مستقل للموظف.');
+          return false;
+        }
+        if (!initialStaffPassword.trim() || initialStaffPassword.trim().length < 4) {
+          setErrorMessage('يرجى تحديد كلمة مرور لحساب الموظف (4 أحرف أو أرقام على الأقل).');
           return false;
         }
       }

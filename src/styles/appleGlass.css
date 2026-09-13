@@ -18,9 +18,13 @@
   --apple-indigo: #5856D6;
 
   /* Apple Light Mode Backgrounds */
-  --apple-bg-primary: #F5F5F7;
+  --apple-bg-primary: #F2F2F7;
   --apple-bg-secondary: #FFFFFF;
   --apple-bg-tertiary: #E5E5EA;
+
+  /* Apple Light Mode Separator & Secondary Text */
+  --apple-separator: #C6C6C8;
+  --apple-text-secondary: #8E8E93;
 
   /* Apple Light Mode Text & Labels */
   --apple-label-primary: rgba(0, 0, 0, 0.92);
@@ -60,6 +64,9 @@
   --apple-bg-primary: #000000;
   --apple-bg-secondary: #1C1C1E;
   --apple-bg-tertiary: #2C2C2E;
+
+  --apple-separator: #38383A;
+  --apple-text-secondary: #8E8E93;
 
   --apple-label-primary: rgba(255, 255, 255, 0.95);
   --apple-label-secondary: rgba(255, 255, 255, 0.60);
@@ -393,3 +400,284 @@
   opacity: 1;
   transform: translateX(10%) translateY(10%);
 }
+
+/* ==========================================================================
+   8. Apple SF Pro Typography Scale (Strict Apple HIG)
+   ========================================================================== */
+.apple-large-title {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 41px;
+  letter-spacing: -0.02em;
+}
+
+.apple-title-1 {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 34px;
+  letter-spacing: -0.015em;
+}
+
+.apple-title-2 {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: -0.01em;
+}
+
+.apple-title-3 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 25px;
+  letter-spacing: -0.005em;
+}
+
+.apple-headline {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+  letter-spacing: -0.004em;
+}
+
+.apple-body {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.apple-callout {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 21px;
+}
+
+.apple-subhead {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--apple-text-secondary, #8E8E93);
+}
+
+.apple-footnote {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--apple-text-secondary, #8E8E93);
+}
+
+.apple-caption-1 {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--apple-text-secondary, #8E8E93);
+}
+
+.apple-caption-2 {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 13px;
+  color: var(--apple-text-secondary, #8E8E93);
+}
+
+/* ==========================================================================
+   9. Apple Separator / 0.5px Dividers
+   ========================================================================== */
+.apple-separator,
+.apple-divider {
+  height: 0.5px;
+  background-color: var(--apple-separator, #C6C6C8);
+  border: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.apple-separator-indented,
+.apple-divider-indented {
+  height: 0.5px;
+  background-color: var(--apple-separator, #C6C6C8);
+  border: none;
+  margin: 0;
+  margin-inline-start: 3.5rem;
+}
+
+/* ==========================================================================
+   10. Apple Materials & Glass Hierarchy (Strict HIG Rules)
+   Restricted ONLY to: Top Nav, Bottom Tab Bar, Floating Action Pills
+   ========================================================================== */
+.apple-nav-bar {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.70);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.dark .apple-nav-bar,
+[data-theme="dark"] .apple-nav-bar {
+  background-color: rgba(28, 28, 30, 0.70);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
+}
+
+.apple-tab-bar {
+  height: 83px;
+  padding-bottom: 34px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.70);
+  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.dark .apple-tab-bar,
+[data-theme="dark"] .apple-tab-bar {
+  background-color: rgba(28, 28, 30, 0.70);
+  border-top: 0.5px solid rgba(255, 255, 255, 0.12);
+}
+
+.apple-floating-pill {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background-color: rgba(255, 255, 255, 0.75);
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.dark .apple-floating-pill,
+[data-theme="dark"] .apple-floating-pill {
+  background-color: rgba(28, 28, 30, 0.75);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   11. Apple Inset Grouped Surface (Solid / Semi-solid Card Architecture)
+   ========================================================================== */
+.apple-inset-card,
+.apple-inset-group {
+  background-color: var(--apple-bg-secondary, #FFFFFF);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.dark .apple-inset-card,
+.dark .apple-inset-group,
+[data-theme="dark"] .apple-inset-card,
+[data-theme="dark"] .apple-inset-group {
+  background-color: var(--apple-bg-secondary, #1C1C1E);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Squircle Icon Badges */
+.apple-squircle-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+.apple-squircle-icon-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   12. Apple Buttons & Interactive Touch Feedback
+   ========================================================================== */
+.apple-btn-prominent {
+  background-color: var(--apple-blue, #007AFF);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 17px;
+  border-radius: 9999px;
+  padding: 12px 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform 150ms ease-out, opacity 150ms ease-out;
+}
+
+.apple-btn-prominent:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+.apple-btn-tinted {
+  background-color: rgba(0, 122, 255, 0.15);
+  color: var(--apple-blue, #007AFF);
+  font-weight: 600;
+  font-size: 17px;
+  border-radius: 12px;
+  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform 150ms ease-out, opacity 150ms ease-out;
+}
+
+.apple-btn-tinted:active {
+  transform: scale(0.97);
+  opacity: 0.75;
+}
+
+.apple-btn-plain {
+  background: transparent;
+  color: var(--apple-blue, #007AFF);
+  font-size: 17px;
+  font-weight: 400;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 150ms ease-out;
+}
+
+.apple-btn-plain:active {
+  opacity: 0.50;
+}
+
+.apple-touch-press {
+  transition: transform 150ms ease-out, opacity 150ms ease-out;
+}
+
+.apple-touch-press:active {
+  transform: scale(0.98);
+  opacity: 0.80;
+}
+
+/* ==========================================================================
+   13. Apple Sheet Modal & Grabber Handle
+   ========================================================================== */
+.apple-sheet-grabber {
+  width: 36px;
+  height: 5px;
+  background-color: rgba(60, 60, 67, 0.30);
+  border-radius: 9999px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.dark .apple-sheet-grabber,
+[data-theme="dark"] .apple-sheet-grabber {
+  background-color: rgba(235, 235, 245, 0.30);
+}
+

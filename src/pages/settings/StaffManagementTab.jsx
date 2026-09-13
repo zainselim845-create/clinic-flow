@@ -60,6 +60,26 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     const staffClinicId = tenant?.id || 'dr-ahmed';
     const staffClinicSlug = tenant?.slug || 'dr-ahmed';
 
+    // 1. Pre-flight auth validation and phone uniqueness check
+    const targetId = editingStaff ? editingStaff.id : 'staff-' + Date.now();
+    try {
+      provisionStaffAccount({
+        id: targetId,
+        clinicId: staffClinicId,
+        clinicSlug: staffClinicSlug,
+        name: staffForm.name,
+        phone: staffForm.phone,
+        email: staffForm.email,
+        password: staffForm.password,
+        role: staffForm.roleKey || 'receptionist',
+        permissions: staffForm.permissions,
+        shift: staffForm.shift
+      });
+    } catch (err) {
+      setStaffError(err.message || 'فشل تسجيل حساب الموظف، يرجى مراجعة البيانات.');
+      return;
+    }
+
     if (editingStaff) {
       const updatedPayload = { 
         ...staffForm, 
@@ -78,24 +98,9 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         type: 'UPDATE_STAFF',
         payload: updatedPayload
       });
-      try {
-        provisionStaffAccount({
-          id: editingStaff.id,
-          clinicId: staffClinicId,
-          clinicSlug: staffClinicSlug,
-          name: staffForm.name,
-          phone: staffForm.phone,
-          email: staffForm.email,
-          password: staffForm.password,
-          role: staffForm.roleKey || 'receptionist',
-          permissions: staffForm.permissions,
-          shift: staffForm.shift
-        });
-      } catch (_) {}
     } else {
-      const staffId = 'staff-' + Date.now();
       const newStaff = {
-        id: staffId,
+        id: targetId,
         clinicId: staffClinicId,
         clinicSlug: staffClinicSlug,
         ...staffForm,
@@ -112,20 +117,6 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         type: 'ADD_STAFF',
         payload: newStaff
       });
-      try {
-        provisionStaffAccount({
-          id: staffId,
-          clinicId: staffClinicId,
-          clinicSlug: staffClinicSlug,
-          name: staffForm.name,
-          phone: staffForm.phone,
-          email: staffForm.email,
-          password: staffForm.password,
-          role: staffForm.roleKey || 'receptionist',
-          permissions: staffForm.permissions,
-          shift: staffForm.shift
-        });
-      } catch (_) {}
     }
 
     setIsStaffModalOpen(false);
@@ -134,6 +125,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
 
   const handleDeleteStaff = async (id) => {
     const member = staffMembers.find(s => s.id === id);
+    const staffClinicId = tenant?.id || 'dr-ahmed';
     if (window.confirm('هل أنت متأكد من حذف حساب هذا الموظف من العيادة؟')) {
       if (useSupabase) {
         try {
@@ -143,9 +135,9 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         }
       }
       try {
-        deleteRegisteredUser(id);
-        if (member?.phone) deleteRegisteredUser(member.phone);
-        if (member?.email) deleteRegisteredUser(member.email);
+        deleteRegisteredUser(id, staffClinicId);
+        if (member?.phone) deleteRegisteredUser(member.phone, staffClinicId);
+        if (member?.email) deleteRegisteredUser(member.email, staffClinicId);
       } catch (_) {}
       dispatch({ type: 'DELETE_STAFF', payload: id });
     }

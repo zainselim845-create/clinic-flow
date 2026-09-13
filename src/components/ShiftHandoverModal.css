@@ -12,18 +12,18 @@
 
 .shift-modal-card {
   background: var(--bg-card, #ffffff);
-  border-radius: var(--radius-xl, 16px);
+  border-radius: 20px;
   width: 100%;
   max-width: 640px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 0.5px solid var(--apple-separator, var(--border-color, #e2e8f0));
   overflow: hidden;
   animation: fadeIn 0.2s ease-out;
 }
 
 .shift-modal-header {
   padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  border-bottom: 0.5px solid var(--apple-separator, var(--border-color, #e2e8f0));
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -173,9 +173,24 @@ export function saveRegisteredUser(user) {
   if (user.email) registeredEmailsSet.add(user.email.toLowerCase());
   if (user.phone) registeredPhonesSet.add(user.phone.replace(/\D/g, ''));
 
-  const idx = existing.findIndex(u => u.id === user.id || (user.email && u.email === user.email) || (user.phone && u.phone === user.phone));
+  // 1. Primary match strictly by user ID
+  let idx = existing.findIndex(u => u.id === user.id);
+
+  // 2. If no ID match, only match by exact email/phone if it's within the SAME role and SAME clinic
+  if (idx < 0) {
+    const cleanPhone = (user.phone || '').replace(/\D/g, '');
+    idx = existing.findIndex(u => {
+      const uPhone = (u.phone || '').replace(/\D/g, '');
+      const sameRole = u.role === user.role;
+      const sameClinic = u.clinicSlug === user.clinicSlug || u.clinicId === user.clinicId;
+      const emailMatches = user.email && u.email && u.email.toLowerCase() === user.email.toLowerCase();
+      const phoneMatches = cleanPhone && uPhone && cleanPhone === uPhone;
+      return (emailMatches || phoneMatches) && sameRole && sameClinic;
+    });
+  }
+
   if (idx >= 0) {
-    existing[idx] = user;
+    existing[idx] = { ...existing[idx], ...user };
   } else {
     existing.push(user);
   }
@@ -190,17 +205,27 @@ export function saveRegisteredUser(user) {
 
 /**
  * Removes a registered user from auth registry
+ * Protected against cross-tenant or doctor account deletion
  */
-export function deleteRegisteredUser(userIdOrPhone) {
+export function deleteRegisteredUser(userIdOrPhone, clinicSlugOrId = null) {
   if (!userIdOrPhone) return;
   const clean = String(userIdOrPhone).trim();
   const cleanDigits = clean.replace(/\D/g, '');
   const existing = getRegisteredUsers();
   const filtered = existing.filter(u => {
+    // If clinic scope provided, do not touch accounts belonging to another clinic
+    if (clinicSlugOrId && u.clinicSlug && u.clinicId && u.clinicSlug !== clinicSlugOrId && u.clinicId !== clinicSlugOrId) {
+      return true;
+    }
+    // Delete by exact user ID
     if (u.id === clean) return false;
-    if (u.phone === clean) return false;
-    if (cleanDigits && u.phone && u.phone.replace(/\D/g, '') === cleanDigits) return false;
-    if (clean.includes('@') && u.email && u.email.toLowerCase() === clean.toLowerCase()) return false;
+    // For staff members only: allow deleting by phone/email to keep auth registry in sync
+    // NEVER delete a doctor or super_admin account via phone/email matching
+    if (u.role !== 'doctor' && u.role !== 'super_admin' && !u.isClinicOwner) {
+      if (u.phone === clean) return false;
+      if (cleanDigits && cleanDigits.length >= 7 && u.phone && u.phone.replace(/\D/g, '') === cleanDigits) return false;
+      if (clean.includes('@') && u.email && u.email.toLowerCase() === clean.toLowerCase()) return false;
+    }
     return true;
   });
   memoryUsersCache = filtered;
@@ -507,6 +532,24 @@ export function provisionStaffAccount({
   const cleanPhone = phone.trim().replace(/\D/g, '');
   const cleanEmail = (email || '').trim().toLowerCase();
 
+  // Validate phone collision across registered users
+  const existingUsers = getRegisteredUsers();
+  const existingCollision = existingUsers.find(u => {
+    // If it's the exact same staff member being edited (same id), that's allowed
+    if (id && u.id === id) return false;
+    const uPhone = (u.phone || '').replace(/\D/g, '');
+    return cleanPhone && uPhone && uPhone === cleanPhone;
+  });
+
+  if (existingCollision) {
+    const isDoc = existingCollision.role === 'doctor';
+    throw new Error(
+      isDoc
+        ? `رقم الهاتف (${phone}) مسجل بالفعل كحساب طبيب مسؤول. يرجى استخدام رقم هاتف مخصص للموظف.`
+        : `رقم الهاتف (${phone}) مسجل بالفعل لموظف آخر في النظام.`
+    );
+  }
+
   // Determine default permissions based on role
   let assignedPermissions = permissions;
   if (!assignedPermissions || !Array.isArray(assignedPermissions)) {
@@ -533,7 +576,7 @@ export function provisionStaffAccount({
     name: name.trim(),
     phone: cleanPhone,
     email: cleanEmail,
-    password: password.trim() || '123',
+    password: password.trim(),
     role,
     roleKey: role,
     jobTitle: roleTitle,

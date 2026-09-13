@@ -25,8 +25,8 @@ export function AppleGlassSegmentedControl<T extends string = string>({
   return (
     <div
       role="tablist"
-      className={`inline-flex p-1 rounded-full apple-glass-subtle border border-white/30 dark:border-white/10 ${
-        size === 'sm' ? 'text-xs' : 'text-sm'
+      className={`inline-flex p-[2px] rounded-[9px] bg-[#E5E5EA] dark:bg-[#2C2C2E] select-none ${
+        size === 'sm' ? 'text-[12px]' : 'text-[13px]'
       } ${className}`}
     >
       {options.map((opt) => {
@@ -39,10 +39,10 @@ export function AppleGlassSegmentedControl<T extends string = string>({
             aria-selected={isSelected}
             type="button"
             onClick={() => onChange(opt.value)}
-            className={`relative flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full font-medium transition-all duration-300 apple-spring cursor-pointer select-none ${
+            className={`relative flex items-center justify-center gap-1.5 px-3 py-1 sm:px-4 sm:py-1.5 rounded-[7px] font-medium transition-all duration-200 apple-spring cursor-pointer select-none ${
               isSelected
-                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm shadow-black/5 font-semibold'
-                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                ? 'bg-white dark:bg-[#636366] text-zinc-900 dark:text-white shadow-[0_2px_4px_rgba(0,0,0,0.08)] font-semibold'
+                : 'text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white'
             }`}
           >
             {opt.icon && <span className="flex-shrink-0">{opt.icon}</span>}
@@ -58,5 +58,7 @@ export function AppleGlassSegmentedControl<T extends string = string>({
     </div>
   );
 }
+
+export const AppleSegmentedControl = AppleGlassSegmentedControl;
 
 export default AppleGlassSegmentedControl;
