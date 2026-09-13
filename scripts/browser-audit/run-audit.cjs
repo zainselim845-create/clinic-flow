@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-const BASE = process.env.AUDIT_BASE || 'http://localhost:5173';
+const BASE = process.env.AUDIT_BASE || 'http://localhost:4173';
 const coveragePath = path.join(__dirname, 'coverage.json');
 const rawJson = fs.readFileSync(coveragePath, 'utf8').replace(/^\uFEFF/, '');
 const coverage = JSON.parse(rawJson);
@@ -13,8 +13,15 @@ async function runUiAudit() {
   console.log(`  Target: ${BASE}`);
   console.log('================================================================\n');
 
-  const browser = await chromium.launch({ channel: 'chrome', headless: true }).catch(() => {
-    return chromium.launch({ channel: 'msedge', headless: true });
+  const launchOptions = {
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+  };
+
+  const browser = await chromium.launch({ ...launchOptions, channel: 'chrome' }).catch(() => {
+    return chromium.launch({ ...launchOptions, channel: 'msedge' }).catch(() => {
+      return chromium.launch(launchOptions);
+    });
   });
 
   const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
@@ -37,7 +44,7 @@ async function runUiAudit() {
 
   // --- 1. VIEW LOGIN ---
   console.log('--- 1. Testing View: view-login ---');
-  await page.goto(BASE + '/login', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/login', { waitUntil: 'domcontentloaded' });
   
   try {
     await page.fill('#identifier', 'doctor@clinicflow.com');
@@ -63,7 +70,7 @@ async function runUiAudit() {
 
   // --- 2. VIEW DASHBOARD ---
   console.log('\n--- 2. Testing View: view-dashboard ---');
-  await page.goto(BASE + '/', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
 
   try {
@@ -122,7 +129,7 @@ async function runUiAudit() {
 
   // --- 3. VIEW APPOINTMENTS ---
   console.log('\n--- 3. Testing View: view-appointments ---');
-  await page.goto(BASE + '/appointments', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/appointments', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(500);
 
   try {
@@ -151,7 +158,7 @@ async function runUiAudit() {
 
   // --- 4. VIEW PATIENTS ---
   console.log('\n--- 4. Testing View: view-patients ---');
-  await page.goto(BASE + '/patients', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/patients', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
 
   try {
