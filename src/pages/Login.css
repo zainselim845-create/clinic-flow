@@ -344,27 +344,52 @@
 .google-picker-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1050;
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.google-picker-backdrop[data-state="closed"],
+.google-picker-backdrop[hidden] {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.google-picker-positioner {
+  position: fixed;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
   padding: 1rem;
+  z-index: 1051;
+  pointer-events: auto;
+}
+
+.google-picker-positioner[data-state="closed"],
+.google-picker-positioner[hidden] {
+  display: none !important;
+  pointer-events: none !important;
 }
 
 .google-picker-card {
-  background: var(--surface, #FFFFFF);
-  border: 1px solid var(--border-color, #DADCE0);
-  border-radius: 24px;
+  position: relative;
+  z-index: 1052;
+  background: #FFFFFF;
+  border: 1px solid rgba(218, 220, 224, 0.9);
+  border-radius: var(--squircle-xl, 28px);
   width: 100%;
-  max-width: 440px;
-  padding: 1.75rem;
-  box-shadow: 0 8px 28px rgba(60, 64, 67, 0.25);
+  max-width: 450px;
+  padding: 1.85rem;
+  box-shadow: 0 20px 48px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
   direction: rtl;
+  outline: none;
+  animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .google-picker-header {
@@ -376,112 +401,120 @@
 }
 
 .google-picker-header h3 {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: var(--text-primary, #202124);
-  margin-top: 0.25rem;
+  color: var(--text-primary, #1E293B);
+  margin-top: 0.35rem;
+  letter-spacing: -0.01em;
 }
 
 .google-picker-header p {
-  font-size: 0.82rem;
-  color: var(--text-secondary, #5F6368);
+  font-size: 0.84rem;
+  color: var(--text-secondary, #64748B);
   margin: 0;
 }
 
 .google-accounts-list {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
 .google-account-item {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.85rem 1rem;
-  border-radius: 14px;
-  background: var(--surface-container, #F0F4F9);
-  border: 1px solid var(--border-subtle, #E8EAED);
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: var(--squircle-md, 16px);
+  background: var(--surface-container, #F8FAFC);
+  border: 1px solid var(--border-subtle, #E2E8F0);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
 }
 
 .google-account-item:hover {
-  background: var(--surface-container-high, #E9EEF6);
-  border-color: var(--primary, #0B57D0);
-  transform: translateY(-1px);
+  background: #FFFFFF;
+  border-color: var(--apple-blue, #0071E3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px -4px rgba(0, 113, 227, 0.15);
 }
 
 .google-avatar-circle {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.05rem;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .google-account-item .account-details {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  flex: 1;
 }
 
 .google-account-item .account-details strong {
-  font-size: 0.88rem;
-  color: var(--text-primary, #202124);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary, #0F172A);
 }
 
 .google-account-item .account-details small {
   font-size: 0.76rem;
-  color: var(--text-secondary, #5F6368);
+  color: var(--text-secondary, #64748B);
   direction: ltr;
   text-align: right;
+  font-family: monospace;
 }
 
 .role-tag {
   display: inline-block;
   font-size: 0.7rem;
   font-weight: 700;
-  padding: 0.1rem 0.5rem;
-  border-radius: 10px;
-  margin-top: 0.25rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 8px;
+  margin-top: 0.3rem;
   width: fit-content;
 }
 
 .role-tag.doctor-tag {
-  background: #E8F0FE;
-  color: #0B57D0;
+  background: rgba(0, 113, 227, 0.1);
+  color: #0071E3;
 }
 
 .role-tag.staff-tag {
-  background: #E0F2FE;
+  background: rgba(2, 132, 199, 0.1);
   color: #0284C7;
 }
 
 .role-tag.admin-tag {
-  background: #FEE2E2;
+  background: rgba(220, 38, 38, 0.1);
   color: #DC2626;
 }
 
 .btn-close-google-picker {
-  padding: 0.65rem;
-  border-radius: 20px;
+  padding: 0.7rem;
+  border-radius: var(--squircle-md, 16px);
   background: transparent;
-  border: 1px solid var(--border-color, #DADCE0);
-  color: var(--text-secondary, #5F6368);
+  border: 1px solid var(--border-color, #E2E8F0);
+  color: var(--text-secondary, #64748B);
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
 }
 
 .btn-close-google-picker:hover {
-  background: var(--surface-container, #F0F4F9);
-  color: var(--text-primary, #202124);
+  background: var(--surface-container, #F1F5F9);
+  color: var(--text-primary, #0F172A);
 }
 
 /* ==========================================================================
