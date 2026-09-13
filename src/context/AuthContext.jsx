@@ -2,7 +2,13 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { clinicInfo as defaultClinicInfo, demoClinics, staffMembers as defaultStaffMembers, drSaraStaffMembers } from '../data/demoData';
 import { fromDbClinic } from '../services/clinicsService';
-import { registerDoctorAndClinic, authenticateUser } from '../services/authService';
+import { 
+  registerDoctorAndClinic, 
+  authenticateUser, 
+  getRegisteredTenants, 
+  saveRegisteredTenant, 
+  slugifyClinic 
+} from '../services/authService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import TenantContext from './TenantContext';
 
@@ -410,6 +416,49 @@ export const AuthProvider = ({ children }) => {
     }
 
     const assignedRole = desiredRole || 'doctor';
+
+    // 1. Check if a dedicated clinic tenant already exists for this Google user
+    const existingTenants = getRegisteredTenants();
+    let userTenant = existingTenants.find(t => 
+      (t.doctorEmail && t.doctorEmail.toLowerCase() === googleProfile.email.toLowerCase()) ||
+      (googleProfile.sub && t.ownerId === googleProfile.sub)
+    );
+
+    // 2. If not, auto-provision a real, clean dedicated clinic for this doctor (Zero demo patients)
+    if (!userTenant && assignedRole !== 'super_admin') {
+      const docRawName = googleProfile.name || googleProfile.email.split('@')[0];
+      const doctorDisplayName = docRawName.startsWith('د.') ? docRawName : `د. ${docRawName}`;
+      const clinicDisplayName = `عيادة ${doctorDisplayName}`;
+      const clinicSlug = slugifyClinic(docRawName);
+
+      userTenant = {
+        id: `clinic-${googleProfile.sub || Date.now()}`,
+        slug: clinicSlug,
+        name: clinicDisplayName,
+        doctorName: doctorDisplayName,
+        doctorEmail: googleProfile.email.toLowerCase(),
+        ownerId: googleProfile.sub || null,
+        specialty: 'طب وجراحة عامة وتخصصية',
+        address: 'القاهرة، جمهورية مصر العربية',
+        phone: '',
+        subscriptionTier: 'pro',
+        subscriptionStatus: 'active',
+        branding: {
+          primaryColor: '#0071E3',
+          accentColor: '#10B981',
+          badgeText: 'العيادة الخاصة'
+        }
+      };
+
+      saveRegisteredTenant(userTenant);
+      if (registerNewTenant) {
+        registerNewTenant(userTenant);
+      }
+    }
+
+    const currentSlug = userTenant?.slug || (assignedRole === 'super_admin' ? '*' : 'dr-ahmed');
+    const currentId = userTenant?.id || (assignedRole === 'super_admin' ? 'superadmin-root' : '550e8400-e29b-41d4-a716-446655440000');
+
     const realUser = {
       id: googleProfile.sub || googleProfile.id || `google-${Date.now()}`,
       email: googleProfile.email,
@@ -420,10 +469,10 @@ export const AuthProvider = ({ children }) => {
         ? 'مدير عام المنصة (Google Verified)'
         : assignedRole === 'staff'
         ? 'سكرتارية واستقبال العيادة (Google Verified)'
-        : 'طبيب العيادة (Google Verified)',
-      clinicSlug: activeTenant?.slug || 'dr-ahmed',
-      clinicId: activeTenant?.id || '550e8400-e29b-41d4-a716-446655440000',
-      allowedClinics: [activeTenant?.slug || 'dr-ahmed'],
+        : 'المدير الطبي / استشاري العيادة (Google Verified)',
+      clinicSlug: currentSlug,
+      clinicId: currentId,
+      allowedClinics: [currentSlug],
       authProvider: 'google',
       isEmailVerified: true
     };
@@ -432,10 +481,13 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('clinicflow_role', realUser.role);
     setUser(realUser);
     setRole(realUser.role);
-    if (realUser.clinicSlug && activeTenant?.slug !== realUser.clinicSlug) {
+    if (userTenant) {
+      setClinic(userTenant);
+    }
+    if (realUser.clinicSlug && realUser.clinicSlug !== '*' && activeTenant?.slug !== realUser.clinicSlug) {
       switchTenant?.(realUser.clinicSlug);
     }
-    if (realUser.role !== 'super_admin' && realUser.clinicSlug) {
+    if (realUser.role !== 'super_admin' && realUser.clinicSlug && realUser.clinicSlug !== '*') {
       isolateTenantStorage(realUser.clinicSlug);
     }
 
@@ -443,12 +495,12 @@ export const AuthProvider = ({ children }) => {
       eventType: AUDIT_EVENT_TYPES.USER_LOGIN,
       user: realUser.name,
       action: 'تسجيل دخول بحساب Google حقيقي',
-      details: `تم تسجيل الدخول عبر Google بالحساب ${realUser.email}`,
+      details: `تم تسجيل الدخول عبر Google بالحساب ${realUser.email} وتفعيل العيادة الخاصة ${userTenant?.name || currentSlug}`,
       entityId: realUser.id,
       entityType: 'auth'
     });
 
-    return { data: { user: realUser }, error: null };
+    return { data: { user: realUser, tenant: userTenant }, error: null };
   };
 
   const signInWithGoogle = async (personaOrProfile = 'doctor') => {

@@ -20,9 +20,9 @@ import ShiftHandoverModal from '../components/ShiftHandoverModal';
 import { AppleGlassDock } from '../components/ui';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
-import { addInvoice } from '../services/invoicesService';
+import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
-import { isDoctorRole } from '../utils/permissions';
+import { isDoctorRole, hasCapability, CAPABILITIES } from '../utils/permissions';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -32,6 +32,7 @@ const Dashboard = () => {
   
   const isDoctor = isDoctorRole(user);
   const isStaff = !isDoctor;
+  const canViewRevenue = hasCapability(user, CAPABILITIES.BILLING_REVENUE_VIEW);
   const navigate = useNavigate();
   
   const currentClinic = state.clinicInfo || {};
@@ -214,7 +215,7 @@ const Dashboard = () => {
       : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) || 300 : 300);
 
     const clinicSlug = currentClinic.slug || 'dr-ahmed';
-    const invoiceNumber = `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const invoiceNumber = getNextInvoiceNumber(currentClinicId || clinicSlug);
 
     const newInvoice = {
       id: 'inv-' + Date.now(),
@@ -572,8 +573,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Metric 4: Daily Revenue (Doctor) OR Completed Appointments (Staff) */}
-        {isDoctor ? (
+        {/* Metric 4: Daily Revenue (Authorized Financials) OR Completed Appointments (Staff) */}
+        {canViewRevenue ? (
           <div 
             className={`cockpit-stat-card revenue-card ${activeFilterTab === 'completed' ? 'active-filter-card' : ''}`}
             onClick={() => setActiveFilterTab('completed')}

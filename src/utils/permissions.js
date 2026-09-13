@@ -133,6 +133,105 @@ export function hasPermission(user, permissionKey) {
 }
 
 /**
+ * Fine-grained Enterprise Capability Matrix (Tier-1 SaaS RBAC)
+ */
+export const CAPABILITIES = {
+  // Clinical
+  CLINICAL_CONSULT: 'clinical.consultation.conduct',
+  CLINICAL_RECORDS_WRITE: 'clinical.records.write',
+  CLINICAL_RECORDS_READ: 'clinical.records.read',
+  CLINICAL_PRESCRIBE: 'clinical.prescribe',
+
+  // Billing & Finance
+  BILLING_INVOICE_CREATE: 'billing.invoice.create',
+  BILLING_PAYMENT_COLLECT: 'billing.payment.collect',
+  BILLING_REVENUE_VIEW: 'billing.revenue.view',
+  BILLING_REFUND_PROCESS: 'billing.refund.process',
+
+  // Scheduling & Front Desk
+  SCHEDULING_MANAGE: 'scheduling.appointment.manage',
+  SCHEDULING_QUEUE_TRIAGE: 'scheduling.queue.triage',
+
+  // Settings & Team
+  SETTINGS_CLINIC_MANAGE: 'settings.clinic.manage',
+  SETTINGS_TEAM_MANAGE: 'settings.team.manage',
+  PLATFORM_SUPERADMIN: 'platform.superadmin.access'
+};
+
+export const ROLE_CAPABILITIES = {
+  super_admin: ['*'],
+  owner: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*'],
+  doctor: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*'],
+  clinic_admin: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*'],
+  multi_clinic_owner: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*'],
+  associate_doctor: [
+    'clinical.consultation.conduct',
+    'clinical.records.write',
+    'clinical.records.read',
+    'clinical.prescribe',
+    'billing.invoice.create',
+    'scheduling.appointment.manage',
+    'scheduling.queue.triage'
+  ],
+  accountant: [
+    'billing.invoice.create',
+    'billing.payment.collect',
+    'billing.revenue.view',
+    'billing.refund.process',
+    'clinical.records.read'
+  ],
+  staff: [
+    'scheduling.appointment.manage',
+    'scheduling.queue.triage',
+    'billing.invoice.create',
+    'billing.payment.collect',
+    'clinical.records.read'
+  ],
+  receptionist: [
+    'scheduling.appointment.manage',
+    'scheduling.queue.triage',
+    'billing.invoice.create',
+    'billing.payment.collect',
+    'clinical.records.read'
+  ]
+};
+
+/**
+ * Checks if a user has a specific granular capability
+ * @param {Object} user - User object
+ * @param {string} capability - Capability key e.g. 'billing.revenue.view'
+ * @returns {boolean}
+ */
+export function hasCapability(user, capability) {
+  if (!user || !capability) return false;
+  if (user.role === 'super_admin' || user.isSuperAdmin === true) return true;
+  if (isDoctorRole(user)) return true;
+
+  // Explicit user capabilities array
+  if (Array.isArray(user.capabilities)) {
+    if (user.capabilities.includes('*') || user.capabilities.includes(capability)) return true;
+    const [domain] = capability.split('.');
+    if (user.capabilities.includes(`${domain}.*`)) return true;
+  }
+
+  // Legacy permissions array interoperability
+  const permissions = Array.isArray(user.permissions) ? user.permissions : [];
+  if (permissions.includes('invoices') && capability.startsWith('billing.')) return true;
+  if (permissions.includes('appointments') && capability.startsWith('scheduling.')) return true;
+  if (permissions.includes('patients') && capability === 'clinical.records.read') return true;
+
+  const role = user.role || 'staff';
+  const roleCaps = ROLE_CAPABILITIES[role] || ROLE_CAPABILITIES.staff;
+
+  if (roleCaps.includes('*') || roleCaps.includes(capability)) return true;
+
+  const [domain] = capability.split('.');
+  if (roleCaps.includes(`${domain}.*`)) return true;
+
+  return false;
+}
+
+/**
  * Checks if a user can access a specific route
  * @param {Object} user - User object from AuthContext
  * @param {string} pathname - Current route path

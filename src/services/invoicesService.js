@@ -193,3 +193,81 @@ export async function recordPayment(invoiceId, paymentData) {
     return { success: false, error };
   }
 }
+
+/**
+ * Generates a deterministic, gapless monotonic invoice sequence per clinic
+ * Format: INV-YYYY-0001, INV-YYYY-0002, etc.
+ * 
+ * @param {string} clinicId - Clinic ID or slug
+ * @param {Object} options - Options containing existing invoices or specific year
+ * @returns {string} Next sequential invoice number
+ */
+export function getNextInvoiceNumber(clinicId, options = {}) {
+  const year = options.year || new Date().getFullYear();
+  const prefix = `INV-${year}-`;
+  let candidateInvoices = Array.isArray(options.existingInvoices) ? options.existingInvoices : [];
+
+  if (candidateInvoices.length === 0 && typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(`clinicflow_invoices_${clinicId}`) 
+        || localStorage.getItem('clinicflow_invoices');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) candidateInvoices = parsed;
+      }
+    } catch (_) {}
+  }
+
+  let maxSequence = 0;
+  const seqRegex = new RegExp(`^INV-${year}-(\\d+)$`);
+
+  candidateInvoices.forEach(inv => {
+    const num = inv?.invoiceNumber || inv?.invoice_number;
+    if (typeof num === 'string') {
+      const match = num.match(seqRegex);
+      if (match && match[1]) {
+        const parsed = parseInt(match[1], 10);
+        if (!isNaN(parsed) && parsed > maxSequence) {
+          maxSequence = parsed;
+        }
+      }
+    }
+  });
+
+  const nextSeq = maxSequence + 1;
+  const padded = String(nextSeq).padStart(4, '0');
+  return `${prefix}${padded}`;
+}
+
+/**
+ * Validates and normalizes financial invoice ledger invariants
+ * Clamps all financial numbers to 2 decimal places and ensures non-negative numbers.
+ */
+export function normalizeInvoiceTotals({
+  subtotal = 0,
+  discount = 0,
+  taxPercentage = 0,
+  paidAmount = 0
+} = {}) {
+  const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
+  const cleanSubtotal = Math.max(0, round2(subtotal));
+  const cleanDiscount = Math.min(cleanSubtotal, Math.max(0, round2(discount)));
+  const taxable = Math.max(0, round2(cleanSubtotal - cleanDiscount));
+  const taxAmount = round2(taxable * (Math.max(0, Number(taxPercentage) || 0) / 100));
+  const total = round2(taxable + taxAmount);
+  const cleanPaid = Math.max(0, Math.min(total, round2(paidAmount)));
+  const remainingBalance = Math.max(0, round2(total - cleanPaid));
+  const paymentStatus = remainingBalance <= 0 ? 'paid' : (cleanPaid > 0 ? 'partial' : 'unpaid');
+
+  return {
+    subtotal: cleanSubtotal,
+    discount: cleanDiscount,
+    taxPercentage: round2(taxPercentage),
+    taxAmount,
+    total,
+    patientShare: total,
+    paidAmount: cleanPaid,
+    remainingBalance,
+    paymentStatus
+  };
+}
