@@ -4,6 +4,7 @@ import {
   MessageCircle, CalendarPlus, RefreshCw 
 } from 'lucide-react';
 import { parseArabicTime } from '../../utils/parseArabicTime';
+import { getBookingConfirmationWhatsAppUrl } from '../../services/smsService';
 
 export default function BookingSuccessStep({
   createdBooking,
@@ -24,6 +25,16 @@ export default function BookingSuccessStep({
     `العنوان: ${currentClinic?.address}`
   );
   const smsUrl = `sms:+${clinicPhoneClean || cleanPhone}?body=${smsMsg}`;
+
+  const whatsAppUrl = getBookingConfirmationWhatsAppUrl({
+    patientName: createdBooking?.patientName,
+    phone: createdBooking?.patientPhone,
+    date: createdBooking?.date,
+    time: createdBooking?.time,
+    clinicName: currentClinic?.name,
+    bookingCode: createdBooking?.bookingCode,
+    manageUrl: typeof window !== 'undefined' ? `${window.location.origin}/manage-booking` : '/manage-booking'
+  });
 
   const getGoogleCalendarUrl = (booking) => {
     if (!booking || !booking.date || !booking.time) return '#';
@@ -160,11 +171,32 @@ export default function BookingSuccessStep({
 
             {/* Action Buttons */}
             <div className="nebras-actions-row">
-              <a href={smsUrl} className="nebras-action-btn sms">
+              <a 
+                href={whatsAppUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="nebras-action-btn whatsapp" 
+                title="إرسال تذكرة الحجز عبر واتساب"
+                aria-label="حفظ وإرسال تذكرة الحجز عبر تطبيق واتساب"
+              >
+                <MessageCircle size={18} />
+                <span>حفظ التذكرة عبر واتساب</span>
+              </a>
+              <a 
+                href={smsUrl} 
+                className="nebras-action-btn sms"
+                aria-label="إرسال تفاصيل الموعد عبر رسالة نصية قصيرة SMS"
+              >
                 <MessageCircle size={18} />
                 <span>إرسال تفاصيل الموعد عبر SMS</span>
               </a>
-              <a href={getGoogleCalendarUrl(createdBooking)} target="_blank" rel="noopener noreferrer" className="nebras-action-btn calendar">
+              <a 
+                href={getGoogleCalendarUrl(createdBooking)} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="nebras-action-btn calendar"
+                aria-label="إضافة الموعد إلى تقويم جوجل Google Calendar"
+              >
                 <CalendarPlus size={18} />
                 <span>إضافة إلى تقويم جوجل</span>
               </a>

@@ -158,8 +158,9 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
 
             <div className="form-grid-3col">
               <div className="form-group">
-                <label>اختر المريض *</label>
+                <label htmlFor="rec-patient-select">اختر المريض *</label>
                 <select 
+                  id="rec-patient-select"
                   className="input-field"
                   value={selectedPatientId}
                   onChange={(e) => setSelectedPatientId(e.target.value)}
@@ -174,8 +175,9 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
               </div>
 
               <div className="form-group">
-                <label>نوع ونموذج الاستدعاء</label>
+                <label htmlFor="rec-preset-select">نوع ونموذج الاستدعاء</label>
                 <select 
+                  id="rec-preset-select"
                   className="input-field"
                   value={selectedPresetId}
                   onChange={(e) => {
@@ -192,8 +194,9 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
               </div>
 
               <div className="form-group">
-                <label>الفترة الزمنية (بالأشهر)</label>
+                <label htmlFor="rec-interval-select">الفترة الزمنية (بالأشهر)</label>
                 <select 
+                  id="rec-interval-select"
                   className="input-field"
                   value={intervalMonths}
                   onChange={(e) => {
@@ -210,8 +213,9 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
               </div>
 
               <div className="form-group">
-                <label>تاريخ الاستحقاق المحسوب</label>
+                <label htmlFor="rec-due-date">تاريخ الاستحقاق المحسوب</label>
                 <input 
+                  id="rec-due-date"
                   type="date" 
                   className="input-field"
                   value={calculatedDueDate}
@@ -221,8 +225,9 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
               </div>
 
               <div className="form-group full-span-2">
-                <label>سبب مخصص أو تعليمات الاستدعاء</label>
+                <label htmlFor="rec-custom-reason">سبب مخصص أو تعليمات الاستدعاء</label>
                 <input 
+                  id="rec-custom-reason"
                   type="text" 
                   className="input-field" 
                   placeholder="مثال: فحص وظائف كلى وتحليل سكر تراكمي..."
@@ -233,7 +238,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
             </div>
 
             <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="submit" className="btn-add-rec-action">
+              <button type="submit" className="btn-add-rec-action" aria-label="حفظ وجدولة الاستدعاء">
                 <Plus size={16} />
                 <span>حفظ وجدولة الاستدعاء</span>
               </button>
@@ -247,12 +252,14 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                 قائمة استدعاءات المرضى ({filteredRecalls.length}):
               </h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>تصفية الحالة:</span>
+                <label htmlFor="rec-filter-status" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>تصفية الحالة:</label>
                 <select 
+                  id="rec-filter-status"
                   className="input-field" 
                   style={{ padding: '0.3rem 0.6rem', fontSize: '0.82rem' }}
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
+                  aria-label="تصفية حالة الاستدعاء"
                 >
                   <option value="all">كافة المواعيد</option>
                   <option value="due">مستحق المتابعة الآن</option>
@@ -299,6 +306,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                               className="status-select-badge"
                               value={rec.status}
                               onChange={(e) => handleUpdateStatus(rec.id, e.target.value)}
+                              aria-label={`تغيير حالة استدعاء المريض ${rec.patientName}`}
                             >
                               <option value="pending">قيد الانتظار</option>
                               <option value="contacted">تم التواصل</option>
@@ -312,6 +320,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                               className="btn-send-sms-recall"
                               onClick={() => handleUpdateStatus(rec.id, 'contacted')}
                               title="إرسال رسالة تذكير مخصصة عبر SMS"
+                              aria-label={`إرسال رسالة تذكير SMS للمريض ${rec.patientName}`}
                             >
                               <MessageCircle size={15} />
                               <span>SMS</span>
@@ -323,6 +332,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                               className="btn-trash-exp"
                               onClick={() => handleDeleteRecall(rec.id)}
                               title="إلغاء الاستدعاء"
+                              aria-label={`إلغاء استدعاء المريض ${rec.patientName}`}
                             >
                               <Trash2 size={15} />
                             </button>

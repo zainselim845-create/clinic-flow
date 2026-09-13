@@ -168,10 +168,10 @@ const ReportIssueModal = ({ isOpen, onClose }) => {
 
               {/* Category Selector */}
               <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.5rem' }}>
+                <label id="issue-category-label" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.5rem' }}>
                   تصنيف البلاغ:
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
+                <div role="radiogroup" aria-labelledby="issue-category-label" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem' }}>
                   {[
                     { id: 'bug', label: 'عطل برمجي / خطأ', icon: Bug },
                     { id: 'performance', label: 'بطء في الاستجابة', icon: Zap },
@@ -184,6 +184,8 @@ const ReportIssueModal = ({ isOpen, onClose }) => {
                       <button
                         key={cat.id}
                         type="button"
+                        role="radio"
+                        aria-checked={isSelected}
                         onClick={() => setCategory(cat.id)}
                         style={{
                           display: 'flex',
@@ -210,10 +212,11 @@ const ReportIssueModal = ({ isOpen, onClose }) => {
 
               {/* Title */}
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
+                <label htmlFor="issue-title-input" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
                   عنوان مختصر للمشكلة:
                 </label>
                 <input
+                  id="issue-title-input"
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -233,10 +236,11 @@ const ReportIssueModal = ({ isOpen, onClose }) => {
 
               {/* Description */}
               <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
+                <label htmlFor="issue-description-input" style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: '#cbd5e1', marginBottom: '0.4rem' }}>
                   تفاصيل المشكلة والخطوات:
                 </label>
                 <textarea
+                  id="issue-description-input"
                   rows={3}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}

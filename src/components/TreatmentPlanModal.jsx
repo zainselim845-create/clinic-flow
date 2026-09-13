@@ -223,6 +223,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                             className={`plan-status-select ${plan.status}`}
                             value={plan.status}
                             onChange={(e) => handleStatusChange(plan.id, e.target.value)}
+                            aria-label={`حالة خطة العلاج: ${plan.title}`}
                           >
                             <option value="draft">مسودة (Draft)</option>
                             <option value="presented">معروضة للمريض</option>
@@ -231,8 +232,10 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                             <option value="completed">مكتملة بالكامل</option>
                           </select>
                           <button
+                            type="button"
                             onClick={() => handleDeletePlan(plan.id)}
                             className="btn-delete-plan"
+                            aria-label={`حذف خطة علاج ${plan.title}`}
                             title="حذف الخطة"
                           >
                             <Trash2 size={15} />
@@ -292,6 +295,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                           onClick={() => handleConvertToInvoice(plan)}
                           className="btn-convert-invoice"
                           title="تحويل خطة العلاج إلى فاتورة تحصيل رسمية"
+                          aria-label={`تحويل خطة ${plan.title} إلى فاتورة تحصيل رسمية`}
                         >
                           <Receipt size={14} />
                           <span>تحويل لفاتورة تحصيل</span>
@@ -310,8 +314,9 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
               
               <div className="form-top-fields">
                 <div className="field-block">
-                  <label>مسمى خطة العلاج *</label>
+                  <label htmlFor="plan-title-input">مسمى خطة العلاج *</label>
                   <input
+                    id="plan-title-input"
                     type="text"
                     className="plan-input"
                     value={planTitle}
@@ -321,8 +326,9 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                   />
                 </div>
                 <div className="field-block">
-                  <label>ملاحظات عامة</label>
+                  <label htmlFor="plan-notes-input">ملاحظات عامة</label>
                   <input
+                    id="plan-notes-input"
                     type="text"
                     className="plan-input"
                     value={planNotes}
@@ -341,6 +347,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                       key={idx}
                       type="button"
                       className="quick-proc-tag"
+                      aria-label={`إضافة إجراء ${proc.name} بقيمة ${proc.fee} جنيه`}
                       onClick={() => {
                         setItems(prev => [
                           ...prev,
@@ -381,6 +388,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                               placeholder="16"
                               value={item.toothNumber}
                               onChange={(e) => handleItemChange(idx, 'toothNumber', e.target.value)}
+                              aria-label={`رقم السن للبند رقم ${idx + 1}`}
                             />
                           </td>
                           <td>
@@ -388,6 +396,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                               className="table-select"
                               value={item.surface}
                               onChange={(e) => handleItemChange(idx, 'surface', e.target.value)}
+                              aria-label={`سطح السن للبند رقم ${idx + 1}`}
                             >
                               <option value="WHOLE">كامل</option>
                               <option value="O">إطباقي (O)</option>
@@ -406,6 +415,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                               value={item.procedureName}
                               onChange={(e) => handleItemChange(idx, 'procedureName', e.target.value)}
                               required
+                              aria-label={`اسم الإجراء للبند رقم ${idx + 1}`}
                             />
                           </td>
                           <td>
@@ -414,6 +424,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                               className="table-input"
                               value={item.fee}
                               onChange={(e) => handleItemChange(idx, 'fee', e.target.value)}
+                              aria-label={`تكلفة الإجراء للبند رقم ${idx + 1}`}
                             />
                           </td>
                           <td>
@@ -422,6 +433,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                               className="table-input"
                               value={item.discount}
                               onChange={(e) => handleItemChange(idx, 'discount', e.target.value)}
+                              aria-label={`قيمة الخصم للبند رقم ${idx + 1}`}
                             />
                           </td>
                           <td>
@@ -432,6 +444,7 @@ const TreatmentPlanModal = ({ patientId, plans = [], onPlansUpdate, onClose }) =
                               type="button"
                               onClick={() => handleRemoveItem(idx)}
                               className="btn-remove-row"
+                              aria-label={`حذف البند رقم ${idx + 1}`}
                             >
                               <X size={16} />
                             </button>

@@ -82,8 +82,9 @@ const LabOrderModal = ({
           
           <div className="form-grid-2">
             <div className="field-block">
-              <label>اسم المريض *</label>
+              <label htmlFor="lab-patient-name">اسم المريض *</label>
               <input
+                id="lab-patient-name"
                 type="text"
                 list="patients-list"
                 required
@@ -100,8 +101,9 @@ const LabOrderModal = ({
             </div>
 
             <div className="field-block">
-              <label>المعمل الخارجي *</label>
+              <label htmlFor="lab-name">المعمل الخارجي *</label>
               <input
+                id="lab-name"
                 type="text"
                 required
                 placeholder="اسم المعمل..."
@@ -114,8 +116,9 @@ const LabOrderModal = ({
 
           <div className="form-grid-2">
             <div className="field-block">
-              <label>نوع التركيبة أو العمل السني *</label>
+              <label htmlFor="lab-work-type">نوع التركيبة أو العمل السني *</label>
               <select
+                id="lab-work-type"
                 className="input-field"
                 value={workType}
                 onChange={(e) => setWorkType(e.target.value)}
@@ -127,8 +130,9 @@ const LabOrderModal = ({
             </div>
 
             <div className="field-block">
-              <label>رقم السن / الضرس</label>
+              <label htmlFor="lab-tooth-number">رقم السن / الضرس</label>
               <input
+                id="lab-tooth-number"
                 type="number"
                 placeholder="مثال: 16"
                 className="input-field"
@@ -140,8 +144,9 @@ const LabOrderModal = ({
 
           <div className="form-grid-3">
             <div className="field-block">
-              <label>درجة اللون / الشيد (Tooth Shade) *</label>
+              <label htmlFor="lab-shade">درجة اللون / الشيد (Tooth Shade) *</label>
               <select
+                id="lab-shade"
                 className="input-field"
                 value={shade}
                 onChange={(e) => setShade(e.target.value)}
@@ -153,8 +158,9 @@ const LabOrderModal = ({
             </div>
 
             <div className="field-block">
-              <label>تكلفة المعمل (ج.م)</label>
+              <label htmlFor="lab-cost">تكلفة المعمل (ج.م)</label>
               <input
+                id="lab-cost"
                 type="number"
                 min="0"
                 step="50"
@@ -165,8 +171,9 @@ const LabOrderModal = ({
             </div>
 
             <div className="field-block">
-              <label>تاريخ الاستلام المتوقع *</label>
+              <label htmlFor="lab-due-date">تاريخ الاستلام المتوقع *</label>
               <input
+                id="lab-due-date"
                 type="date"
                 required
                 className="input-field"
@@ -177,8 +184,9 @@ const LabOrderModal = ({
           </div>
 
           <div className="field-block">
-            <label>تعليمات خاصة وملاحظات للمعمل</label>
+            <label htmlFor="lab-notes">تعليمات خاصة وملاحظات للمعمل</label>
             <textarea
+              id="lab-notes"
               rows="2"
               placeholder="مثال: يرجى مراعاة مسافة الإطباق (Occlusion Clearance)، تشريح طبيعي دقيق..."
               className="input-field"

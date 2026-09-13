@@ -113,25 +113,31 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
               <input
                 ref={inputRef}
                 type="text"
-            className="search-modal-input"
-            placeholder="ابحث عن مريض، موعد، سكرتير، أو إجراء سريع... (اكتب اسم أو رقم هاتف)"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          {query && (
-            <button className="clear-search-btn" onClick={() => setQuery('')}>
-              <X size={16} />
-            </button>
-          )}
-          <span className="esc-badge">ESC</span>
-        </div>
+                className="search-modal-input"
+                placeholder="ابحث عن مريض، موعد، سكرتير، أو إجراء سريع... (اكتب اسم أو رقم هاتف)"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                aria-label="البحث الشامل في العيادة عن المرضى والمواعيد والموظفين"
+              />
+              {query && (
+                <button 
+                  type="button" 
+                  className="clear-search-btn" 
+                  onClick={() => setQuery('')}
+                  aria-label="مسح نص البحث"
+                >
+                  <X size={16} />
+                </button>
+              )}
+              <span className="esc-badge" aria-hidden="true">ESC</span>
+            </div>
 
         {/* Results Container */}
-        <div className="search-modal-results">
+        <div className="search-modal-results" role="region" aria-label="نتائج البحث">
           
           {/* 1. Patients Results */}
           {matchingPatients.length > 0 && (
-            <div className="results-group">
+            <div className="results-group" role="group" aria-label="نتائج المرضى">
               <div className="group-title">
                 <User size={14} />
                 <span>المرضى ({matchingPatients.length})</span>
@@ -140,7 +146,16 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
                 <div 
                   key={p.id} 
                   className="result-item"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelect(`/patients`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelect(`/patients`);
+                    }
+                  }}
+                  aria-label={`المريض ${p.name}`}
                 >
                   <div className="result-avatar">{p.name ? p.name[0] : 'م'}</div>
                   <div className="result-main">
@@ -155,7 +170,7 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
 
           {/* 2. Appointments Results */}
           {matchingAppointments.length > 0 && (
-            <div className="results-group">
+            <div className="results-group" role="group" aria-label="نتائج المواعيد">
               <div className="group-title">
                 <Calendar size={14} />
                 <span>المواعيد ({matchingAppointments.length})</span>
@@ -164,7 +179,16 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
                 <div 
                   key={a.id} 
                   className="result-item"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelect(`/appointments`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelect(`/appointments`);
+                    }
+                  }}
+                  aria-label={`موعد المريض ${a.patientName} يوم ${a.date} الساعة ${a.time}`}
                 >
                   <div className="result-icon-box appointment">
                     <Clock size={16} />
@@ -183,7 +207,7 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
 
           {/* 3. Staff Results */}
           {matchingStaff.length > 0 && (
-            <div className="results-group">
+            <div className="results-group" role="group" aria-label="نتائج فريق العمل">
               <div className="group-title">
                 <ShieldCheck size={14} />
                 <span>فريق العمل والسكرتارية ({matchingStaff.length})</span>
@@ -192,7 +216,16 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
                 <div 
                   key={s.id} 
                   className="result-item"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelect(`/settings`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelect(`/settings`);
+                    }
+                  }}
+                  aria-label={`الموظف ${s.name} - ${s.role}`}
                 >
                   <div className="result-icon-box staff">
                     <Users size={16} />
@@ -211,9 +244,9 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
 
           {/* 4. Quick Actions / Navigation */}
           {matchingActions.length > 0 && (
-            <div className="results-group">
+            <div className="results-group" role="group" aria-label="الإجراءات السريعة">
               <div className="group-title">
-                <span> الإجراءات والتنقل السريع</span>
+                <span>الإجراءات والتنقل السريع</span>
               </div>
               {matchingActions.map((action, idx) => {
                 const IconComponent = action.icon;
@@ -221,7 +254,16 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
                   <div 
                     key={idx} 
                     className="result-item action"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleSelect(action.path)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSelect(action.path);
+                      }
+                    }}
+                    aria-label={action.title}
                   >
                     <div className="result-icon-box action">
                       <IconComponent size={16} />

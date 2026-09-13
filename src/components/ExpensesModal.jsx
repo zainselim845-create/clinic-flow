@@ -145,8 +145,9 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
             </h4>
             <div className="form-grid-3col">
               <div className="form-group">
-                <label>بند / وصف المصروف *</label>
+                <label htmlFor="exp-title">بند / وصف المصروف *</label>
                 <input 
+                  id="exp-title"
                   type="text" 
                   className="input-field" 
                   placeholder="مثال: شراء كحول وشاش طبي، إيجار..."
@@ -157,8 +158,9 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
               </div>
 
               <div className="form-group">
-                <label>المبلغ (ج.م) *</label>
+                <label htmlFor="exp-amount">المبلغ (ج.م) *</label>
                 <input 
+                  id="exp-amount"
                   type="number" 
                   className="input-field" 
                   placeholder="مثال: 500"
@@ -170,8 +172,9 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
               </div>
 
               <div className="form-group">
-                <label>تصنيف المصروف</label>
+                <label htmlFor="exp-category">تصنيف المصروف</label>
                 <select 
+                  id="exp-category"
                   className="input-field"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
@@ -183,8 +186,9 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
               </div>
 
               <div className="form-group">
-                <label>تاريخ الصرف</label>
+                <label htmlFor="exp-date">تاريخ الصرف</label>
                 <input 
+                  id="exp-date"
                   type="date" 
                   className="input-field"
                   value={date}
@@ -194,8 +198,9 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
               </div>
 
               <div className="form-group full-span-2">
-                <label>ملاحظات إضافية أو رقم الفاتورة</label>
+                <label htmlFor="exp-notes">ملاحظات إضافية أو رقم الفاتورة</label>
                 <input 
+                  id="exp-notes"
                   type="text" 
                   className="input-field" 
                   placeholder="ملاحظات توضيحية..."
@@ -206,7 +211,7 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
             </div>
 
             <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="submit" className="btn-add-exp-action">
+              <button type="submit" className="btn-add-exp-action" aria-label="إضافة المصروف إلى الخزينة">
                 <Plus size={16} />
                 <span>إضافة المصروف إلى الخزينة</span>
               </button>
@@ -220,8 +225,10 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
                 جدول المصروفات المسجلة ({filteredExpenses.length}):
               </h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>تصفية حسب التصنيف:</span>
+                <label htmlFor="exp-filter-category" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>تصفية حسب التصنيف:</label>
                 <select 
+                  id="exp-filter-category"
+                  aria-label="تصفية حسب التصنيف"
                   className="input-field" 
                   style={{ padding: '0.3rem 0.6rem', fontSize: '0.82rem' }}
                   value={filterCategory}
@@ -267,6 +274,7 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
                             type="button" 
                             className="btn-trash-exp"
                             onClick={() => handleDeleteExpense(exp.id)}
+                            aria-label={`حذف مصروف ${exp.title}`}
                             title="حذف المصروف"
                           >
                             <Trash2 size={15} />

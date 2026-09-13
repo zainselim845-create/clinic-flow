@@ -120,6 +120,18 @@
   border-color: #059669;
 }
 
+.patient-main-card .btn-contact.whatsapp {
+  background: rgba(37, 211, 102, 0.12);
+  color: #128C7E;
+  border-color: rgba(37, 211, 102, 0.3);
+}
+
+.patient-main-card .btn-contact.whatsapp:hover {
+  background: rgba(37, 211, 102, 0.22);
+  border-color: #25D366;
+  color: #075E54;
+}
+
 /* Stats Row */
 .dossier-stats-row {
   display: grid;

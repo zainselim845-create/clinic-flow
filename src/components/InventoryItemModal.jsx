@@ -71,8 +71,9 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
           
           <div className="form-row-2">
             <div className="field-box">
-              <label>اسم الصنف أو المستحضر *</label>
+              <label htmlFor="inv-item-name">اسم الصنف أو المستحضر *</label>
               <input
+                id="inv-item-name"
                 type="text"
                 required
                 placeholder="مثال: كومبوزيت 3M Filtek Z250 (A2)"
@@ -83,8 +84,9 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
             </div>
 
             <div className="field-box">
-              <label>تصنيف الصنف *</label>
+              <label htmlFor="inv-item-cat">تصنيف الصنف *</label>
               <select
+                id="inv-item-cat"
                 className="input-field"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -98,8 +100,9 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
 
           <div className="form-row-3">
             <div className="field-box">
-              <label>وحدة الصرف / العبوة</label>
+              <label htmlFor="inv-item-unit">وحدة الصرف / العبوة</label>
               <input
+                id="inv-item-unit"
                 type="text"
                 className="input-field"
                 value={unit}
@@ -108,8 +111,9 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
             </div>
 
             <div className="field-box">
-              <label>الرصيد الحالي بالمخزن *</label>
+              <label htmlFor="inv-item-qty">الرصيد الحالي بالمخزن *</label>
               <input
+                id="inv-item-qty"
                 type="number"
                 min="0"
                 required
@@ -120,8 +124,9 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
             </div>
 
             <div className="field-box">
-              <label>حد الطلب الأدنى (إنذار النقص)</label>
+              <label htmlFor="inv-item-min-qty">حد الطلب الأدنى (إنذار النقص)</label>
               <input
+                id="inv-item-min-qty"
                 type="number"
                 min="1"
                 className="input-field"
@@ -133,8 +138,9 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
 
           <div className="form-row-3">
             <div className="field-box">
-              <label>تكلفة الوحدة (ج.م)</label>
+              <label htmlFor="inv-item-cost">تكلفة الوحدة (ج.م)</label>
               <input
+                id="inv-item-cost"
                 type="number"
                 min="0"
                 className="input-field"
@@ -144,8 +150,9 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
             </div>
 
             <div className="field-box">
-              <label>رقم التشغيلة (Lot #)</label>
+              <label htmlFor="inv-item-lot">رقم التشغيلة (Lot #)</label>
               <input
+                id="inv-item-lot"
                 type="text"
                 placeholder="LOT-2026-X"
                 className="input-field"
@@ -155,8 +162,9 @@ const InventoryItemModal = ({ isOpen, onClose, onSaveItem }) => {
             </div>
 
             <div className="field-box">
-              <label>تاريخ انتهاء الصلاحية</label>
+              <label htmlFor="inv-item-expiry">تاريخ انتهاء الصلاحية</label>
               <input
+                id="inv-item-expiry"
                 type="date"
                 className="input-field"
                 value={expiryDate}

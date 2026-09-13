@@ -200,8 +200,9 @@ const InvoiceModal = ({
           {isCreatingNew ? (
             <div className="invoice-patient-banner editor" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '8px', marginBottom: '1rem' }}>
               <div className="banner-item" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>اسم المريض * (اختر من السجل أو اكتب اسماً جديداً)</label>
+                <label htmlFor="inv-patient-name" className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>اسم المريض * (اختر من السجل أو اكتب اسماً جديداً)</label>
                 <input 
+                  id="inv-patient-name"
                   type="text" 
                   list="registered-patients-list"
                   className="table-txt-input" 
@@ -216,6 +217,7 @@ const InvoiceModal = ({
                     }
                   }} 
                   required 
+                  aria-label="اسم المريض"
                   style={{ padding: '8px 12px', borderRadius: '6px' }}
                 />
                 <datalist id="registered-patients-list">
@@ -225,14 +227,16 @@ const InvoiceModal = ({
                 </datalist>
               </div>
               <div className="banner-item" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <label className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>رقم هاتف المريض</label>
+                <label htmlFor="inv-patient-phone" className="lbl" style={{ fontSize: '0.85rem', fontWeight: 600 }}>رقم هاتف المريض</label>
                 <input 
+                  id="inv-patient-phone"
                   type="tel" 
                   className="table-txt-input" 
                   placeholder="010XXXXXXXX" 
                   value={patientPhone} 
                   onChange={(e) => setPatientPhone(e.target.value)} 
                   dir="ltr"
+                  aria-label="رقم هاتف المريض"
                   style={{ padding: '8px 12px', borderRadius: '6px' }}
                 />
               </div>
@@ -280,6 +284,7 @@ const InvoiceModal = ({
                           placeholder="وصف الخدمة أو الإجراء..."
                           value={it.description}
                           onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
+                          aria-label={`وصف البند رقم ${idx + 1}`}
                         />
                       </td>
                       <td>
@@ -289,21 +294,29 @@ const InvoiceModal = ({
                           className="table-txt-input"
                           value={it.quantity}
                           onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
+                          aria-label={`كمية البند رقم ${idx + 1}`}
                         />
                       </td>
                       <td>
                         <input
                           type="number"
+                          min="0"
                           className="table-txt-input"
                           value={it.unitPrice}
                           onChange={(e) => handleItemChange(idx, 'unitPrice', e.target.value)}
+                          aria-label={`سعر وحدة البند رقم ${idx + 1}`}
                         />
                       </td>
                       <td>
                         <strong>{Number(it.unitPrice || 0) * Number(it.quantity || 1)} ج.م</strong>
                       </td>
                       <td>
-                        <button type="button" onClick={() => handleRemoveItem(idx)} className="btn-del-row">
+                        <button 
+                          type="button" 
+                          onClick={() => handleRemoveItem(idx)} 
+                          className="btn-del-row"
+                          aria-label={`حذف البند رقم ${idx + 1}`}
+                        >
                           <X size={14} />
                         </button>
                       </td>
@@ -312,7 +325,7 @@ const InvoiceModal = ({
                 </tbody>
               </table>
 
-              <button type="button" onClick={handleAddItem} className="btn-add-table-row">
+              <button type="button" onClick={handleAddItem} className="btn-add-table-row" aria-label="إضافة بند جديد إلى الفاتورة">
                 <Plus size={14} />
                 <span>إضافة بند آخر</span>
               </button>
@@ -352,19 +365,22 @@ const InvoiceModal = ({
               {isCreatingNew ? (
                 <>
                   <div className="total-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <span>الخصم الممنوح (ج.م):</span>
+                    <label htmlFor="inv-discount-input" style={{ cursor: 'pointer' }}>الخصم الممنوح (ج.م):</label>
                     <input 
+                      id="inv-discount-input"
                       type="number" 
                       min="0" 
                       className="table-txt-input" 
                       value={discount} 
                       onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))}
                       style={{ width: '90px', padding: '4px 8px', textAlign: 'left' }}
+                      aria-label="الخصم الممنوح بالجنيه المصري"
                     />
                   </div>
                   <div className="total-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <span>نسبة الضريبة (%):</span>
+                    <label htmlFor="inv-tax-input" style={{ cursor: 'pointer' }}>نسبة الضريبة (%):</label>
                     <input 
+                      id="inv-tax-input"
                       type="number" 
                       min="0" 
                       max="100" 
@@ -372,6 +388,7 @@ const InvoiceModal = ({
                       value={taxPercent} 
                       onChange={(e) => setTaxPercent(Math.max(0, Number(e.target.value) || 0))}
                       style={{ width: '90px', padding: '4px 8px', textAlign: 'left' }}
+                      aria-label="نسبة ضريبة القيمة المضافة"
                     />
                   </div>
                 </>
@@ -409,7 +426,7 @@ const InvoiceModal = ({
           {/* Payment Quick Recorder (if unpaid balance exists) */}
           {!isCreatingNew && Number(currentInv.remainingBalance) > 0 && (
             <div className="record-payment-strip no-print">
-              <span className="pay-title">تسجيل دفعة نقدية الآن:</span>
+              <span className="pay-title" id="record-pay-label">تسجيل دفعة نقدية الآن:</span>
               <div className="pay-inputs">
                 <input
                   type="number"
@@ -417,11 +434,14 @@ const InvoiceModal = ({
                   className="pay-amount-input"
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
+                  aria-labelledby="record-pay-label"
+                  aria-label="المبلغ المسدد بالجنيه"
                 />
                 <select 
                   className="pay-method-select"
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
+                  aria-label="طريقة سداد الدفعة"
                 >
                   <option value="cash">نقداً (Cash)</option>
                   <option value="card">فيزا / كارت (POS)</option>
@@ -433,6 +453,7 @@ const InvoiceModal = ({
                   onClick={handleAddPaymentClick}
                   disabled={isRecordingPayment || !paymentAmount}
                   className="btn-submit-payment"
+                  aria-label="تسجيل وإثبات سداد الدفعة"
                 >
                   {isRecordingPayment ? 'جاري التسجيل...' : 'إثبات السداد'}
                 </button>

@@ -118,7 +118,7 @@ const LandingPage = () => {
       {/* 1. TOP NAVBAR */}
       <header className="landing-navbar">
         <div className="landing-nav-inner">
-          <div className="landing-brand" onClick={() => navigate('/')}>
+          <Link to="/" className="landing-brand" aria-label="الصفحة الرئيسية لكلينيك فلو">
             <div className="brand-logo-badge">
               <Stethoscope size={22} />
             </div>
@@ -126,9 +126,9 @@ const LandingPage = () => {
               <span className="brand-name">كلينيك فلو</span>
               <span className="brand-tag">ClinicFlow • Enterprise Medical SaaS</span>
             </div>
-          </div>
+          </Link>
 
-          <nav className="landing-nav-links">
+          <nav className="landing-nav-links" aria-label="أقسام الصفحة الرئيسية">
             <a href="#features" className="nav-link">المميزات</a>
             <a href="#specialties" className="nav-link">التخصصات</a>
             <a href="#discovery" className="nav-link">دليل العيادات</a>
@@ -364,14 +364,24 @@ const LandingPage = () => {
               className="discovery-input"
             />
             {clinicSearch && (
-              <button onClick={() => setClinicSearch('')} className="btn-clear-search">إلغاء</button>
+              <button 
+                type="button"
+                onClick={() => setClinicSearch('')} 
+                className="btn-clear-search"
+                aria-label="مسح حقل البحث وإظهار كافة العيادات"
+              >
+                إلغاء
+              </button>
             )}
           </div>
 
-          <div className="specialty-chips" id="specialties">
+          <div className="specialty-chips" id="specialties" role="tablist" aria-label="تصنيفات التخصصات الطبية">
             {SPECIALTY_OPTIONS.map(spec => (
               <button 
                 key={spec}
+                type="button"
+                role="tab"
+                aria-selected={selectedSpecialty === spec}
                 onClick={() => setSelectedSpecialty(spec)}
                 className={`spec-chip ${selectedSpecialty === spec ? 'active' : ''}`}
               >
@@ -594,12 +604,18 @@ const LandingPage = () => {
             }
           ].map((item, idx) => (
             <div key={idx} className={`faq-item ${faqOpen[idx] ? 'open' : ''}`}>
-              <button onClick={() => toggleFaq(idx)} className="faq-question">
+              <button 
+                type="button"
+                onClick={() => toggleFaq(idx)} 
+                className="faq-question"
+                aria-expanded={Boolean(faqOpen[idx])}
+                aria-controls={`faq-answer-${idx}`}
+              >
                 <span>{item.q}</span>
                 <ChevronDown size={18} className="faq-chevron" />
               </button>
               {faqOpen[idx] && (
-                <div className="faq-answer">
+                <div className="faq-answer" id={`faq-answer-${idx}`} role="region" aria-label={item.q}>
                   <p>{item.a}</p>
                 </div>
               )}
@@ -612,7 +628,7 @@ const LandingPage = () => {
       <footer className="landing-footer">
         <div className="footer-top">
           <div className="footer-brand-col">
-            <div className="landing-brand">
+            <Link to="/" className="landing-brand" aria-label="الصفحة الرئيسية لكلينيك فلو">
               <div className="brand-logo-badge">
                 <Stethoscope size={20} className="text-primary-brand" />
               </div>
@@ -620,7 +636,7 @@ const LandingPage = () => {
                 <span className="brand-name">كلينيك فلو</span>
                 <span className="brand-tag">ClinicFlow SaaS</span>
               </div>
-            </div>
+            </Link>
             <p className="footer-about">
               المنظومة السحابية الرائدة لإدارة العيادات والمراكز الطبية في مصر والشرق الأوسط. 
               معمارية آمنة، عزل تام، وأداء استثنائي لخدمة مليون مستخدم.

@@ -145,10 +145,11 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
             {config.provider === 'cequens' && (
               <div className="credentials-block">
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="cequens-api-key" className="form-label">
                     <Key size={16} /> Cequens API Bearer Token:
                   </label>
                   <input
+                    id="cequens-api-key"
                     type="password"
                     className="input-field"
                     placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -156,14 +157,15 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                     onChange={(e) => setConfig({ ...config, cequensApiKey: e.target.value })}
                     dir="ltr"
                   />
-                  <small className="help-text">تحصل عليه من Cequens Console  Developer Hub  API Keys.</small>
+                  <small className="help-text">تحصل عليه من Cequens Console &gt; Developer Hub &gt; API Keys.</small>
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="cequens-sender-name" className="form-label">
                     <Building2 size={16} /> Sender Name (اسم المرسل المعتمد):
                   </label>
                   <input
+                    id="cequens-sender-name"
                     type="text"
                     className="input-field"
                     placeholder="e.g. keif أو ClinicFlow"
@@ -176,10 +178,11 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="cequens-api-url" className="form-label">
                     <LinkIcon size={16} /> Cequens API Endpoint:
                   </label>
                   <input
+                    id="cequens-api-url"
                     type="text"
                     className="input-field"
                     value={config.cequensApiUrl}
@@ -192,10 +195,11 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
             {config.provider === 'textbee' && (
               <div className="credentials-block">
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="textbee-api-key" className="form-label">
                     <Key size={16} /> TextBee API Key:
                   </label>
                   <input
+                    id="textbee-api-key"
                     type="password"
                     className="input-field"
                     placeholder="e.g. tb_live_xxxxxxxxxxxxxxxx"
@@ -207,10 +211,11 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="textbee-device-id" className="form-label">
                     <Radio size={16} /> Device ID (معرّف الهاتف):
                   </label>
                   <input
+                    id="textbee-device-id"
                     type="text"
                     className="input-field"
                     placeholder="e.g. 660f9a2b8e1a7c0012345678"
@@ -222,10 +227,11 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="textbee-api-url" className="form-label">
                     <LinkIcon size={16} /> API Base URL:
                   </label>
                   <input
+                    id="textbee-api-url"
                     type="text"
                     className="input-field"
                     value={config.apiUrl}
@@ -239,10 +245,11 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
             {config.provider === 'android-gateway' && (
               <div className="credentials-block">
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="android-gw-url" className="form-label">
                     <LinkIcon size={16} /> عنوان IP للهاتف على الواي فاي:
                   </label>
                   <input
+                    id="android-gw-url"
                     type="text"
                     className="input-field"
                     placeholder="http://192.168.1.50:8080"
@@ -254,10 +261,11 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="android-gw-token" className="form-label">
                     <Key size={16} /> Token / كلمة المرور (اختياري):
                   </label>
                   <input
+                    id="android-gw-token"
                     type="password"
                     className="input-field"
                     placeholder="إذا كنت قد فعلت كلمة مرور في التطبيق"
@@ -272,10 +280,11 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
             {config.provider === 'webhook' && (
               <div className="credentials-block">
                 <div className="form-group">
-                  <label className="form-label">
+                  <label htmlFor="webhook-endpoint-url" className="form-label">
                     <LinkIcon size={16} /> Webhook Endpoint URL:
                   </label>
                   <input
+                    id="webhook-endpoint-url"
                     type="text"
                     className="input-field"
                     placeholder="https://my-sms-server.com/api/send"
@@ -288,16 +297,16 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
             )}
 
             <div className="modal-actions-row">
-              <button type="submit" className="btn btn-primary">
-                 حفظ الإعدادات
+              <button type="submit" className="btn btn-primary" aria-label="حفظ إعدادات بوابة SMS">
+                حفظ الإعدادات
               </button>
-              {saveSuccess && <span className="save-badge"> تم الحفظ بنجاح!</span>}
+              {saveSuccess && <span className="save-badge">تم الحفظ بنجاح!</span>}
             </div>
           </form>
 
           {/* Test Section */}
           <div className="test-section-card">
-            <h4> تجربة إرسال رسالة فورية حية:</h4>
+            <h4>تجربة إرسال رسالة فورية حية:</h4>
             <div className="test-form-row">
               <input
                 type="tel"
@@ -306,12 +315,14 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                 value={testPhone}
                 onChange={(e) => setTestPhone(e.target.value)}
                 dir="ltr"
+                aria-label="رقم هاتف التجربة"
               />
               <button
                 type="button"
                 className="btn btn-success"
                 onClick={handleSendTest}
                 disabled={isSending}
+                aria-label="إرسال رسالة تجريبية الآن"
               >
                 {isSending ? 'جاري الإرسال...' : <><Send size={16} /> إرسال تجريبي الآن</>}
               </button>
@@ -323,6 +334,7 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
               value={testMessage}
               onChange={(e) => setTestMessage(e.target.value)}
               placeholder="نص الرسالة..."
+              aria-label="نص رسالة الاختبار"
             />
 
             {testResult && (

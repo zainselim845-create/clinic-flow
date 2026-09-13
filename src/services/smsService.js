@@ -105,6 +105,27 @@ export function formatEgyptianPhone(phone) {
   return '+20' + cleaned;
 }
 
+/**
+ * Format phone specifically for WhatsApp wa.me link (digits only, 201xxxxxxxxx)
+ */
+export function formatPhoneForWhatsApp(phone) {
+  if (!phone) return '';
+  const cleaned = String(phone).replace(/\D/g, '');
+  if (cleaned.startsWith('00')) return cleaned.substring(2);
+  if (cleaned.startsWith('0')) return '2' + cleaned;
+  if (cleaned.startsWith('20')) return cleaned;
+  return '20' + cleaned;
+}
+
+/**
+ * Generates direct WhatsApp click-to-chat URL
+ */
+export function getWhatsAppUri(phone, message = '') {
+  const formatted = formatPhoneForWhatsApp(phone);
+  if (!formatted) return '';
+  return `https://wa.me/${formatted}?text=${encodeURIComponent(message)}`;
+}
+
 // ----------------------------------------------------
 // Individual Provider Strategies
 // ----------------------------------------------------
@@ -310,5 +331,47 @@ export async function sendReminder(nameOrOptions, phone, date, time, clinicName)
   }
   const message = `تذكير بموعد: مرحباً أ/ ${nameOrOptions || 'المريض'}، موعدك في ${clinicName || 'العيادة'} اليوم ${date} الساعة ${time}. يُرجى الحضور قبل الموعد بـ 15 دقيقة.`;
   return sendSMS(phone, message);
+}
+
+/**
+ * Generate formatted WhatsApp link for booking confirmation
+ */
+export function getBookingConfirmationWhatsAppUrl({ patientName, phone, date, time, clinicName, bookingCode, manageUrl }) {
+  let msg = `🏥 *${clinicName || 'عيادة كلينيك فلو'}*\n`;
+  msg += `أهلاً بك أ/ ${patientName || 'المريض'}،\n`;
+  msg += `تم تأكيد حجز موعدك بنجاح! 🎉\n\n`;
+  msg += `📅 *الموعد:* ${date} الساعة ${time}\n`;
+  if (bookingCode) msg += `🔑 *كود الحجز:* ${bookingCode}\n`;
+  if (manageUrl) msg += `🔗 *لإدارة أو تعديل موعدك:* ${manageUrl}\n\n`;
+  msg += `نتمنى لك دوام الصحة والعافية، ويُرجى الحضور قبل الموعد بـ 10 دقائق.`;
+
+  return getWhatsAppUri(phone, msg);
+}
+
+/**
+ * Generate formatted WhatsApp link for appointment reminder
+ */
+export function getAppointmentReminderWhatsAppUrl({ patientName, phone, date, time, clinicName }) {
+  let msg = `🏥 *${clinicName || 'عيادة كلينيك فلو'}*\n`;
+  msg += `تذكير بموعد الكشف: مرحباً أ/ ${patientName || 'المريض'} 👋\n\n`;
+  msg += `نذكرك بموعدك المحدد اليوم/غداً: ${date} في تمام الساعة ${time}.\n`;
+  msg += `في حال رغبتك في التأكيد أو تأجيل الموعد، يُرجى الرد على هذه الرسالة.\n`;
+  msg += `نتمنى لك دوام الصحة والعافية!`;
+
+  return getWhatsAppUri(phone, msg);
+}
+
+/**
+ * Generate formatted WhatsApp link for periodic recall & checkup
+ */
+export function getRecallReminderWhatsAppUrl({ patientName, phone, clinicName, reason, dueDate }) {
+  let msg = `🏥 *${clinicName || 'عيادة كلينيك فلو'}*\n`;
+  msg += `مرحباً أ/ ${patientName || 'المريض'}، تحية طيبة من فريق العيادة 🌸\n\n`;
+  msg += `نحيطكم علماً بأنه قد حان موعد المتابعة والفحص الدوري المقرر لك (${reason || 'فحص ومتابعة دورية'}).\n`;
+  if (dueDate) msg += `📅 *الموعد المقترح:* ${dueDate}\n`;
+  msg += `لحجز وتأكيد موعد استشارتك مع الطبيب، يُرجى الرد على هذه الرسالة مباشرة.\n`;
+  msg += `صحتكم تهمنا دائماً! ✨`;
+
+  return getWhatsAppUri(phone, msg);
 }
 

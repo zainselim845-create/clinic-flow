@@ -1,0 +1,21 @@
+{
+  "name": "كلينيك فلو - ClinicFlow منظومة إدارة العيادات الذكية",
+  "short_name": "ClinicFlow",
+  "description": "نظام إدارة العيادات والمراكز الطبية الذكي - حجز المواعيد، السجلات الطبية، والروشتات الإلكترونية",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F8FAFC",
+  "theme_color": "#1A73E8",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["medical", "business", "productivity"]
+}

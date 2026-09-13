@@ -558,6 +558,18 @@
   transform: scale(1.02);
 }
 
+.nebras-action-btn.whatsapp {
+  background: #25D366;
+  color: #FFFFFF !important;
+  border: 1px solid #1EBE5D;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
+}
+
+.nebras-action-btn.whatsapp:hover {
+  background: #1EBE5D;
+  transform: scale(1.02);
+}
+
 .nebras-action-btn.calendar {
   background: var(--bg-surface-secondary, rgba(255, 255, 255, 0.05));
   color: var(--text-primary) !important;

@@ -1,9 +1,18 @@
 import React, { useState, useMemo } from 'react';
 import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { Stethoscope, Check, CalendarPlus, BellRing, X, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { 
+  Stethoscope, Check, CalendarPlus, BellRing, X, AlertTriangle, 
+  ShieldAlert, Pill, Plus, Trash2, Printer, Sparkles 
+} from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { checkPrescriptionSafety } from '../../services/drugInteractionService';
+import { 
+  COMMON_MEDICATIONS, 
+  createPrescription, 
+  savePrescriptionToStorage 
+} from '../../services/prescriptionService';
+import PrescriptionPrintModal from '../../components/PrescriptionPrintModal';
 import './ConsultationModal.css';
 
 export default function ConsultationModal({
@@ -19,6 +28,17 @@ export default function ConsultationModal({
   const [followUpOption, setFollowUpOption] = useState('none');
   const [recallInterval, setRecallInterval] = useState('none');
 
+  // e-Prescription builder state
+  const [medications, setMedications] = useState([]);
+  const [newMedName, setNewMedName] = useState('');
+  const [newMedDose, setNewMedDose] = useState('');
+  const [newMedFrequency, setNewMedFrequency] = useState('');
+  const [newMedDuration, setNewMedDuration] = useState('');
+  const [newMedInstructions, setNewMedInstructions] = useState('');
+  const [generalInstructions, setGeneralInstructions] = useState('');
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [previewPrescription, setPreviewPrescription] = useState(null);
+
   // Retrieve patient health factors & allergy history
   const patientRecord = useMemo(() => {
     if (!appointment) return null;
@@ -30,12 +50,64 @@ export default function ConsultationModal({
 
   // Real-time Clinical Decision Support (CDS) Drug & Allergy Safety Warnings
   const safetyWarnings = useMemo(() => {
-    const combinedClinicalText = `${diagnosis} ${procedures} ${notes}`.trim();
+    const medsText = medications.map(m => `${m.name} ${m.instructions || ''}`).join(' ');
+    const combinedClinicalText = `${diagnosis} ${procedures} ${notes} ${newMedName} ${medsText}`.trim();
     if (!combinedClinicalText || !patientRecord) return [];
     return checkPrescriptionSafety(combinedClinicalText, patientRecord);
-  }, [diagnosis, procedures, notes, patientRecord]);
+  }, [diagnosis, procedures, notes, newMedName, medications, patientRecord]);
 
   if (!appointment) return null;
+
+  const handleAddPresetMedication = (preset) => {
+    const newMed = {
+      id: 'med-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+      name: preset.name,
+      dose: preset.defaultDose,
+      frequency: preset.defaultFrequency,
+      duration: preset.defaultDuration,
+      instructions: preset.defaultInstructions
+    };
+    setMedications(prev => [...prev, newMed]);
+  };
+
+  const handleAddCustomMedication = (e) => {
+    if (e) e.preventDefault();
+    if (!newMedName.trim()) return;
+    const newMed = {
+      id: 'med-' + Date.now(),
+      name: newMedName.trim(),
+      dose: newMedDose.trim() || 'قرص واحد',
+      frequency: newMedFrequency.trim() || 'مرتين يومياً بعد الأكل',
+      duration: newMedDuration.trim() || 'لمدة 5 أيام',
+      instructions: newMedInstructions.trim()
+    };
+    setMedications(prev => [...prev, newMed]);
+    setNewMedName('');
+    setNewMedDose('');
+    setNewMedFrequency('');
+    setNewMedDuration('');
+    setNewMedInstructions('');
+  };
+
+  const handleRemoveMedication = (id) => {
+    setMedications(prev => prev.filter(m => m.id !== id));
+  };
+
+  const handleOpenPrescriptionPreview = () => {
+    const compiled = createPrescription({
+      clinic: state.activeClinic,
+      doctor: state.activeDoctor || (state.doctors && state.doctors[0]),
+      patient: patientRecord,
+      appointment,
+      diagnosis,
+      procedures,
+      medications,
+      generalInstructions,
+      nextVisit: followUpOption === '7_days' ? 'بعد أسبوع' : followUpOption === '14_days' ? 'بعد أسبوعين' : null
+    });
+    setPreviewPrescription(compiled);
+    setShowPrescriptionModal(true);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -69,6 +141,23 @@ export default function ConsultationModal({
       });
     }
 
+    // Compile e-Prescription
+    const compiledPrescription = createPrescription({
+      clinic: state.activeClinic,
+      doctor: state.activeDoctor || (state.doctors && state.doctors[0]),
+      patient: patientRecord,
+      appointment,
+      diagnosis,
+      procedures,
+      medications,
+      generalInstructions,
+      nextVisit: followUpOption === '7_days' ? 'بعد أسبوع' : followUpOption === '14_days' ? 'بعد أسبوعين' : null
+    });
+
+    if (medications.length > 0 || diagnosis) {
+      savePrescriptionToStorage(compiledPrescription);
+    }
+
     // Doctor only writes clinical data — payment is handled by secretary
     onComplete({
       appointmentId: appointment.id,
@@ -80,7 +169,8 @@ export default function ConsultationModal({
       notes,
       fee: appointment.fee || '300 ج.م',
       recallInterval,
-      followUpOption
+      followUpOption,
+      prescription: compiledPrescription
     });
   };
 
@@ -122,8 +212,9 @@ export default function ConsultationModal({
             </div>
 
             <div className="form-group">
-              <label>التشخيص الطبي السريري *</label>
+              <label htmlFor="consult-diagnosis">التشخيص الطبي السريري *</label>
               <input
+                id="consult-diagnosis"
                 type="text"
                 placeholder="مثال: التهاب معوي حاد، نزلة شعبية، علاج عصب، متابعة سكر..."
                 value={diagnosis}
@@ -133,8 +224,9 @@ export default function ConsultationModal({
             </div>
 
             <div className="form-group">
-              <label>الإجراءات والعلاجات المنفذة</label>
+              <label htmlFor="consult-procedures">الإجراءات والعلاجات المنفذة</label>
               <textarea
+                id="consult-procedures"
                 rows={2}
                 placeholder="مثال: حشو تجميلي ضرس 6 سفلي، تنظيف جير، خلع ضرس عقل..."
                 value={procedures}
@@ -143,8 +235,9 @@ export default function ConsultationModal({
             </div>
 
             <div className="form-group">
-              <label>ملاحظات الكشف والتوصيات الطبية</label>
+              <label htmlFor="consult-notes">ملاحظات الكشف والتوصيات الطبية</label>
               <textarea
+                id="consult-notes"
                 rows={2}
                 placeholder="ملاحظات الطبيب السريرية، تفاصيل العلاج، أو توصيات المتابعة..."
                 value={notes}
@@ -152,13 +245,167 @@ export default function ConsultationModal({
               />
             </div>
 
+            {/* e-Prescription Digital Section */}
+            <div className="rx-builder-container">
+              <div className="rx-builder-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Pill size={17} style={{ color: '#0F766E' }} />
+                  <strong style={{ fontSize: '0.92rem', color: 'var(--text-primary)' }}>الروشتة والعلاج الدوائي المقترح (℞)</strong>
+                  <span className="rx-count-pill">({medications.length})</span>
+                </div>
+                {medications.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleOpenPrescriptionPreview}
+                    className="btn-rx-quick-preview"
+                    title="معاينة وطباعة الروشتة الطبية الرسمية"
+                    aria-label="معاينة وطباعة الروشتة الطبية الرسمية"
+                  >
+                    <Printer size={14} />
+                    <span>معاينة وطباعة الروشتة</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Preset Medications Chips */}
+              <div className="rx-preset-chips-container">
+                <span className="rx-preset-label">أدوية شائعة سريعة الإضافة:</span>
+                <div className="rx-preset-chips">
+                  {COMMON_MEDICATIONS.slice(0, 6).map(med => (
+                    <button
+                      key={med.id}
+                      type="button"
+                      onClick={() => handleAddPresetMedication(med)}
+                      className="rx-chip-btn"
+                      title={`إضافة ${med.name}`}
+                      aria-label={`إضافة ${med.name}`}
+                    >
+                      <Plus size={12} />
+                      <span>{med.name.split('(')[0].trim()}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Medication Input Form */}
+              <div className="rx-add-form-grid">
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="اسم الدواء والشكل (مثال: كتافلام 50 مجم أقراص)"
+                  value={newMedName}
+                  onChange={(e) => setNewMedName(e.target.value)}
+                  aria-label="اسم الدواء والشكل"
+                />
+                <div className="rx-inputs-row">
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="الجرعة (قرص واحد)"
+                    value={newMedDose}
+                    onChange={(e) => setNewMedDose(e.target.value)}
+                    aria-label="جرعة الدواء"
+                  />
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="التكرار (كل 12 ساعة بعد الأكل)"
+                    value={newMedFrequency}
+                    onChange={(e) => setNewMedFrequency(e.target.value)}
+                    aria-label="تكرار ومواعيد تناول الدواء"
+                  />
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="المدة (لمدة 5 أيام)"
+                    value={newMedDuration}
+                    onChange={(e) => setNewMedDuration(e.target.value)}
+                    aria-label="مدة تناول الدواء"
+                  />
+                </div>
+                <div className="rx-inputs-row" style={{ marginTop: '0.35rem' }}>
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="تعليمات خاصة (مثال: مع كوب ماء وفير، تجنب الشاي والقهوة ساعتين)"
+                    value={newMedInstructions}
+                    onChange={(e) => setNewMedInstructions(e.target.value)}
+                    aria-label="تعليمات خاصة بتناول الدواء"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomMedication}
+                    disabled={!newMedName.trim()}
+                    className="btn-add-med-item"
+                    aria-label="إضافة الدواء إلى الروشتة"
+                  >
+                    <Plus size={15} />
+                    <span>إضافة للروشتة</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Added Medications Table */}
+              {medications.length > 0 && (
+                <div className="rx-meds-table-wrapper">
+                  <table className="rx-meds-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>الدواء</th>
+                        <th>الجرعة والتكرار</th>
+                        <th>المدة</th>
+                        <th>تعليمات</th>
+                        <th>حذف</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {medications.map((m, idx) => (
+                        <tr key={m.id}>
+                          <td>{idx + 1}</td>
+                          <td style={{ fontWeight: 600 }}>{m.name}</td>
+                          <td>{m.dose} - {m.frequency}</td>
+                          <td>{m.duration}</td>
+                          <td style={{ fontSize: '0.78rem', color: '#64748B' }}>{m.instructions || '-'}</td>
+                          <td>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMedication(m.id)}
+                              className="btn-remove-med"
+                              title="حذف هذا الدواء"
+                              aria-label={`حذف دواء ${m.name}`}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* General instructions */}
+              <div style={{ marginTop: '0.6rem' }}>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="نصائح وتعليمات عامة للمريض (شرب سوائل، راحة تامة، تجنب الأطعمة الحارة...)"
+                  value={generalInstructions}
+                  onChange={(e) => setGeneralInstructions(e.target.value)}
+                  aria-label="نصائح وتعليمات عامة للمريض"
+                />
+              </div>
+            </div>
+
             {/* Periodic Recall Selector */}
             <div className="form-group">
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <label htmlFor="consult-recall-interval" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <BellRing size={16} className="text-primary" />
                 <span>جدولة استدعاء ومتابعة دورية للمريض</span>
               </label>
               <select
+                id="consult-recall-interval"
                 className="input-field"
                 value={recallInterval}
                 onChange={(e) => setRecallInterval(e.target.value)}
@@ -246,6 +493,17 @@ export default function ConsultationModal({
                 إلغاء
               </button>
             </Dialog.CloseTrigger>
+            {medications.length > 0 && (
+              <button 
+                type="button" 
+                onClick={handleOpenPrescriptionPreview}
+                className="btn-cancel-consultation"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', borderColor: '#0F766E', color: '#0F766E' }}
+              >
+                <Printer size={15} />
+                <span>معاينة الروشتة</span>
+              </button>
+            )}
             <button type="submit" className="btn-submit-consultation">
               <Check size={18} />
               <span>إنهاء الكشف وتحويل للمحاسبة</span>
@@ -255,6 +513,15 @@ export default function ConsultationModal({
           </Dialog.Content>
         </Dialog.Positioner>
       </Portal>
+
+      {/* Prescription Preview & Print Modal */}
+      {showPrescriptionModal && previewPrescription && (
+        <PrescriptionPrintModal
+          isOpen={showPrescriptionModal}
+          prescription={previewPrescription}
+          onClose={() => setShowPrescriptionModal(false)}
+        />
+      )}
     </Dialog.Root>
   );
 }

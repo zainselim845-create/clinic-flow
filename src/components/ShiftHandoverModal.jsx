@@ -171,8 +171,9 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
             {/* Reconciliation Box */}
             <div className="drawer-calc-card">
               <div className="calc-row">
-                <span>عهدة بداية الوردية (الـ Float):</span>
+                <label htmlFor="shift-opening-float">عهدة بداية الوردية (الـ Float):</label>
                 <input 
+                  id="shift-opening-float"
                   type="number" 
                   className="calc-input" 
                   value={openingFloat} 
@@ -190,10 +191,11 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
               </div>
 
               <div className="calc-row">
-                <label style={{ fontWeight: 800, color: '#0f172a' }}>
+                <label htmlFor="shift-actual-cash" style={{ fontWeight: 800, color: '#0f172a' }}>
                   النقد الفعلي المعدود بالدرج (Actual Cash Count) *:
                 </label>
                 <input 
+                  id="shift-actual-cash"
                   type="number" 
                   className="calc-input actual-input" 
                   placeholder="أدخل المبلغ بعد العد اليدوي..."
@@ -220,8 +222,9 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
             {/* Handover Details */}
             <div className="form-group-row">
               <div className="field-box">
-                <label>اسم مسؤول الاستقبال *</label>
+                <label htmlFor="shift-staff-name">اسم مسؤول الاستقبال *</label>
                 <input 
+                  id="shift-staff-name"
                   type="text" 
                   className="input-field" 
                   value={staffName} 
@@ -230,8 +233,9 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
                 />
               </div>
               <div className="field-box">
-                <label>ملاحظات تسليم الوردية للمناوب التالي</label>
+                <label htmlFor="shift-handover-notes">ملاحظات تسليم الوردية للمناوب التالي</label>
                 <input 
+                  id="shift-handover-notes"
                   type="text" 
                   className="input-field" 
                   placeholder="مثال: تم تسليم الخزينة ومفتاح الدرج للدكتور المناوب..."

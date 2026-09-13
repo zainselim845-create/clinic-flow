@@ -71,12 +71,15 @@ const FeedbackModal = ({ isOpen, onClose, appointment, patient }) => {
               <form onSubmit={handleSubmit} className="feedback-modal-body">
                 
                 <div className="star-rating-selector">
-                  <label>تقييم الجلسة:</label>
-                  <div className="stars-row">
+                  <label id="star-rating-label">تقييم الجلسة:</label>
+                  <div className="stars-row" role="radiogroup" aria-labelledby="star-rating-label">
                     {[1, 2, 3, 4, 5].map(star => (
                       <button
                         key={star}
                         type="button"
+                        role="radio"
+                        aria-checked={rating >= star}
+                        aria-label={`${star} من 5 نجوم`}
                         className={`star-btn ${rating >= star ? 'active' : ''}`}
                         onClick={() => setRating(star)}
                       >
@@ -87,8 +90,9 @@ const FeedbackModal = ({ isOpen, onClose, appointment, patient }) => {
                 </div>
 
                 <div className="field-block">
-                  <label>ملاحظات وتعليقات المريض:</label>
+                  <label htmlFor="feedback-comment">ملاحظات وتعليقات المريض:</label>
                   <textarea
+                    id="feedback-comment"
                     rows="3"
                     className="input-field"
                     placeholder="ملاحظات المريض حول وقت الانتظار، معاملة الفريق، أو التخدير..."
