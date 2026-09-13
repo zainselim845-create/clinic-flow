@@ -52,11 +52,11 @@ const Notifications = () => {
       </div>
 
       <div className="filters-bar glass-card">
-        <div className="status-filters">
-          <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>الكل</button>
-          <button className={filter === 'unread' ? 'active' : ''} onClick={() => setFilter('unread')}>غير مقروء</button>
-          <button className={filter === 'appointment' ? 'active' : ''} onClick={() => setFilter('appointment')}>مواعيد</button>
-          <button className={filter === 'reminder' ? 'active' : ''} onClick={() => setFilter('reminder')}>تذكيرات</button>
+        <div className="status-filters" role="tablist" aria-label="تصفية الإشعارات">
+          <button type="button" role="tab" aria-selected={filter === 'all'} className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>الكل</button>
+          <button type="button" role="tab" aria-selected={filter === 'unread'} className={filter === 'unread' ? 'active' : ''} onClick={() => setFilter('unread')}>غير مقروء</button>
+          <button type="button" role="tab" aria-selected={filter === 'appointment'} className={filter === 'appointment' ? 'active' : ''} onClick={() => setFilter('appointment')}>مواعيد</button>
+          <button type="button" role="tab" aria-selected={filter === 'reminder'} className={filter === 'reminder' ? 'active' : ''} onClick={() => setFilter('reminder')}>تذكيرات</button>
         </div>
       </div>
 

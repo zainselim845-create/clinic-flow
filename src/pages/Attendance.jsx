@@ -161,36 +161,53 @@ const Attendance = () => {
             </tr>
           </thead>
           <tbody>
-            {attendanceRecords.map(rec => (
-              <tr key={rec.id}>
-                <td><strong>{rec.staffName}</strong></td>
-                <td><span className="role-tag">{rec.staffRole || 'استقبال'}</span></td>
-                <td>{new Date(rec.checkIn).toLocaleTimeString('ar-EG')}</td>
-                <td>{rec.checkOut ? new Date(rec.checkOut).toLocaleTimeString('ar-EG') : '—'}</td>
-                <td>
-                  <strong>{rec.totalHours ? `${rec.totalHours} ساعة` : 'جارية...'}</strong>
-                </td>
-                <td>
-                  <span className={`att-status-pill ${rec.checkOut ? 'out' : 'in'}`}>
-                    {rec.checkOut ? 'انصرف' : 'على رأس العمل'}
-                  </span>
-                </td>
-                <td>
-                  {!rec.checkOut ? (
-                    <button
-                      type="button"
-                      onClick={() => handleCheckOutClick(rec.id, rec.checkIn)}
-                      className="btn-checkout-action"
-                    >
-                      <LogOut size={14} />
-                      <span>تسجيل انصراف</span>
-                    </button>
-                  ) : (
-                    <span className="text-muted" style={{ fontSize: '0.78rem' }}>مكتمل</span>
-                  )}
+            {attendanceRecords.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                    <Clock size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
+                      لم يسجل أي موظف حضوره اليوم حتى الآن
+                    </strong>
+                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', maxWidth: '380px' }}>
+                      يمكن للموظفين والتمريض تسجيل بداية ونهاية الوردية من بطاقة تسجيل الحضور السريعة بالأعلى.
+                    </p>
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              attendanceRecords.map(rec => (
+                <tr key={rec.id}>
+                  <td><strong>{rec.staffName}</strong></td>
+                  <td><span className="role-tag">{rec.staffRole || 'استقبال'}</span></td>
+                  <td>{new Date(rec.checkIn).toLocaleTimeString('ar-EG')}</td>
+                  <td>{rec.checkOut ? new Date(rec.checkOut).toLocaleTimeString('ar-EG') : '—'}</td>
+                  <td>
+                    <strong>{rec.totalHours ? `${rec.totalHours} ساعة` : 'جارية...'}</strong>
+                  </td>
+                  <td>
+                    <span className={`att-status-pill ${rec.checkOut ? 'out' : 'in'}`}>
+                      {rec.checkOut ? 'انصرف' : 'على رأس العمل'}
+                    </span>
+                  </td>
+                  <td>
+                    {!rec.checkOut ? (
+                      <button
+                        type="button"
+                        onClick={() => handleCheckOutClick(rec.id, rec.checkIn)}
+                        className="btn-checkout-action"
+                        aria-label={`تسجيل انصراف الموظف ${rec.staffName}`}
+                      >
+                        <LogOut size={14} aria-hidden="true" />
+                        <span>تسجيل انصراف</span>
+                      </button>
+                    ) : (
+                      <span className="text-muted" style={{ fontSize: '0.78rem' }}>مكتمل</span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

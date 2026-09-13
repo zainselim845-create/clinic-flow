@@ -84,7 +84,8 @@
   background: var(--primary);
   color: #FFFFFF;
   border: none;
-  padding: 0.35rem 0.75rem;
+  padding: 0.4rem 0.8rem;
+  min-height: 36px;
   border-radius: var(--radius-md);
   font-size: 0.78rem;
   font-weight: 700;
@@ -93,6 +94,11 @@
   align-items: center;
   gap: 0.25rem;
   transition: all var(--transition-fast);
+}
+
+.btn-advance-status:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .btn-advance-status:hover {

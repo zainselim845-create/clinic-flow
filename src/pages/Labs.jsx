@@ -172,19 +172,22 @@ const Labs = () => {
       {/* Search & Filter Bar */}
       <div className="filters-bar glass-card" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
         <div className="search-box" style={{ flex: 1, minWidth: '240px' }}>
-          <Search size={18} className="search-icon" />
+          <Search size={18} className="search-icon" aria-hidden="true" />
           <input
             type="text"
             placeholder="بحث بالمريض، المعمل، أو نوع التركيبة..."
+            aria-label="بحث بالمريض، المعمل، أو نوع التركيبة"
             className="input-field"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <div className="status-filter-pills">
+        <div className="status-filter-pills" role="tablist" aria-label="تصفية طلبات المعمل حسب الحالة">
           <button
             type="button"
+            role="tab"
+            aria-selected={statusFilter === 'all'}
             className={`filter-pill ${statusFilter === 'all' ? 'active' : ''}`}
             onClick={() => setStatusFilter('all')}
           >
@@ -194,6 +197,8 @@ const Labs = () => {
             <button
               key={st.key}
               type="button"
+              role="tab"
+              aria-selected={statusFilter === st.key}
               className={`filter-pill ${statusFilter === st.key ? 'active' : ''}`}
               onClick={() => setStatusFilter(st.key)}
             >
@@ -222,8 +227,40 @@ const Labs = () => {
           <tbody>
             {filteredOrders.length === 0 ? (
               <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
-                  لا توجد طلبات معمل مسجلة مطابقة.
+                <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                    <Layers size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
+                      {searchQuery || statusFilter !== 'all'
+                        ? 'لا توجد طلبات معمل مطابقة لمعايير البحث والتصفية'
+                        : 'لا توجد طلبات معامل مسجلة حتى الآن'}
+                    </strong>
+                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', maxWidth: '380px' }}>
+                      {searchQuery || statusFilter !== 'all'
+                        ? 'جرّب البحث باسم معمل أو مريض آخر أو إعادة تعيين حالة التصفية.'
+                        : 'يمكنك إرسال طلب طربوش، فينير، أو طقم متحرك جديد ومتابعة مراحل التصنيع.'}
+                    </p>
+                    {searchQuery || statusFilter !== 'all' ? (
+                      <button
+                        type="button"
+                        className="btn-advance-status"
+                        style={{ marginTop: '0.5rem', padding: '0.45rem 1rem', background: 'var(--bg-tertiary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+                        onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
+                      >
+                        إعادة ضبط الفلاتر
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-advance-status"
+                        style={{ marginTop: '0.5rem', padding: '0.45rem 1rem' }}
+                        onClick={() => setIsModalOpen(true)}
+                      >
+                        <Plus size={16} />
+                        <span>إرسال أول طلب للمعمل</span>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ) : (

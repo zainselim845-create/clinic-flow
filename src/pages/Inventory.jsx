@@ -175,21 +175,24 @@ const Inventory = () => {
       {/* Search & Category Pills */}
       <div className="filters-bar glass-card" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
         <div className="search-box" style={{ flex: 1, minWidth: '240px' }}>
-          <Search size={18} className="search-icon" />
+          <Search size={18} className="search-icon" aria-hidden="true" />
           <input
             type="text"
             placeholder="بحث باسم الصنف أو رقم التشغيلة..."
+            aria-label="بحث باسم الصنف أو رقم التشغيلة"
             className="input-field"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <div className="category-pills-wrap">
+        <div className="category-pills-wrap" role="tablist" aria-label="تصفية المستلزمات الطبية حسب التصنيف">
           {INVENTORY_CATEGORIES.map(c => (
             <button
               key={c.id}
               type="button"
+              role="tab"
+              aria-selected={selectedCategory === c.id}
               className={`cat-pill ${selectedCategory === c.id ? 'active' : ''}`}
               onClick={() => setSelectedCategory(c.id)}
             >
@@ -217,8 +220,40 @@ const Inventory = () => {
           <tbody>
             {filteredItems.length === 0 ? (
               <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
-                  لا توجد أصناف مسجلة في هذا التصنيف.
+                <td colSpan="8" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                    <Package size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
+                      {searchQuery || selectedCategory !== 'all'
+                        ? 'لا توجد أصناف مطابقة لمعايير البحث والتصنيف'
+                        : 'مخزن العيادة فارغ حتى الآن'}
+                    </strong>
+                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', maxWidth: '380px' }}>
+                      {searchQuery || selectedCategory !== 'all'
+                        ? 'جرّب البحث باسم صنف آخر أو اختيار تصنيف الكل.'
+                        : 'يمكنك إضافة المستلزمات الطبية والأدوية وتتبع المخزون وحد الطلب.'}
+                    </p>
+                    {searchQuery || selectedCategory !== 'all' ? (
+                      <button
+                        type="button"
+                        className="cat-pill active"
+                        style={{ marginTop: '0.5rem', padding: '0.45rem 1rem', border: '1px solid var(--border-color)' }}
+                        onClick={() => { setSearchQuery(''); setSelectedCategory('all'); }}
+                      >
+                        إعادة ضبط الفلاتر
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="cat-pill active"
+                        style={{ marginTop: '0.5rem', padding: '0.45rem 1rem', background: 'var(--primary)', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                        onClick={() => setIsModalOpen(true)}
+                      >
+                        <Plus size={16} />
+                        <span>إضافة أول مستلزم</span>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ) : (
