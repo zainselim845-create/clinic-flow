@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import { 
-  Building2, Users, CalendarDays, Smartphone, Bot, Database, Stethoscope, Globe
+  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
@@ -11,9 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import ScheduleBuilderTab from './settings/ScheduleBuilderTab';
 import VisitTypesTab from './settings/VisitTypesTab';
 import StaffManagementTab from './settings/StaffManagementTab';
-import SmsConfigTab from './settings/SmsConfigTab';
-import AiAssistantConfigTab from './settings/AiAssistantConfigTab';
-import DatabaseSyncTab from './settings/DatabaseSyncTab';
+import SubscriptionPlanTab from './settings/SubscriptionPlanTab';
 import CustomDomainTab from './settings/CustomDomainTab';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
@@ -24,7 +21,7 @@ const Settings = () => {
   const { state, dispatch } = useApp();
   const { updateClinicInfo } = useAuth();
   const { tenant, tenantSlug } = useTenant();
-  const [activeTab, setActiveTab] = useState('clinic'); // 'clinic' | 'schedule' | 'staff' | 'sms' | 'ai' | 'database'
+  const [activeTab, setActiveTab] = useState('clinic'); // 'clinic' | 'schedule' | 'visitTypes' | 'staff' | 'subscription' | 'customDomain'
 
   const useSupabase = isSupabaseConfigured();
 
@@ -126,27 +123,11 @@ const Settings = () => {
           </Tabs.Trigger>
 
           <Tabs.Trigger 
-            value="sms"
-            className={`tab-btn ${activeTab === 'sms' ? 'active' : ''}`}
+            value="subscription"
+            className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`}
           >
-            <Smartphone size={18} />
-            <span>بوابات الـ SMS</span>
-          </Tabs.Trigger>
-
-          <Tabs.Trigger 
-            value="ai"
-            className={`tab-btn ${activeTab === 'ai' ? 'active' : ''}`}
-          >
-            <Bot size={18} />
-            <span>الذكاء الاصطناعي (AI)</span>
-          </Tabs.Trigger>
-
-          <Tabs.Trigger 
-            value="database"
-            className={`tab-btn ${activeTab === 'database' ? 'active' : ''}`}
-          >
-            <Database size={18} />
-            <span>السحابة والنسخ الاحتياطي</span>
+            <CreditCard size={18} />
+            <span>الاشتراك ورصيد الباقة</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -197,19 +178,8 @@ const Settings = () => {
             />
           </Tabs.Content>
 
-          <Tabs.Content value="sms">
-            <SmsConfigTab />
-          </Tabs.Content>
-
-          <Tabs.Content value="ai">
-            <AiAssistantConfigTab />
-          </Tabs.Content>
-
-          <Tabs.Content value="database">
-            <DatabaseSyncTab
-              state={state}
-              dispatch={dispatch}
-            />
+          <Tabs.Content value="subscription">
+            <SubscriptionPlanTab />
           </Tabs.Content>
 
           <Tabs.Content value="customDomain">

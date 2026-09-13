@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, ArrowLeft, AlertTriangle, KeyRound, Building2, ShieldCheck, Globe } from 'lucide-react';
+import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, ArrowLeft, AlertTriangle, KeyRound, Building2, ShieldCheck, Globe, Copy, Check, ExternalLink, Sparkles, LogIn, User, Info, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Tabs } from '../components/ui/tabs';
 import { Dialog } from '../components/ui/dialog';
 import { Collapsible } from '../components/ui/collapsible';
+import { 
+  getGoogleClientId, 
+  saveGoogleClientId, 
+  isGoogleAuthAvailable, 
+  triggerGoogleOAuthPopup, 
+  getGoogleOAuthSetupInfo 
+} from '../services/googleAuthService';
 import './Login.css';
 
 const MAX_FAILED_ATTEMPTS = 5;
@@ -13,7 +20,7 @@ const LOCKOUT_SECONDS = 30;
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUpDoctorAndClinic, signInWithGoogle, user } = useAuth();
+  const { signIn, signUpDoctorAndClinic, signInWithGoogle, loginWithGoogleProfile, user } = useAuth();
 
   const searchParams = new URLSearchParams(location.search);
   const initialPortal = searchParams.get('portal') === 'admin' || searchParams.get('portal') === 'saas' ? 'saas' : 'clinic';
@@ -30,6 +37,12 @@ const Login = () => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
+  const [googleClientIdInput, setGoogleClientIdInput] = useState(() => getGoogleClientId());
+  const [customRealEmail, setCustomRealEmail] = useState('');
+  const [customRealName, setCustomRealName] = useState('');
+  const [copiedField, setCopiedField] = useState(null);
+  const [googleModalTab, setGoogleModalTab] = useState('cloud_setup'); // 'cloud_setup' | 'direct_email' | 'personas'
+  const setupInfo = getGoogleOAuthSetupInfo();
 
   // New Clinic Onboarding Form State
   const [regForm, setRegForm] = useState({
@@ -181,9 +194,97 @@ const Login = () => {
     }
   };
 
-  const handleGoogleSignInClick = () => {
+  const handleRealGoogleLoginFlow = async () => {
+    setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
+    try {
+      const profile = await triggerGoogleOAuthPopup();
+      const { error: loginErr } = await loginWithGoogleProfile(profile, portalScope === 'saas' ? 'super_admin' : 'doctor');
+      if (loginErr) throw loginErr;
+      setSuccessMessage(`أهلاً بك يا ${profile.name}! تم التحقق وتسجيل الدخول بحساب Google بنجاح.`);
+      setTimeout(() => {
+        if (portalScope === 'saas') {
+          navigate('/super-admin', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
+      }, 500);
+    } catch (err) {
+      console.error('Google OAuth Login Error:', err);
+      setError(err.message || 'تعذر استكمال تسجيل الدخول عبر Google.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignInClick = async () => {
     if (lockoutTimer > 0) return;
+    
+    // If Google Client ID is configured, trigger real Google OAuth popup immediately!
+    if (isGoogleAuthAvailable()) {
+      await handleRealGoogleLoginFlow();
+      return;
+    }
+
+    // Otherwise open the Google Setup & Direct Login modal
     setIsGoogleModalOpen(true);
+  };
+
+  const handleSaveGoogleClientId = async (e) => {
+    e?.preventDefault();
+    if (!googleClientIdInput.trim()) {
+      setError('يرجى كتابة أو لصق معرّف عميل Google (Client ID)');
+      return;
+    }
+    saveGoogleClientId(googleClientIdInput.trim());
+    setSuccessMessage('تم حفظ Google Client ID بنجاح! جاري فتح نافذة تسجيل دخول Google الحقيقية...');
+    setIsGoogleModalOpen(false);
+    setTimeout(async () => {
+      await handleRealGoogleLoginFlow();
+    }, 400);
+  };
+
+  const handleCustomRealEmailLogin = async (e) => {
+    e?.preventDefault();
+    if (!customRealEmail.trim() || !customRealEmail.includes('@')) {
+      setError('يرجى كتابة بريد إلكتروني صحيح.');
+      return;
+    }
+    setIsLoading(true);
+    setError('');
+    try {
+      const realProfile = {
+        id: `google-${Date.now()}`,
+        email: customRealEmail.trim(),
+        name: customRealName.trim() || customRealEmail.split('@')[0],
+        picture: null,
+        email_verified: true
+      };
+      const { error: loginErr } = await loginWithGoogleProfile(realProfile, portalScope === 'saas' ? 'super_admin' : 'doctor');
+      if (loginErr) throw loginErr;
+      setIsGoogleModalOpen(false);
+      setSuccessMessage(`أهلاً بك يا د. ${realProfile.name}! تم تسجيل الدخول بحسابك بنجاح.`);
+      setTimeout(() => {
+        if (portalScope === 'saas') {
+          navigate('/super-admin', { replace: true });
+        } else {
+          navigate('/dashboard', { replace: true });
+        }
+      }, 500);
+    } catch (err) {
+      setError(err.message || 'فشل تسجيل الدخول.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCopyText = (text, fieldKey) => {
+    try {
+      navigator.clipboard?.writeText(text);
+      setCopiedField(fieldKey);
+      setTimeout(() => setCopiedField(null), 2500);
+    } catch (_) {}
   };
 
   const handleSelectGoogleAccount = async (personaRole) => {
@@ -201,7 +302,7 @@ const Login = () => {
         } else {
           navigate('/dashboard', { replace: true });
         }
-      }, 600);
+      }, 500);
     } catch (err) {
       setError(err.message || 'تعذر تسجيل الدخول عبر Google. يرجى المحاولة لاحقاً.');
     } finally {

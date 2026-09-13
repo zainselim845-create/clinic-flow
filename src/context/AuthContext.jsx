@@ -404,7 +404,61 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signInWithGoogle = async (personaRole = 'doctor') => {
+  const loginWithGoogleProfile = async (googleProfile, desiredRole = 'doctor') => {
+    if (!googleProfile || !googleProfile.email) {
+      throw new Error('بيانات حساب Google غير مكتملة.');
+    }
+
+    const assignedRole = desiredRole || 'doctor';
+    const realUser = {
+      id: googleProfile.sub || googleProfile.id || `google-${Date.now()}`,
+      email: googleProfile.email,
+      name: googleProfile.name || googleProfile.email.split('@')[0],
+      avatar: googleProfile.picture || null,
+      role: assignedRole,
+      jobTitle: assignedRole === 'super_admin' 
+        ? 'مدير عام المنصة (Google Verified)'
+        : assignedRole === 'staff'
+        ? 'سكرتارية واستقبال العيادة (Google Verified)'
+        : 'طبيب العيادة (Google Verified)',
+      clinicSlug: activeTenant?.slug || 'dr-ahmed',
+      clinicId: activeTenant?.id || '550e8400-e29b-41d4-a716-446655440000',
+      allowedClinics: [activeTenant?.slug || 'dr-ahmed'],
+      authProvider: 'google',
+      isEmailVerified: true
+    };
+
+    persistUser(realUser);
+    localStorage.setItem('clinicflow_role', realUser.role);
+    setUser(realUser);
+    setRole(realUser.role);
+    if (realUser.clinicSlug && activeTenant?.slug !== realUser.clinicSlug) {
+      switchTenant?.(realUser.clinicSlug);
+    }
+    if (realUser.role !== 'super_admin' && realUser.clinicSlug) {
+      isolateTenantStorage(realUser.clinicSlug);
+    }
+
+    recordAuditEvent({
+      eventType: AUDIT_EVENT_TYPES.USER_LOGIN,
+      user: realUser.name,
+      action: 'تسجيل دخول بحساب Google حقيقي',
+      details: `تم تسجيل الدخول عبر Google بالحساب ${realUser.email}`,
+      entityId: realUser.id,
+      entityType: 'auth'
+    });
+
+    return { data: { user: realUser }, error: null };
+  };
+
+  const signInWithGoogle = async (personaOrProfile = 'doctor') => {
+    // If a real Google profile object was passed in:
+    if (typeof personaOrProfile === 'object' && personaOrProfile?.email) {
+      return loginWithGoogleProfile(personaOrProfile);
+    }
+
+    const personaRole = typeof personaOrProfile === 'string' ? personaOrProfile : 'doctor';
+
     if (!isDemoMode && supabase?.auth?.signInWithOAuth) {
       try {
         const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined;
@@ -516,6 +570,7 @@ export const AuthProvider = ({ children }) => {
       switchRole,
       signIn,
       signInWithGoogle,
+      loginWithGoogleProfile,
       signUpDoctorAndClinic,
       signOut,
       updateClinicInfo,

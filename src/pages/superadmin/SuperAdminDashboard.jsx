@@ -4,7 +4,7 @@ import { useTenant } from '../../context/TenantContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Building2, Plus, ShieldCheck, 
-  ExternalLink, AlertTriangle, Globe, LogOut
+  ExternalLink, AlertTriangle, Globe, LogOut, Server
 } from 'lucide-react';
 import { 
   getSystemErrors, 
@@ -20,13 +20,19 @@ import {
   CreateClinicModal
 } from './components';
 import { saveRegisteredTenant, saveRegisteredUser } from '../../services/authService';
+import { useApp } from '../../context/AppContext';
+import DatabaseSyncTab from '../settings/DatabaseSyncTab';
+import SmsConfigTab from '../settings/SmsConfigTab';
+import AiAssistantConfigTab from '../settings/AiAssistantConfigTab';
 import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { state, dispatch } = useApp();
   const { allTenants, setAllTenants, switchTenant, updateTenantStatus } = useTenant();
-  const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'telemetry_bugs'
+  const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'telemetry_bugs' | 'infrastructure'
+  const [infraSubTab, setInfraSubTab] = useState('database'); // 'database' | 'sms' | 'ai'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
   const [bugReports, setBugReports] = useState(getBugReports());
   const [searchTerm, setSearchTerm] = useState('');
@@ -281,6 +287,14 @@ export default function SuperAdminDashboard() {
             <AlertTriangle size={16} />
             <span>مركز الأعطال وبلاغات النظام ({unresolvedIncidentsCount})</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('infrastructure')}
+            className={`saas-tab-btn ${activeTab === 'infrastructure' ? 'active-clinics' : ''}`}
+          >
+            <Server size={16} />
+            <span>البنية السحابية والربط المركزي (Infrastructure)</span>
+          </button>
         </div>
 
         {activeTab === 'clinics' ? (
@@ -302,7 +316,7 @@ export default function SuperAdminDashboard() {
             onReactivateClinic={handleReactivateClinic}
             onSwitchAndVisit={handleSwitchAndVisit}
           />
-        ) : (
+        ) : activeTab === 'telemetry_bugs' ? (
           <TelemetryBugsCenter
             systemErrors={systemErrors}
             bugReports={bugReports}
@@ -314,6 +328,69 @@ export default function SuperAdminDashboard() {
             onResolveError={handleResolveError}
             onUpdateBugStatus={handleUpdateBugStatus}
           />
+        ) : (
+          <div className="saas-infra-container" style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', boxShadow: 'var(--shadow-card)' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => setInfraSubTab('database')}
+                style={{
+                  background: infraSubTab === 'database' ? 'var(--primary)' : 'var(--bg-tertiary)',
+                  color: infraSubTab === 'database' ? '#FFFFFF' : 'var(--text-primary)',
+                  border: 'none',
+                  padding: '0.55rem 1.1rem',
+                  borderRadius: '10px',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer'
+                }}
+              >
+                قاعدة بيانات Supabase المركزية
+              </button>
+              <button
+                type="button"
+                onClick={() => setInfraSubTab('sms')}
+                style={{
+                  background: infraSubTab === 'sms' ? 'var(--primary)' : 'var(--bg-tertiary)',
+                  color: infraSubTab === 'sms' ? '#FFFFFF' : 'var(--text-primary)',
+                  border: 'none',
+                  padding: '0.55rem 1.1rem',
+                  borderRadius: '10px',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer'
+                }}
+              >
+                بوابات الرسائل المركزية (SMS Gateways)
+              </button>
+              <button
+                type="button"
+                onClick={() => setInfraSubTab('ai')}
+                style={{
+                  background: infraSubTab === 'ai' ? 'var(--primary)' : 'var(--bg-tertiary)',
+                  color: infraSubTab === 'ai' ? '#FFFFFF' : 'var(--text-primary)',
+                  border: 'none',
+                  padding: '0.55rem 1.1rem',
+                  borderRadius: '10px',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  cursor: 'pointer'
+                }}
+              >
+                نماذج الذكاء الاصطناعي السريرية (AI Core)
+              </button>
+            </div>
+
+            {infraSubTab === 'database' && (
+              <DatabaseSyncTab state={state} dispatch={dispatch} />
+            )}
+            {infraSubTab === 'sms' && (
+              <SmsConfigTab />
+            )}
+            {infraSubTab === 'ai' && (
+              <AiAssistantConfigTab />
+            )}
+          </div>
         )}
 
         {/* Security & Architectural Invariants */}
