@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
-  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Database, Bot
+  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Database, Bot, Smartphone
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
@@ -16,12 +16,13 @@ import SubscriptionPlanTab from './settings/SubscriptionPlanTab';
 import CustomDomainTab from './settings/CustomDomainTab';
 import DatabaseSyncTab from './settings/DatabaseSyncTab';
 import AiAssistantConfigTab from './settings/AiAssistantConfigTab';
+import SmsConfigTab from './settings/SmsConfigTab';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
 import { Tabs } from '../components/ui/tabs';
 import './Settings.css';
 
-const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'subscription', 'customDomain', 'database', 'aiAssistant'];
+const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain', 'database', 'aiAssistant'];
 
 const Settings = () => {
   const { state, dispatch } = useApp();
@@ -144,6 +145,14 @@ const Settings = () => {
           </Tabs.Trigger>
 
           <Tabs.Trigger 
+            value="sms"
+            className={`tab-btn ${activeTab === 'sms' ? 'active' : ''}`}
+          >
+            <Smartphone size={18} />
+            <span>رسائل الـ SMS واسم المرسل</span>
+          </Tabs.Trigger>
+
+          <Tabs.Trigger 
             value="subscription"
             className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`}
           >
@@ -184,6 +193,7 @@ const Settings = () => {
               handleSaveClinic={handleSaveClinic}
               clinicSaveSuccess={clinicSaveSuccess}
               onNavigateToSchedule={() => handleTabChange('schedule')}
+              onNavigateToVisitTypes={() => handleTabChange('visitTypes')}
             />
           </Tabs.Content>
 
@@ -213,6 +223,10 @@ const Settings = () => {
               staffMembers={state.staffMembers || []}
               dispatch={dispatch}
             />
+          </Tabs.Content>
+
+          <Tabs.Content value="sms">
+            <SmsConfigTab />
           </Tabs.Content>
 
           <Tabs.Content value="subscription">

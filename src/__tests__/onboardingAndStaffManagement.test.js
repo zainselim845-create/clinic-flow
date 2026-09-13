@@ -9,6 +9,8 @@ import {
   completeClinicOnboarding,
   authenticateUser,
   provisionStaffAccount,
+  updateStaffAccountStatus,
+  deleteRegisteredUser,
   RESERVED_USERNAMES
 } from '../services/authService';
 
@@ -286,6 +288,46 @@ describe('Doctor Onboarding & Staff Management (Arabic SaaS Workflow)', () => {
       expect(() => {
         authenticateUser('01099998888', 'secret');
       }).toThrow('هذا الحساب معطل حالياً من قِبل إدارة العيادة.');
+    });
+
+    it('toggles staff status via updateStaffAccountStatus dynamically', () => {
+      const s = provisionStaffAccount({
+        clinicId: 'c-toggle',
+        clinicSlug: 'c-toggle',
+        name: 'موظف تجربة',
+        phone: '01077778888',
+        password: 'pass',
+        role: 'receptionist'
+      });
+
+      // Initially active
+      expect(authenticateUser('01077778888', 'pass').name).toBe('موظف تجربة');
+
+      // Deactivate
+      updateStaffAccountStatus(s.id, 'inactive');
+      expect(() => authenticateUser('01077778888', 'pass')).toThrow('معطل');
+
+      // Re-activate
+      updateStaffAccountStatus(s.id, 'active');
+      expect(authenticateUser('01077778888', 'pass').name).toBe('موظف تجربة');
+    });
+
+    it('deletes staff member via deleteRegisteredUser permanently', () => {
+      const s = provisionStaffAccount({
+        clinicId: 'c-del',
+        clinicSlug: 'c-del',
+        name: 'موظف محذوف',
+        phone: '01066665555',
+        password: 'pass',
+        role: 'receptionist'
+      });
+
+      expect(authenticateUser('01066665555', 'pass').name).toBe('موظف محذوف');
+
+      // Delete staff
+      deleteRegisteredUser(s.id);
+
+      expect(authenticateUser('01066665555', 'pass')).toBeNull();
     });
   });
 });

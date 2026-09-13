@@ -188,6 +188,40 @@ export function saveRegisteredUser(user) {
   }
 }
 
+/**
+ * Removes a registered user from auth registry
+ */
+export function deleteRegisteredUser(userIdOrPhone) {
+  if (!userIdOrPhone) return;
+  const existing = getRegisteredUsers();
+  const filtered = existing.filter(u => u.id !== userIdOrPhone && u.phone !== userIdOrPhone);
+  memoryUsersCache = filtered;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(filtered));
+    } catch (_) {}
+  }
+}
+
+/**
+ * Updates a staff account active/inactive status
+ */
+export function updateStaffAccountStatus(staffIdOrPhone, status) {
+  if (!staffIdOrPhone) return;
+  const existing = getRegisteredUsers();
+  memoryUsersCache = existing.map(u => {
+    if (u.id === staffIdOrPhone || u.phone === staffIdOrPhone) {
+      return { ...u, status };
+    }
+    return u;
+  });
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(memoryUsersCache));
+    } catch (_) {}
+  }
+}
+
 export const RESERVED_USERNAMES = new Set([
   'admin', 'super-admin', 'superadmin', 'saas-admin', 'administrator', 
   'root', 'api', 'support', 'booking', 'manage-booking', 'dashboard', 

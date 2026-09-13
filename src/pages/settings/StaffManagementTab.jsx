@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import * as staffService from '../../services/staffService';
-import { provisionStaffAccount } from '../../services/authService';
+import { provisionStaffAccount, deleteRegisteredUser, updateStaffAccountStatus } from '../../services/authService';
 import { SYSTEM_PERMISSIONS } from '../../utils/permissions';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { useTenant } from '../../context/TenantContext';
@@ -138,19 +138,26 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
           console.error('Failed to delete staff in Supabase:', err);
         }
       }
+      try {
+        deleteRegisteredUser(id);
+      } catch (_) {}
       dispatch({ type: 'DELETE_STAFF', payload: id });
     }
   };
 
   const handleToggleStaffStatus = async (id) => {
     const member = staffMembers.find(s => s.id === id);
+    const nextStatus = member?.status === 'active' ? 'inactive' : 'active';
     if (member && useSupabase) {
       try {
-        await staffService.updateStaffMember(id, { status: member.status === 'active' ? 'inactive' : 'active' });
+        await staffService.updateStaffMember(id, { status: nextStatus });
       } catch (err) {
         console.error('Failed to toggle staff status in Supabase:', err);
       }
     }
+    try {
+      updateStaffAccountStatus(id, nextStatus);
+    } catch (_) {}
     dispatch({ type: 'TOGGLE_STAFF_STATUS', payload: id });
   };
 
