@@ -72,6 +72,7 @@ const Dashboard = () => {
   }, [todaysAppointments]);
   
   const bookedToday = useMemo(() => todaysAppointments.filter(a => a.status === 'booked' || a.status === 'upcoming'), [todaysAppointments]);
+  const pendingPaymentToday = useMemo(() => todaysAppointments.filter(a => a.status === 'pending_payment'), [todaysAppointments]);
 
   const attendanceRate = useMemo(() => {
     return todaysAppointments.length > 0
@@ -144,9 +145,10 @@ const Dashboard = () => {
   const handleFinishConsultation = async (data) => {
     if (state.useSupabase) {
       try {
-        await appointmentsService.updateAppointmentStatus(data.appointmentId, 'completed', {
+        await appointmentsService.updateAppointmentStatus(data.appointmentId, 'pending_payment', {
           notes: data.notes || '',
-          diagnosis: data.diagnosis || ''
+          diagnosis: data.diagnosis || '',
+          procedures: data.procedures || ''
         });
         if (data.patientId && data.diagnosis) {
           await patientsService.updatePatient(data.patientId, {
@@ -160,15 +162,15 @@ const Dashboard = () => {
       }
     }
 
+    // Doctor finishes → status = pending_payment (secretary handles payment)
     dispatch({
       type: 'UPDATE_APPOINTMENT_STATUS',
       payload: {
         id: data.appointmentId,
-        status: 'completed',
+        status: 'pending_payment',
         notes: data.notes,
         diagnosis: data.diagnosis,
-        paidAmount: data.paidAmount,
-        paymentMethod: data.paymentMethod
+        procedures: data.procedures || ''
       }
     });
 
@@ -185,6 +187,29 @@ const Dashboard = () => {
     }
 
     setFinishExamAppt(null);
+  };
+
+  // Secretary collects payment → status becomes completed
+  const handleCollectPayment = async (appointmentId, paymentMethod) => {
+    if (state.useSupabase) {
+      try {
+        await appointmentsService.updateAppointmentStatus(appointmentId, 'completed', {
+          paymentMethod,
+          paidAt: new Date().toISOString()
+        });
+      } catch (err) {
+        console.error('Failed to sync completed payment to Supabase:', err);
+      }
+    }
+    dispatch({
+      type: 'UPDATE_APPOINTMENT_STATUS',
+      payload: {
+        id: appointmentId,
+        status: 'completed',
+        paymentMethod,
+        paidAt: new Date().toISOString()
+      }
+    });
   };
 
   // Walk-in Registration Submit
@@ -521,7 +546,7 @@ const Dashboard = () => {
                   />
                 </div>
                 <div className="filter-tabs compact-tabs">
-                  {['all', 'waiting', 'in_progress', 'completed', 'booked'].map((tab) => (
+                  {['all', 'waiting', 'in_progress', 'pending_payment', 'completed', 'booked'].map((tab) => (
                     <button
                       key={tab}
                       type="button"
@@ -531,6 +556,7 @@ const Dashboard = () => {
                       {tab === 'all' && 'الكل'}
                       {tab === 'waiting' && `انتظار (${waitingToday.length})`}
                       {tab === 'in_progress' && `في الكشف (${inProgressToday.length})`}
+                      {tab === 'pending_payment' && `💰 تحصيل (${pendingPaymentToday.length})`}
                       {tab === 'completed' && `مكتمل (${completedToday.length})`}
                       {tab === 'booked' && `قادم (${bookedToday.length})`}
                     </button>
@@ -571,11 +597,12 @@ const Dashboard = () => {
                         <td><span className="type-chip">{appt.type || 'كشف'}</span></td>
                         <td>
                           <span className={`status-badge ${appt.status}`}>
-                            {appt.status === 'completed' && 'مكتمل '}
-                            {appt.status === 'in_progress' && 'في الكشف '}
-                            {appt.status === 'waiting' && 'في الانتظار '}
-                            {(appt.status === 'booked' || appt.status === 'upcoming') && 'محجوز '}
-                            {appt.status === 'cancelled' && 'ملغي '}
+                            {appt.status === 'completed' && 'مكتمل ✅'}
+                            {appt.status === 'in_progress' && 'في الكشف 🩺'}
+                            {appt.status === 'waiting' && 'في الانتظار ⏳'}
+                            {appt.status === 'pending_payment' && 'في انتظار التحصيل 💰'}
+                            {(appt.status === 'booked' || appt.status === 'upcoming') && 'محجوز 📋'}
+                            {appt.status === 'cancelled' && 'ملغي ❌'}
                           </span>
                         </td>
                         <td>{appt.fee || '300 ج.م'}</td>
@@ -598,6 +625,36 @@ const Dashboard = () => {
                               >
                                 إنهاء الكشف
                               </button>
+                            )}
+                            {appt.status === 'pending_payment' && (
+                              <div className="payment-actions" style={{ display: 'flex', gap: '0.3rem' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCollectPayment(appt.id, 'cash')}
+                                  className="btn-action-success"
+                                  title="تحصيل نقداً"
+                                >
+                                  💵 كاش
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCollectPayment(appt.id, 'card')}
+                                  className="btn-action-primary"
+                                  title="تحصيل بالبطاقة"
+                                  style={{ fontSize: '0.75rem' }}
+                                >
+                                  💳 فيزا
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleCollectPayment(appt.id, 'instapay')}
+                                  className="btn-action-primary"
+                                  title="تحصيل إنستاباي"
+                                  style={{ fontSize: '0.75rem' }}
+                                >
+                                  📱 إنستاباي
+                                </button>
+                              </div>
                             )}
                             <button
                               type="button"
@@ -668,6 +725,18 @@ const Dashboard = () => {
                   <div className="btn-text">
                     <strong>صالة الانتظار ({waitingToday.length} مريض)</strong>
                     <small>ترتيب أسبقية الحضور والتجهيز للدخول</small>
+                  </div>
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setActiveFilterTab('pending_payment')} 
+                  className={`toolkit-action-btn ${pendingPaymentToday.length > 0 ? 'highlight' : ''}`}
+                  style={pendingPaymentToday.length > 0 ? { borderColor: '#F59E0B', background: '#FFFBEB' } : {}}
+                >
+                  <Wallet size={18} />
+                  <div className="btn-text">
+                    <strong>💰 في انتظار التحصيل ({pendingPaymentToday.length} مريض)</strong>
+                    <small>مرضى أنهوا الكشف وينتظرون دفع الرسوم</small>
                   </div>
                 </button>
               </div>

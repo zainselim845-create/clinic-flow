@@ -795,6 +795,7 @@
 .status-badge.completed { background: var(--success-light); color: var(--success); }
 .status-badge.in_progress { background: var(--primary-light); color: var(--primary); }
 .status-badge.waiting { background: var(--warning-light); color: var(--warning); }
+.status-badge.pending_payment { background: #FEF3C7; color: #D97706; font-weight: 700; }
 .status-badge.booked, .status-badge.upcoming { background: var(--bg-tertiary); color: var(--text-secondary); }
 .status-badge.cancelled { background: var(--error-light); color: var(--error); }
 

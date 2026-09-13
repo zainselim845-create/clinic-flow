@@ -16,6 +16,7 @@ import './PatientDossierDrawer.css';
 const STATUS_LABELS = {
   waiting: 'في الانتظار',
   in_progress: 'جاري الكشف',
+  pending_payment: 'في انتظار التحصيل',
   completed: 'تم الكشف',
   confirmed: 'مؤكد',
   scheduled: 'مجدول',

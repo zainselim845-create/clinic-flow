@@ -13,10 +13,10 @@ export default function ConsultationModal({
 }) {
   const { dispatch } = useApp();
   const [diagnosis, setDiagnosis] = useState('');
+  const [procedures, setProcedures] = useState('');
   const [notes, setNotes] = useState('');
-  const [followUpOption, setFollowUpOption] = useState('none'); // 'none' | '7_days' | '14_days'
-  const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' | 'card' | 'instapay'
-  const [recallInterval, setRecallInterval] = useState('none'); // 'none' | '1_month' | '3_months' | '6_months' | '12_months'
+  const [followUpOption, setFollowUpOption] = useState('none');
+  const [recallInterval, setRecallInterval] = useState('none');
 
   if (!appointment) return null;
 
@@ -52,15 +52,16 @@ export default function ConsultationModal({
       });
     }
 
+    // Doctor only writes clinical data — payment is handled by secretary
     onComplete({
       appointmentId: appointment.id,
       patientId: appointment.patientId || appointment.id,
       patientName: appointment.patientName,
       patientPhone: appointment.patientPhone,
       diagnosis,
+      procedures,
       notes,
-      paidAmount: appointment.fee || '300 ج.م',
-      paymentMethod,
+      fee: appointment.fee || '300 ج.م',
       recallInterval,
       followUpOption
     });
@@ -115,51 +116,23 @@ export default function ConsultationModal({
             </div>
 
             <div className="form-group">
-              <label>ملاحظات الكشف والتوصيات الطبية</label>
+              <label>الإجراءات والعلاجات المنفذة</label>
               <textarea
-                rows={3}
-                placeholder="ملاحظات الطبيب السريرية، تفاصيل العلاج، أو توصيات المتابعة..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                placeholder="مثال: حشو تجميلي ضرس 6 سفلي، تنظيف جير، خلع ضرس عقل..."
+                value={procedures}
+                onChange={(e) => setProcedures(e.target.value)}
               />
             </div>
 
             <div className="form-group">
-              <label>طريقة تحصيل الرسوم</label>
-              <div className="followup-radio-group">
-                <label className={`radio-pill ${paymentMethod === 'cash' ? 'selected' : ''}`}>
-                  <input
-                    type="radio"
-                    name="payMethod"
-                    value="cash"
-                    checked={paymentMethod === 'cash'}
-                    onChange={() => setPaymentMethod('cash')}
-                  />
-                  <span>نقداً (كاش)</span>
-                </label>
-
-                <label className={`radio-pill ${paymentMethod === 'card' ? 'selected' : ''}`}>
-                  <input
-                    type="radio"
-                    name="payMethod"
-                    value="card"
-                    checked={paymentMethod === 'card'}
-                    onChange={() => setPaymentMethod('card')}
-                  />
-                  <span>فيزا وبطاقة بنكية</span>
-                </label>
-
-                <label className={`radio-pill ${paymentMethod === 'instapay' ? 'selected' : ''}`}>
-                  <input
-                    type="radio"
-                    name="payMethod"
-                    value="instapay"
-                    checked={paymentMethod === 'instapay'}
-                    onChange={() => setPaymentMethod('instapay')}
-                  />
-                  <span>إنستاباي ومحفظة</span>
-                </label>
-              </div>
+              <label>ملاحظات الكشف والتوصيات الطبية</label>
+              <textarea
+                rows={2}
+                placeholder="ملاحظات الطبيب السريرية، تفاصيل العلاج، أو توصيات المتابعة..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
 
             {/* Periodic Recall Selector */}
@@ -231,7 +204,7 @@ export default function ConsultationModal({
             </Dialog.CloseTrigger>
             <button type="submit" className="btn-submit-consultation">
               <Check size={18} />
-              <span>تأكيد إتمام الكشف وحفظ السجل</span>
+              <span>إنهاء الكشف وتحويل للمحاسبة</span>
             </button>
           </div>
         </form>
@@ -241,3 +214,4 @@ export default function ConsultationModal({
     </Dialog.Root>
   );
 }
+
