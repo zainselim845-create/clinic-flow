@@ -682,70 +682,223 @@ const Login = () => {
           <span>تسجيل الدخول باستخدام Google</span>
         </button>
 
-        {/* Ark UI Google Account Picker Modal */}
+        {/* Ark UI Real Google OAuth & Account Connect Modal */}
         <Dialog.Root open={isGoogleModalOpen} onOpenChange={(details) => setIsGoogleModalOpen(details.open)} lazyMount unmountOnExit>
           <Dialog.Backdrop className="google-picker-backdrop ark-dialog-backdrop" />
           <Dialog.Positioner className="google-picker-positioner ark-dialog-positioner">
-            <Dialog.Content className="google-picker-card">
+            <Dialog.Content className="google-picker-card google-oauth-modal">
               <div className="google-picker-header">
-                <svg className="google-icon" width="22" height="22" viewBox="0 0 18 18">
+                <svg className="google-icon" width="28" height="28" viewBox="0 0 18 18" aria-hidden="true">
                   <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
                   <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
                   <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
                   <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
                 </svg>
                 <Dialog.Title asChild>
-                  <h3>اختيار حساب Google للمتابعة</h3>
+                  <h3>تسجيل الدخول الحقيقي بحساب Google</h3>
                 </Dialog.Title>
                 <Dialog.Description asChild>
-                  <p>اختر الحساب والدور المصرح به لاختبار الصلاحيات</p>
+                  <p>اربط المنظومة بحسابك الحقيقي أو أدخل بيانات معرّف Google Cloud</p>
                 </Dialog.Description>
               </div>
 
-              <div className="google-accounts-list">
-                <div 
-                  className="google-account-item" 
-                  onClick={() => handleSelectGoogleAccount('doctor')}
+              {/* Navigation Tabs */}
+              <div className="google-modal-tab-bar" role="tablist">
+                <button
+                  type="button"
+                  className={`google-tab-btn ${googleModalTab === 'cloud_setup' ? 'active' : ''}`}
+                  onClick={() => setGoogleModalTab('cloud_setup')}
                 >
-                  <div className="google-avatar-circle" style={{ background: '#0B57D0', color: '#FFF' }}>أ</div>
-                  <div className="account-details">
-                    <strong>د. أحمد الشريف (حساب طبيب)</strong>
-                    <small>dr.ahmed.google@gmail.com</small>
-                    <span className="role-tag doctor-tag">صلاحيات سريرية وطبية كاملة</span>
-                  </div>
-                </div>
-
-                <div 
-                  className="google-account-item" 
-                  onClick={() => handleSelectGoogleAccount('staff')}
+                  <KeyRound size={13} />
+                  <span>ربط Google Cloud</span>
+                </button>
+                <button
+                  type="button"
+                  className={`google-tab-btn ${googleModalTab === 'direct_email' ? 'active' : ''}`}
+                  onClick={() => setGoogleModalTab('direct_email')}
                 >
-                  <div className="google-avatar-circle" style={{ background: '#0284C7', color: '#FFF' }}>س</div>
-                  <div className="account-details">
-                    <strong>سارة كمال (حساب استقبال وسكرتارية)</strong>
-                    <small>sara.kamal.reception@gmail.com</small>
-                    <span className="role-tag staff-tag">صلاحيات تنظيم المواعيد والصالة فقط</span>
-                  </div>
-                </div>
-
-                <div 
-                  className="google-account-item" 
-                  onClick={() => handleSelectGoogleAccount('superadmin')}
+                  <User size={13} />
+                  <span>دخول فوري بحسابك</span>
+                </button>
+                <button
+                  type="button"
+                  className={`google-tab-btn ${googleModalTab === 'personas' ? 'active' : ''}`}
+                  onClick={() => setGoogleModalTab('personas')}
                 >
-                  <div className="google-avatar-circle" style={{ background: '#DC2626', color: '#FFF' }}>م</div>
-                  <div className="account-details">
-                    <strong>مدير المنصة العام (Super Admin)</strong>
-                    <small>admin.google@clinicflow.com</small>
-                    <span className="role-tag admin-tag">لوحة التحكم السحابية الشاملة</span>
-                  </div>
-                </div>
+                  <Shield size={13} />
+                  <span>أدوار المحاكاة</span>
+                </button>
               </div>
+
+              {/* Tab 1: Google Cloud Client ID Setup & Instant Launch */}
+              {googleModalTab === 'cloud_setup' && (
+                <div className="google-tab-body">
+                  <form onSubmit={handleSaveGoogleClientId} className="google-setup-form">
+                    <label className="google-form-label" htmlFor="google-client-id-field">
+                      معرّف عميل Google (OAuth 2.0 Client ID):
+                    </label>
+                    <div className="google-input-row">
+                      <input
+                        id="google-client-id-field"
+                        type="text"
+                        dir="ltr"
+                        className="input-field google-client-input"
+                        placeholder="123456789-xxxxxxxx.apps.googleusercontent.com"
+                        value={googleClientIdInput}
+                        onChange={(e) => setGoogleClientIdInput(e.target.value)}
+                      />
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-save-google" disabled={isLoading}>
+                      <CheckCircle2 size={16} />
+                      <span>حفظ وتشغيل تسجيل دخول Google الحقيقي فوراً</span>
+                    </button>
+                  </form>
+
+                  {/* Step-by-Step Google Cloud Guide Box */}
+                  <div className="google-guide-container">
+                    <div className="guide-title-row">
+                      <Info size={15} className="text-primary" />
+                      <strong>خطوات الحصول على Client ID من Google Cloud مجاناً:</strong>
+                    </div>
+
+                    <ol className="guide-ordered-steps">
+                      <li>
+                        افتح الرابط الرسمي:
+                        <a
+                          href="https://console.cloud.google.com/apis/credentials"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="google-console-link"
+                        >
+                          Google Cloud Credentials Console <ExternalLink size={11} />
+                        </a>
+                      </li>
+                      <li>اضغط <strong>Create Credentials</strong> ثم <strong>OAuth client ID</strong> (نوع التطبيق: <em>Web application</em>).</li>
+                      <li>
+                        أضف هذا الرابط في <strong>Authorized JavaScript origins</strong>:
+                        <div className="uri-copy-badge">
+                          <code>{setupInfo.origin}</code>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(setupInfo.origin, 'origin')}
+                            className="btn-copy-uri"
+                          >
+                            {copiedField === 'origin' ? <Check size={12} className="text-success" /> : <Copy size={12} />}
+                            <span>{copiedField === 'origin' ? 'تم النسخ!' : 'نسخ'}</span>
+                          </button>
+                        </div>
+                      </li>
+                      <li>
+                        أضف هذا الرابط في <strong>Authorized redirect URIs</strong>:
+                        <div className="uri-copy-badge">
+                          <code>{setupInfo.loginRedirect}</code>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyText(setupInfo.loginRedirect, 'redirect')}
+                            className="btn-copy-uri"
+                          >
+                            {copiedField === 'redirect' ? <Check size={12} className="text-success" /> : <Copy size={12} />}
+                            <span>{copiedField === 'redirect' ? 'تم النسخ!' : 'نسخ'}</span>
+                          </button>
+                        </div>
+                      </li>
+                      <li>انسخ الـ <strong>Client ID</strong> وضعه في الحقل أعلاه واضغط حفظ.</li>
+                    </ol>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 2: Direct Real Personal Email Entry */}
+              {googleModalTab === 'direct_email' && (
+                <div className="google-tab-body">
+                  <div className="direct-email-explainer">
+                    <Sparkles size={16} className="text-primary" />
+                    <span>ادخل اسمك وبريدك الحقيقي (@gmail.com) لتسجيل الدخول السحابي المباشر بحسابك فوراً:</span>
+                  </div>
+
+                  <form onSubmit={handleCustomRealEmailLogin} className="google-direct-form">
+                    <div className="form-group">
+                      <label className="google-form-label" htmlFor="real-google-email">بريدك الإلكتروني الحقيقي:</label>
+                      <input
+                        id="real-google-email"
+                        type="email"
+                        dir="ltr"
+                        required
+                        className="input-field"
+                        placeholder="yourname@gmail.com"
+                        value={customRealEmail}
+                        onChange={(e) => setCustomRealEmail(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="google-form-label" htmlFor="real-google-name">اسمك الكامل في المنظومة:</label>
+                      <input
+                        id="real-google-name"
+                        type="text"
+                        required
+                        className="input-field"
+                        placeholder="د. اسمك الكامل"
+                        value={customRealName}
+                        onChange={(e) => setCustomRealName(e.target.value)}
+                      />
+                    </div>
+
+                    <button type="submit" className="btn btn-primary btn-save-google" disabled={isLoading}>
+                      <LogIn size={16} />
+                      <span>دخول سحابي فوري بحسابي الحقيقي</span>
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* Tab 3: Sandbox Demo Personas */}
+              {googleModalTab === 'personas' && (
+                <div className="google-accounts-list">
+                  <div 
+                    className="google-account-item" 
+                    onClick={() => handleSelectGoogleAccount('doctor')}
+                  >
+                    <div className="google-avatar-circle" style={{ background: '#0B57D0', color: '#FFF' }}>أ</div>
+                    <div className="account-details">
+                      <strong>د. أحمد الشريف (حساب طبيب تجريبي)</strong>
+                      <small>dr.ahmed.google@gmail.com</small>
+                      <span className="role-tag doctor-tag">صلاحيات سريرية وطبية كاملة</span>
+                    </div>
+                  </div>
+
+                  <div 
+                    className="google-account-item" 
+                    onClick={() => handleSelectGoogleAccount('staff')}
+                  >
+                    <div className="google-avatar-circle" style={{ background: '#0284C7', color: '#FFF' }}>س</div>
+                    <div className="account-details">
+                      <strong>سارة كمال (حساب استقبال وسكرتارية)</strong>
+                      <small>sara.kamal.reception@gmail.com</small>
+                      <span className="role-tag staff-tag">صلاحيات تنظيم المواعيد والصالة فقط</span>
+                    </div>
+                  </div>
+
+                  <div 
+                    className="google-account-item" 
+                    onClick={() => handleSelectGoogleAccount('superadmin')}
+                  >
+                    <div className="google-avatar-circle" style={{ background: '#DC2626', color: '#FFF' }}>م</div>
+                    <div className="account-details">
+                      <strong>مدير المنصة العام (Super Admin)</strong>
+                      <small>admin.google@clinicflow.com</small>
+                      <span className="role-tag admin-tag">لوحة التحكم السحابية الشاملة</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <Dialog.CloseTrigger asChild>
                 <button 
                   type="button" 
                   className="btn-close-google-picker"
                 >
-                  إلغاء
+                  إغلاق
                 </button>
               </Dialog.CloseTrigger>
             </Dialog.Content>

@@ -518,6 +518,169 @@
 }
 
 /* ==========================================================================
+   GOOGLE OAUTH 2.0 ADVANCED SETUP & REAL SIGN-IN MODAL
+   ========================================================================== */
+.google-oauth-modal {
+  max-width: 520px !important;
+  max-height: 88vh;
+  overflow-y: auto;
+}
+
+.google-modal-tab-bar {
+  display: flex;
+  background: var(--surface-container, #F1F5F9);
+  padding: 4px;
+  border-radius: var(--squircle-md, 14px);
+  gap: 4px;
+  border: 1px solid var(--border-subtle, #E2E8F0);
+}
+
+.google-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary, #64748B);
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.google-tab-btn.active {
+  background: #FFFFFF;
+  color: var(--text-primary, #0F172A);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.google-tab-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.google-setup-form,
+.google-direct-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.google-form-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary, #1E293B);
+}
+
+.btn-save-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  border-radius: var(--squircle-md, 14px);
+}
+
+.google-guide-container {
+  background: #F8FAFC;
+  border: 1px solid var(--border-subtle, #E2E8F0);
+  border-radius: var(--squircle-md, 16px);
+  padding: 1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.guide-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.86rem;
+  color: var(--text-primary, #1E293B);
+}
+
+.guide-ordered-steps {
+  padding-right: 1.25rem;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary, #475569);
+  line-height: 1.5;
+}
+
+.google-console-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--apple-blue, #0071E3);
+  font-weight: 700;
+  margin-right: 4px;
+  text-decoration: underline;
+}
+
+.uri-copy-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--border-color, #CBD5E1);
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-top: 5px;
+  direction: ltr;
+}
+
+.uri-copy-badge code {
+  font-family: monospace;
+  font-size: 0.76rem;
+  color: #0F172A;
+  word-break: break-all;
+}
+
+.btn-copy-uri {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-copy-uri:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.direct-email-explainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: var(--text-secondary, #475569);
+  line-height: 1.45;
+  background: rgba(0, 113, 227, 0.05);
+  border: 1px solid rgba(0, 113, 227, 0.15);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+}
+
+/* ==========================================================================
    PORTAL SCOPE SWITCHER & SAAS ADMIN SEPARATION
    ========================================================================== */
 .portal-scope-selector {

@@ -1,4 +1,4 @@
-﻿import { safeStorage } from '../utils/safeStorage';
+import { safeStorage } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'clinicflow_google_client_id';
 
@@ -47,14 +47,24 @@ export const decodeGoogleCredential = (credential) => {
   try {
     const base64Url = credential.split('.')[1];
     if (!base64Url) throw new Error('JWT payload missing');
-
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
+    let jsonPayload;
+    if (typeof atob === 'function') {
+      try {
+        jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+      } catch {
+        jsonPayload = atob(base64);
+      }
+    } else if (typeof Buffer !== 'undefined') {
+      jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
+    } else {
+      throw new Error('Base64 decoder is not available.');
+    }
 
     return JSON.parse(jsonPayload);
   } catch (err) {
