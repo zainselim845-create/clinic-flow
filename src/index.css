@@ -195,7 +195,7 @@ h1, h2, h3, h4, h5, h6 {
   
   --text-primary: #0F172A;     /* Slate 900 - High Contrast & Clean */
   --text-secondary: #475569;   /* Slate 600 - Medium Emphasis */
-  --text-tertiary: #94A3B8;    /* Slate 400 - Low Emphasis */
+  --text-tertiary: #64748B;    /* Slate 500 - Accessible contrast (4.54:1 on white - WCAG 2.2 AA) */
   
   --border-color: #E2E8F0;     /* Slate 200 - Minimal Hairline Divider */
   --border-subtle: #F1F5F9;    /* Slate 100 - Extra Subtle Border */

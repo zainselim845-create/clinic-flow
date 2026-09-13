@@ -202,6 +202,15 @@ const BookingCalendar = ({
             if (isSelected) cellClass += ' selected';
             if (status.dateStr === todayStr) cellClass += ' today';
 
+            const dayLabel = `${dayNum} ${ARABIC_MONTHS[month]} ${year} - ${
+              status.isPast ? 'تاريخ سابق' :
+              status.isDayOff ? 'عطلة العيادة الأسبوعية' :
+              status.isVacation ? `إجازة رسمية: ${status.vacationReason}` :
+              status.isFullDayBlocked ? 'العيادة مغلقة' :
+              status.isFullyBooked ? 'مكتمل' :
+              `${status.openSlotsCount} مواعيد متاحة`
+            }`;
+
             return (
               <button
                 key={dayNum}
@@ -209,14 +218,9 @@ const BookingCalendar = ({
                 className={cellClass}
                 disabled={status.isPast || status.isDayOff || status.isFullDayBlocked || status.isFullyBooked}
                 onClick={() => handleDateSelect(status.dateStr)}
-                title={
-                  status.isPast ? 'تاريخ سابق' :
-                  status.isDayOff ? 'عطلة العيادة الأسبوعية' :
-                  status.isVacation ? `إجازة رسمية: ${status.vacationReason}` :
-                  status.isFullDayBlocked ? 'العيادة مغلقة في هذا اليوم' :
-                  status.isFullyBooked ? 'جميع المواعيد مكتملة' :
-                  `${status.openSlotsCount} مواعيد متاحة`
-                }
+                aria-label={dayLabel}
+                aria-pressed={isSelected}
+                title={dayLabel}
               >
                 <span className="day-number">{dayNum}</span>
                 {status.isAvailable && !isSelected && (
@@ -310,6 +314,12 @@ const BookingCalendar = ({
 
               if (isSelected) chipClass += ' selected';
 
+              const slotLabel = `موعد الساعة ${slot} ${
+                availability.isBooked ? 'محجوز مسبقاً' :
+                availability.isBlocked ? 'مغلق من قبل العيادة' :
+                'متاح للاختيار'
+              }`;
+
               return (
                 <button
                   key={idx}
@@ -317,12 +327,9 @@ const BookingCalendar = ({
                   className={chipClass}
                   disabled={!availability.isAvailable}
                   onClick={() => handleTimeSelect(slot)}
-                  title={
-
-                    availability.isBooked ? 'تم حجز هذا الموعد مسبقاً' :
-                    availability.isBlocked ? 'الموعد مغلق من قبل العيادة' :
-                    'اضغط لتأكيد اختيار هذا الوقت'
-                  }
+                  aria-label={slotLabel}
+                  aria-pressed={isSelected}
+                  title={slotLabel}
                 >
                   <span className="slot-time">{slot}</span>
                   {isSelected && <CheckCircle2 size={15} className="slot-check-icon" />}

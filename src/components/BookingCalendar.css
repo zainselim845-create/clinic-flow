@@ -166,7 +166,8 @@
 .day-cell.selected,
 .calendar-day-cell.selected {
   background: #F7931E !important;
-  color: #FFFFFF !important;
+  color: #0F172A !important;
+  font-weight: 800 !important;
   border-color: #F7931E !important;
   box-shadow: 0 4px 14px rgba(247, 147, 30, 0.4);
   transform: scale(1.05);
@@ -174,8 +175,9 @@
 
 .day-cell.selected .day-badge-text,
 .calendar-day-cell.selected .day-badge-text {
-  background: rgba(255, 255, 255, 0.3) !important;
-  color: #FFFFFF !important;
+  background: rgba(15, 23, 42, 0.15) !important;
+  color: #0F172A !important;
+  font-weight: 800 !important;
 }
 
 .day-cell.today,
@@ -339,14 +341,15 @@
 
 .modern-slot-btn.selected {
   background: #F7931E !important;
-  color: #FFFFFF !important;
+  color: #0F172A !important;
+  font-weight: 800 !important;
   border-color: #F7931E !important;
   box-shadow: 0 4px 14px rgba(247, 147, 30, 0.4);
   transform: scale(1.03);
 }
 
 .modern-slot-btn.selected .slot-check-icon {
-  color: #FFFFFF;
+  color: #0F172A;
 }
 
 

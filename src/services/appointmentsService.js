@@ -105,17 +105,26 @@ export async function getAppointments(clinicId, filters = {}) {
  * @returns {Promise<boolean>} True if collision exists, false if slot is available
  */
 export async function checkSlotCollision(clinicId, date, time, excludeAppointmentId = null, inMemoryAppointments = []) {
-  if (!clinicId || !date || !time) return false;
+  let excludeId = excludeAppointmentId;
+  let appointmentsList = inMemoryAppointments;
 
-  // 1. Check in-memory / local storage appointments first
-  if (Array.isArray(inMemoryAppointments) && inMemoryAppointments.length > 0) {
-    const conflict = inMemoryAppointments.some(a => {
-      if (excludeAppointmentId && a.id === excludeAppointmentId) return false;
-      if (a.status === 'cancelled' || a.status === 'refunded') return false;
-      const matchClinic = !a.clinicId || a.clinicId === clinicId;
-      return matchClinic && a.date === date && a.time === time;
+  // Polymorphic support: if 4th argument is an array, treat it as inMemoryAppointments
+  if (Array.isArray(excludeAppointmentId) && appointmentsList.length === 0) {
+    appointmentsList = excludeAppointmentId;
+    excludeId = null;
+  }
+
+  // 1. Check in-memory / local appointments first (works offline & in tests)
+  if (appointmentsList && appointmentsList.length > 0) {
+    const collision = appointmentsList.some(apt => {
+      const matchClinic = !clinicId || !apt.clinicId || apt.clinicId === clinicId;
+      const matchDate = apt.date === date;
+      const matchTime = apt.time === time;
+      const notExcluded = !excludeId || String(apt.id) !== String(excludeId);
+      const isNotCancelled = apt.status !== 'cancelled';
+      return matchClinic && matchDate && matchTime && notExcluded && isNotCancelled;
     });
-    if (conflict) return true;
+    if (collision) return true;
   }
 
   // 2. Check Supabase if configured

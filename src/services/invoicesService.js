@@ -246,15 +246,20 @@ export function getNextInvoiceNumber(clinicId, options = {}) {
 export function normalizeInvoiceTotals({
   subtotal = 0,
   discount = 0,
+  discountAmount = 0,
   taxPercentage = 0,
+  taxAmount: providedTaxAmount,
   paidAmount = 0
 } = {}) {
   const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
   const cleanSubtotal = Math.max(0, round2(subtotal));
-  const cleanDiscount = Math.min(cleanSubtotal, Math.max(0, round2(discount)));
+  const rawDiscount = discount || discountAmount || 0;
+  const cleanDiscount = Math.min(cleanSubtotal, Math.max(0, round2(rawDiscount)));
   const cleanTaxPercent = Math.max(0, round2(taxPercentage));
   const taxable = Math.max(0, round2(cleanSubtotal - cleanDiscount));
-  const taxAmount = round2(taxable * (cleanTaxPercent / 100));
+  const taxAmount = providedTaxAmount !== undefined 
+    ? round2(providedTaxAmount) 
+    : round2(taxable * (cleanTaxPercent / 100));
   const total = round2(taxable + taxAmount);
   const cleanPaid = Math.max(0, Math.min(total, round2(paidAmount)));
   const remainingBalance = Math.max(0, round2(total - cleanPaid));

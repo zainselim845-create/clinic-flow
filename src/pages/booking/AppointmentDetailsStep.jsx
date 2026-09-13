@@ -203,7 +203,7 @@ export default function AppointmentDetailsStep({
             ></textarea>
 
             {bookingError && (
-              <div className="nebras-error-banner">
+              <div className="nebras-error-banner" role="alert" aria-live="assertive">
                 <AlertCircle size={18} />
                 <span>{bookingError}</span>
               </div>

@@ -46,7 +46,7 @@ export default function PhoneCheckStep({
               <Phone size={18} className="nebras-field-icon" />
             </div>
             {phoneError && (
-              <span className="nebras-error-msg">
+              <span className="nebras-error-msg" role="alert" aria-live="assertive">
                 <AlertCircle size={14} />
                 <span>{phoneError}</span>
               </span>

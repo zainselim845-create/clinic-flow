@@ -185,20 +185,40 @@ export function recordAuditEvent({
 }
 
 /**
- * Retrieves all stored audit logs
+ * Polymorphic alias for recordAuditEvent supporting standard audit fields
+ */
+export function logAuditEvent(params = {}) {
+  return recordAuditEvent({
+    ...params,
+    eventType: params.eventType || params.action || 'AUDIT_LOG',
+    user: params.user || params.userId || 'الطبيب المناوب',
+    entityType: params.entityType || params.resourceType || 'general',
+    entityId: params.entityId || params.resourceId || '',
+    details: typeof params.details === 'object' ? JSON.stringify(params.details) : String(params.details || '')
+  });
+}
+
+/**
+ * Retrieves stored audit logs, optionally filtered by clinicId and limit
+ * @param {string} [clinicId]
+ * @param {number} [limit]
  * @returns {Array} List of audit records
  */
-export function getAuditLogs() {
+export function getAuditLogs(clinicId = null, limit = 10000) {
+  let list = inMemoryAuditLogs;
   if (typeof localStorage !== 'undefined') {
     try {
       const raw = localStorage.getItem(AUDIT_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) list = parsed;
       }
     } catch (_) {}
   }
-  return inMemoryAuditLogs;
+  if (clinicId) {
+    list = list.filter(e => !e.clinicId || e.clinicId === clinicId);
+  }
+  return list.slice(0, limit);
 }
 
 /**
@@ -206,12 +226,12 @@ export function getAuditLogs() {
  * Detects if any record was modified, injected, or removed.
  * 
  * @param {Array} [logs] - Optional list of logs to verify (defaults to stored logs)
- * @returns {Object} { isValid, totalChecked, brokenAt, reason }
+ * @returns {Object} { isValid, totalChecked, brokenAt, corruptedIndex, reason }
  */
 export function verifyAuditChainIntegrity(logs = null) {
   const chain = Array.isArray(logs) ? logs : getAuditLogs();
   if (!chain || chain.length === 0) {
-    return { isValid: true, totalChecked: 0, brokenAt: null, reason: 'Empty chain' };
+    return { isValid: true, totalChecked: 0, brokenAt: null, corruptedIndex: null, reason: 'Empty chain' };
   }
 
   // Logs are ordered newest-first (descending). Reverse to verify chronologically from genesis.
@@ -227,6 +247,7 @@ export function verifyAuditChainIntegrity(logs = null) {
         isValid: false,
         totalChecked: i,
         brokenAt: record.id || `index_${i}`,
+        corruptedIndex: i,
         reason: `Broken chain link or tampered entry at index ${i}: expected previous hash ${expectedPrevHash.slice(0, 10)}... but got ${String(record.previousHash).slice(0, 10)}...`
       };
     }
@@ -238,6 +259,7 @@ export function verifyAuditChainIntegrity(logs = null) {
         isValid: false,
         totalChecked: i,
         brokenAt: record.id || `index_${i}`,
+        corruptedIndex: i,
         reason: `Tampered payload detected at record ${record.id}: hash mismatch`
       };
     }
@@ -249,6 +271,7 @@ export function verifyAuditChainIntegrity(logs = null) {
     isValid: true,
     totalChecked: chronological.length,
     brokenAt: null,
+    corruptedIndex: null,
     headHash: expectedPrevHash,
     reason: 'Cryptographic chain intact and tamper-free'
   };

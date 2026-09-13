@@ -358,9 +358,11 @@ const DoctorAssistant = () => {
     <div className="doctor-assistant-page">
       
       {/* Mode Switcher */}
-      <div className="segmented-control" style={{ marginBottom: '1rem', width: 'fit-content' }}>
+      <div className="segmented-control" role="tablist" aria-label="أوضاع المساعد ومحرك التسويق" style={{ marginBottom: '1rem', width: 'fit-content' }}>
         <button 
           type="button"
+          role="tab"
+          aria-selected={viewMode === 'crm'}
           className={`segmented-control-item ${viewMode === 'crm' ? 'active' : ''}`}
           onClick={() => setViewMode('crm')}
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }}
@@ -370,6 +372,8 @@ const DoctorAssistant = () => {
         </button>
         <button 
           type="button"
+          role="tab"
+          aria-selected={viewMode === 'chat'}
           className={`segmented-control-item ${viewMode === 'chat' ? 'active' : ''}`}
           onClick={() => setViewMode('chat')}
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }}

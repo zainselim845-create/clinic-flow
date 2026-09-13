@@ -262,14 +262,17 @@ export function getClinicTrialBalance(clinicId = 'default') {
   });
 
   grandDebit = round2(grandDebit);
-  grandCredit = round2(grandCredit);
+  const difference = round2(Math.abs(grandDebit - grandCredit));
 
   return {
     clinicId,
     accounts,
     grandTotalDebit: grandDebit,
     grandTotalCredit: grandCredit,
-    isBalanced: Math.abs(grandDebit - grandCredit) < 0.01,
+    totalDebits: grandDebit,
+    totalCredits: grandCredit,
+    difference,
+    isBalanced: difference < 0.01,
     generatedAt: new Date().toISOString()
   };
 }
