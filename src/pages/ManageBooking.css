@@ -291,9 +291,22 @@
   font-weight: 600;
 }
 
-.status-pill.upcoming {
+.status-pill.upcoming,
+.status-pill.booked {
   background: rgba(16, 185, 129, 0.12);
   color: #059669;
+}
+
+.status-pill.waiting {
+  background: var(--warning-light);
+  color: var(--warning-dark, #B06000);
+  font-weight: 700;
+}
+
+.status-pill.in_progress {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
 }
 
 .status-pill.completed {

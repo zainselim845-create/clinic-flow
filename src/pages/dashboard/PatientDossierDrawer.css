@@ -255,3 +255,45 @@
   color: var(--text-secondary);
   font-weight: 500;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .dossier-drawer,
+  .dossier-drawer * {
+    visibility: visible;
+  }
+  .dossier-drawer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+  .modal-backdrop,
+  .btn-close-dossier,
+  .btn-edit-dossier,
+  .btn-print-dossier,
+  .modal-actions,
+  .btn-contact {
+    display: none !important;
+  }
+  .dossier-drawer .modal-header {
+    background: #1E293B !important;
+    color: #FFFFFF !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .dossier-drawer .modal-header h3 {
+    color: #FFFFFF !important;
+  }
+  .patient-main-card {
+    background: #F8FAFC !important;
+    border: 1px solid #CBD5E1 !important;
+  }
+}

@@ -4,7 +4,7 @@ import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, 
-  FileSpreadsheet, X, Edit3, Wallet
+  FileSpreadsheet, X, Edit3, Wallet, Printer
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
@@ -74,6 +74,28 @@ export default function PatientDossierDrawer({
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button 
+                  type="button" 
+                  onClick={() => window.print()}
+                  className="btn-print-dossier"
+                  title="طباعة السجل والتقرير الطبي"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.35)',
+                    color: '#FFFFFF',
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '8px',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Printer size={14} />
+                  <span>طباعة التقرير</span>
+                </button>
                 {onEdit && (
                   <button 
                     type="button" 
