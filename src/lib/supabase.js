@@ -48,12 +48,53 @@ export const getSupabase = () => {
   return null;
 };
 
+const createOfflineQueryBuilder = () => {
+  const chain = {
+    select: () => chain,
+    insert: () => chain,
+    update: () => chain,
+    delete: () => chain,
+    upsert: () => chain,
+    eq: () => chain,
+    neq: () => chain,
+    gt: () => chain,
+    gte: () => chain,
+    lt: () => chain,
+    lte: () => chain,
+    like: () => chain,
+    ilike: () => chain,
+    is: () => chain,
+    in: () => chain,
+    contains: () => chain,
+    order: () => chain,
+    limit: () => chain,
+    range: () => chain,
+    single: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR }),
+    maybeSingle: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR }),
+    then: (resolve) => resolve({ data: null, error: NOT_CONFIGURED_ERROR })
+  };
+  return chain;
+};
+
 export const supabase = new Proxy({}, {
   get: (target, prop) => {
     const client = getSupabase();
     if (client && prop in client) {
       const val = client[prop];
       return typeof val === 'function' ? val.bind(client) : val;
+    }
+    if (prop === 'from') {
+      return () => createOfflineQueryBuilder();
+    }
+    if (prop === 'channel') {
+      return () => ({
+        on: () => ({ on: () => ({ subscribe: () => {} }) }),
+        subscribe: (cb) => {
+          if (typeof cb === 'function') cb('CLOSED');
+          return { unsubscribe: () => {} };
+        },
+        send: () => Promise.resolve('error')
+      });
     }
     return undefined;
   }

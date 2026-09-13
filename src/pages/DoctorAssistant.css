@@ -137,6 +137,43 @@
   border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
+.live-status-dot.ai-online {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.live-status-dot.ai-local {
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.25);
+}
+
+.live-status-dot.ai-local:hover {
+  background: rgba(37, 99, 235, 0.18);
+}
+
+.btn-ai-settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-ai-settings:hover {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563EB;
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
 .btn-clear-chat {
   display: inline-flex;
   align-items: center;

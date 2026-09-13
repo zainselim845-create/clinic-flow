@@ -76,10 +76,10 @@ const Header = ({ title }) => {
           {/* Subtle Google Cloud Sync Status Indicator */}
           <div 
             className={`google-sync-indicator ${isCloudConnected ? 'synced' : 'local'}`}
-            onClick={() => navigate('/settings')}
+            onClick={() => navigate('/settings?tab=database')}
             title={isCloudConnected 
-              ? 'متصل بالسحابة (Supabase): التزامن الفوري نشط والبيانات مشفرة ومحفوظة سحابياً' 
-              : 'وضع محلي فوري (Local Mode): العيادة تعمل بنجاح على التخزين المحلي الآمن. اضغط للربط السحابي'}
+              ? 'متصل بالسحابة (Supabase): التزامن الفوري نشط والبيانات مشفرة ومحفوظة سحابياً. اضغط لإدارة الاتصال والنسخ الاحتياطي' 
+              : 'وضع محلي فوري (Local Mode): العيادة تعمل بنجاح على التخزين المحلي الآمن. اضغط لربط Supabase السحابي'}
           >
             <span className="sync-status-dot" />
             <span className="sync-status-text">{isCloudConnected ? 'سحابي' : 'تخزين محلي'}</span>

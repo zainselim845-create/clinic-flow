@@ -1,5 +1,7 @@
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
-  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe
+  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Database, Bot
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
@@ -12,16 +14,35 @@ import VisitTypesTab from './settings/VisitTypesTab';
 import StaffManagementTab from './settings/StaffManagementTab';
 import SubscriptionPlanTab from './settings/SubscriptionPlanTab';
 import CustomDomainTab from './settings/CustomDomainTab';
+import DatabaseSyncTab from './settings/DatabaseSyncTab';
+import AiAssistantConfigTab from './settings/AiAssistantConfigTab';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
 import { Tabs } from '../components/ui/tabs';
 import './Settings.css';
 
+const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'subscription', 'customDomain', 'database', 'aiAssistant'];
+
 const Settings = () => {
   const { state, dispatch } = useApp();
   const { updateClinicInfo } = useAuth();
   const { tenant, tenantSlug } = useTenant();
-  const [activeTab, setActiveTab] = useState('clinic'); // 'clinic' | 'schedule' | 'visitTypes' | 'staff' | 'subscription' | 'customDomain'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(
+    VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'clinic'
+  );
+
+  useEffect(() => {
+    if (tabFromUrl && VALID_TABS.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    setSearchParams({ tab: newTab }, { replace: true });
+  };
 
   const useSupabase = isSupabaseConfigured();
 
@@ -86,7 +107,7 @@ const Settings = () => {
 
       <Tabs.Root
         value={activeTab}
-        onValueChange={(details) => setActiveTab(details.value)}
+        onValueChange={(details) => handleTabChange(details.value)}
         className="w-full"
       >
         <Tabs.List className="settings-tabs-nav">
@@ -137,6 +158,22 @@ const Settings = () => {
             <Globe size={18} />
             <span>الدومين والـ SSL</span>
           </Tabs.Trigger>
+
+          <Tabs.Trigger 
+            value="database"
+            className={`tab-btn ${activeTab === 'database' ? 'active' : ''}`}
+          >
+            <Database size={18} />
+            <span>الربط السحابي والنسخ</span>
+          </Tabs.Trigger>
+
+          <Tabs.Trigger 
+            value="aiAssistant"
+            className={`tab-btn ${activeTab === 'aiAssistant' ? 'active' : ''}`}
+          >
+            <Bot size={18} />
+            <span>المساعد الذكي (AI)</span>
+          </Tabs.Trigger>
         </Tabs.List>
 
         <div className="settings-content-wrapper">
@@ -146,7 +183,7 @@ const Settings = () => {
               setClinicForm={setClinicForm}
               handleSaveClinic={handleSaveClinic}
               clinicSaveSuccess={clinicSaveSuccess}
-              onNavigateToSchedule={() => setActiveTab('schedule')}
+              onNavigateToSchedule={() => handleTabChange('schedule')}
             />
           </Tabs.Content>
 
@@ -184,6 +221,14 @@ const Settings = () => {
 
           <Tabs.Content value="customDomain">
             <CustomDomainTab />
+          </Tabs.Content>
+
+          <Tabs.Content value="database">
+            <DatabaseSyncTab state={state} dispatch={dispatch} />
+          </Tabs.Content>
+
+          <Tabs.Content value="aiAssistant">
+            <AiAssistantConfigTab />
           </Tabs.Content>
         </div>
       </Tabs.Root>

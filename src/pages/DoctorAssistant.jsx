@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Bot, Send, Sparkles, Users, MessageSquare, CheckSquare, 
-  Square, Stethoscope, RefreshCw, CheckCircle2, MessageCircle, Filter, Trash2
+  Square, Stethoscope, RefreshCw, CheckCircle2, MessageCircle, Filter, Trash2, Settings
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { sendSMS } from '../services/smsService';
-import { askDoctorAiAssistant } from '../services/aiAssistantService';
+import { askDoctorAiAssistant, getAiConfig } from '../services/aiAssistantService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
 import { processDoctorIntent } from '../utils/clinicalAssistantActions';
 import { 
@@ -23,11 +24,13 @@ import './DoctorAssistant.css';
 const CHAT_HISTORY_STORAGE_KEY = 'clinicflow_doctor_chat_history';
 
 const DoctorAssistant = () => {
+  const navigate = useNavigate();
   const { state, dispatch, useSupabase } = useApp();
   const { clinic } = useAuth();
   const currentClinic = state.clinicInfo || clinic;
   const patients = state.patients || [];
   const doctorTitle = formatDoctorName(currentClinic?.doctorName);
+  const [aiConfig, setAiConfig] = useState(() => getAiConfig());
 
 
   // Load Conversation State from localStorage if present
@@ -411,7 +414,29 @@ const DoctorAssistant = () => {
                 </div>
 
             <div className="console-header-actions">
-              <span className="live-status-dot">متصل بالعيادة </span>
+              {aiConfig?.apiKey ? (
+                <span className="live-status-dot ai-online" title={`متصل بـ OpenRouter (${aiConfig.model})`}>
+                  AI سحابي نشط
+                </span>
+              ) : (
+                <span 
+                  className="live-status-dot ai-local" 
+                  onClick={() => navigate('/settings?tab=aiAssistant')}
+                  style={{ cursor: 'pointer' }}
+                  title="يعمل بالمحرك السريري المحلي الذكي. اضغط لضبط مفتاح OpenRouter AI"
+                >
+                  محرك سريري محلي
+                </span>
+              )}
+              <button 
+                type="button" 
+                onClick={() => navigate('/settings?tab=aiAssistant')}
+                className="btn-ai-settings"
+                title="إعدادات ونماذج الذكاء الاصطناعي"
+              >
+                <Settings size={13} />
+                <span>إعدادات AI</span>
+              </button>
               <button 
                 type="button" 
                 onClick={handleClearChat}
