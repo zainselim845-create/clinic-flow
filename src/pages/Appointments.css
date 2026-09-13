@@ -63,12 +63,18 @@
   border: none;
   color: var(--text-secondary);
   padding: 0.45rem 0.85rem;
+  min-height: 36px;
   border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
+}
+
+.status-filters button:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .status-filters button:hover {

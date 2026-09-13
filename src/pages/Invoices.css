@@ -51,7 +51,7 @@
 .metric-icon-wrap.blue { background: var(--primary-light); color: var(--primary); }
 .metric-icon-wrap.green { background: var(--success-light); color: var(--success); }
 .metric-icon-wrap.red { background: var(--error-light); color: var(--error); }
-.metric-icon-wrap.orange { background: var(--warning-light); color: var(--warning); }
+.metric-icon-wrap.orange { background: var(--warning-light); color: var(--warning-dark, #B06000); }
 
 .metric-lbl {
   display: block;
@@ -81,6 +81,7 @@
   border: none;
   background: transparent;
   padding: 0.45rem 0.95rem;
+  min-height: 36px;
   border-radius: var(--radius-md);
   font-size: 0.82rem;
   font-weight: 700;
@@ -88,6 +89,11 @@
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-fast);
+}
+
+.filter-pill:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .filter-pill.active {
@@ -132,6 +138,7 @@
   border: 1px solid var(--border-color);
   color: var(--primary);
   padding: 0.35rem 0.75rem;
+  min-height: 36px;
   border-radius: var(--radius-md);
   font-size: 0.8rem;
   font-weight: 700;
@@ -140,6 +147,11 @@
   align-items: center;
   gap: 0.35rem;
   transition: all var(--transition-fast);
+}
+
+.btn-table-action:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .btn-table-action:hover {
