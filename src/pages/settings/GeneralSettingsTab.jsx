@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { 
   Building2, Save, CheckCircle2, Phone, Mail, Clock, 
   CalendarDays, ArrowLeft, Stethoscope, Globe, 
-  FileText, Printer, ShieldCheck, UserCheck, Sparkles, AlertCircle
+  FileText, Printer, ShieldCheck, UserCheck, Sparkles, AlertCircle,
+  Copy, ExternalLink, MessageSquare
 } from 'lucide-react';
 
 import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
+import { formatSenderId } from '../../services/smsService';
 
 export default function GeneralSettingsTab({
   clinicForm,
@@ -16,6 +18,21 @@ export default function GeneralSettingsTab({
   onNavigateToVisitTypes
 }) {
   const [specialtyNotice, setSpecialtyNotice] = useState('');
+  const [copiedBookingLink, setCopiedBookingLink] = useState(false);
+
+  const clinicSlug = clinicForm.slug || 'dr-ahmed';
+  const resolvedSenderId = clinicForm.senderId || formatSenderId(clinicSlug, 'ClinicFlow');
+
+  const handleCopyBookingLink = () => {
+    const bookingUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/c/${clinicSlug}/booking` 
+      : `/c/${clinicSlug}/booking`;
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(bookingUrl);
+      setCopiedBookingLink(true);
+      setTimeout(() => setCopiedBookingLink(false), 2500);
+    }
+  };
 
   const handleApplyDefaultServicesForSpecialty = () => {
     const currentSpecialtyName = clinicForm.specialty || '';
@@ -292,6 +309,98 @@ export default function GeneralSettingsTab({
               <span>{specialtyNotice}</span>
             </span>
           )}
+        </div>
+
+        {/* Clinic Digital Identity & Direct Booking Link Bar */}
+        <div style={{
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '0.85rem 1.15rem',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{
+              background: 'rgba(0, 113, 227, 0.1)',
+              color: '#0071E3',
+              padding: '0.45rem',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Globe size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>رابط صفحة حجز المرضى المباشر:</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '2px', flexWrap: 'wrap' }}>
+                <code style={{ direction: 'ltr', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 700 }}>
+                  /c/{clinicSlug}/booking
+                </code>
+                <button
+                  type="button"
+                  onClick={handleCopyBookingLink}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '2px 8px',
+                    fontSize: '0.75rem',
+                    background: copiedBookingLink ? '#ECFDF5' : 'var(--bg-primary)',
+                    color: copiedBookingLink ? '#059669' : 'var(--text-primary)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {copiedBookingLink ? <CheckCircle2 size={12} /> : <Copy size={12} />}
+                  <span>{copiedBookingLink ? 'تم النسخ!' : 'نسخ الرابط'}</span>
+                </button>
+                <a
+                  href={`/c/${clinicSlug}/booking`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '3px',
+                    fontSize: '0.75rem',
+                    color: 'var(--text-secondary)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  <span>معاينة</span>
+                  <ExternalLink size={12} />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              fontSize: '0.8rem',
+              background: 'rgba(59, 130, 246, 0.08)',
+              color: '#2563eb',
+              padding: '4px 10px',
+              borderRadius: '8px',
+              border: '1px solid rgba(59, 130, 246, 0.25)',
+              fontFamily: 'monospace',
+              fontWeight: 700
+            }}
+            title="معرّف مرسل رسائل SMS المعتمد للعيادة لدى شركات المحمول"
+            >
+              <MessageSquare size={13} />
+              <span>Sender ID: {resolvedSenderId}</span>
+            </span>
+          </div>
         </div>
 
         <div className="form-grid">

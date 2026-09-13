@@ -643,7 +643,8 @@ export function completeClinicOnboarding({
   teamSize = 'solo',
   phone = '',
   address = 'القاهرة، جمهورية مصر العربية',
-  initialStaff = null
+  initialStaff = null,
+  senderId
 }) {
   const cleanDoctorName = (doctorName || '').trim() || 'د. طبيب العيادة';
   const cleanClinicName = (clinicName || '').trim() || `عيادة ${cleanDoctorName}`;
@@ -689,7 +690,7 @@ export function completeClinicOnboarding({
     id: tenantId,
     name: cleanClinicName,
     slug: uniqueSlug,
-    senderId: formatSenderId(cleanUsername || uniqueSlug, 'ClinicFlow'),
+    senderId: formatSenderId(senderId || cleanUsername || uniqueSlug, 'ClinicFlow'),
     doctorName: cleanDoctorName,
     doctorEmail: cleanEmail,
     ownerId: userId || null,
