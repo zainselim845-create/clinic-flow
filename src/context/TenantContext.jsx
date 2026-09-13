@@ -198,14 +198,15 @@ export const TenantProvider = ({ children }) => {
     const targetSlug = slug || locationResolution.slug;
 
     if (!isSupabaseConfigured()) {
-      // Offline / Demo Mode: find in demo clinics
-      let match = allTenants.find(t => t.slug === targetSlug || t.id === targetSlug);
-      if (!match) match = locationResolution.tenant || allTenants[0];
+      // Offline / Demo Mode: find in demo clinics and all registered clinics
+      const currentCombined = getCombinedTenants();
+      let match = currentCombined.find(t => t.slug === targetSlug || t.id === targetSlug);
+      if (!match) match = locationResolution.tenant || currentCombined[0];
       setActiveTenant(match);
-      if (!locationResolution.isDedicatedDomain) {
+      if (!locationResolution.isDedicatedDomain && match?.slug) {
         localStorage.setItem('clinicflow_active_tenant_slug', match.slug);
       }
-      applyBranding(match.branding);
+      applyBranding(match?.branding);
       setIsLoadingTenant(false);
       return match;
     }
