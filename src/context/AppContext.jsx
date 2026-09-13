@@ -350,12 +350,14 @@ export function AppProvider({ children }) {
   const sendSmsReminder = useCallback(async (appointment) => {
     try {
       const activeClinicName = stateRef.current.clinicInfo?.name || activeTenant?.name || resolvedClinic?.name || 'العيادة';
+      const activeClinicId = appointment.clinicId || stateRef.current.clinicInfo?.id || activeTenant?.id || resolvedClinic?.id || 'default';
       await sendReminder(
         appointment.patientName,
         appointment.patientPhone,
         appointment.date,
         appointment.time,
-        activeClinicName
+        activeClinicName,
+        activeClinicId
       );
     } catch (err) {
       console.error('SMS send failed:', err);

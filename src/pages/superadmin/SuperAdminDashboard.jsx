@@ -17,7 +17,8 @@ import {
   SaasStatsGrid,
   ClinicsTable,
   TelemetryBugsCenter,
-  CreateClinicModal
+  CreateClinicModal,
+  TopUpCreditsModal
 } from './components';
 import { saveRegisteredTenant, saveRegisteredUser } from '../../services/authService';
 import { useApp } from '../../context/AppContext';
@@ -40,6 +41,8 @@ export default function SuperAdminDashboard() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [copiedSlug, setCopiedSlug] = useState(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
+  const [selectedTopUpClinic, setSelectedTopUpClinic] = useState(null);
   const [newClinic, setNewClinic] = useState({
     name: '',
     doctorName: '',
@@ -315,6 +318,10 @@ export default function SuperAdminDashboard() {
             onSuspendClinic={handleSuspendClinic}
             onReactivateClinic={handleReactivateClinic}
             onSwitchAndVisit={handleSwitchAndVisit}
+            onTopUpClinic={(clinic) => {
+              setSelectedTopUpClinic(clinic);
+              setIsTopUpModalOpen(true);
+            }}
           />
         ) : activeTab === 'telemetry_bugs' ? (
           <TelemetryBugsCenter
@@ -413,6 +420,19 @@ export default function SuperAdminDashboard() {
         newClinic={newClinic}
         setNewClinic={setNewClinic}
         onSubmit={handleCreateClinic}
+      />
+
+      {/* Modal: Top-up Tenant Credits */}
+      <TopUpCreditsModal
+        isOpen={isTopUpModalOpen}
+        onClose={() => {
+          setIsTopUpModalOpen(false);
+          setSelectedTopUpClinic(null);
+        }}
+        clinic={selectedTopUpClinic}
+        onSuccess={() => {
+          setAllTenants([...allTenants]);
+        }}
       />
     </div>
   );

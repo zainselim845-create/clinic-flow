@@ -1,31 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   CreditCard, Sparkles, Smartphone, Users, ShieldCheck, 
-  ArrowUpRight, Database, Zap
+  ArrowUpRight, Database, Zap, AlertTriangle, History, CheckCircle2
 } from 'lucide-react';
 import { useTenant } from '../../context/TenantContext';
 import { useApp } from '../../context/AppContext';
+import { getClinicUsage, getClinicUsageLedger } from '../../services/usageMeteringService';
 
 export default function SubscriptionPlanTab() {
   const { tenant } = useTenant();
   const { state } = useApp();
+  const [showLedger, setShowLedger] = useState(false);
 
   const tier = tenant?.subscriptionTier || 'pro';
-  const quotas = tenant?.quotas || {
-    monthlySmsQuota: 500,
-    smsUsed: 78,
-    aiTokensQuota: 1000000,
-    aiTokensUsed: 42000,
-    maxDoctors: 3
-  };
+  const clinicId = tenant?.id || 'default';
+  const usage = getClinicUsage(clinicId, tenant?.quotas, tier);
+  const ledger = getClinicUsageLedger(clinicId);
 
-  const smsUsed = quotas.smsUsed || 0;
-  const smsTotal = quotas.monthlySmsQuota || 500;
-  const smsPercent = Math.min(100, Math.round((smsUsed / smsTotal) * 100));
+  const smsUsed = usage.smsUsed || 0;
+  const smsTotal = usage.totalSmsAllowed || 1000;
+  const remainingSms = usage.remainingSms;
+  const smsPercent = Math.min(100, Math.round((smsUsed / Math.max(1, smsTotal)) * 100));
 
-  const aiUsed = quotas.aiTokensUsed || 0;
-  const aiTotal = quotas.aiTokensQuota || 1000000;
-  const aiPercent = Math.min(100, Math.round((aiUsed / aiTotal) * 100));
+  const aiUsed = usage.aiTokensUsed || 0;
+  const aiTotal = usage.totalAiAllowed || 2000000;
+  const remainingAi = usage.remainingAiTokens;
+  const aiPercent = Math.min(100, Math.round((aiUsed / Math.max(1, aiTotal)) * 100));
 
   const staffCount = (state.staffMembers || []).length;
   const activePatientsCount = (state.patients || []).length;
@@ -41,20 +41,37 @@ export default function SubscriptionPlanTab() {
           <p>متابعة رصيد رسائل SMS، حصص الذكاء الاصطناعي، ومميزات باقتك النشطة</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{
-            background: 'var(--success-light)',
-            color: 'var(--success)',
-            padding: '0.35rem 0.85rem',
-            borderRadius: '999px',
-            fontWeight: 700,
-            fontSize: '0.82rem',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem'
-          }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)' }}></span>
-            اشتراك سارٍ ومفعّل
-          </span>
+          {usage.isSmsDepleted ? (
+            <span style={{
+              background: '#FEE2E2',
+              color: '#DC2626',
+              padding: '0.35rem 0.85rem',
+              borderRadius: '999px',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}>
+              <AlertTriangle size={14} />
+              رصيد الرسائل نفد بالكامل
+            </span>
+          ) : (
+            <span style={{
+              background: 'var(--success-light)',
+              color: 'var(--success)',
+              padding: '0.35rem 0.85rem',
+              borderRadius: '999px',
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem'
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)' }}></span>
+              اشتراك سارٍ ومفعّل
+            </span>
+          )}
         </div>
       </div>
 
@@ -267,6 +284,87 @@ export default function SubscriptionPlanTab() {
             بيانات عيادتك معزولة ومحمية سحابياً ومتاحة للعمل حتى في حال انقطاع الإنترنت (Offline-First).
           </div>
         </div>
+      </div>
+
+      {/* Usage Ledger Collapsible Card */}
+      <div style={{
+        marginTop: '1.25rem',
+        background: 'var(--surface)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '1.25rem'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => setShowLedger(!showLedger)}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <History size={18} color="var(--primary)" />
+            <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>سجل حركات واستهلاك الرصيد (Credit Ledger Audit)</strong>
+            <span style={{ fontSize: '0.75rem', background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 999 }}>
+              {ledger.length} حركة مسجلة
+            </span>
+          </div>
+          <button 
+            type="button" 
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: 'var(--primary)', 
+              fontWeight: 700, 
+              fontSize: '0.85rem',
+              cursor: 'pointer' 
+            }}
+          >
+            {showLedger ? 'إخفاء السجل' : 'عرض تفاصيل العمليات'}
+          </button>
+        </div>
+
+        {showLedger && (
+          <div style={{ marginTop: '1rem', overflowX: 'auto' }}>
+            {ledger.length === 0 ? (
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                لا توجد حركات استهلاك مسجلة حتى الآن.
+              </p>
+            ) : (
+              <table style={{ width: '100%', fontSize: '0.82rem', borderCollapse: 'collapse', textAlign: 'right' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+                    <th style={{ padding: '0.5rem' }}>التاريخ والوقت</th>
+                    <th style={{ padding: '0.5rem' }}>نوع العملية</th>
+                    <th style={{ padding: '0.5rem' }}>المستلم / التفاصيل</th>
+                    <th style={{ padding: '0.5rem' }}>الوحدات</th>
+                    <th style={{ padding: '0.5rem' }}>الرصيد المتبقي</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ledger.slice(0, 10).map((entry) => (
+                    <tr key={entry.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '0.5rem', color: 'var(--text-secondary)' }}>
+                        {new Date(entry.timestamp).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' })}
+                      </td>
+                      <td style={{ padding: '0.5rem' }}>
+                        {entry.type === 'sms_deduction' ? (
+                          <span style={{ color: '#2563EB', fontWeight: 600 }}>إرسال SMS</span>
+                        ) : entry.type === 'credit_topup' ? (
+                          <span style={{ color: '#059669', fontWeight: 700 }}>+ شحن رصيد</span>
+                        ) : (
+                          <span style={{ color: '#7C3AED', fontWeight: 600 }}>ذكاء اصطناعي</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '0.5rem', color: 'var(--text-primary)' }}>
+                        {entry.recipient || entry.reason || (entry.metadata?.messageSnippet ? `"${entry.metadata.messageSnippet}..."` : '-')}
+                      </td>
+                      <td style={{ padding: '0.5rem', fontWeight: 700 }}>
+                        {entry.type === 'credit_topup' ? `+${entry.smsAdded || entry.aiTokensAdded}` : `-${entry.units}`}
+                      </td>
+                      <td style={{ padding: '0.5rem', color: 'var(--text-secondary)' }}>
+                        {entry.balanceAfter !== undefined ? `${entry.balanceAfter} وحدة` : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

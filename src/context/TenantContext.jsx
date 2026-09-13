@@ -5,6 +5,7 @@ import { fromDbClinic } from '../services/clinicsService';
 import { canSwitchTenants } from '../utils/permissions';
 import { patientIndex } from '../services/indexedSearchService';
 import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus } from '../services/authService';
+import { getClinicDomainSettings } from '../services/customDomainService';
 
 const TenantContext = createContext(null);
 
@@ -35,8 +36,31 @@ const initialClinics = fallbackDemoClinics || [
 export function getCombinedTenants() {
   const base = fallbackDemoClinics || initialClinics;
   const registered = getRegisteredTenants();
-  const filtered = registered.filter(rt => !base.some(b => b.slug === rt.slug || b.id === rt.id));
-  return [...base, ...filtered];
+  
+  // Merge registered tenants with base (updating base if slug/id matches)
+  const combined = base.map(b => {
+    const override = registered.find(rt => rt.id === b.id || rt.slug === b.slug);
+    return override ? { ...b, ...override } : b;
+  });
+
+  for (const rt of registered) {
+    if (!combined.some(b => b.id === rt.id || b.slug === rt.slug)) {
+      combined.push(rt);
+    }
+  }
+
+  // Enrich with custom domain settings saved via CustomDomainTab
+  return combined.map(tenant => {
+    const domainConfig = getClinicDomainSettings(tenant.id);
+    if (domainConfig && domainConfig.domain) {
+      return {
+        ...tenant,
+        customDomain: domainConfig.domain,
+        custom_domain: domainConfig.domain
+      };
+    }
+    return tenant;
+  });
 }
 
 /**
@@ -213,6 +237,44 @@ export const TenantProvider = ({ children }) => {
 
     try {
       // Online Supabase Mode
+      // 1. Check if accessing via a custom domain first
+      const hostname = (typeof window !== 'undefined' ? window.location?.hostname : '')?.toLowerCase()?.trim()?.replace(/^www\./i, '');
+      const isPlatformHost = !hostname || 
+                             hostname.endsWith('.vercel.app') || 
+                             hostname.endsWith('.netlify.app') || 
+                             hostname.endsWith('.pages.dev') ||
+                             hostname.endsWith('.onrender.com') ||
+                             hostname.endsWith('.github.io') ||
+                             hostname.includes('clinicflow') ||
+                             hostname === 'localhost' ||
+                             hostname.match(/^(127\.0\.0\.1|0\.0\.0\.0)$/);
+
+      if (hostname && !isPlatformHost) {
+        const { data: domainClinic } = await supabase
+          .from('clinics')
+          .select('*')
+          .or(`custom_domain.eq.${hostname},custom_domain.eq.www.${hostname}`)
+          .maybeSingle();
+
+        if (domainClinic) {
+          const parsed = fromDbClinic(domainClinic);
+          const merged = {
+            ...parsed,
+            slug: domainClinic.slug,
+            customDomain: domainClinic.custom_domain || parsed.customDomain,
+            subscriptionTier: domainClinic.subscription_tier || 'pro',
+            subscriptionStatus: domainClinic.subscription_status || 'active',
+            branding: domainClinic.branding || { primaryColor: '#0071E3', accentColor: '#10B981' },
+            quotas: domainClinic.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
+          };
+          setActiveTenant(merged);
+          setDedicatedDomainActive(true);
+          applyBranding(merged.branding);
+          setIsLoadingTenant(false);
+          return merged;
+        }
+      }
+
       const { data, error } = await supabase
         .from('clinics')
         .select('*')
@@ -331,6 +393,31 @@ export const TenantProvider = ({ children }) => {
     setActiveTenant(prev => (prev && (prev.id === slugOrId || prev.slug === slugOrId)) ? updater(prev) : prev);
   }, []);
 
+  // 7. Update Tenant Custom Domain
+  const updateTenantDomain = useCallback((clinicIdOrSlug, newDomain) => {
+    const cleanDomain = newDomain ? newDomain.toLowerCase().trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '') : '';
+    setAllTenants(prev => prev.map(t => {
+      if (t.id === clinicIdOrSlug || t.slug === clinicIdOrSlug) {
+        return {
+          ...t,
+          customDomain: cleanDomain || undefined,
+          custom_domain: cleanDomain || undefined
+        };
+      }
+      return t;
+    }));
+    setActiveTenant(prev => {
+      if (prev && (prev.id === clinicIdOrSlug || prev.slug === clinicIdOrSlug)) {
+        return {
+          ...prev,
+          customDomain: cleanDomain || undefined,
+          custom_domain: cleanDomain || undefined
+        };
+      }
+      return prev;
+    });
+  }, []);
+
   // 7. Feature Gating & Quota Checks
   const hasFeature = useCallback((featureName) => {
     if (!activeTenant) return false;
@@ -392,11 +479,12 @@ export const TenantProvider = ({ children }) => {
     switchTenant,
     registerNewTenant,
     updateTenantStatus,
+    updateTenantDomain,
     hasFeature,
     checkQuota,
     tier: activeTenant?.subscriptionTier || 'pro',
     isMultiTenant: true
-  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, updateTenantStatus, hasFeature, checkQuota]);
+  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
 
   return (
     <TenantContext.Provider value={value}>

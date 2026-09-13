@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { safeStorage } from '../utils/safeStorage';
 import { checkActionRateLimit } from '../utils/rateLimiter';
 import { circuitBreaker } from '../utils/circuitBreaker';
+import { canClinicSendSms, deductSmsCredit } from './usageMeteringService';
 
 /**
  * Get active SMS gateway configuration from LocalStorage or Environment variables.
@@ -245,9 +246,25 @@ async function sendViaTextBee(config, formattedPhone, message) {
 
 /**
  * Sends an SMS message to a given phone number based on current configuration
+ * Pre-flight check verifies credit balance before dispatch; successful dispatch deducts credit atomically.
  */
-export async function sendSMS(phone, message) {
-  const config = getSmsConfig();
+export async function sendSMS(phone, message, clinicId = 'default') {
+  const targetClinicId = clinicId || 'default';
+
+  // 1. Live Pre-flight Credit Metering Check
+  const creditCheck = canClinicSendSms(targetClinicId);
+  if (!creditCheck.allowed) {
+    return {
+      success: false,
+      isQuotaExceeded: true,
+      remaining: 0,
+      totalAllowed: creditCheck.totalAllowed,
+      used: creditCheck.used,
+      error: creditCheck.error
+    };
+  }
+
+  const config = getSmsConfig(targetClinicId);
   const formattedPhone = formatEgyptianPhone(phone);
   const plainPhone = formattedPhone.replace(/^\+/, '');
 
@@ -264,6 +281,11 @@ export async function sendSMS(phone, message) {
 
   try {
     const result = await circuitBreaker.execute('sms_gateway', async () => {
+      // Sandbox / Test provider mode for automated testing & development
+      if (config.provider === 'sandbox' || config.provider === 'test') {
+        return { success: true, method: config.provider, messageId: 'sbx-' + Date.now() };
+      }
+
       if (config.provider === 'easysendsms' && config.easysendsmsApiKey) {
         return await sendViaEasySend(config, plainPhone, message);
       }
@@ -292,7 +314,18 @@ export async function sendSMS(phone, message) {
       return null;
     });
 
-    if (result) return result;
+    if (result && result.success) {
+      // 2. Atomic credit deduction on successful transmission
+      try {
+        deductSmsCredit(targetClinicId, plainPhone, {
+          provider: result.method || config.provider,
+          messageSnippet: typeof message === 'string' ? message.substring(0, 50) : ''
+        });
+      } catch (deductErr) {
+        console.warn('[UsageMetering] Failed to deduct SMS credit:', deductErr);
+      }
+      return result;
+    }
   } catch (error) {
     console.error(`[SMS Error] Failed sending SMS via ${config.provider}:`, error);
     return { success: false, method: config.provider, error: error.message };
@@ -310,27 +343,27 @@ export async function sendSMS(phone, message) {
 /**
  * Compose and send a booking confirmation SMS
  */
-export async function sendBookingConfirmation(nameOrOptions, phone, date, time, clinicName) {
+export async function sendBookingConfirmation(nameOrOptions, phone, date, time, clinicName, clinicId) {
   if (typeof nameOrOptions === 'object' && nameOrOptions !== null) {
-    const { patientName, phone: ph, date: d, time: t, clinicName: cName } = nameOrOptions;
+    const { patientName, phone: ph, date: d, time: t, clinicName: cName, clinicId: cId } = nameOrOptions;
     const message = `عزيزي ${patientName}، تم تأكيد حجز موعدك في ${cName || 'العيادة'} يوم ${d} الساعة ${t}. نتمنى لك دوام الصحة.`;
-    return sendSMS(ph, message);
+    return sendSMS(ph, message, cId || clinicId);
   }
   const message = `عزيزي ${nameOrOptions}، تم تأكيد حجز موعدك في ${clinicName || 'العيادة'} يوم ${date} الساعة ${time}. نتمنى لك دوام الصحة.`;
-  return sendSMS(phone, message);
+  return sendSMS(phone, message, clinicId);
 }
 
 /**
  * Compose and send a reminder SMS
  */
-export async function sendReminder(nameOrOptions, phone, date, time, clinicName) {
+export async function sendReminder(nameOrOptions, phone, date, time, clinicName, clinicId) {
   if (typeof nameOrOptions === 'object' && nameOrOptions !== null) {
-    const { patientName: pName, phone: ph, date: d, time: t, clinicName: cName } = nameOrOptions;
+    const { patientName: pName, phone: ph, date: d, time: t, clinicName: cName, clinicId: cId } = nameOrOptions;
     const message = `تذكير بموعد: مرحباً أ/ ${pName || 'المريض'}، موعدك في ${cName || 'العيادة'} اليوم ${d} الساعة ${t}. يُرجى الحضور قبل الموعد بـ 15 دقيقة.`;
-    return sendSMS(ph, message);
+    return sendSMS(ph, message, cId || clinicId);
   }
   const message = `تذكير بموعد: مرحباً أ/ ${nameOrOptions || 'المريض'}، موعدك في ${clinicName || 'العيادة'} اليوم ${date} الساعة ${time}. يُرجى الحضور قبل الموعد بـ 15 دقيقة.`;
-  return sendSMS(phone, message);
+  return sendSMS(phone, message, clinicId);
 }
 
 /**

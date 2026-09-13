@@ -1,5 +1,6 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap } from 'lucide-react';
+import { getClinicUsage } from '../../../services/usageMeteringService';
 
 export function ClinicsTable({
   filteredTenants,
@@ -17,7 +18,8 @@ export function ClinicsTable({
   onApproveClinic,
   onSuspendClinic,
   onReactivateClinic,
-  onSwitchAndVisit
+  onSwitchAndVisit,
+  onTopUpClinic
 }) {
   return (
     <div className="saas-section-card">
@@ -179,19 +181,57 @@ export function ClinicsTable({
                     </td>
 
                     <td>
-                      <div className="tenant-cell-quota">
-                        <span>SMS: {t.quotas?.smsUsed || 0}/{t.quotas?.monthlySmsQuota || 1000}</span>
-                        <div className="quota-bar-mini">
-                          <div 
-                            className="quota-bar-fill" 
-                            style={{ width: `${Math.min(100, Math.round(((t.quotas?.smsUsed || 0) / (t.quotas?.monthlySmsQuota || 1000)) * 100))}%` }}
-                          />
-                        </div>
-                      </div>
+                      {(() => {
+                        const usage = getClinicUsage(t.id, t.quotas, t.subscriptionTier);
+                        const percent = Math.min(100, Math.round(((usage.smsUsed || 0) / Math.max(1, usage.totalSmsAllowed)) * 100));
+                        return (
+                          <div className="tenant-cell-quota">
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '2px' }}>
+                              <span>SMS: {usage.smsUsed}/{usage.totalSmsAllowed}</span>
+                              <span style={{ fontWeight: 700, color: usage.isSmsDepleted ? '#EF4444' : 'var(--text-secondary)' }}>
+                                {usage.remainingSms} متبقي
+                              </span>
+                            </div>
+                            <div className="quota-bar-mini">
+                              <div 
+                                className="quota-bar-fill" 
+                                style={{ 
+                                  width: `${percent}%`,
+                                  backgroundColor: usage.isSmsDepleted ? '#EF4444' : percent > 85 ? '#F59E0B' : undefined
+                                }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </td>
 
                     <td>
                       <div className="tenant-actions-cell">
+                        {/* Top-up Button */}
+                        <button
+                          type="button"
+                          onClick={() => onTopUpClinic && onTopUpClinic(t)}
+                          className="btn-topup-clinic"
+                          title="شحن رصيد رسائل SMS أو ذكاء اصطناعي فوراً"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            background: '#FEF3C7',
+                            border: '1px solid #FCD34D',
+                            borderRadius: '6px',
+                            padding: '0.32rem 0.6rem',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            color: '#92400E'
+                          }}
+                        >
+                          <Zap size={13} color="#D97706" />
+                          <span>شحن رصيد</span>
+                        </button>
+
                         {isPending && (
                           <button 
                             type="button"

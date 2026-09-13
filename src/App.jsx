@@ -149,6 +149,7 @@ const AdminLayout = () => {
 function App() {
   const { state } = useApp();
   const { user } = useAuth();
+  const { isDedicatedDomain } = useTenant();
 
   useEffect(() => {
     initGlobalErrorListeners();
@@ -168,6 +169,8 @@ function App() {
                   <AdminLayout />
                 </ProtectedRoute>
               )
+            ) : isDedicatedDomain ? (
+              <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
             ) : (
               <LandingPage />
             )

@@ -168,7 +168,9 @@ const DoctorAssistant = () => {
     try {
       const aiRes = await askDoctorAiAssistant(newHistory, currentClinic, matched, state);
       let agentReply = '';
-      if (aiRes.success && aiRes.content) {
+      if (aiRes.isQuotaExceeded) {
+        agentReply = `⚠️ **تنبيه استهلاك الرصيد**: ${aiRes.error}`;
+      } else if (aiRes.success && aiRes.content) {
         agentReply = aiRes.content;
       } else {
         const count = matched.length;
@@ -244,7 +246,9 @@ const DoctorAssistant = () => {
     try {
       const aiRes = await askDoctorAiAssistant(newHistory, currentClinic, matched, state);
       let replyText = '';
-      if (aiRes.success && aiRes.content) {
+      if (aiRes.isQuotaExceeded) {
+        replyText = `⚠️ **تنبيه استهلاك الرصيد**: ${aiRes.error}`;
+      } else if (aiRes.success && aiRes.content) {
         replyText = aiRes.content;
       } else {
         const count = matched.length;
@@ -318,6 +322,8 @@ const DoctorAssistant = () => {
     setBroadcastResults(null);
     let sentCount = 0;
     let failedCount = 0;
+    let quotaDepleted = false;
+    let quotaErrorMsg = '';
 
     for (const patient of selectedPatientsList) {
       if (!patient.phone) {
@@ -325,17 +331,36 @@ const DoctorAssistant = () => {
         continue;
       }
       const personalized = personalizeMessage(customMessage, patient, currentClinic);
+      const targetClinicId = patient.clinicId || currentClinic?.id || 'default';
+
       try {
-        const res = await sendSMS(patient.phone, personalized);
-        if (res.success) sentCount++;
-        else failedCount++;
+        const res = await sendSMS(patient.phone, personalized, targetClinicId);
+        if (res.success) {
+          sentCount++;
+        } else {
+          failedCount++;
+          if (res.isQuotaExceeded) {
+            quotaDepleted = true;
+            quotaErrorMsg = res.error;
+            // Stop sending remaining batch since credit is depleted
+            const remainingInBatch = selectedPatientsList.length - (sentCount + failedCount);
+            failedCount += remainingInBatch;
+            break;
+          }
+        }
       } catch {
         failedCount++;
       }
     }
 
     setIsBroadcastingSms(false);
-    setBroadcastResults({ sent: sentCount, failed: failedCount, total: selectedPatientsList.length });
+    setBroadcastResults({ 
+      sent: sentCount, 
+      failed: failedCount, 
+      total: selectedPatientsList.length,
+      quotaExceeded: quotaDepleted,
+      error: quotaErrorMsg 
+    });
 
     dispatch({
       type: 'ADD_NOTIFICATION',

@@ -4,6 +4,7 @@
  */
 
 import { circuitBreaker } from '../utils/circuitBreaker';
+import { canClinicUseAi, deductAiTokens } from './usageMeteringService';
 
 export const DEFAULT_OPENROUTER_KEY = '';
 export const DEFAULT_AI_MODEL = 'nvidia/nemotron-3-super-120b-a12b:free';
@@ -48,6 +49,19 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
   const config = getAiConfig();
   const key = config.apiKey || DEFAULT_OPENROUTER_KEY;
   const targetModel = config.model || DEFAULT_AI_MODEL;
+
+  const clinicId = clinicContext?.id || clinicContext?.clinicId || 'default';
+
+  // 1. Live Pre-flight AI Token Quota Check
+  const aiCheck = canClinicUseAi(clinicId, 50);
+  if (!aiCheck.allowed) {
+    return {
+      success: false,
+      isQuotaExceeded: true,
+      error: aiCheck.error,
+      remainingTokens: aiCheck.remainingTokens
+    };
+  }
 
   const doctorName = clinicContext?.doctorName || 'د. أحمد الشريف';
   const specialty = clinicContext?.specialty || 'استشاري الباطنة والجهاز الهضمي والكبد';
@@ -99,10 +113,24 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
 
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.choices?.[0]?.message?.content) {
+        const rawContent = data.choices[0].message.content.trim();
+        const estimatedTokens = data.usage?.total_tokens || 
+          Math.max(50, Math.round((formattedMessages.reduce((acc, m) => acc + (m.content?.length || 0), 0) + rawContent.length) / 4));
+        
+        try {
+          deductAiTokens(clinicId, estimatedTokens, {
+            model: targetModel,
+            clinicName
+          });
+        } catch (deductErr) {
+          console.warn('[UsageMetering] Failed to deduct AI tokens:', deductErr);
+        }
+
         return {
           success: true,
           model: targetModel,
-          content: data.choices[0].message.content.trim()
+          content: rawContent,
+          tokensUsed: estimatedTokens
         };
       }
 
@@ -125,10 +153,24 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
         });
         const fallbackData = await fallbackRes.json().catch(() => ({}));
         if (fallbackRes.ok && fallbackData.choices?.[0]?.message?.content) {
+          const rawContent = fallbackData.choices[0].message.content.trim();
+          const estimatedTokens = fallbackData.usage?.total_tokens || 
+            Math.max(50, Math.round((formattedMessages.reduce((acc, m) => acc + (m.content?.length || 0), 0) + rawContent.length) / 4));
+
+          try {
+            deductAiTokens(clinicId, estimatedTokens, {
+              model: FALLBACK_AI_MODEL,
+              clinicName
+            });
+          } catch (deductErr) {
+            console.warn('[UsageMetering] Failed to deduct AI tokens:', deductErr);
+          }
+
           return {
             success: true,
             model: FALLBACK_AI_MODEL,
-            content: fallbackData.choices[0].message.content.trim()
+            content: rawContent,
+            tokensUsed: estimatedTokens
           };
         }
       }
