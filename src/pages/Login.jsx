@@ -682,6 +682,16 @@ const Login = () => {
           <span>تسجيل الدخول باستخدام Google</span>
         </button>
 
+        <button
+          type="button"
+          onClick={() => setIsGoogleModalOpen(true)}
+          className="btn-google-options-link"
+          aria-label="خيارات تسجيل دخول Google والربط السحابي"
+        >
+          <KeyRound size={13} />
+          <span>خيارات Google المتقدمة ومعرّف العميل</span>
+        </button>
+
         {/* Ark UI Real Google OAuth & Account Connect Modal */}
         <Dialog.Root open={isGoogleModalOpen} onOpenChange={(details) => setIsGoogleModalOpen(details.open)} lazyMount unmountOnExit>
           <Dialog.Backdrop className="google-picker-backdrop ark-dialog-backdrop" />

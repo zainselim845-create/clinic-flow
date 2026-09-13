@@ -340,6 +340,29 @@
   flex-shrink: 0;
 }
 
+.btn-google-options-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #6b7280);
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  width: 100%;
+}
+
+.btn-google-options-link:hover {
+  color: var(--primary, #0284c7);
+  background: rgba(2, 132, 199, 0.06);
+}
+
 /* Google Account Picker Modal */
 .google-picker-backdrop {
   position: fixed;

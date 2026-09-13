@@ -2,19 +2,24 @@ import { safeStorage } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'clinicflow_google_client_id';
 
+export const DEFAULT_GOOGLE_CLIENT_ID = '337379604098-6bp302kv7mmsuccf806ah1tba6grkoio.apps.googleusercontent.com';
+
 /**
  * Retrieves the configured Google OAuth 2.0 Client ID
  */
 export const getGoogleClientId = () => {
   const stored = safeStorage.getItem(STORAGE_KEY, null);
+  if (stored === '__DISABLED__' || stored === '') {
+    return '';
+  }
   if (stored && stored.trim().length > 10) {
     return stored.trim();
   }
-  const envKey = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const envKey = import.meta.env?.VITE_GOOGLE_CLIENT_ID;
   if (envKey && envKey.trim().length > 10) {
     return envKey.trim();
   }
-  return '';
+  return DEFAULT_GOOGLE_CLIENT_ID;
 };
 
 /**
@@ -24,7 +29,7 @@ export const saveGoogleClientId = (clientId) => {
   if (clientId && clientId.trim().length > 0) {
     safeStorage.setItem(STORAGE_KEY, clientId.trim());
   } else {
-    safeStorage.removeItem(STORAGE_KEY);
+    safeStorage.setItem(STORAGE_KEY, '');
   }
 };
 

@@ -13,9 +13,9 @@ describe('googleAuthService', () => {
     safeStorage.clear();
   });
 
-  it('retrieves empty string when no client ID configured', () => {
-    expect(getGoogleClientId()).toBe('');
-    expect(isGoogleAuthAvailable()).toBe(false);
+  it('retrieves default preconfigured Google Client ID out of the box', () => {
+    expect(getGoogleClientId()).toBe('337379604098-6bp302kv7mmsuccf806ah1tba6grkoio.apps.googleusercontent.com');
+    expect(isGoogleAuthAvailable()).toBe(true);
   });
 
   it('saves and retrieves Google Client ID correctly', () => {
