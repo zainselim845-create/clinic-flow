@@ -79,17 +79,48 @@ export const decodeGoogleCredential = (credential) => {
 };
 
 /**
+ * Ensures Google Identity Services (GSI) script is loaded and ready
+ */
+export const ensureGoogleGsiLoaded = (timeoutMs = 3500) => {
+  if (typeof window === 'undefined') return Promise.resolve(false);
+  if (window.google?.accounts?.oauth2) return Promise.resolve(true);
+
+  return new Promise((resolve) => {
+    let script = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+    if (!script) {
+      script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    const start = Date.now();
+    const timer = setInterval(() => {
+      if (window.google?.accounts?.oauth2) {
+        clearInterval(timer);
+        resolve(true);
+      } else if (Date.now() - start > timeoutMs) {
+        clearInterval(timer);
+        resolve(Boolean(window.google?.accounts?.oauth2));
+      }
+    }, 80);
+  });
+};
+
+/**
  * Triggers Google OAuth 2.0 flow via Token Client (Popup window from accounts.google.com)
  */
-export const triggerGoogleOAuthPopup = () => {
+export const triggerGoogleOAuthPopup = async () => {
+  const isLoaded = await ensureGoogleGsiLoaded();
   return new Promise((resolve, reject) => {
     const clientId = getGoogleClientId();
     if (!clientId) {
       return reject(new Error('يرجى ضبط معرّف عميل Google (Client ID) أولاً'));
     }
 
-    if (typeof window === 'undefined' || !window.google?.accounts?.oauth2) {
-      return reject(new Error('خدمات Google Identity Services غير محملة بعد، يرجى تحديث الصفحة والمحاولة ثانية.'));
+    if (!isLoaded || typeof window === 'undefined' || !window.google?.accounts?.oauth2) {
+      return reject(new Error('خدمات Google Identity Services غير محملة أو محجوبة في المتصفح. يرجى التأكد من اتصالك بالإنترنت أو استخدام "دخول فوري بحسابك".'));
     }
 
     try {
