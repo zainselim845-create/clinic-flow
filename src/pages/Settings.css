@@ -45,8 +45,19 @@
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  flex-wrap: wrap;
+  overflow-x: auto;
+  flex-wrap: nowrap;
   align-items: center;
+  scrollbar-width: thin;
+}
+
+.settings-tabs-nav::-webkit-scrollbar {
+  height: 4px;
+}
+
+.settings-tabs-nav::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
 }
 
 .settings-tabs-nav .tab-btn {

@@ -77,6 +77,20 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
     b => b.date === selectedBlockDate && (b.isFullDay || b.time === 'FULL_DAY' || b.time === 'ALL')
   );
 
+  const persistSchedule = (updatedInfo) => {
+    try {
+      const slug = updatedInfo?.slug || state.clinicInfo?.slug || 'dr-ahmed';
+      const scopedKey = `clinicflow_data_${slug}`;
+      const stored = localStorage.getItem(scopedKey);
+      const parsed = stored ? JSON.parse(stored) : {};
+      parsed.clinicInfo = updatedInfo;
+      localStorage.setItem(scopedKey, JSON.stringify(parsed));
+      if (slug === 'dr-ahmed') {
+        localStorage.setItem('clinicflow_data', JSON.stringify(parsed));
+      }
+    } catch (_) {}
+  };
+
   // Save Schedule Config
   const handleSaveScheduleConfig = (e) => {
     e?.preventDefault();
@@ -98,22 +112,25 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
       type: 'UPDATE_CLINIC_INFO',
       payload: updatedInfo
     });
+    persistSchedule(updatedInfo);
     setScheduleSaveSuccess(true);
     setTimeout(() => setScheduleSaveSuccess(false), 3000);
   };
 
   const handleUpdateScheduleConfig = (partial) => {
     const updatedConfig = { ...scheduleConfig, ...partial };
+    const updatedInfo = {
+      ...(clinicForm || state.clinicInfo),
+      scheduleConfig: updatedConfig
+    };
     if (setClinicForm && clinicForm) {
-      setClinicForm({ ...clinicForm, scheduleConfig: updatedConfig });
+      setClinicForm(updatedInfo);
     }
     dispatch({
       type: 'UPDATE_CLINIC_INFO',
-      payload: {
-        ...(clinicForm || state.clinicInfo),
-        scheduleConfig: updatedConfig
-      }
+      payload: updatedInfo
     });
+    persistSchedule(updatedInfo);
   };
 
   const handleAddVacation = (e) => {
