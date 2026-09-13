@@ -75,11 +75,15 @@ const Header = ({ title }) => {
         <div className="header-actions">
           {/* Subtle Google Cloud Sync Status Indicator */}
           <div 
+            role="button"
+            tabIndex={0}
             className={`google-sync-indicator ${isCloudConnected ? 'synced' : 'local'}`}
             onClick={() => navigate('/settings?tab=database')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/settings?tab=database'); } }}
             title={isCloudConnected 
               ? 'متصل بالسحابة (Supabase): التزامن الفوري نشط والبيانات مشفرة ومحفوظة سحابياً. اضغط لإدارة الاتصال والنسخ الاحتياطي' 
               : 'وضع محلي فوري (Local Mode): العيادة تعمل بنجاح على التخزين المحلي الآمن. اضغط لربط Supabase السحابي'}
+            aria-label={isCloudConnected ? 'حالة المزامنة: متصل بالسحابة' : 'حالة المزامنة: وضع تخزين محلي'}
           >
             <span className="sync-status-dot" />
             <span className="sync-status-text">{isCloudConnected ? 'سحابي' : 'تخزين محلي'}</span>
@@ -98,11 +102,23 @@ const Header = ({ title }) => {
             <span className="search-kbd-shortcut">Ctrl K</span>
           </button>
 
-          <button className="theme-header-btn" onClick={toggleTheme} title="تبديل الوضع الليلي / الفاتح">
+          <button 
+            type="button"
+            className="theme-header-btn" 
+            onClick={toggleTheme} 
+            title="تبديل الوضع الليلي / الفاتح"
+            aria-label={state.theme === 'light' ? 'التحويل إلى الوضع الداكن' : 'التحويل إلى الوضع الفاتح'}
+          >
             {state.theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          <button className="notification-btn" onClick={() => navigate('/notifications')} title="التنبيهات">
+          <button 
+            type="button"
+            className="notification-btn" 
+            onClick={() => navigate('/notifications')} 
+            title="التنبيهات"
+            aria-label={unreadCount > 0 ? `التنبيهات، لديك ${unreadCount} تنبيهات غير مقروءة` : 'التنبيهات'}
+          >
             <Bell size={18} />
             {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
           </button>
@@ -114,6 +130,7 @@ const Header = ({ title }) => {
               className="btn-saas-header-switch"
               onClick={() => navigate('/super-admin')}
               title="الانتقال إلى لوحة تحكم إدارة الساس (SaaS Control Plane)"
+              aria-label="الانتقال إلى لوحة تحكم إدارة الساس"
             >
               <ShieldCheck size={16} />
               <span>إدارة الساس</span>
@@ -132,6 +149,7 @@ const Header = ({ title }) => {
               className="btn-logout-header"
               onClick={handleLogout}
               title="تسجيل الخروج من الحساب"
+              aria-label="تسجيل الخروج من الحساب"
             >
               <LogOut size={16} />
             </button>

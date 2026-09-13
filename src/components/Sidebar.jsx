@@ -60,7 +60,7 @@ const Sidebar = () => {
         <h2>{brandTitle}</h2>
       </div>
 
-      <nav className="sidebar-nav" onClick={() => setMobileNavOpen(false)}>
+      <nav className="sidebar-nav" aria-label="القائمة الرئيسية للعيادة" onClick={() => setMobileNavOpen(false)}>
         <NavLink to="/" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'} end>
           <LayoutDashboard size={19} />
           <span>لوحة التحكم</span>
@@ -141,12 +141,23 @@ const Sidebar = () => {
 
 
       <div className="sidebar-footer">
-        <button className="theme-toggle" onClick={toggleTheme}>
+        <button 
+          type="button"
+          className="theme-toggle" 
+          onClick={toggleTheme}
+          aria-label={state.theme === 'light' ? 'التحويل إلى الوضع الداكن' : 'التحويل إلى الوضع الفاتح'}
+        >
           {state.theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           <span>{state.theme === 'light' ? 'الوضع الداكن' : 'الوضع الفاتح'}</span>
         </button>
         {user && (
-          <button className="logout-btn" onClick={handleSignOut} title="تسجيل الخروج">
+          <button 
+            type="button"
+            className="logout-btn" 
+            onClick={handleSignOut} 
+            title="تسجيل الخروج"
+            aria-label="تسجيل الخروج من الحساب"
+          >
             <LogOut size={18} />
             <span>تسجيل الخروج</span>
           </button>

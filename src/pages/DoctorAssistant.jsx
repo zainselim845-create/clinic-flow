@@ -562,8 +562,9 @@ const DoctorAssistant = () => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="chat-input-field"
+              aria-label="نص الرسالة أو الأمر السريري للمساعد الذكي"
             />
-            <button type="submit" className="btn-send-chat" disabled={!inputText.trim() || isAiGenerating} title="إرسال للوكيل">
+            <button type="submit" className="btn-send-chat" disabled={!inputText.trim() || isAiGenerating} title="إرسال للوكيل" aria-label="إرسال الرسالة">
               <Send size={16} />
               <span>إرسال</span>
             </button>
@@ -602,12 +603,30 @@ const DoctorAssistant = () => {
                     : null;
 
                   return (
-                    <div key={patient.id} className={`target-patient-row ${isSelected ? 'selected' : ''}`}>
-                      <div className="check-box-wrapper" onClick={() => togglePatientSelection(patient.id)}>
+                    <div 
+                      key={patient.id} 
+                      className={`target-patient-row ${isSelected ? 'selected' : ''}`}
+                    >
+                      <button
+                        type="button"
+                        role="checkbox"
+                        aria-checked={isSelected}
+                        aria-label={`تحديد المريض ${patient.name}`}
+                        className="check-box-wrapper"
+                        onClick={() => togglePatientSelection(patient.id)}
+                        style={{ background: 'transparent', border: 'none', padding: 0 }}
+                      >
                         {isSelected ? <CheckSquare size={18} className="text-primary" /> : <Square size={18} className="text-muted" />}
-                      </div>
+                      </button>
 
-                      <div className="patient-main-details" onClick={() => togglePatientSelection(patient.id)}>
+                      <div 
+                        className="patient-main-details" 
+                        onClick={() => togglePatientSelection(patient.id)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePatientSelection(patient.id); } }}
+                        aria-label={`بيانات المريض ${patient.name}`}
+                      >
                         <div className="name-line">
                           <strong>{patient.name}</strong>
                           {patient.bloodType && <span className="tag-blood">{patient.bloodType}</span>}

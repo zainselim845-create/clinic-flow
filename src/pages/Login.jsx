@@ -320,6 +320,8 @@ const Login = () => {
         <div className="portal-scope-selector" role="tablist" aria-label="بوابات المنظومة">
           <button 
             type="button" 
+            role="tab"
+            aria-selected={portalScope === 'clinic'}
             className={`scope-pill-btn ${portalScope === 'clinic' ? 'active' : ''}`}
             onClick={() => handleScopeChange('clinic')}
           >
@@ -328,6 +330,8 @@ const Login = () => {
           </button>
           <button 
             type="button" 
+            role="tab"
+            aria-selected={portalScope === 'saas'}
             className={`scope-pill-btn ${portalScope === 'saas' ? 'active saas-active' : ''}`}
             onClick={() => handleScopeChange('saas')}
           >
@@ -364,14 +368,23 @@ const Login = () => {
 
         {/* Global Error & Success Alerts */}
         {error && (
-          <div className={`error-message ${isLocked ? 'lockout-alert' : 'shake'}`} style={isLocked ? { background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' } : { marginBottom: '1rem' }}>
+          <div 
+            role="alert" 
+            aria-live="assertive"
+            className={`error-message ${isLocked ? 'lockout-alert' : 'shake'}`} 
+            style={isLocked ? { background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' } : { marginBottom: '1rem' }}
+          >
             {isLocked && <AlertTriangle size={18} />}
             <span>{error}</span>
           </div>
         )}
 
         {successMessage && (
-          <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontWeight: 600, textAlign: 'center' }}>
+          <div 
+            role="status" 
+            aria-live="polite"
+            style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontWeight: 600, textAlign: 'center' }}
+          >
             {successMessage}
           </div>
         )}
@@ -713,9 +726,11 @@ const Login = () => {
               </div>
 
               {/* Navigation Tabs */}
-              <div className="google-modal-tab-bar" role="tablist">
+              <div className="google-modal-tab-bar" role="tablist" aria-label="خيارات تسجيل الدخول عبر Google">
                 <button
                   type="button"
+                  role="tab"
+                  aria-selected={googleModalTab === 'cloud_setup'}
                   className={`google-tab-btn ${googleModalTab === 'cloud_setup' ? 'active' : ''}`}
                   onClick={() => setGoogleModalTab('cloud_setup')}
                 >
@@ -724,6 +739,8 @@ const Login = () => {
                 </button>
                 <button
                   type="button"
+                  role="tab"
+                  aria-selected={googleModalTab === 'direct_email'}
                   className={`google-tab-btn ${googleModalTab === 'direct_email' ? 'active' : ''}`}
                   onClick={() => setGoogleModalTab('direct_email')}
                 >
@@ -732,6 +749,8 @@ const Login = () => {
                 </button>
                 <button
                   type="button"
+                  role="tab"
+                  aria-selected={googleModalTab === 'personas'}
                   className={`google-tab-btn ${googleModalTab === 'personas' ? 'active' : ''}`}
                   onClick={() => setGoogleModalTab('personas')}
                 >
