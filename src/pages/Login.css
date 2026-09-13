@@ -663,10 +663,12 @@
 }
 
 .uri-copy-badge code {
-  font-family: monospace;
-  font-size: 0.76rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.78rem;
   color: #0F172A;
   word-break: break-all;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
 }
 
 .btn-copy-uri {
@@ -701,6 +703,63 @@
   border: 1px solid rgba(0, 113, 227, 0.15);
   border-radius: 12px;
   padding: 0.75rem 1rem;
+}
+
+.google-oauth-popup-alt {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.btn-alt-google-popup {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color, #E2E8F0);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary, #475569);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-alt-google-popup:hover {
+  background: var(--surface-container, #F8FAFC);
+  color: var(--text-primary, #0F172A);
+  border-color: #CBD5E1;
+}
+
+.google-dev-collapse {
+  margin-top: 0.75rem;
+  border-top: 1px dashed var(--border-subtle, #E2E8F0);
+  padding-top: 0.75rem;
+}
+
+.google-dev-summary {
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-tertiary, #94A3B8);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.google-dev-summary:hover {
+  color: var(--apple-blue, #0071E3);
+}
+
+.google-dev-content {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 /* ==========================================================================
