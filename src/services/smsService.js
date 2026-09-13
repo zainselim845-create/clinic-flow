@@ -11,7 +11,11 @@ import { demoClinics } from '../data/demoData';
  */
 export function formatSenderId(input, fallback = 'ClinicFlow') {
   if (!input || typeof input !== 'string') return fallback;
-  const cleaned = input.replace(/[^a-zA-Z0-9]/g, '');
+  let formatted = input.trim();
+  if (/[-_]/.test(formatted)) {
+    formatted = formatted.split(/[-_]/).filter(Boolean).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('');
+  }
+  const cleaned = formatted.replace(/[^a-zA-Z0-9]/g, '');
   if (!cleaned || cleaned.length < 3) return fallback;
   return cleaned.substring(0, 11);
 }

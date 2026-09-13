@@ -30,11 +30,6 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // If onboarding is already completed and user visits /onboarding, send to dashboard
-  if (!user?.needsOnboarding && location.pathname === '/onboarding') {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   // 1. Subscription & Account Status Guard (Bypass for Super Admin)
   if (!isSuperAdmin && tenant) {
     const subStatus = tenant.subscriptionStatus || 'active';

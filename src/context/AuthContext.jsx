@@ -89,26 +89,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signUpDoctorAndClinic = async (formData) => {
-    try {
-      const { tenant: newTenant, user: doctorUser } = registerDoctorAndClinic(formData);
-      if (registerNewTenant) {
-        registerNewTenant(newTenant);
-      }
-      persistUser(doctorUser);
-      localStorage.setItem('clinicflow_role', doctorUser.role);
-      setUser(doctorUser);
-      setRole(doctorUser.role);
-      setClinic(newTenant);
-      if (newTenant?.slug) {
-        isolateTenantStorage(newTenant.slug);
-      }
-      return { data: { user: doctorUser, tenant: newTenant }, error: null };
-    } catch (error) {
-      return { data: null, error };
-    }
-  };
-
   useEffect(() => {
     if (isDemoMode) {
       const saved = getInitialUser();
@@ -554,6 +534,35 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Failed to complete onboarding:', err);
       return { data: null, error: err };
+    }
+  };
+
+  const signUpDoctorAndClinic = async (formData) => {
+    try {
+      const { tenant, user: newUser } = registerDoctorAndClinic(formData);
+      persistUser(newUser);
+      setUser(newUser);
+      setRole(newUser.role);
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('clinicflow_role', newUser.role);
+      }
+      if (tenant?.slug) {
+        setClinic(tenant);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('clinicflow_active_tenant_slug', tenant.slug);
+        }
+        if (registerNewTenant) {
+          registerNewTenant(tenant);
+        }
+        if (switchTenant) {
+          switchTenant(tenant.slug);
+        }
+        isolateTenantStorage(tenant.slug);
+      }
+      return { data: { user: newUser, tenant }, error: null };
+    } catch (error) {
+      console.error('Sign up error:', error);
+      return { data: null, error };
     }
   };
 

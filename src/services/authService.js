@@ -193,8 +193,16 @@ export function saveRegisteredUser(user) {
  */
 export function deleteRegisteredUser(userIdOrPhone) {
   if (!userIdOrPhone) return;
+  const clean = String(userIdOrPhone).trim();
+  const cleanDigits = clean.replace(/\D/g, '');
   const existing = getRegisteredUsers();
-  const filtered = existing.filter(u => u.id !== userIdOrPhone && u.phone !== userIdOrPhone);
+  const filtered = existing.filter(u => {
+    if (u.id === clean) return false;
+    if (u.phone === clean) return false;
+    if (cleanDigits && u.phone && u.phone.replace(/\D/g, '') === cleanDigits) return false;
+    if (clean.includes('@') && u.email && u.email.toLowerCase() === clean.toLowerCase()) return false;
+    return true;
+  });
   memoryUsersCache = filtered;
   if (typeof localStorage !== 'undefined') {
     try {
@@ -208,9 +216,14 @@ export function deleteRegisteredUser(userIdOrPhone) {
  */
 export function updateStaffAccountStatus(staffIdOrPhone, status) {
   if (!staffIdOrPhone) return;
+  const clean = String(staffIdOrPhone).trim();
+  const cleanDigits = clean.replace(/\D/g, '');
   const existing = getRegisteredUsers();
   memoryUsersCache = existing.map(u => {
-    if (u.id === staffIdOrPhone || u.phone === staffIdOrPhone) {
+    const matchesId = u.id === clean;
+    const matchesPhone = u.phone === clean || (cleanDigits && u.phone && u.phone.replace(/\D/g, '') === cleanDigits);
+    const matchesEmail = clean.includes('@') && u.email && u.email.toLowerCase() === clean.toLowerCase();
+    if (matchesId || matchesPhone || matchesEmail) {
       return { ...u, status };
     }
     return u;
@@ -473,6 +486,7 @@ export function registerDoctorAndClinic({
  * @returns {Object} staffUser
  */
 export function provisionStaffAccount({
+  id,
   clinicId,
   clinicSlug,
   name,
@@ -513,7 +527,7 @@ export function provisionStaffAccount({
                     role === 'assistant' ? 'مساعد تمريض سريري' : 'سكرتارية واستقبال العيادة';
 
   const staffUser = {
-    id: `staff-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    id: id || `staff-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     clinicId,
     clinicSlug,
     name: name.trim(),
@@ -675,6 +689,7 @@ export function completeClinicOnboarding({
     id: tenantId,
     name: cleanClinicName,
     slug: uniqueSlug,
+    senderId: formatSenderId(cleanUsername || uniqueSlug, 'ClinicFlow'),
     doctorName: cleanDoctorName,
     doctorEmail: cleanEmail,
     ownerId: userId || null,

@@ -80,6 +80,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
       });
       try {
         provisionStaffAccount({
+          id: editingStaff.id,
           clinicId: staffClinicId,
           clinicSlug: staffClinicSlug,
           name: staffForm.name,
@@ -92,8 +93,9 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         });
       } catch (_) {}
     } else {
+      const staffId = 'staff-' + Date.now();
       const newStaff = {
-        id: 'staff-' + Date.now(),
+        id: staffId,
         clinicId: staffClinicId,
         clinicSlug: staffClinicSlug,
         ...staffForm,
@@ -112,6 +114,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
       });
       try {
         provisionStaffAccount({
+          id: staffId,
           clinicId: staffClinicId,
           clinicSlug: staffClinicSlug,
           name: staffForm.name,
@@ -130,6 +133,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
   };
 
   const handleDeleteStaff = async (id) => {
+    const member = staffMembers.find(s => s.id === id);
     if (window.confirm('هل أنت متأكد من حذف حساب هذا الموظف من العيادة؟')) {
       if (useSupabase) {
         try {
@@ -140,6 +144,8 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
       }
       try {
         deleteRegisteredUser(id);
+        if (member?.phone) deleteRegisteredUser(member.phone);
+        if (member?.email) deleteRegisteredUser(member.email);
       } catch (_) {}
       dispatch({ type: 'DELETE_STAFF', payload: id });
     }
@@ -157,6 +163,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     }
     try {
       updateStaffAccountStatus(id, nextStatus);
+      if (member?.phone) updateStaffAccountStatus(member.phone, nextStatus);
     } catch (_) {}
     dispatch({ type: 'TOGGLE_STAFF_STATUS', payload: id });
   };

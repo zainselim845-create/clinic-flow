@@ -203,6 +203,13 @@ export default function Onboarding() {
     }
   }, [user]);
 
+  // If user already finished onboarding previously, redirect to dashboard
+  useEffect(() => {
+    if (user && !user.needsOnboarding && !completed) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, completed, navigate]);
+
   // Handle Palette selection
   const handleSelectPalette = (palette) => {
     setSelectedPaletteId(palette.id);

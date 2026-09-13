@@ -329,5 +329,40 @@ describe('Doctor Onboarding & Staff Management (Arabic SaaS Workflow)', () => {
 
       expect(authenticateUser('01066665555', 'pass')).toBeNull();
     });
+
+    it('synchronizes custom UI staff IDs and deletes staff by formatted phone or ID', () => {
+      const customUiId = 'staff-ui-custom-12345';
+      const staffPhone = '010-3333-4444';
+
+      const s = provisionStaffAccount({
+        id: customUiId,
+        clinicId: 'c-sync',
+        clinicSlug: 'c-sync',
+        name: 'موظف مزامنة',
+        phone: staffPhone,
+        password: 'pass',
+        role: 'receptionist'
+      });
+
+      expect(s.id).toBe(customUiId);
+      expect(authenticateUser('01033334444', 'pass').name).toBe('موظف مزامنة');
+
+      // Delete using phone or custom UI ID
+      deleteRegisteredUser(staffPhone);
+      expect(authenticateUser('01033334444', 'pass')).toBeNull();
+    });
+
+    it('ensures completeClinicOnboarding configures dedicated senderId for the clinic', () => {
+      const result = completeClinicOnboarding({
+        userId: 'doc-sender-test',
+        userEmail: 'sender@clinic.com',
+        username: 'nile-care',
+        doctorName: 'د. يوسف النيل',
+        clinicName: 'مركز نايل كير'
+      });
+
+      expect(result.tenant.senderId).toBeDefined();
+      expect(result.tenant.senderId).toBe('NileCare');
+    });
   });
 });

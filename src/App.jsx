@@ -184,7 +184,7 @@ function App() {
             <div className="app-wrapper booking-layout" data-theme={state.theme}><Login /></div>
           } />
           <Route path="/onboarding" element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['doctor']}>
               <div className="app-wrapper booking-layout" data-theme={state.theme}><Onboarding /></div>
             </ProtectedRoute>
           } />
