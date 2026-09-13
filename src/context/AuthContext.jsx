@@ -481,10 +481,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('clinicflow_role', realUser.role);
     setUser(realUser);
     setRole(realUser.role);
-    if (userTenant) {
+    if (userTenant?.slug) {
       setClinic(userTenant);
-    }
-    if (realUser.clinicSlug && realUser.clinicSlug !== '*' && activeTenant?.slug !== realUser.clinicSlug) {
+      localStorage.setItem('clinicflow_active_tenant_slug', userTenant.slug);
+      switchTenant?.(userTenant.slug);
+    } else if (realUser.clinicSlug && realUser.clinicSlug !== '*' && activeTenant?.slug !== realUser.clinicSlug) {
       switchTenant?.(realUser.clinicSlug);
     }
     if (realUser.role !== 'super_admin' && realUser.clinicSlug && realUser.clinicSlug !== '*') {
