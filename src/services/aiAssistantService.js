@@ -86,7 +86,7 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${key.trim()}`,
-          'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://clinicflow.app',
+          'HTTP-Referer': (typeof window !== 'undefined' && window.location?.origin) || 'https://clinicflow.app',
           'X-Title': 'ClinicFlow Doctor AI Assistant'
         },
         body: JSON.stringify({
@@ -113,7 +113,7 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${key.trim()}`,
-            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://clinicflow.app',
+            'HTTP-Referer': (typeof window !== 'undefined' && window.location?.origin) || 'https://clinicflow.app',
             'X-Title': 'ClinicFlow Doctor AI Assistant'
           },
           body: JSON.stringify({

@@ -15,6 +15,7 @@ import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
+import { localDb } from '../db/localDatabase';
 
 export const DATA_SCHEMA_VERSION = 'v4_google_material_3';
 
@@ -244,6 +245,16 @@ export function AppProvider({ children }) {
         if (currentSlug === 'dr-ahmed') {
           localStorage.setItem('clinicflow_data', payload);
         }
+
+        // Asynchronous Dual-Write to high-capacity IndexedDB
+        try {
+          if (Array.isArray(state.patients) && state.patients.length > 0) {
+            state.patients.forEach(p => localDb.savePatient(p).catch(() => {}));
+          }
+          if (Array.isArray(state.appointments) && state.appointments.length > 0) {
+            state.appointments.forEach(a => localDb.saveAppointment(a).catch(() => {}));
+          }
+        } catch (_) {}
       } catch (err) {
         console.warn('LocalStorage quota warning, executing smart compaction:', err);
         try {
@@ -338,7 +349,7 @@ export function AppProvider({ children }) {
   // ==========================================
   const sendSmsReminder = useCallback(async (appointment) => {
     try {
-      const activeClinicName = stateRef.current.clinicInfo?.name || (tenantSlug === 'dr-sara' ? 'عيادة د. سارة للجلدية والتجميل' : 'مركز النخبة لطب الأسنان');
+      const activeClinicName = stateRef.current.clinicInfo?.name || activeTenant?.name || resolvedClinic?.name || 'العيادة';
       await sendReminder(
         appointment.patientName,
         appointment.patientPhone,

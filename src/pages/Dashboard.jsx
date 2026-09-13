@@ -20,6 +20,8 @@ import ShiftHandoverModal from '../components/ShiftHandoverModal';
 import { AppleGlassDock } from '../components/ui';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
+import { addInvoice } from '../services/invoicesService';
+import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import { isDoctorRole } from '../utils/permissions';
 import './Dashboard.css';
 
@@ -190,11 +192,71 @@ const Dashboard = () => {
       });
     }
 
+    // Record healthcare audit trail
+    recordAuditEvent({
+      eventType: AUDIT_EVENT_TYPES.CONSULTATION_COMPLETED,
+      user: user?.name || currentClinic.doctorName || 'طبيب العيادة',
+      action: 'إنهاء الفحص السريري وتسجيل التشخيص',
+      details: `تم إنهاء فحص المريض ${data.patientName || 'مريض'} (التشخيص: ${data.diagnosis || 'فحص عام'}) وتحويله للمحاسبة والاستقبال`,
+      entityId: data.appointmentId,
+      entityType: 'appointment'
+    });
+
     setFinishExamAppt(null);
   };
 
-  // Secretary collects payment → status becomes completed
+  // Secretary collects payment → status becomes completed + auto invoice creation
   const handleCollectPayment = async (appointmentId, paymentMethod) => {
+    const targetAppt = todaysAppointments.find(a => a.id === appointmentId);
+    const rawFee = targetAppt?.fee ?? targetAppt?.paidAmount;
+    const numericFee = typeof rawFee === 'number'
+      ? rawFee
+      : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) || 300 : 300);
+
+    const clinicSlug = currentClinic.slug || 'dr-ahmed';
+    const invoiceNumber = `INV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newInvoice = {
+      id: 'inv-' + Date.now(),
+      clinicId: currentClinicId || '550e8400-e29b-41d4-a716-446655440000',
+      clinic_id: currentClinicId || '550e8400-e29b-41d4-a716-446655440000',
+      patientId: targetAppt?.patientId || appointmentId,
+      patientName: targetAppt?.patientName || 'مريض',
+      patientPhone: targetAppt?.patientPhone || '',
+      appointmentId,
+      invoiceNumber,
+      subtotal: numericFee,
+      discount: 0,
+      taxPercentage: 0,
+      taxAmount: 0,
+      total: numericFee,
+      patientShare: numericFee,
+      paidAmount: numericFee,
+      remainingBalance: 0,
+      paymentStatus: 'paid',
+      paymentMethod,
+      items: [{
+        description: targetAppt?.type || 'كشف واستشارة طبية',
+        procedures: targetAppt?.procedures || targetAppt?.diagnosis || '',
+        unitPrice: numericFee,
+        quantity: 1,
+        total: numericFee
+      }],
+      notes: `تم تحصيل الرسوم بواسطة مكتب الاستقبال عبر (${paymentMethod === 'cash' ? 'نقداً (كاش)' : paymentMethod === 'card' ? 'بطاقة بنكية' : 'إنستاباي/محفظة'})`,
+      createdAt: new Date().toISOString()
+    };
+
+    // 1. Sync invoice to Supabase and LocalStorage
+    try {
+      await addInvoice(newInvoice);
+      const stored = localStorage.getItem(`clinicflow_invoices_${clinicSlug}`);
+      const existingInvoices = stored ? JSON.parse(stored) : [];
+      localStorage.setItem(`clinicflow_invoices_${clinicSlug}`, JSON.stringify([newInvoice, ...existingInvoices]));
+    } catch (invErr) {
+      console.warn('Could not persist auto-generated invoice:', invErr);
+    }
+
+    // 2. Sync appointment status in Supabase if configured
     if (state.useSupabase) {
       try {
         await appointmentsService.updateAppointmentStatus(appointmentId, 'completed', {
@@ -205,6 +267,8 @@ const Dashboard = () => {
         console.error('Failed to sync completed payment to Supabase:', err);
       }
     }
+
+    // 3. Dispatch status update to React AppContext
     dispatch({
       type: 'UPDATE_APPOINTMENT_STATUS',
       payload: {
@@ -213,6 +277,16 @@ const Dashboard = () => {
         paymentMethod,
         paidAt: new Date().toISOString()
       }
+    });
+
+    // 4. Record Audit Event
+    recordAuditEvent({
+      eventType: AUDIT_EVENT_TYPES.PAYMENT_COLLECTED,
+      user: user?.name || 'مكتب الاستقبال',
+      action: 'تحصيل رسوم وإصدار فاتورة إلكترونية',
+      details: `تم تحصيل ${numericFee} ج.م بنجاح للمريض ${targetAppt?.patientName || 'مريض'} وإصدار الفاتورة رقم ${invoiceNumber}`,
+      entityId: appointmentId,
+      entityType: 'financial'
     });
   };
 

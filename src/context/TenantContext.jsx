@@ -277,7 +277,7 @@ export const TenantProvider = ({ children }) => {
         return false;
       }
 
-      const savedUserStr = sessionStorage.getItem('clinicflow_auth_user');
+      const savedUserStr = sessionStorage.getItem('clinicflow_auth_user') || localStorage.getItem('clinicflow_auth_user');
       if (savedUserStr) {
         const currentUser = JSON.parse(savedUserStr);
         const canSwitch = canSwitchTenants(currentUser, currentPath, dedicatedDomainActive);

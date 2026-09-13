@@ -28,6 +28,14 @@ export const AuthProvider = ({ children }) => {
       try {
         localStorage.setItem('clinicflow_auth_user', JSON.stringify(userData));
         sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(userData));
+        recordAuditEvent({
+          eventType: AUDIT_EVENT_TYPES.USER_LOGIN,
+          user: userData.name || userData.email || 'مستخدم النظام',
+          action: 'تسجيل دخول للنظام',
+          details: `تم تسجيل الدخول بصلاحية ${userData.role || 'طبيب'} في العيادة ${userData.clinicSlug || 'الافتراضية'}`,
+          entityId: userData.id || '',
+          entityType: 'auth'
+        });
       } catch (_) {}
     } else {
       try {
@@ -465,6 +473,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
+    if (user) {
+      recordAuditEvent({
+        eventType: AUDIT_EVENT_TYPES.USER_LOGOUT,
+        user: user.name || user.email || 'مستخدم النظام',
+        action: 'تسجيل خروج من النظام',
+        details: `تسجيل خروج المستخدم ${user.name || user.email}`,
+        entityId: user.id || '',
+        entityType: 'auth'
+      });
+    }
     persistUser(null);
     localStorage.removeItem('clinicflow_role');
     setUser(null);

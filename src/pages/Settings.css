@@ -86,7 +86,7 @@
 /* ======================================================== */
 .settings-section {
   background: var(--bg-secondary);
-  border: 1.5px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
   padding: 1.75rem;
   box-shadow: var(--shadow-card);
@@ -101,7 +101,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 1.25rem;
-  border-bottom: 1.5px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   gap: 1rem;
   flex-wrap: wrap;
 }

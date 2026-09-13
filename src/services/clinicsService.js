@@ -6,9 +6,9 @@ export function fromDbClinic(row) {
   if (!row) return null;
   return {
     id: row.id,
-    name: row.name || 'كلينك فلو التخصصية',
+    name: row.name || 'مركز النخبة لطب الأسنان',
     doctorName: row.doctor_name || 'د. أحمد الشريف',
-    specialty: row.specialty || 'استشاري أمراض الباطنة والقلب والسكر',
+    specialty: row.specialty || 'طب وجراحة الفم والأسنان وتجميل الابتسامة',
     address: row.address || 'القاهرة — التجمع الخامس، ميديكال بارك سنتر',
     phone: row.phone || '01006285031',
     doctorEmail: row.doctor_email || 'doctor@clinicflow.com',
