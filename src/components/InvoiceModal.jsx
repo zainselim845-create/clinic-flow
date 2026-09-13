@@ -3,7 +3,7 @@ import {
   Printer, Plus, CheckCircle2, X, MapPin, Phone, Send 
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
-import { recordPayment } from '../services/invoicesService';
+import { recordPayment, getNextInvoiceNumber } from '../services/invoicesService';
 import { useApp } from '../context/AppContext';
 
 import './InvoiceModal.css';
@@ -69,7 +69,7 @@ const InvoiceModal = ({
 
     const newInv = {
       id: 'inv_' + Date.now(),
-      invoiceNumber: 'INV-' + Date.now().toString().slice(-6) + '-' + Math.floor(100 + Math.random() * 900),
+      invoiceNumber: getNextInvoiceNumber(clinicInfo?.id || clinicInfo?.slug || 'default'),
       patientName,
       patientPhone,
       items,

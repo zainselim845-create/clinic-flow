@@ -4,6 +4,7 @@
  */
 
 export * from '../../services/drugInteractionService';
+export { checkPrescriptionSafety as checkDrugAllergyInteractions } from '../../services/drugInteractionService';
 export * from '../../services/clinicalNotesService';
 export * from '../../services/treatmentPlansService';
 export * from '../../services/labsService';

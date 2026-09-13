@@ -21,11 +21,11 @@ async function run() {
     console.log('Navigated to login page.');
     await page.screenshot({ path: path.join(ARTIFACT_DIR, 'google_verify_login_screen.png') });
 
-    // 2. Click Google Login button
-    const googleBtn = page.locator('button.btn-google-login');
-    await googleBtn.waitFor({ state: 'visible', timeout: 10000 });
-    await googleBtn.click();
-    console.log('Clicked Google Sign-In button.');
+    // 2. Click Google Options button to open setup modal
+    const googleOptBtn = page.locator('button.btn-google-options-link');
+    await googleOptBtn.waitFor({ state: 'visible', timeout: 10000 });
+    await googleOptBtn.click();
+    console.log('Clicked Google Options button.');
 
     // 3. Modal should appear
     const modal = page.locator('.google-picker-card.google-oauth-modal');
