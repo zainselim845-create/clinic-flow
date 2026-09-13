@@ -19,11 +19,23 @@ function parseStoredValue(val, defaultValue) {
   return val;
 }
 
+function getGlobalStorage() {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    if (typeof globalThis !== 'undefined' && globalThis.localStorage) return globalThis.localStorage;
+    if (typeof localStorage !== 'undefined') return localStorage;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export const safeStorage = {
   getItem: (key, defaultValue = null) => {
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    const storage = getGlobalStorage();
+    if (storage) {
       try {
-        const val = localStorage.getItem(key);
+        const val = storage.getItem(key);
         if (val !== null && val !== undefined) {
           return parseStoredValue(val, defaultValue);
         }
@@ -46,9 +58,10 @@ export const safeStorage = {
 
     memoryStore.set(key, stringVal);
 
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    const storage = getGlobalStorage();
+    if (storage) {
       try {
-        localStorage.setItem(key, stringVal);
+        storage.setItem(key, stringVal);
       } catch {
         // Keep memoryStore value as fallback
       }
@@ -57,9 +70,10 @@ export const safeStorage = {
 
   removeItem: (key) => {
     memoryStore.delete(key);
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    const storage = getGlobalStorage();
+    if (storage) {
       try {
-        localStorage.removeItem(key);
+        storage.removeItem(key);
       } catch {
         // Ignored
       }
@@ -68,9 +82,10 @@ export const safeStorage = {
 
   clear: () => {
     memoryStore.clear();
-    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    const storage = getGlobalStorage();
+    if (storage) {
       try {
-        localStorage.clear();
+        storage.clear();
       } catch {
         // Ignored
       }

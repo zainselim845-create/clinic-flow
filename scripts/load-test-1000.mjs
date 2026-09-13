@@ -1,4 +1,4 @@
-﻿import http from 'http';
+import http from 'http';
 
 const URLS = [
   'http://localhost:4173/',
@@ -48,20 +48,32 @@ async function makeRequest(index) {
   }
 }
 
-// Launch all 1,000 requests concurrently
-const promises = Array.from({ length: TOTAL_REQUESTS }, (_, i) => makeRequest(i));
-await Promise.all(promises);
+// Execute 1,000 requests across 50 concurrent pipeline workers
+const CONCURRENCY = 50;
+let requestQueueIndex = 0;
+
+async function worker() {
+  while (requestQueueIndex < TOTAL_REQUESTS) {
+    const currentIndex = requestQueueIndex++;
+    if (currentIndex < TOTAL_REQUESTS) {
+      await makeRequest(currentIndex);
+    }
+  }
+}
+
+const workers = Array.from({ length: CONCURRENCY }, () => worker());
+await Promise.all(workers);
 
 const totalTimeMs = performance.now() - startTime;
 const endMem = process.memoryUsage().heapUsed;
 const memDeltaMB = ((endMem - initialMem) / 1024 / 1024).toFixed(2);
 
 latencies.sort((a, b) => a - b);
-const p50 = latencies[Math.floor(latencies.length * 0.50)].toFixed(2);
-const p95 = latencies[Math.floor(latencies.length * 0.95)].toFixed(2);
-const p99 = latencies[Math.floor(latencies.length * 0.99)].toFixed(2);
-const avgLatency = (latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(2);
-const throughputRPS = ((TOTAL_REQUESTS / totalTimeMs) * 1000).toFixed(0);
+const p50 = latencies.length ? latencies[Math.floor(latencies.length * 0.50)].toFixed(2) : '0';
+const p95 = latencies.length ? latencies[Math.floor(latencies.length * 0.95)].toFixed(2) : '0';
+const p99 = latencies.length ? latencies[Math.floor(latencies.length * 0.99)].toFixed(2) : '0';
+const avgLatency = latencies.length ? (latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(2) : '0';
+const throughputRPS = totalTimeMs > 0 ? ((TOTAL_REQUESTS / totalTimeMs) * 1000).toFixed(0) : '0';
 
 console.log('\n======================================================');
 console.log('       CLINICFLOW 1,000 CONCURRENT REQUESTS RESULTS   ');

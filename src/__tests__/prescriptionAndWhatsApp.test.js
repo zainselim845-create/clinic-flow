@@ -20,7 +20,8 @@ import { safeStorage } from '../utils/safeStorage';
 
 describe('e-Prescription & WhatsApp Direct Integration', () => {
   beforeEach(() => {
-    safeStorage.clear();
+    safeStorage.removeItem('clinicflow_prescriptions_c-alpha');
+    safeStorage.removeItem('clinicflow_prescriptions_clinic-1');
   });
 
   describe('1. Clinical e-Prescription Engine', () => {
