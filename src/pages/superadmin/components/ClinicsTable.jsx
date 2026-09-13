@@ -1,6 +1,7 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare } from 'lucide-react';
 import { getClinicUsage } from '../../../services/usageMeteringService';
+import { getClinicSenderId } from '../../../services/smsService';
 
 export function ClinicsTable({
   filteredTenants,
@@ -127,6 +128,26 @@ export function ClinicsTable({
                       <div className="tenant-cell-doctor">
                         <span>{t.doctorName}</span>
                         <small>{t.specialty}</small>
+                        <div style={{ marginTop: '4px' }}>
+                          <span 
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.72rem',
+                              fontFamily: 'monospace',
+                              background: 'rgba(59, 130, 246, 0.08)',
+                              color: '#2563eb',
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              border: '1px solid rgba(59, 130, 246, 0.2)'
+                            }}
+                            title="معرّف مرسل الـ SMS الحصري للعيادة (Telecom Sender ID)"
+                          >
+                            <MessageSquare size={10} />
+                            <span>Sender: {t.senderId || getClinicSenderId(t.id || t.slug)}</span>
+                          </span>
+                        </div>
                       </div>
                     </td>
 
@@ -153,6 +174,31 @@ export function ClinicsTable({
                           <ExternalLink size={13} />
                         </a>
                       </div>
+                      {(t.customDomain || t.custom_domain) && (
+                        <div style={{ marginTop: '4px' }}>
+                          <a
+                            href={`https://${t.customDomain || t.custom_domain}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.76rem',
+                              color: '#059669',
+                              textDecoration: 'none',
+                              fontFamily: 'monospace',
+                              background: 'rgba(16, 185, 129, 0.1)',
+                              padding: '1px 6px',
+                              borderRadius: '4px'
+                            }}
+                            title="النطاق المخصص الحصري"
+                          >
+                            <Globe size={11} />
+                            <span>{t.customDomain || t.custom_domain}</span>
+                          </a>
+                        </div>
+                      )}
                     </td>
 
                     <td>

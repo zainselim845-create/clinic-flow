@@ -21,6 +21,7 @@ import {
   TopUpCreditsModal
 } from './components';
 import { saveRegisteredTenant, saveRegisteredUser } from '../../services/authService';
+import { formatSenderId } from '../../services/smsService';
 import { useApp } from '../../context/AppContext';
 import DatabaseSyncTab from '../settings/DatabaseSyncTab';
 import SmsConfigTab from '../settings/SmsConfigTab';
@@ -49,6 +50,7 @@ export default function SuperAdminDashboard() {
     specialty: 'طب وجراحة الأسنان',
     phone: '01000000000',
     slug: '',
+    senderId: '',
     subscriptionTier: 'pro'
   });
 
@@ -126,6 +128,8 @@ export default function SuperAdminDashboard() {
     e.preventDefault();
     if (!newClinic.name || !newClinic.slug) return;
 
+    const resolvedSenderId = formatSenderId(newClinic.senderId || newClinic.slug, 'ClinicFlow');
+
     const created = {
       id: `clinic_${Date.now()}`,
       name: newClinic.name,
@@ -133,6 +137,7 @@ export default function SuperAdminDashboard() {
       specialty: newClinic.specialty,
       phone: newClinic.phone,
       slug: newClinic.slug.toLowerCase().replace(/\s+/g, '-'),
+      senderId: resolvedSenderId,
       subscriptionTier: newClinic.subscriptionTier,
       subscriptionStatus: 'active',
       branding: {
@@ -182,6 +187,7 @@ export default function SuperAdminDashboard() {
       specialty: 'طب وجراحة الأسنان',
       phone: '01000000000',
       slug: '',
+      senderId: '',
       subscriptionTier: 'pro',
       doctorEmail: '',
       doctorPassword: ''

@@ -7,7 +7,8 @@ import {
   authenticateUser, 
   getRegisteredTenants, 
   saveRegisteredTenant, 
-  slugifyClinic 
+  slugifyClinic,
+  completeClinicOnboarding 
 } from '../services/authService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import TenantContext from './TenantContext';
@@ -424,7 +425,10 @@ export const AuthProvider = ({ children }) => {
       (googleProfile.sub && t.ownerId === googleProfile.sub)
     );
 
-    // 2. If not, auto-provision a real, clean dedicated clinic for this doctor (Zero demo patients)
+    const isNewUser = !userTenant;
+    const needsOnboarding = assignedRole !== 'super_admin' && (isNewUser || userTenant?.isOnboardingCompleted === false);
+
+    // 2. If not, auto-provision a real, clean dedicated clinic draft for this doctor
     if (!userTenant && assignedRole !== 'super_admin') {
       const docRawName = googleProfile.name || googleProfile.email.split('@')[0];
       const doctorDisplayName = docRawName.startsWith('د.') ? docRawName : `د. ${docRawName}`;
@@ -438,11 +442,12 @@ export const AuthProvider = ({ children }) => {
         doctorName: doctorDisplayName,
         doctorEmail: googleProfile.email.toLowerCase(),
         ownerId: googleProfile.sub || null,
-        specialty: 'طب وجراحة عامة وتخصصية',
+        specialty: 'طب وجراحة الفم والأسنان العام',
         address: 'القاهرة، جمهورية مصر العربية',
         phone: '',
         subscriptionTier: 'pro',
         subscriptionStatus: 'active',
+        isOnboardingCompleted: false,
         branding: {
           primaryColor: '#0071E3',
           accentColor: '#10B981',
@@ -474,7 +479,9 @@ export const AuthProvider = ({ children }) => {
       clinicId: currentId,
       allowedClinics: [currentSlug],
       authProvider: 'google',
-      isEmailVerified: true
+      isEmailVerified: true,
+      needsOnboarding,
+      isOnboardingCompleted: !needsOnboarding
     };
 
     persistUser(realUser);
@@ -501,7 +508,53 @@ export const AuthProvider = ({ children }) => {
       entityType: 'auth'
     });
 
-    return { data: { user: realUser, tenant: userTenant }, error: null };
+    return { data: { user: realUser, tenant: userTenant }, isNewUser, needsOnboarding, error: null };
+  };
+
+  const completeOnboarding = async (onboardingPayload) => {
+    try {
+      const result = completeClinicOnboarding({
+        userId: user?.id,
+        userEmail: user?.email,
+        ...onboardingPayload
+      });
+
+      const updatedUser = {
+        ...user,
+        ...result.user,
+        needsOnboarding: false,
+        isOnboardingCompleted: true
+      };
+
+      persistUser(updatedUser);
+      setUser(updatedUser);
+      setClinic(result.tenant);
+
+      if (registerNewTenant) {
+        registerNewTenant(result.tenant);
+      }
+      if (switchTenant && result.tenant?.slug) {
+        switchTenant(result.tenant.slug);
+      }
+      if (result.tenant?.slug) {
+        isolateTenantStorage(result.tenant.slug);
+      }
+
+      if (typeof document !== 'undefined' && result.tenant?.branding) {
+        const root = document.documentElement;
+        if (result.tenant.branding.primaryColor) {
+          root.style.setProperty('--primary', result.tenant.branding.primaryColor);
+        }
+        if (result.tenant.branding.accentColor) {
+          root.style.setProperty('--accent', result.tenant.branding.accentColor);
+        }
+      }
+
+      return { data: { user: updatedUser, tenant: result.tenant, staff: result.staff }, error: null };
+    } catch (err) {
+      console.error('Failed to complete onboarding:', err);
+      return { data: null, error: err };
+    }
   };
 
   const signInWithGoogle = async (personaOrProfile = 'doctor') => {
@@ -625,6 +678,7 @@ export const AuthProvider = ({ children }) => {
       signInWithGoogle,
       loginWithGoogleProfile,
       signUpDoctorAndClinic,
+      completeOnboarding,
       signOut,
       updateClinicInfo,
       isDemoMode

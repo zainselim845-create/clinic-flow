@@ -144,10 +144,42 @@ export function CreateClinicModal({
               placeholder="el-nokhba" 
               dir="ltr"
               value={newClinic.slug}
-              onChange={(e) => setNewClinic(prev => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'), slugManual: true }))}
+              onChange={(e) => {
+                const s = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                setNewClinic(prev => {
+                  const derivedSender = !prev.senderIdManual
+                    ? s.split(/[-_]/).filter(Boolean).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('').substring(0, 11)
+                    : prev.senderId;
+                  return {
+                    ...prev,
+                    slug: s,
+                    slugManual: true,
+                    senderId: derivedSender || prev.senderId
+                  };
+                });
+              }}
               required
             />
             <small className="help-text">سيكون رابط الحجز المباشر: /c/{newClinic.slug || 'slug'}/booking</small>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="clinic-sender-id-input">معرّف مرسل الـ SMS الحصري (Telecom Sender ID)</label>
+            <input 
+              id="clinic-sender-id-input"
+              type="text" 
+              placeholder="DrAhmed / EliteClinic" 
+              dir="ltr"
+              maxLength={11}
+              value={newClinic.senderId || ''}
+              onChange={(e) => {
+                const clean = e.target.value.replace(/[^a-zA-Z0-9]/g, '').substring(0, 11);
+                setNewClinic(prev => ({ ...prev, senderId: clean, senderIdManual: true }));
+              }}
+            />
+            <small className="help-text">
+              معتمد لدى شركات الاتصالات و NTRA (3 إلى 11 حرف/رقم بالإنجليزية دون مسافات). المعرف الفعلي: <strong>{newClinic.senderId || 'تلقائي من الرابط'}</strong>
+            </small>
           </div>
 
           <div className="modal-actions">

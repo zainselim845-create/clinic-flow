@@ -46,6 +46,7 @@ const Labs = lazyWithRetry(() => import('./pages/Labs'));
 const Inventory = lazyWithRetry(() => import('./pages/Inventory'));
 const Attendance = lazyWithRetry(() => import('./pages/Attendance'));
 const SuperAdminDashboard = lazyWithRetry(() => import('./pages/superadmin/SuperAdminDashboard'));
+const Onboarding = lazyWithRetry(() => import('./pages/Onboarding'));
 const LandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
@@ -63,6 +64,7 @@ const pageTitles = {
   '/settings': 'إعدادات وإدارة العيادة',
   '/booking': 'حجز موعد',
   '/manage-booking': 'إدارة الحجز والمواعيد',
+  '/onboarding': 'تهيئة وإعداد نظام العيادة',
 };
 
 
@@ -180,6 +182,11 @@ function App() {
 
           <Route path="/login" element={
             <div className="app-wrapper booking-layout" data-theme={state.theme}><Login /></div>
+          } />
+          <Route path="/onboarding" element={
+            <ProtectedRoute>
+              <div className="app-wrapper booking-layout" data-theme={state.theme}><Onboarding /></div>
+            </ProtectedRoute>
           } />
           <Route path="/booking" element={
             <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>

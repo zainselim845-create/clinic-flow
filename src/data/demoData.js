@@ -46,6 +46,7 @@ export const clinicInfo = {
   doctorName: 'د. أحمد الشريف',
   doctorEmail: 'doctor@clinicflow.com',
   specialty: 'طب وجراحة الفم والأسنان وتجميل الابتسامة',
+  senderId: 'DrAhmed',
   address: 'مصر الجديدة — شارع الأهرام، برج الأطباء، الدور الرابع',
   phone: '01006285031',
   regularFee: '300 ج.م',
@@ -67,6 +68,7 @@ export const demoClinics = [
     ...clinicInfo,
     id: '550e8400-e29b-41d4-a716-446655440000',
     slug: 'dr-ahmed',
+    senderId: 'DrAhmed',
     customDomain: 'dr-ahmed-dental.com',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
@@ -87,6 +89,7 @@ export const demoClinics = [
   {
     id: '550e8400-e29b-41d4-a716-446655440099',
     slug: 'dr-sara',
+    senderId: 'SaraDerma',
     customDomain: 'drsara-clinic.com',
     name: 'عيادة د. سارة للجلدية والتجميل والليزر',
     doctorName: 'د. سارة محمود',

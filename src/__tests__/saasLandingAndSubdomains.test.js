@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { 
   captureSystemError, 
   getSystemErrors, 
@@ -8,7 +8,19 @@ import {
   getBugReports, 
   updateBugReportStatus 
 } from '../services/systemErrorService';
-import { resolveTenantFromLocation } from '../context/TenantContext';
+import { resolveTenantFromLocation, getCombinedTenants } from '../context/TenantContext';
+import { 
+  DEFAULT_CNAME_TARGET, 
+  DEFAULT_A_TARGET, 
+  VERCEL_CNAME_TARGET,
+  VERCEL_DIRECT_TARGET,
+  DOMAIN_STATUS,
+  getRequiredDnsRecords,
+  verifyDomainDnsAndSsl,
+  saveClinicDomainSettings,
+  getClinicDomainSettings,
+  generateVerificationToken
+} from '../services/customDomainService';
 import { demoClinics } from '../data/demoData';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 
@@ -204,6 +216,210 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
       expect(matchesSpecialtyFilter(ahmedSpecialty, 'طب وجراحة الأسنان')).toBe(true);
       expect(matchesSpecialtyFilter(ahmedSpecialty, 'الأمراض الجلدية والتجميل')).toBe(false);
       expect(matchesSpecialtyFilter(ahmedSpecialty, 'الكل')).toBe(true);
+    });
+  });
+
+  describe('4. Production Custom Domain & Dedicated Routing Engine', () => {
+    it('exports production-ready Vercel and Cloudflare DNS targets', () => {
+      expect(DEFAULT_CNAME_TARGET).toBe('cname.vercel-dns.com');
+      expect(VERCEL_CNAME_TARGET).toBe('cname.vercel-dns.com');
+      expect(VERCEL_DIRECT_TARGET).toBe('clinic-flow-lh3g.vercel.app');
+      expect(DEFAULT_A_TARGET).toBe('76.76.21.21');
+    });
+
+    it('generates accurate DNS records for apex domain (e.g. dr-sara.com)', () => {
+      const records = getRequiredDnsRecords('dr-sara.com', 'clinic-123');
+      expect(records.length).toBe(3);
+
+      const aRecord = records.find(r => r.type === 'A');
+      expect(aRecord).toBeDefined();
+      expect(aRecord.name).toBe('@');
+      expect(aRecord.value).toBe('76.76.21.21');
+
+      const cnameRecord = records.find(r => r.type === 'CNAME');
+      expect(cnameRecord).toBeDefined();
+      expect(cnameRecord.name).toBe('www');
+      expect(cnameRecord.value).toBe('cname.vercel-dns.com');
+
+      const txtRecord = records.find(r => r.type === 'TXT');
+      expect(txtRecord).toBeDefined();
+      expect(txtRecord.name).toBe('_clinicflow-challenge');
+      expect(txtRecord.value).toMatch(/^clinicflow-verify-/);
+    });
+
+    it('generates accurate DNS records for subdomain (e.g. booking.dr-sara.com)', () => {
+      const records = getRequiredDnsRecords('booking.dr-sara.com', 'clinic-123');
+      expect(records.length).toBe(2);
+
+      const cnameRecord = records.find(r => r.type === 'CNAME');
+      expect(cnameRecord).toBeDefined();
+      expect(cnameRecord.name).toBe('booking');
+      expect(cnameRecord.value).toBe('cname.vercel-dns.com');
+
+      const txtRecord = records.find(r => r.type === 'TXT');
+      expect(txtRecord).toBeDefined();
+      expect(txtRecord.name).toBe('_clinicflow-challenge.booking');
+      expect(txtRecord.value).toMatch(/^clinicflow-verify-/);
+    });
+
+    it('instantly verifies pre-configured demo domains (dr-ahmed-dental.com)', async () => {
+      const res = await verifyDomainDnsAndSsl('dr-ahmed-dental.com', 'clinic-1');
+      expect(res.isValid).toBe(true);
+      expect(res.dnsConfigured).toBe(true);
+      expect(res.sslStatus).toBe(DOMAIN_STATUS.ACTIVE);
+      expect(res.sslIssuer).toContain('TLS 1.3');
+    });
+
+    it('verifies custom domain pointing to Vercel CNAME target (cname.vercel-dns.com)', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          Status: 0,
+          Answer: [{ name: 'booking.mydoctor.com.', type: 5, data: 'cname.vercel-dns.com.' }]
+        })
+      });
+
+      const res = await verifyDomainDnsAndSsl('booking.mydoctor.com', 'clinic-1', mockFetch);
+      expect(res.isValid).toBe(true);
+      expect(res.dnsConfigured).toBe(true);
+      expect(res.sslStatus).toBe(DOMAIN_STATUS.ACTIVE);
+    });
+
+    it('verifies custom domain pointing to direct Vercel deployment (clinic-flow-lh3g.vercel.app)', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          Status: 0,
+          Answer: [{ name: 'booking.mydoctor.com.', type: 5, data: 'clinic-flow-lh3g.vercel.app.' }]
+        })
+      });
+
+      const res = await verifyDomainDnsAndSsl('booking.mydoctor.com', 'clinic-1', mockFetch);
+      expect(res.isValid).toBe(true);
+      expect(res.dnsConfigured).toBe(true);
+      expect(res.sslStatus).toBe(DOMAIN_STATUS.ACTIVE);
+    });
+
+    it('verifies apex domain pointing to Vercel Anycast A Record (76.76.21.21)', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          Status: 0,
+          Answer: [{ name: 'mydoctor.com.', type: 1, data: '76.76.21.21' }]
+        })
+      });
+
+      const res = await verifyDomainDnsAndSsl('mydoctor.com', 'clinic-1', mockFetch);
+      expect(res.isValid).toBe(true);
+      expect(res.dnsConfigured).toBe(true);
+      expect(res.sslStatus).toBe(DOMAIN_STATUS.ACTIVE);
+    });
+
+    it('verifies domain routed through Cloudflare Proxy (104.21.x.x / 172.67.x.x)', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          Status: 0,
+          Answer: [
+            { name: 'mydoctor.com.', type: 1, data: '104.21.44.120' },
+            { name: 'mydoctor.com.', type: 1, data: '172.67.180.22' }
+          ]
+        })
+      });
+
+      const res = await verifyDomainDnsAndSsl('mydoctor.com', 'clinic-1', mockFetch);
+      expect(res.isValid).toBe(true);
+      expect(res.dnsConfigured).toBe(true);
+      expect(res.sslStatus).toBe(DOMAIN_STATUS.ACTIVE);
+    });
+
+    it('supports Cloudflare CNAME flattening by falling back to A-record lookup', async () => {
+      const mockFetch = vi.fn().mockImplementation((url) => {
+        if (url.includes('type=CNAME')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({ Status: 0, Answer: [] })
+          });
+        }
+        if (url.includes('type=A')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              Status: 0,
+              Answer: [{ name: 'booking.flattened.com.', type: 1, data: '76.76.21.21' }]
+            })
+          });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({ Status: 0, Answer: [] }) });
+      });
+
+      const res = await verifyDomainDnsAndSsl('booking.flattened.com', 'clinic-1', mockFetch);
+      expect(res.isValid).toBe(true);
+      expect(res.dnsConfigured).toBe(true);
+      expect(res.sslStatus).toBe(DOMAIN_STATUS.ACTIVE);
+    });
+
+    it('verifies domain via TXT verification token challenge', async () => {
+      const clinicId = 'clinic-challenge-xyz';
+      const domain = 'dr-challenge.com';
+      const expectedToken = generateVerificationToken(clinicId, domain);
+
+      const mockFetch = vi.fn().mockImplementation((url) => {
+        if (url.includes('type=TXT')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              Status: 0,
+              Answer: [{ name: `_clinicflow-challenge.${domain}.`, type: 16, data: `"${expectedToken}"` }]
+            })
+          });
+        }
+        return Promise.resolve({ ok: true, json: async () => ({ Status: 0, Answer: [] }) });
+      });
+
+      const res = await verifyDomainDnsAndSsl(domain, clinicId, mockFetch);
+      expect(res.isValid).toBe(true);
+      expect(res.dnsConfigured).toBe(true);
+      expect(res.sslStatus).toBe(DOMAIN_STATUS.ACTIVE);
+    });
+
+    it('persists clinic domain settings and merges them into getCombinedTenants', () => {
+      const testClinicId = '550e8400-e29b-41d4-a716-446655440000';
+      saveClinicDomainSettings(testClinicId, {
+        domain: 'custom-ahmed-smile.com',
+        sslStatus: DOMAIN_STATUS.ACTIVE,
+        verifiedAt: new Date().toISOString()
+      });
+
+      const loaded = getClinicDomainSettings(testClinicId);
+      expect(loaded).toBeDefined();
+      expect(loaded.domain).toBe('custom-ahmed-smile.com');
+
+      const combined = getCombinedTenants();
+      const ahmedTenant = combined.find(t => t.id === testClinicId);
+      expect(ahmedTenant).toBeDefined();
+      expect(ahmedTenant.customDomain).toBe('custom-ahmed-smile.com');
+    });
+
+    it('resolves dedicated domain mode for newly configured custom domain', () => {
+      const testClinicId = '550e8400-e29b-41d4-a716-446655440000';
+      saveClinicDomainSettings(testClinicId, {
+        domain: 'ahmed-smile-hub.com',
+        sslStatus: DOMAIN_STATUS.ACTIVE,
+        verifiedAt: new Date().toISOString()
+      });
+
+      const combined = getCombinedTenants();
+      const resolved = resolveTenantFromLocation(combined, {
+        hostname: 'ahmed-smile-hub.com',
+        pathname: '/',
+        search: ''
+      });
+
+      expect(resolved.isDedicatedDomain).toBe(true);
+      expect(resolved.slug).toBe('dr-ahmed');
+      expect(resolved.tenant?.doctorName).toContain('أحمد');
+      expect(resolved.tenant?.name).toContain('الأسنان');
     });
   });
 });

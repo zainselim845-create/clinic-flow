@@ -4,6 +4,9 @@
  * and high-speed O(1) indexed authentication for enterprise multi-tenancy.
  */
 
+import { CLINIC_SPECIALTIES } from '../data/specialtiesData';
+import { formatSenderId } from './smsService';
+
 const REGISTERED_TENANTS_KEY = 'clinicflow_registered_tenants';
 const REGISTERED_USERS_KEY = 'clinicflow_registered_users';
 
@@ -185,6 +188,116 @@ export function saveRegisteredUser(user) {
   }
 }
 
+export const RESERVED_USERNAMES = new Set([
+  'admin', 'super-admin', 'superadmin', 'saas-admin', 'administrator', 
+  'root', 'api', 'support', 'booking', 'manage-booking', 'dashboard', 
+  'settings', 'login', 'onboarding', 'auth', 'staff', 'doctor', 
+  'clinic', 'system', 'clinicflow', 'help', 'app', 'portal', 'account'
+]);
+
+/**
+ * Validates if a chosen username/handle is available for registration
+ * @param {string} username - Chosen username or handle
+ * @param {string} [currentUserId] - ID of current user (to permit keeping their own handle)
+ * @returns {{ available: boolean, reason?: string, suggestions?: string[] }}
+ */
+export function isUsernameAvailable(username, currentUserId = null) {
+  if (!username) {
+    return {
+      available: false,
+      reason: 'يرجى إدخال اسم مستخدم للعيادة.'
+    };
+  }
+
+  const clean = username.trim().toLowerCase().replace(/^@/, '');
+
+  if (clean.length < 3) {
+    return {
+      available: false,
+      reason: 'اسم المستخدم قصير جداً. يجب أن يتكون من 3 أحرف بالإنجليزية على الأقل.'
+    };
+  }
+
+  if (!/^[a-z0-9][a-z0-9_-]*[a-z0-9]$|^[a-z0-9]{3,}$/.test(clean)) {
+    return {
+      available: false,
+      reason: 'يجب أن يحتوي اسم المستخدم على أحرف إنجليزية وأرقام وعلامات (-) أو (_) فقط.'
+    };
+  }
+
+  if (RESERVED_USERNAMES.has(clean)) {
+    return {
+      available: false,
+      reason: 'اسم المستخدم هذا محجوز لنظام ClinicFlow، يرجى اختيار اسم مستخدم آخر.',
+      suggestions: [
+        `dr-${clean}`,
+        `${clean}-clinic`,
+        `${clean}-${Math.floor(10 + Math.random() * 89)}`
+      ]
+    };
+  }
+
+  // Check demo clinics
+  if (clean === 'dr-ahmed' || clean === 'dr-sara') {
+    return {
+      available: false,
+      reason: 'اسم المستخدم هذا محجوز مسبقاً لعيادة أخرى، يرجى تغييره واختيار اسم متاح.',
+      suggestions: [
+        `dr-${clean.replace(/^dr-?/, '')}-care`,
+        `${clean}-clinic`,
+        `the-${clean}`
+      ]
+    };
+  }
+
+  // Check registered users
+  const registeredUsers = getRegisteredUsers();
+  const takenByUser = registeredUsers.find(u => {
+    if (currentUserId && (u.id === currentUserId || u.ownerId === currentUserId)) return false;
+    const uUsername = (u.username || '').toLowerCase().replace(/^@/, '');
+    const uSlug = (u.clinicSlug || '').toLowerCase();
+    return uUsername === clean || uSlug === clean;
+  });
+
+  if (takenByUser) {
+    return {
+      available: false,
+      reason: 'اسم المستخدم هذا مستخدم بالفعل من قِبل طبيب أو عيادة أخرى، يرجى تغييره واختيار اسم متاح.',
+      suggestions: [
+        `dr-${clean}`,
+        `${clean}-clinic`,
+        `${clean}-${Math.floor(10 + Math.random() * 89)}`
+      ]
+    };
+  }
+
+  // Check registered clinics / tenants
+  const registeredTenants = getRegisteredTenants();
+  const takenByTenant = registeredTenants.find(t => {
+    if (currentUserId && (t.ownerId === currentUserId || t.id === `clinic-${currentUserId}`)) return false;
+    const tSlug = (t.slug || '').toLowerCase();
+    const tUsername = (t.username || '').toLowerCase().replace(/^@/, '');
+    return tSlug === clean || tUsername === clean;
+  });
+
+  if (takenByTenant) {
+    return {
+      available: false,
+      reason: 'اسم المستخدم هذا محجوز مسبقاً لعيادة مسجلة، يرجى تغييره واختيار اسم متاح.',
+      suggestions: [
+        `dr-${clean}`,
+        `${clean}-clinic`,
+        `${clean}-${Math.floor(10 + Math.random() * 89)}`
+      ]
+    };
+  }
+
+  return {
+    available: true,
+    reason: 'اسم المستخدم متاح ومناسب لعيادتك'
+  };
+}
+
 /**
  * Registers a new Doctor and creates their Clinic
  * @param {Object} params
@@ -206,7 +319,8 @@ export function registerDoctorAndClinic({
   clinicName,
   specialty = 'طب وجراحة الفم والأسنان',
   address = 'القاهرة، جمهورية مصر العربية',
-  customSlug
+  customSlug,
+  senderId
 }) {
   if (!doctorName?.trim()) throw new Error('يرجى إدخال اسم الطبيب بالكامل.');
   if (!email?.trim() || !email.includes('@')) throw new Error('يرجى إدخال بريد إلكتروني صالح.');
@@ -258,6 +372,7 @@ export function registerDoctorAndClinic({
     id: tenantId,
     name: cleanClinicName,
     slug: uniqueSlug,
+    senderId: formatSenderId(senderId || uniqueSlug, 'ClinicFlow'),
     doctorName: cleanName,
     doctorEmail: cleanEmail,
     doctorPassword: password,
@@ -359,6 +474,10 @@ export function provisionStaffAccount({
     }
   }
 
+  const roleTitle = role === 'associate_doctor' ? 'طبيب ممارس / أخصائي مساعد' :
+                    role === 'accountant' ? 'محاسب مالي للعيادة' :
+                    role === 'assistant' ? 'مساعد تمريض سريري' : 'سكرتارية واستقبال العيادة';
+
   const staffUser = {
     id: `staff-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     clinicId,
@@ -368,10 +487,9 @@ export function provisionStaffAccount({
     email: cleanEmail,
     password: password.trim() || '123',
     role,
-    jobTitle: role === 'associate_doctor' ? 'طبيب ممارس / أخصائي مساعد' :
-              role === 'accountant' ? 'محاسب مالي للعيادة' :
-              role === 'assistant' ? 'مساعد تمريض سريري' : 'سكرتارية واستقبال العيادة',
-    shift,
+    roleKey: role,
+    jobTitle: roleTitle,
+    shift: shift || 'مسائي (04:00 م - 10:00 م)',
     status: 'active',
     permissions: assignedPermissions,
     allowedClinics: [clinicSlug],
@@ -403,7 +521,13 @@ export function authenticateUser(identifier, password, options = {}) {
   const matchedUser = registeredUsers.find(u => {
     const uEmail = (u.email || '').toLowerCase();
     const uPhone = (u.phone || '').replace(/\D/g, '');
-    const idMatches = cleanId === uEmail || (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === uPhone);
+    const uRawPhone = (u.phone || '').trim().toLowerCase();
+    const uUsername = (u.username || '').toLowerCase();
+    const idMatches = 
+      (cleanId && cleanId === uEmail) || 
+      (cleanPhoneInput && cleanPhoneInput.length >= 7 && cleanPhoneInput === uPhone) ||
+      (cleanId && cleanId === uRawPhone) ||
+      (cleanId && cleanId === uUsername);
     return idMatches;
   });
 
@@ -454,4 +578,181 @@ export function authenticateUser(identifier, password, options = {}) {
   }
 
   return null;
+}
+
+/**
+ * Completes clinic onboarding for a doctor (custom handle, clinic name, specialty, branding colors, team)
+ */
+export function completeClinicOnboarding({
+  userId,
+  userEmail,
+  username,
+  doctorName,
+  clinicName,
+  specialty,
+  primaryColor = '#0071E3',
+  accentColor = '#10B981',
+  teamSize = 'solo',
+  phone = '',
+  address = 'القاهرة، جمهورية مصر العربية',
+  initialStaff = null
+}) {
+  const cleanDoctorName = (doctorName || '').trim() || 'د. طبيب العيادة';
+  const cleanClinicName = (clinicName || '').trim() || `عيادة ${cleanDoctorName}`;
+  const rawUser = (username || '').trim().toLowerCase().replace(/^@/, '').replace(/[^a-z0-9_-]/g, '');
+  const cleanUsername = rawUser || slugifyClinic(cleanDoctorName);
+
+  if (rawUser) {
+    const availability = isUsernameAvailable(rawUser, userId);
+    if (!availability.available) {
+      throw new Error(availability.reason);
+    }
+  }
+
+  const cleanPhone = (phone || '').trim().replace(/\D/g, '');
+  const cleanEmail = (userEmail || '').trim().toLowerCase();
+  const cleanSpecialty = (specialty || '').trim() || 'طب وجراحة الفم والأسنان العام';
+
+  // Load appropriate default services from CLINIC_SPECIALTIES
+  const specMatch = CLINIC_SPECIALTIES.find(s => s.name === cleanSpecialty || s.id === cleanSpecialty);
+  const assignedServices = specMatch?.defaultServices || [
+    { id: 'srv-1', name: 'كشف واستشارة طبية تخصصية', price: '350 ج.م', duration: 25 },
+    { id: 'srv-2', name: 'إعادة كشف ومتابعة', price: '150 ج.م', duration: 15 },
+    { id: 'srv-3', name: 'فحص سريري كامل مع تقرير', price: '600 ج.م', duration: 30 }
+  ];
+  const assignedVisitTypes = specMatch?.defaultVisitTypes || [
+    { name: 'كشف واستشارة أولية', value: 0, color: primaryColor },
+    { name: 'إعادة كشف ومتابعة', value: 0, color: accentColor }
+  ];
+
+  const uniqueSlug = rawUser || slugifyClinic(cleanClinicName) || 'clinic-' + Date.now();
+
+  const existingTenants = getRegisteredTenants();
+  const tenantIdx = existingTenants.findIndex(t => 
+    (cleanEmail && t.doctorEmail?.toLowerCase() === cleanEmail) ||
+    (userId && t.ownerId === userId) ||
+    t.id === `clinic-${userId}`
+  );
+
+  const tenantId = tenantIdx >= 0 ? existingTenants[tenantIdx].id : `clinic-${userId || Date.now()}`;
+
+  const updatedTenant = {
+    ...(tenantIdx >= 0 ? existingTenants[tenantIdx] : {}),
+    id: tenantId,
+    name: cleanClinicName,
+    slug: uniqueSlug,
+    doctorName: cleanDoctorName,
+    doctorEmail: cleanEmail,
+    ownerId: userId || null,
+    username: cleanUsername,
+    phone: cleanPhone,
+    specialty: cleanSpecialty,
+    address,
+    teamSize,
+    isOnboardingCompleted: true,
+    services: assignedServices,
+    visitTypes: assignedVisitTypes,
+    subscriptionTier: 'pro',
+    subscriptionStatus: 'active',
+    branding: {
+      primaryColor,
+      accentColor,
+      brandTitle: cleanClinicName,
+      badgeText: 'العيادة التخصصية'
+    },
+    quotas: {
+      maxDoctors: teamSize === 'large' ? 10 : teamSize === 'medium' ? 5 : 3,
+      monthlySmsQuota: 1000,
+      smsUsed: 0
+    },
+    updatedAt: new Date().toISOString()
+  };
+
+  saveRegisteredTenant(updatedTenant);
+
+  // Update user profile
+  const registeredUsers = getRegisteredUsers();
+  const userIdx = registeredUsers.findIndex(u => 
+    (userId && u.id === userId) || 
+    (cleanEmail && u.email?.toLowerCase() === cleanEmail)
+  );
+
+  const updatedUser = {
+    ...(userIdx >= 0 ? registeredUsers[userIdx] : {}),
+    id: userId || `doc-${Date.now()}`,
+    name: cleanDoctorName,
+    username: cleanUsername,
+    email: cleanEmail,
+    phone: cleanPhone,
+    role: 'doctor',
+    isClinicOwner: true,
+    jobTitle: cleanSpecialty || 'المدير الطبي واستشاري العيادة',
+    clinicId: tenantId,
+    clinicSlug: uniqueSlug,
+    clinicName: cleanClinicName,
+    allowedClinics: [uniqueSlug],
+    permissions: ['*'],
+    isOnboardingCompleted: true,
+    needsOnboarding: false,
+    authenticatedAt: new Date().toISOString()
+  };
+
+  saveRegisteredUser(updatedUser);
+
+  // If initial staff member provided, provision account
+  let provisionedStaff = null;
+  if (initialStaff && initialStaff.name && initialStaff.phone) {
+    try {
+      provisionedStaff = provisionStaffAccount({
+        clinicId: tenantId,
+        clinicSlug: uniqueSlug,
+        name: initialStaff.name,
+        phone: initialStaff.phone,
+        email: initialStaff.email || '',
+        password: initialStaff.password || '1234',
+        role: initialStaff.role || 'receptionist',
+        permissions: initialStaff.permissions,
+        shift: initialStaff.shift || 'مسائي (04:00 م - 10:00 م)'
+      });
+    } catch (e) {
+      console.warn('Could not auto-provision initial staff:', e);
+    }
+  }
+
+  // Pre-seed scoped tenant data in localStorage so AppContext immediately loads the new clinic and staff
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const scopedKey = `clinicflow_data_${uniqueSlug}`;
+      const initialScopedData = {
+        patients: [],
+        appointments: [],
+        invoices: [],
+        expenses: [],
+        recalls: [],
+        notifications: [
+          {
+            id: `notif-welcome-${Date.now()}`,
+            title: 'مرحباً بك في نظام عيادتك!',
+            message: `تم إعداد عيادتك (${cleanClinicName}) بنجاح. يمكنك الآن إدارة المرضى والحجوزات وفريق العمل.`,
+            time: 'الآن',
+            read: false,
+            type: 'system'
+          }
+        ],
+        blockedSlots: [],
+        staffMembers: provisionedStaff ? [provisionedStaff] : [],
+        clinicInfo: updatedTenant,
+        _version: 'v4_google_material_3'
+      };
+      localStorage.setItem(scopedKey, JSON.stringify(initialScopedData));
+    } catch (err) {
+      console.warn('Could not initialize scoped tenant storage:', err);
+    }
+  }
+
+  return {
+    tenant: updatedTenant,
+    user: updatedUser,
+    staff: provisionedStaff
+  };
 }

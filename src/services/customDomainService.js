@@ -311,6 +311,7 @@ export function getClinicDomainSettings(clinicId) {
   const storageKey = `clinicflow_domain_${clinicId}`;
   const raw = safeStorage.getItem(storageKey, null);
   if (raw) {
+    if (typeof raw === 'object') return raw;
     try {
       return JSON.parse(raw);
     } catch {

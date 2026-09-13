@@ -26,12 +26,13 @@ import './CustomDomainTab.css';
 
 export default function CustomDomainTab() {
   const { state, dispatch } = useApp();
-  const { tenant } = useTenant();
+  const { tenant, updateTenantDomain } = useTenant();
 
   const clinicId = state.clinicInfo?.id || tenant?.id || '550e8400-e29b-41d4-a716-446655440000';
   const initialDomain = state.clinicInfo?.customDomain || state.clinicInfo?.custom_domain || tenant?.customDomain || '';
 
   const [domainInput, setDomainInput] = useState(initialDomain);
+  const [selectedProvider, setSelectedProvider] = useState('cloudflare');
   const [domainConfig, setDomainConfig] = useState(() => {
     return getClinicDomainSettings(clinicId) || {
       domain: initialDomain,
@@ -77,6 +78,7 @@ export default function CustomDomainTab() {
       };
       setDomainConfig(updated);
       saveClinicDomainSettings(clinicId, updated);
+      if (updateTenantDomain) updateTenantDomain(clinicId, '');
       dispatch({
         type: 'UPDATE_CLINIC_INFO',
         payload: { customDomain: '', custom_domain: '' }
@@ -99,6 +101,7 @@ export default function CustomDomainTab() {
 
     setDomainConfig(updated);
     saveClinicDomainSettings(clinicId, updated);
+    if (updateTenantDomain) updateTenantDomain(clinicId, cleanDomain);
 
     dispatch({
       type: 'UPDATE_CLINIC_INFO',
@@ -432,15 +435,68 @@ export default function CustomDomainTab() {
 
       {/* Guide Box */}
       <div className="dns-guide-box">
-        <h4>
-          <HelpCircle size={18} color="var(--primary)" />
-          خطوات تفعيل النطاق والشهادة الأمنية بنجاح
-        </h4>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <h4 style={{ margin: 0 }}>
+            <HelpCircle size={18} color="var(--primary)" />
+            دليل إعداد الـ DNS حسب مزود النطاق
+          </h4>
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            {[
+              { id: 'cloudflare', label: 'Cloudflare' },
+              { id: 'godaddy', label: 'GoDaddy' },
+              { id: 'namecheap', label: 'Namecheap' },
+              { id: 'hostinger', label: 'Hostinger' }
+            ].map(p => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setSelectedProvider(p.id)}
+                style={{
+                  padding: '0.25rem 0.65rem',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  fontWeight: selectedProvider === p.id ? 700 : 500,
+                  border: '1px solid var(--border-color)',
+                  background: selectedProvider === p.id ? 'var(--primary)' : 'var(--bg-secondary)',
+                  color: selectedProvider === p.id ? '#ffffff' : 'var(--text-primary)',
+                  cursor: 'pointer'
+                }}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {selectedProvider === 'cloudflare' && (
+          <div style={{ background: 'rgba(245, 158, 11, 0.08)', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '0.75rem', border: '1px solid rgba(245, 158, 11, 0.25)', fontSize: '0.86rem' }}>
+            <strong>ملاحظة لمستخدمي Cloudflare:</strong> يمكنك تفعيل ميزة التخزين السريع وحماية الـ DDoS عبر ترك السحابة برتقالية (Proxied) أو جعلها رمادية (DNS Only). نظام ClinicFlow يتعرف تلقائياً على خوادم Cloudflare ويُفعّل الربط المشفر مباشرة.
+          </div>
+        )}
+
+        {selectedProvider === 'godaddy' && (
+          <div style={{ background: 'var(--surface-container, #F0F4F9)', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '0.75rem', border: '1px solid var(--border-color)', fontSize: '0.86rem' }}>
+            <strong>تعليمات GoDaddy:</strong> من لوحة تحكم النطاق، اضغط على <em>Manage DNS</em> ثم <em>Add New Record</em>. أضف سجل <code>A</code> للرمز <code>@</code> بقيمة <code>76.76.21.21</code>، وسجل <code>CNAME</code> للمضيف <code>www</code> بقيمة <code>cname.vercel-dns.com</code>.
+          </div>
+        )}
+
+        {selectedProvider === 'namecheap' && (
+          <div style={{ background: 'var(--surface-container, #F0F4F9)', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '0.75rem', border: '1px solid var(--border-color)', fontSize: '0.86rem' }}>
+            <strong>تعليمات Namecheap:</strong> انتقل إلى تبويب <em>Advanced DNS</em> ثم <em>Add New Record</em>. اختر <em>A Record</em> بالمضيف <code>@</code> والقيمة <code>76.76.21.21</code>، واختر <em>CNAME Record</em> بالمضيف <code>www</code> والقيمة <code>cname.vercel-dns.com</code>.
+          </div>
+        )}
+
+        {selectedProvider === 'hostinger' && (
+          <div style={{ background: 'var(--surface-container, #F0F4F9)', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '0.75rem', border: '1px solid var(--border-color)', fontSize: '0.86rem' }}>
+            <strong>تعليمات Hostinger:</strong> من قسم <em>DNS / Nameservers</em>، أضف سجل <code>A</code> بقيمة <code>76.76.21.21</code> وسجل <code>CNAME</code> بقيمة <code>cname.vercel-dns.com</code>.
+          </div>
+        )}
+
         <ol className="dns-guide-steps">
           <li>انسخ سجلات الـ DNS الموضحة في الجدول أعلاه وأضفها في لوحة تحكم الدومين الخاص بك.</li>
-          <li>إذا كان نطاقك الرئيسي (مثل <code style={{ direction: 'ltr', display: 'inline-block' }}>dr-sara.com</code>)، احرص على إضافة سجل الـ A وسجل CNAME لـ www معاً.</li>
+          <li>إذا كان نطاقك رئيسياً (مثل <code style={{ direction: 'ltr', display: 'inline-block' }}>dr-sara.com</code>)، احرص على إضافة سجل الـ A وسجل CNAME لـ www معاً.</li>
           <li>بعد حفظ السجلات، انقر على زر "فحص الـ DNS والـ SSL". سيقوم محرك ClinicFlow بفحص انتشار السجلات عالمياً عبر خوادم Cloudflare الآمنة.</li>
-          <li>بمجرد اكتمال الفحص بنجاح، يتم تفعيل شهادة SSL مجانية وتوجيه جميع الزوار إلى الاتصال المشفر HTTPS تلقائياً.</li>
+          <li>بمجرد اكتمال الفحص بنجاح، يتم تفعيل شهادة SSL مجانية وتوجيه جميع الزوار إلى الاتصال المشفر HTTPS تلقائياً وبوابة حجز العيادة الحصرية مباشرة.</li>
         </ol>
       </div>
     </div>

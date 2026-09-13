@@ -200,12 +200,15 @@ const Login = () => {
     setSuccessMessage('');
     try {
       const profile = await triggerGoogleOAuthPopup();
-      const { error: loginErr } = await loginWithGoogleProfile(profile, portalScope === 'saas' ? 'super_admin' : 'doctor');
-      if (loginErr) throw loginErr;
+      const res = await loginWithGoogleProfile(profile, portalScope === 'saas' ? 'super_admin' : 'doctor');
+      if (res?.error) throw res.error;
+      const loggedUser = res?.data?.user;
       setSuccessMessage(`أهلاً بك يا ${profile.name}! تم التحقق وتسجيل الدخول بحساب Google بنجاح.`);
       setTimeout(() => {
         if (portalScope === 'saas') {
           navigate('/super-admin', { replace: true });
+        } else if (res?.needsOnboarding || loggedUser?.needsOnboarding) {
+          navigate('/onboarding', { replace: true });
         } else {
           navigate('/dashboard', { replace: true });
         }
@@ -261,13 +264,16 @@ const Login = () => {
         picture: null,
         email_verified: true
       };
-      const { error: loginErr } = await loginWithGoogleProfile(realProfile, portalScope === 'saas' ? 'super_admin' : 'doctor');
-      if (loginErr) throw loginErr;
+      const res = await loginWithGoogleProfile(realProfile, portalScope === 'saas' ? 'super_admin' : 'doctor');
+      if (res?.error) throw res.error;
+      const loggedUser = res?.data?.user;
       setIsGoogleModalOpen(false);
       setSuccessMessage(`أهلاً بك يا د. ${realProfile.name}! تم تسجيل الدخول بحسابك بنجاح.`);
       setTimeout(() => {
         if (portalScope === 'saas') {
           navigate('/super-admin', { replace: true });
+        } else if (res?.needsOnboarding || loggedUser?.needsOnboarding) {
+          navigate('/onboarding', { replace: true });
         } else {
           navigate('/dashboard', { replace: true });
         }

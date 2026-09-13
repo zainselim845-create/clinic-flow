@@ -3,30 +3,96 @@ import { safeStorage } from '../utils/safeStorage';
 import { checkActionRateLimit } from '../utils/rateLimiter';
 import { circuitBreaker } from '../utils/circuitBreaker';
 import { canClinicSendSms, deductSmsCredit } from './usageMeteringService';
+import { demoClinics } from '../data/demoData';
 
 /**
- * Get active SMS gateway configuration from LocalStorage or Environment variables.
- * Sensitive keys default to empty strings to avoid hardcoding secrets in source code.
+ * Formats and validates a Telecom-compliant Alphanumeric GSM Sender ID (Max 11 chars, Alphanumeric only)
+ * As mandated by NTRA (National Telecom Regulatory Authority in Egypt) and GSM 03.38 standard.
+ */
+export function formatSenderId(input, fallback = 'ClinicFlow') {
+  if (!input || typeof input !== 'string') return fallback;
+  const cleaned = input.replace(/[^a-zA-Z0-9]/g, '');
+  if (!cleaned || cleaned.length < 3) return fallback;
+  return cleaned.substring(0, 11);
+}
+
+/**
+ * Resolves the dedicated Telecom Sender ID for a specific clinic / tenant.
+ * Guarantees every client (clinic) has their own unique approved Telecom Sender ID.
+ */
+export function getClinicSenderId(clinicId = 'default') {
+  if (!clinicId || clinicId === 'default') return 'ClinicFlow';
+
+  // 1. Direct saved config for this clinic
+  const key = `clinicflow_sms_config_${clinicId}`;
+  const savedConfig = safeStorage.getItem(key, null);
+  if (savedConfig && typeof savedConfig === 'object') {
+    if (savedConfig.senderId) return formatSenderId(savedConfig.senderId);
+    if (savedConfig.easysendsmsSender && savedConfig.easysendsmsSender !== 'keif') {
+      return formatSenderId(savedConfig.easysendsmsSender);
+    }
+    if (savedConfig.cequensSenderName && savedConfig.cequensSenderName !== 'keif' && savedConfig.cequensSenderName !== 'ClinicFlow') {
+      return formatSenderId(savedConfig.cequensSenderName);
+    }
+    if (savedConfig.smsmisrSender && savedConfig.smsmisrSender !== 'keif') {
+      return formatSenderId(savedConfig.smsmisrSender);
+    }
+  }
+
+  // 2. Check registered tenants
+  const registered = safeStorage.getItem('clinicflow_registered_tenants', []);
+  if (Array.isArray(registered)) {
+    const match = registered.find(t => t.id === clinicId || t.slug === clinicId);
+    if (match?.senderId) return formatSenderId(match.senderId);
+  }
+
+  // 3. Check demo clinics
+  if (Array.isArray(demoClinics)) {
+    const demoMatch = demoClinics.find(c => c.id === clinicId || c.slug === clinicId);
+    if (demoMatch?.senderId) return formatSenderId(demoMatch.senderId);
+  }
+
+  // 4. Derive from slug (e.g. 'dr-ahmed' -> 'DrAhmed', 'dr-sara' -> 'DrSara')
+  if (typeof clinicId === 'string') {
+    const parts = clinicId.replace(/^clinic_/, '').split(/[-_]/).filter(Boolean);
+    const camel = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('');
+    const candidate = formatSenderId(camel, '');
+    if (candidate && candidate.length >= 3) {
+      return candidate;
+    }
+  }
+
+  return 'ClinicFlow';
+}
+
+/**
+ * Get active SMS gateway configuration for a specific clinic.
+ * Every clinic resolves its own approved Sender ID and gateway credentials.
  */
 export function getSmsConfig(clinicId) {
+  const targetClinicId = clinicId || 'default';
+  const dedicatedSenderId = getClinicSenderId(targetClinicId);
   const key = clinicId ? `clinicflow_sms_config_${clinicId}` : 'clinicflow_sms_config';
   const saved = safeStorage.getItem(key, null) || (clinicId ? safeStorage.getItem('clinicflow_sms_config', null) : null);
+  
   if (saved) {
     try {
       const parsed = typeof saved === 'string' ? JSON.parse(saved) : saved;
       if (parsed && typeof parsed === 'object') {
+        const resolvedSender = formatSenderId(parsed.senderId || parsed.easysendsmsSender || dedicatedSenderId);
         return {
           provider: parsed.provider || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMS_PROVIDER) || 'none',
+          senderId: resolvedSender,
           easysendsmsApiKey: parsed.easysendsmsApiKey ?? '',
-          easysendsmsSender: parsed.easysendsmsSender ?? 'keif',
+          easysendsmsSender: resolvedSender,
           easysendsmsApiUrl: parsed.easysendsmsApiUrl || 'https://restapi.easysendsms.app/v1/rest/sms/send',
           smsmisrUsername: parsed.smsmisrUsername ?? '',
           smsmisrPassword: parsed.smsmisrPassword ?? '',
-          smsmisrSender: parsed.smsmisrSender ?? 'keif',
+          smsmisrSender: resolvedSender,
           smsmisrEnvironment: parsed.smsmisrEnvironment ?? '1',
           smsmisrApiUrl: parsed.smsmisrApiUrl || 'https://smsmisr.com/api/SMS/',
           cequensApiKey: parsed.cequensApiKey ?? '',
-          cequensSenderName: parsed.cequensSenderName ?? 'ClinicFlow',
+          cequensSenderName: resolvedSender,
           cequensApiUrl: parsed.cequensApiUrl || 'https://apis.cequens.com/sms/v1/messages',
           apiKey: parsed.apiKey ?? '',
           apiUrl: parsed.apiUrl || 'https://api.textbee.dev/api/v1',
@@ -41,21 +107,18 @@ export function getSmsConfig(clinicId) {
 
   return {
     provider: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMS_PROVIDER) || 'none',
-    // EasySendSMS Config
+    senderId: dedicatedSenderId,
     easysendsmsApiKey: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_EASYSENDSMS_API_KEY) || '',
-    easysendsmsSender: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_EASYSENDSMS_SENDER) || 'keif',
+    easysendsmsSender: dedicatedSenderId,
     easysendsmsApiUrl: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_EASYSENDSMS_API_URL) || 'https://restapi.easysendsms.app/v1/rest/sms/send',
-    // SMSMisr Config
     smsmisrUsername: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMSMISR_USERNAME) || '',
     smsmisrPassword: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMSMISR_PASSWORD) || '',
-    smsmisrSender: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMSMISR_SENDER) || 'keif',
+    smsmisrSender: dedicatedSenderId,
     smsmisrEnvironment: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMSMISR_ENV) || '1',
     smsmisrApiUrl: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMSMISR_API_URL) || 'https://smsmisr.com/api/SMS/',
-    // Cequens Config
     cequensApiKey: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CEQUENS_API_KEY) || '',
-    cequensSenderName: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CEQUENS_SENDER_NAME) || 'ClinicFlow',
+    cequensSenderName: dedicatedSenderId,
     cequensApiUrl: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CEQUENS_API_URL) || 'https://apis.cequens.com/sms/v1/messages',
-    // TextBee Config
     apiKey: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TEXTBEE_API_KEY) || '',
     apiUrl: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TEXTBEE_API_URL) || 'https://api.textbee.dev/api/v1',
     deviceId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TEXTBEE_DEVICE_ID) || '',
@@ -250,6 +313,7 @@ async function sendViaTextBee(config, formattedPhone, message) {
  */
 export async function sendSMS(phone, message, clinicId = 'default') {
   const targetClinicId = clinicId || 'default';
+  const config = getSmsConfig(targetClinicId);
 
   // 1. Live Pre-flight Credit Metering Check
   const creditCheck = canClinicSendSms(targetClinicId);
@@ -260,11 +324,11 @@ export async function sendSMS(phone, message, clinicId = 'default') {
       remaining: 0,
       totalAllowed: creditCheck.totalAllowed,
       used: creditCheck.used,
+      senderId: config.senderId,
       error: creditCheck.error
     };
   }
 
-  const config = getSmsConfig(targetClinicId);
   const formattedPhone = formatEgyptianPhone(phone);
   const plainPhone = formattedPhone.replace(/^\+/, '');
 
@@ -274,6 +338,7 @@ export async function sendSMS(phone, message, clinicId = 'default') {
       return {
         success: false,
         isRateLimited: true,
+        senderId: config.senderId,
         error: `تم تجاوز حد إرسال الرسائل لهذا الرقم. يرجى الانتظار ${limitCheck.retryAfterSeconds} ثانية.`
       };
     }
@@ -283,7 +348,12 @@ export async function sendSMS(phone, message, clinicId = 'default') {
     const result = await circuitBreaker.execute('sms_gateway', async () => {
       // Sandbox / Test provider mode for automated testing & development
       if (config.provider === 'sandbox' || config.provider === 'test') {
-        return { success: true, method: config.provider, messageId: 'sbx-' + Date.now() };
+        return { 
+          success: true, 
+          method: config.provider, 
+          messageId: 'sbx-' + Date.now(),
+          senderId: config.senderId
+        };
       }
 
       if (config.provider === 'easysendsms' && config.easysendsmsApiKey) {
@@ -304,10 +374,10 @@ export async function sendSMS(phone, message, clinicId = 'default') {
 
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase.functions.invoke('send-sms', {
-          body: { phone: formattedPhone, message },
+          body: { phone: formattedPhone, message, senderId: config.senderId },
         });
         if (!error) {
-          return { success: true, method: 'supabase', data };
+          return { success: true, method: 'supabase', data, senderId: config.senderId };
         }
       }
 
@@ -315,26 +385,32 @@ export async function sendSMS(phone, message, clinicId = 'default') {
     });
 
     if (result && result.success) {
+      const activeSenderId = result.sender || config.senderId || 'ClinicFlow';
       // 2. Atomic credit deduction on successful transmission
       try {
         deductSmsCredit(targetClinicId, plainPhone, {
           provider: result.method || config.provider,
+          senderId: activeSenderId,
           messageSnippet: typeof message === 'string' ? message.substring(0, 50) : ''
         });
       } catch (deductErr) {
         console.warn('[UsageMetering] Failed to deduct SMS credit:', deductErr);
       }
-      return result;
+      return {
+        ...result,
+        senderId: activeSenderId
+      };
     }
   } catch (error) {
     console.error(`[SMS Error] Failed sending SMS via ${config.provider}:`, error);
-    return { success: false, method: config.provider, error: error.message };
+    return { success: false, method: config.provider, senderId: config.senderId, error: error.message };
   }
 
   // If no SMS provider is configured, return explicit unconfigured state
   return { 
     success: false, 
     isConfigured: false,
+    senderId: config.senderId,
     method: 'none', 
     error: 'لم يتم ربط مزود خدمة SMS في الإعدادات بعد (SMS Provider Not Configured).' 
   };
