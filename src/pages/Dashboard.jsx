@@ -4,7 +4,7 @@ import { useTenant } from '../context/TenantContext';
 import { 
   UserPlus, Search, FolderOpen, Share2, RotateCcw,
   CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark, CheckCircle2,
-  Sparkles, BellRing
+  Sparkles, BellRing, Plus, Calendar
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -660,19 +660,29 @@ const Dashboard = () => {
               </div>
               <div className="header-tools">
                 <div className="search-box compact-search">
-                  <Search size={15} />
+                  <Search size={15} aria-hidden="true" />
                   <input
                     type="text"
-                    placeholder="بحث سريع..."
+                    placeholder="بحث سريع في جدول اليوم..."
+                    aria-label="البحث في جدول مواعيد اليوم"
                     value={scheduleSearchQuery}
                     onChange={(e) => setScheduleSearchQuery(e.target.value)}
                   />
                 </div>
-                <div className="filter-tabs compact-tabs">
+                <div className="filter-tabs compact-tabs" role="tablist" aria-label="تصفية مواعيد اليوم">
                   {['all', 'waiting', 'in_progress', 'pending_payment', 'completed', 'booked'].map((tab) => (
                     <button
                       key={tab}
                       type="button"
+                      role="tab"
+                      aria-selected={activeFilterTab === tab}
+                      aria-label={`تصفية حسب ${
+                        tab === 'all' ? 'جميع الحالات' :
+                        tab === 'waiting' ? 'الانتظار' :
+                        tab === 'in_progress' ? 'في الكشف' :
+                        tab === 'pending_payment' ? 'في انتظار التحصيل' :
+                        tab === 'completed' ? 'مكتمل' : 'قادم'
+                      }`}
                       className={`tab-pill ${activeFilterTab === tab ? 'active' : ''}`}
                       onClick={() => setActiveFilterTab(tab)}
                     >
@@ -703,8 +713,40 @@ const Dashboard = () => {
                 <tbody>
                   {filteredAppointments.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="text-center empty-cell">
-                        لا توجد مواعيد مطابقة لهذا الفلتر اليوم.
+                      <td colSpan={6} className="text-center empty-cell" style={{ padding: '2.5rem 1.5rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                          <Calendar size={36} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
+                          <p style={{ fontWeight: 700, color: 'var(--text-primary)', margin: 0, fontSize: '0.96rem' }}>
+                            {scheduleSearchQuery || activeFilterTab !== 'all' 
+                              ? 'لا توجد مواعيد مطابقة لهذا الفلتر أو البحث' 
+                              : 'لا توجد كشوفات مجدولة لهذا اليوم'}
+                          </p>
+                          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.82rem', maxWidth: '380px' }}>
+                            {scheduleSearchQuery || activeFilterTab !== 'all'
+                              ? 'جرّب كتابة اسم مريض آخر أو إعادة تعيين التصفية للعودة لكافة المواعيد.'
+                              : 'ابدأ بتسجيل كشف فوري (Walk-in) من شريط الإجراءات السريعة بالأسفل.'}
+                          </p>
+                          {scheduleSearchQuery || activeFilterTab !== 'all' ? (
+                            <button
+                              type="button"
+                              className="tab-pill active"
+                              style={{ marginTop: '0.5rem', border: '1px solid var(--border-color)', padding: '0.4rem 0.9rem' }}
+                              onClick={() => { setScheduleSearchQuery(''); setActiveFilterTab('all'); }}
+                            >
+                              إعادة ضبط الفلاتر
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn-action-primary"
+                              style={{ marginTop: '0.5rem', padding: '0.45rem 1rem' }}
+                              onClick={() => setIsWalkInModalOpen(true)}
+                            >
+                              <Plus size={15} style={{ marginLeft: '0.35rem' }} />
+                              <span>تسجيل كشف فوري (Walk-in)</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ) : (

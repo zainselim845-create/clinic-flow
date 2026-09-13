@@ -7,4 +7,5 @@ export * from '../../services/clinicsService';
 export * from '../../services/customDomainService';
 export * from '../../services/systemErrorService';
 export * from '../../services/realtimeSyncService';
+export * from '../../services/webhookService';
 export * from '../../utils/circuitBreaker';

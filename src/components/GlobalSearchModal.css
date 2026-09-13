@@ -231,7 +231,8 @@
 
 .result-status-pill.waiting {
   background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
+  color: #b45309;
+  font-weight: 700;
 }
 
 .result-status-pill.upcoming, .result-status-pill.booked {

@@ -90,7 +90,8 @@
 
 .appt-status-pill.waiting {
   background: var(--warning-light);
-  color: #D97706;
+  color: #B45309;
+  font-weight: 700;
 }
 
 .appt-status-pill.in_progress {

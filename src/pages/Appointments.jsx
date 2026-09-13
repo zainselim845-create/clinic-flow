@@ -2,7 +2,7 @@ import React, { useMemo, useState, useDeferredValue } from 'react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
-import { Plus, X, Search, Lock, Unlock, Download, ChevronLeft, ChevronRight, Armchair, LayoutGrid } from 'lucide-react';
+import { Plus, X, Search, Lock, Unlock, Download, ChevronLeft, ChevronRight, Armchair, LayoutGrid, Calendar } from 'lucide-react';
 import { Dialog } from '../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import AppointmentCard from '../components/AppointmentCard';
@@ -273,13 +273,61 @@ const Appointments = () => {
       </div>
 
       <div className="filters-bar glass-card">
-        <div className="status-filters">
-          <button className={filterStatus === 'all' ? 'active' : ''} onClick={() => { setFilterStatus('all'); setCurrentPage(1); }}>الكل ({appointments.length})</button>
-          <button className={filterStatus === 'waiting' ? 'active' : ''} onClick={() => { setFilterStatus('waiting'); setCurrentPage(1); }}>في الانتظار ({appointments.filter(a => a.status === 'waiting').length})</button>
-          <button className={filterStatus === 'in_progress' ? 'active' : ''} onClick={() => { setFilterStatus('in_progress'); setCurrentPage(1); }}>في الكشف ({appointments.filter(a => a.status === 'in_progress').length})</button>
-          <button className={filterStatus === 'booked' ? 'active' : ''} onClick={() => { setFilterStatus('booked'); setCurrentPage(1); }}>محجوز ({appointments.filter(a => a.status === 'booked' || a.status === 'upcoming').length})</button>
-          <button className={filterStatus === 'completed' ? 'active' : ''} onClick={() => { setFilterStatus('completed'); setCurrentPage(1); }}>مكتمل ({appointments.filter(a => a.status === 'completed').length})</button>
-          <button className={filterStatus === 'cancelled' ? 'active' : ''} onClick={() => { setFilterStatus('cancelled'); setCurrentPage(1); }}>ملغي ({appointments.filter(a => a.status === 'cancelled').length})</button>
+        <div className="status-filters" role="tablist" aria-label="تصفية المواعيد حسب الحالة">
+          <button 
+            type="button" 
+            role="tab" 
+            aria-selected={filterStatus === 'all'} 
+            className={filterStatus === 'all' ? 'active' : ''} 
+            onClick={() => { setFilterStatus('all'); setCurrentPage(1); }}
+          >
+            الكل ({appointments.length})
+          </button>
+          <button 
+            type="button" 
+            role="tab" 
+            aria-selected={filterStatus === 'waiting'} 
+            className={filterStatus === 'waiting' ? 'active' : ''} 
+            onClick={() => { setFilterStatus('waiting'); setCurrentPage(1); }}
+          >
+            في الانتظار ({appointments.filter(a => a.status === 'waiting').length})
+          </button>
+          <button 
+            type="button" 
+            role="tab" 
+            aria-selected={filterStatus === 'in_progress'} 
+            className={filterStatus === 'in_progress' ? 'active' : ''} 
+            onClick={() => { setFilterStatus('in_progress'); setCurrentPage(1); }}
+          >
+            في الكشف ({appointments.filter(a => a.status === 'in_progress').length})
+          </button>
+          <button 
+            type="button" 
+            role="tab" 
+            aria-selected={filterStatus === 'booked'} 
+            className={filterStatus === 'booked' ? 'active' : ''} 
+            onClick={() => { setFilterStatus('booked'); setCurrentPage(1); }}
+          >
+            محجوز ({appointments.filter(a => a.status === 'booked' || a.status === 'upcoming').length})
+          </button>
+          <button 
+            type="button" 
+            role="tab" 
+            aria-selected={filterStatus === 'completed'} 
+            className={filterStatus === 'completed' ? 'active' : ''} 
+            onClick={() => { setFilterStatus('completed'); setCurrentPage(1); }}
+          >
+            مكتمل ({appointments.filter(a => a.status === 'completed').length})
+          </button>
+          <button 
+            type="button" 
+            role="tab" 
+            aria-selected={filterStatus === 'cancelled'} 
+            className={filterStatus === 'cancelled' ? 'active' : ''} 
+            onClick={() => { setFilterStatus('cancelled'); setCurrentPage(1); }}
+          >
+            ملغي ({appointments.filter(a => a.status === 'cancelled').length})
+          </button>
         </div>
         
         <div className="other-filters">
@@ -323,10 +371,11 @@ const Appointments = () => {
             )}
           </div>
           <div className="search-box">
-            <Search size={18} className="search-icon" />
+            <Search size={18} className="search-icon" aria-hidden="true" />
             <input 
               type="text" 
               placeholder="بحث باسم المريض..." 
+              aria-label="بحث باسم المريض في المواعيد"
               className="input-field"
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
@@ -360,7 +409,42 @@ const Appointments = () => {
               })
             ) : (
               <div className="empty-state">
-                <p>لا توجد مواعيد مطابقة للبحث.</p>
+                <Calendar size={48} className="empty-state-icon" aria-hidden="true" />
+                <h3 className="empty-state-title">
+                  {searchQuery || filterStatus !== 'all' || filterDate
+                    ? 'لا توجد مواعيد مطابقة لمعايير البحث والتصفية'
+                    : 'لا توجد مواعيد مسجلة حتى الآن'}
+                </h3>
+                <p className="empty-state-desc">
+                  {searchQuery || filterStatus !== 'all' || filterDate
+                    ? 'جرّب تغيير حالة الفلتر أو اختيار تاريخ مختلف أو مسح خانة البحث.'
+                    : 'ابدأ بإضافة موعد جديد وتحديد المريض والوقت المناسب لحجز الكشف.'}
+                </p>
+                <div className="empty-state-action">
+                  {searchQuery || filterStatus !== 'all' || filterDate ? (
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setFilterStatus('all');
+                        setFilterDate('');
+                        setCurrentPage(1);
+                      }}
+                    >
+                      إعادة ضبط الفلاتر
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => setIsModalOpen(true)}
+                    >
+                      <Plus size={18} />
+                      <span>حجز موعد جديد</span>
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

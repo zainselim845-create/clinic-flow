@@ -1,4 +1,4 @@
-﻿/* Patient Clinical Dossier Stylesheet */
+/* Patient Clinical Dossier Stylesheet */
 
 .dossier-drawer {
   background: var(--surface);
@@ -235,7 +235,8 @@
 
 .history-item .status-badge.waiting {
   background: rgba(245, 158, 11, 0.12);
-  color: #D97706;
+  color: #B45309;
+  font-weight: 700;
 }
 
 .history-item .status-badge.confirmed,

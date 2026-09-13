@@ -140,7 +140,7 @@ h1, h2, h3, h4, h5, h6 {
   --accent-glow: rgba(27, 110, 243, 0.2);
   
   --warning: #F9AB00;          /* Google Yellow 600 */
-  --warning-dark: #E37400;     /* Google Orange */
+  --warning-dark: #B06000;     /* Accessible Amber 700 - WCAG 2.2 AA compliant (>= 4.5:1 contrast) */
   --warning-light: #FEF7E0;    /* Google Yellow 50 */
   --error: #D93025;            /* Google Red 600 */
   --error-dark: #B31412;       /* Google Red 800 */
@@ -467,9 +467,51 @@ h1, h2, h3, h4, h5, h6 {
 
 .badge-primary { background: var(--primary-light); color: var(--primary); }
 .badge-success { background: var(--success-light); color: var(--success); }
-.badge-warning { background: var(--warning-light); color: var(--warning); }
+.badge-warning { background: var(--warning-light); color: var(--warning-dark, #B06000); font-weight: 700; }
 .badge-danger { background: var(--error-light); color: var(--error); }
 .badge-secondary { background: var(--bg-tertiary); color: var(--text-secondary); }
+
+/* Global Accessible Empty State System */
+.empty-state {
+  background: var(--surface);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.empty-state-icon {
+  color: var(--text-tertiary);
+  opacity: 0.6;
+  margin-bottom: 0.25rem;
+}
+
+.empty-state-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.empty-state-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  max-width: 440px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.empty-state-action {
+  margin-top: 0.5rem;
+}
 
 /* 9. Layout utilities */
 .flex-row { display: flex; flex-direction: row; }

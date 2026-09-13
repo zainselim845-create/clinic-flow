@@ -94,6 +94,57 @@ export async function getAppointments(clinicId, filters = {}) {
 }
 
 /**
+ * Checks if a specific date and time slot is already booked for the clinic
+ * to prevent double-booking race conditions at application and database level.
+ * 
+ * @param {string} clinicId - Clinic ID or slug
+ * @param {string} date - Date string YYYY-MM-DD
+ * @param {string} time - Time slot e.g. "05:00 م"
+ * @param {string} [excludeAppointmentId=null] - Optional appointment ID to exclude
+ * @param {Array} [inMemoryAppointments=[]] - Optional memory store for offline mode
+ * @returns {Promise<boolean>} True if collision exists, false if slot is available
+ */
+export async function checkSlotCollision(clinicId, date, time, excludeAppointmentId = null, inMemoryAppointments = []) {
+  if (!clinicId || !date || !time) return false;
+
+  // 1. Check in-memory / local storage appointments first
+  if (Array.isArray(inMemoryAppointments) && inMemoryAppointments.length > 0) {
+    const conflict = inMemoryAppointments.some(a => {
+      if (excludeAppointmentId && a.id === excludeAppointmentId) return false;
+      if (a.status === 'cancelled' || a.status === 'refunded') return false;
+      const matchClinic = !a.clinicId || a.clinicId === clinicId;
+      return matchClinic && a.date === date && a.time === time;
+    });
+    if (conflict) return true;
+  }
+
+  // 2. Check Supabase if configured
+  if (isSupabaseConfigured()) {
+    try {
+      let query = supabase
+        .from('appointments')
+        .select('id')
+        .eq('clinic_id', clinicId)
+        .eq('date', date)
+        .eq('time', time)
+        .not('status', 'in', '("cancelled","refunded")')
+        .limit(1);
+
+      if (excludeAppointmentId) {
+        query = query.neq('id', excludeAppointmentId);
+      }
+
+      const { data, error } = await query;
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return true;
+      }
+    } catch (_) {}
+  }
+
+  return false;
+}
+
+/**
  * Add a new appointment
  */
 export async function addAppointment(appointment) {
@@ -101,11 +152,20 @@ export async function addAppointment(appointment) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
-  if (!appointment || (!appointment.clinicId && !appointment.clinic_id)) {
+  const clinicId = appointment?.clinicId || appointment?.clinic_id;
+  if (!appointment || !clinicId) {
     return { data: null, error: new Error('Clinic ID is strictly required to add an appointment') };
   }
 
   try {
+    const isColliding = await checkSlotCollision(clinicId, appointment.date, appointment.time);
+    if (isColliding) {
+      return { 
+        data: null, 
+        error: new Error(`Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked.`) 
+      };
+    }
+
     const dbPayload = toDbAppointment(appointment);
     const { data, error } = await supabase
       .from('appointments')

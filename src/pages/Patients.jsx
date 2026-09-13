@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
   Plus, Search, LayoutGrid, List, X, Download, 
-  ChevronLeft, ChevronRight 
+  ChevronLeft, ChevronRight, Users 
 } from 'lucide-react';
 import { Dialog } from '../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
@@ -214,27 +214,34 @@ const Patients = () => {
 
       <div className="filters-bar glass-card">
         <div className="search-box full-width">
-          <Search size={18} className="search-icon" />
+          <Search size={18} className="search-icon" aria-hidden="true" />
           <input 
             type="text" 
             placeholder="بحث بالاسم أو رقم الهاتف..." 
+            aria-label="بحث بالاسم أو رقم الهاتف"
             className="input-field"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="view-toggle">
+        <div className="view-toggle" role="group" aria-label="طريقة عرض المرضى">
           <button 
+            type="button"
             className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+            aria-label="عرض شبكي (بطاقات)"
+            aria-pressed={viewMode === 'grid'}
             onClick={() => setViewMode('grid')}
           >
-            <LayoutGrid size={20} />
+            <LayoutGrid size={20} aria-hidden="true" />
           </button>
           <button 
+            type="button"
             className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+            aria-label="عرض قائمة"
+            aria-pressed={viewMode === 'list'}
             onClick={() => setViewMode('list')}
           >
-            <List size={20} />
+            <List size={20} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -248,7 +255,38 @@ const Patients = () => {
           ))
         ) : (
           <div className="empty-state">
-            <p>لا يوجد مرضى مطابقين للبحث.</p>
+            <Users size={48} className="empty-state-icon" aria-hidden="true" />
+            <h3 className="empty-state-title">
+              {searchQuery ? 'لا يوجد مرضى مطابقين لمعايير البحث' : 'سجل المرضى فارغ حتى الآن'}
+            </h3>
+            <p className="empty-state-desc">
+              {searchQuery 
+                ? 'جرّب كتابة اسم مريض آخر أو رقم هاتف صحيح، أو قم بإلغاء البحث.' 
+                : 'ابدأ بإضافة أول مريض في عيادتك لإنشاء ملف طبي متكامل ومتابعة الكشوفات والتقارير.'}
+            </p>
+            <div className="empty-state-action">
+              {searchQuery ? (
+                <button 
+                  type="button" 
+                  className="btn btn-secondary"
+                  onClick={() => setSearchQuery('')}
+                >
+                  إلغاء البحث
+                </button>
+              ) : (
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setFormData({ name: '', age: '', gender: 'ذكر', phone: '', bloodType: '', diagnosis: '', notes: '' });
+                    setIsModalOpen(true);
+                  }}
+                >
+                  <Plus size={18} />
+                  <span>إضافة أول مريض</span>
+                </button>
+              )}
+            </div>
           </div>
         )}
       </div>

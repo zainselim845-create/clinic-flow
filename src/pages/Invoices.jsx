@@ -176,19 +176,22 @@ const Invoices = () => {
       {/* Search & Filter Bar */}
       <div className="filters-bar glass-card" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
         <div className="search-box" style={{ flex: 1, minWidth: '240px' }}>
-          <Search size={18} className="search-icon" />
+          <Search size={18} className="search-icon" aria-hidden="true" />
           <input
             type="text"
             placeholder="بحث برقم الفاتورة، اسم المريض، أو الهاتف..."
+            aria-label="بحث برقم الفاتورة، اسم المريض، أو الهاتف"
             className="input-field"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <div className="status-filter-pills">
+        <div className="status-filter-pills" role="tablist" aria-label="تصفية الفواتير حسب حالة السداد">
           <button
             type="button"
+            role="tab"
+            aria-selected={statusFilter === 'all'}
             className={`filter-pill ${statusFilter === 'all' ? 'active' : ''}`}
             onClick={() => setStatusFilter('all')}
           >
@@ -196,6 +199,8 @@ const Invoices = () => {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={statusFilter === 'unpaid'}
             className={`filter-pill ${statusFilter === 'unpaid' ? 'active' : ''}`}
             onClick={() => setStatusFilter('unpaid')}
           >
@@ -203,6 +208,8 @@ const Invoices = () => {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={statusFilter === 'partial'}
             className={`filter-pill ${statusFilter === 'partial' ? 'active' : ''}`}
             onClick={() => setStatusFilter('partial')}
           >
@@ -210,6 +217,8 @@ const Invoices = () => {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={statusFilter === 'paid'}
             className={`filter-pill ${statusFilter === 'paid' ? 'active' : ''}`}
             onClick={() => setStatusFilter('paid')}
           >
@@ -237,8 +246,40 @@ const Invoices = () => {
           <tbody>
             {filteredInvoices.length === 0 ? (
               <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)' }}>
-                  لا توجد فواتير مطابقة للبحث.
+                <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                    <Receipt size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
+                      {searchQuery || statusFilter !== 'all'
+                        ? 'لا توجد فواتير مطابقة لمعايير البحث والتصفية'
+                        : 'لا توجد فواتير صادرة حتى الآن'}
+                    </strong>
+                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', maxWidth: '380px' }}>
+                      {searchQuery || statusFilter !== 'all'
+                        ? 'جرّب كتابة رقم فاتورة آخر أو مسح خانة البحث أو اختيار تصنيف الكل.'
+                        : 'يمكنك إنشاء فاتورة كشف أو خدمات علاجية جديدة للمرضى بسهولة.'}
+                    </p>
+                    {searchQuery || statusFilter !== 'all' ? (
+                      <button
+                        type="button"
+                        className="btn-table-action"
+                        style={{ marginTop: '0.5rem', padding: '0.45rem 1rem' }}
+                        onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
+                      >
+                        إعادة ضبط الفلاتر
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-table-action"
+                        style={{ marginTop: '0.5rem', padding: '0.45rem 1rem', background: 'var(--primary)', color: '#FFFFFF' }}
+                        onClick={handleCreateInvoice}
+                      >
+                        <Plus size={16} />
+                        <span>إنشاء أول فاتورة</span>
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ) : (
