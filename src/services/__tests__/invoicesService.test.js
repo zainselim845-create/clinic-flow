@@ -206,4 +206,16 @@ describe('invoicesService Integration & Financial Ledger Security', () => {
       expect(result.error.message).toContain('Invoice ID is required');
     });
   });
+
+  describe('Invoices Page Component File Integrity', () => {
+    it('Invoices.jsx exports component and has no undefined handleCreateInvoice references', async () => {
+      const fs = await import('fs');
+      const path = await import('path');
+      const invoicesPath = path.resolve(__dirname, '../../pages/Invoices.jsx');
+      const content = fs.readFileSync(invoicesPath, 'utf8');
+      expect(content).toContain('export default Invoices');
+      expect(content).toContain('const handleCreateInvoice = handleOpenNew;');
+      expect(content).toContain('onClick={handleOpenNew}');
+    });
+  });
 });

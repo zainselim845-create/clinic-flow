@@ -77,6 +77,7 @@ const Invoices = () => {
     setSelectedInvoice(null);
     setIsModalOpen(true);
   };
+  const handleCreateInvoice = handleOpenNew;
 
   const handleViewInvoice = (inv) => {
     setSelectedInvoice(inv);
@@ -273,7 +274,7 @@ const Invoices = () => {
                         type="button"
                         className="btn-table-action"
                         style={{ marginTop: '0.5rem', padding: '0.45rem 1rem', background: 'var(--primary)', color: '#FFFFFF' }}
-                        onClick={handleCreateInvoice}
+                        onClick={handleOpenNew}
                       >
                         <Plus size={16} />
                         <span>إنشاء أول فاتورة</span>
