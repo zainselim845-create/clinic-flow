@@ -27,3 +27,13 @@ export { Tabs as ArkTabs } from './tabs';
 export { Menu as ArkMenu } from './menu';
 export { Accordion as ArkAccordion } from './accordion';
 export { Tooltip as ArkTooltip } from './tooltip';
+
+// Apple Human Interface & Advanced Glassmorphism Primitives
+export { AppleGlassCard, default as AppleGlassCardDefault } from './AppleGlassCard';
+export { AppleGlassButton, default as AppleGlassButtonDefault } from './AppleGlassButton';
+export { AppleGlassDock, default as AppleGlassDockDefault } from './AppleGlassDock';
+export { AppleGlassSegmentedControl, default as AppleGlassSegmentedControlDefault } from './AppleGlassSegmentedControl';
+export type { AppleMaterialTier } from './AppleGlassCard';
+export type { AppleButtonVariant, AppleButtonSize } from './AppleGlassButton';
+export type { AppleDockItem } from './AppleGlassDock';
+export type { SegmentOption } from './AppleGlassSegmentedControl';

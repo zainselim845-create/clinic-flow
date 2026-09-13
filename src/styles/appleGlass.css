@@ -1,0 +1,273 @@
+/* ==========================================================================
+   ClinicFlow — Apple Human Interface & Advanced Glassmorphism Design System
+   Liquid Glass, Spatial Materials, Spring Physics & Squircle Geometry
+   ========================================================================== */
+
+:root {
+  /* --------------------------------------------------------------------------
+     1. Apple System Color Tokens (Light Mode)
+     -------------------------------------------------------------------------- */
+  --apple-blue: #007AFF;
+  --apple-purple: #AF52DE;
+  --apple-pink: #FF2D55;
+  --apple-red: #FF3B30;
+  --apple-orange: #FF9500;
+  --apple-yellow: #FFCC00;
+  --apple-green: #34C759;
+  --apple-teal: #5AC8FA;
+  --apple-indigo: #5856D6;
+
+  /* Apple Light Mode Backgrounds */
+  --apple-bg-primary: #F5F5F7;
+  --apple-bg-secondary: #FFFFFF;
+  --apple-bg-tertiary: #E5E5EA;
+
+  /* Apple Light Mode Text & Labels */
+  --apple-label-primary: rgba(0, 0, 0, 0.92);
+  --apple-label-secondary: rgba(0, 0, 0, 0.56);
+  --apple-label-tertiary: rgba(0, 0, 0, 0.28);
+  --apple-label-quaternary: rgba(0, 0, 0, 0.15);
+
+  /* --------------------------------------------------------------------------
+     2. Apple Spring Physics & Curves
+     -------------------------------------------------------------------------- */
+  --apple-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --apple-spring-fast: cubic-bezier(0.16, 1, 0.3, 1);
+  --apple-spring-bouncy: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --apple-spring-duration: 0.4s;
+
+  /* --------------------------------------------------------------------------
+     3. Continuous Squircle Radius Tokens
+     -------------------------------------------------------------------------- */
+  --squircle-sm: 16px;
+  --squircle-md: 20px;
+  --squircle-lg: 28px;
+  --squircle-xl: 32px;
+}
+
+/* Dark Mode Tokens */
+.dark, [data-theme="dark"] {
+  --apple-blue: #0A84FF;
+  --apple-purple: #BF5AF2;
+  --apple-pink: #FF375F;
+  --apple-red: #FF453A;
+  --apple-orange: #FF9F0A;
+  --apple-yellow: #FFD60A;
+  --apple-green: #30D158;
+  --apple-teal: #64D2FF;
+  --apple-indigo: #5E5CE6;
+
+  --apple-bg-primary: #000000;
+  --apple-bg-secondary: #1C1C1E;
+  --apple-bg-tertiary: #2C2C2E;
+
+  --apple-label-primary: rgba(255, 255, 255, 0.95);
+  --apple-label-secondary: rgba(255, 255, 255, 0.60);
+  --apple-label-tertiary: rgba(255, 255, 255, 0.35);
+  --apple-label-quaternary: rgba(255, 255, 255, 0.18);
+}
+
+/* ==========================================================================
+   4. Apple Glass Materials (5-Layer Physical Refraction Stack)
+   ========================================================================== */
+
+/* 1. Ultra Thin Material */
+.apple-glass-ultra-thin {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 8px 24px -8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.dark .apple-glass-ultra-thin,
+[data-theme="dark"] .apple-glass-ultra-thin {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 
+    0 10px 30px -10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* 2. Thin Material */
+.apple-glass-thin,
+.apple-glass-subtle {
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    0 12px 28px -10px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.dark .apple-glass-thin,
+.dark .apple-glass-subtle,
+[data-theme="dark"] .apple-glass-thin,
+[data-theme="dark"] .apple-glass-subtle {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 
+    0 15px 35px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* 3. Regular Material (Apple Standard Glass) */
+.apple-glass,
+.apple-glass-regular {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.40);
+  box-shadow: 
+    0 10px 30px -10px rgba(0, 0, 0, 0.08),
+    0 20px 40px -15px rgba(0, 0, 0, 0.06),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.85);
+  transition: all var(--apple-spring-duration) var(--apple-spring);
+}
+
+.dark .apple-glass,
+.dark .apple-glass-regular,
+[data-theme="dark"] .apple-glass,
+[data-theme="dark"] .apple-glass-regular {
+  background: rgba(28, 28, 30, 0.65);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.5),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* 4. Thick Material */
+.apple-glass-thick {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.50);
+  box-shadow: 
+    0 16px 36px -10px rgba(0, 0, 0, 0.10),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.9);
+}
+
+.dark .apple-glass-thick,
+[data-theme="dark"] .apple-glass-thick {
+  background: rgba(28, 28, 30, 0.82);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 25px 45px -12px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.20);
+}
+
+/* 5. visionOS Spatial / Apple Floating Dock */
+.apple-dock,
+.apple-glass-spatial {
+  background: rgba(245, 245, 247, 0.72);
+  backdrop-filter: blur(40px) saturate(210%);
+  -webkit-backdrop-filter: blur(40px) saturate(210%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.18),
+    0 8px 16px -4px rgba(0, 0, 0, 0.08),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.75);
+}
+
+.dark .apple-dock,
+.dark .apple-glass-spatial,
+[data-theme="dark"] .apple-dock,
+[data-theme="dark"] .apple-glass-spatial {
+  background: rgba(20, 20, 22, 0.75);
+  backdrop-filter: blur(40px) saturate(210%);
+  -webkit-backdrop-filter: blur(40px) saturate(210%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 30px 60px -15px rgba(0, 0, 0, 0.7),
+    0 10px 20px -5px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* ==========================================================================
+   5. Apple Squircles & Geometric Utilities
+   ========================================================================== */
+.rounded-squircle-sm {
+  border-radius: var(--squircle-sm);
+}
+
+.rounded-squircle-md {
+  border-radius: var(--squircle-md);
+}
+
+.rounded-squircle-lg {
+  border-radius: var(--squircle-lg);
+}
+
+.rounded-squircle-xl {
+  border-radius: var(--squircle-xl);
+}
+
+/* ==========================================================================
+   6. Apple Spring Motion Classes
+   ========================================================================== */
+.apple-spring {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-spring-fast {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-spring-bouncy {
+  transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Hover elevation with subtle spring */
+.hover-apple-lift {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+}
+
+.hover-apple-lift:hover {
+  transform: translateY(-2.5px) scale(1.008);
+  box-shadow: 0 18px 36px -12px rgba(0, 0, 0, 0.12);
+}
+
+.hover-apple-lift:active {
+  transform: scale(0.985);
+}
+
+/* ==========================================================================
+   7. Specular Sheen (Interactive Optical Glow)
+   ========================================================================== */
+.apple-sheen-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.apple-sheen-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: -100%;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.28) 45%,
+    rgba(255, 255, 255, 0.40) 50%,
+    rgba(255, 255, 255, 0.28) 55%,
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-30%) translateY(-30%);
+}
+
+.apple-sheen-container:hover .apple-sheen-overlay {
+  opacity: 1;
+  transform: translateX(10%) translateY(10%);
+}

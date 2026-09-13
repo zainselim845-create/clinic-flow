@@ -3,8 +3,10 @@ import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
   UserPlus, Search, FolderOpen, Share2, RotateCcw,
-  CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark, CheckCircle2
+  CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark, CheckCircle2,
+  Sparkles, BellRing
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import WaitingRoomQueue from './dashboard/WaitingRoomQueue';
@@ -15,6 +17,7 @@ import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
 import ExpensesModal from '../components/ExpensesModal';
 import PatientRecallModal from '../components/PatientRecallModal';
 import ShiftHandoverModal from '../components/ShiftHandoverModal';
+import { AppleGlassDock } from '../components/ui';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import { isDoctorRole } from '../utils/permissions';
@@ -27,6 +30,7 @@ const Dashboard = () => {
   
   const isDoctor = isDoctorRole(user);
   const isStaff = !isDoctor;
+  const navigate = useNavigate();
   
   const currentClinic = state.clinicInfo || {};
   const currentClinicId = tenant?.id || currentClinic?.id || null;
@@ -280,6 +284,50 @@ const Dashboard = () => {
       dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' });
     }
   };
+
+  // Apple Glass Floating Dock Shortcuts
+  const dockItems = useMemo(() => [
+    {
+      id: 'walkin',
+      label: 'تسجيل سريع',
+      icon: <UserPlus className="w-5 h-5 text-[var(--apple-blue)]" />,
+      onClick: () => setIsWalkInModalOpen(true)
+    },
+    {
+      id: 'shift',
+      label: 'الخزينة والوردية',
+      icon: <Landmark className="w-5 h-5 text-[var(--apple-purple)]" />,
+      onClick: () => setIsShiftModalOpen(true)
+    },
+    {
+      id: 'waiting',
+      label: 'صالة الانتظار',
+      icon: <Clock className="w-5 h-5 text-[var(--apple-orange)]" />,
+      badge: waitingToday.length > 0 ? waitingToday.length : undefined,
+      onClick: () => setActiveFilterTab('waiting'),
+      active: activeFilterTab === 'waiting'
+    },
+    ...(pendingPaymentToday.length > 0 ? [{
+      id: 'pending_payment',
+      label: 'بانتظار التحصيل',
+      icon: <Wallet className="w-5 h-5 text-[var(--apple-green)]" />,
+      badge: pendingPaymentToday.length,
+      onClick: () => setActiveFilterTab('pending_payment'),
+      active: activeFilterTab === 'pending_payment'
+    }] : []),
+    {
+      id: 'doctor_agent',
+      label: 'مساعد الطبيب الذكي',
+      icon: <Sparkles className="w-5 h-5 text-[var(--apple-pink)]" />,
+      onClick: () => navigate('/doctor-agent')
+    },
+    {
+      id: 'recalls',
+      label: 'استدعاء دوري',
+      icon: <BellRing className="w-5 h-5 text-[var(--apple-teal)]" />,
+      onClick: () => setIsRecallModalOpen(true)
+    }
+  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab, navigate]);
 
   // Schedule filtering (Memoized for high performance)
   const filteredAppointments = useMemo(() => {
@@ -780,6 +828,9 @@ const Dashboard = () => {
         isOpen={isShiftModalOpen}
         onClose={() => setIsShiftModalOpen(false)}
       />
+
+      {/* 4. Apple Glass Floating Action Dock (macOS & visionOS Spatial Style) */}
+      <AppleGlassDock items={dockItems} />
     </div>
   );
 };
