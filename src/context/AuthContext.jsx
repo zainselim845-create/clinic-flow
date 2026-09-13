@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { clinicInfo as defaultClinicInfo, demoClinics, staffMembers as defaultStaffMembers, drSaraStaffMembers } from '../data/demoData';
 import { fromDbClinic } from '../services/clinicsService';
 import { registerDoctorAndClinic, authenticateUser } from '../services/authService';
+import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import TenantContext from './TenantContext';
 
 const AuthContext = createContext({});

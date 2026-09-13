@@ -3,6 +3,8 @@
  * Connects to high-performance free & premium LLMs (e.g. NVIDIA Nemotron, LLaMA 3.3, OpenAI, Gemini)
  */
 
+import { circuitBreaker } from '../utils/circuitBreaker';
+
 export const DEFAULT_OPENROUTER_KEY = '';
 export const DEFAULT_AI_MODEL = 'nvidia/nemotron-3-super-120b-a12b:free';
 export const FALLBACK_AI_MODEL = 'openrouter/auto';
@@ -78,62 +80,64 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
 
   // Primary request
   try {
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${key.trim()}`,
-        'HTTP-Referer': 'https://clinic-flow-ten-sigma.vercel.app',
-        'X-Title': 'ClinicFlow Doctor AI Assistant'
-      },
-      body: JSON.stringify({
-        model: targetModel,
-        messages: formattedMessages,
-        temperature: 0.7,
-        max_tokens: 800
-      })
-    });
-
-    const data = await res.json().catch(() => ({}));
-    if (res.ok && data.choices?.[0]?.message?.content) {
-      return {
-        success: true,
-        model: targetModel,
-        content: data.choices[0].message.content.trim()
-      };
-    }
-
-    // Fallback to openrouter/auto if primary model returned 429/404
-    if (targetModel !== FALLBACK_AI_MODEL) {
-      const fallbackRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    return await circuitBreaker.execute('openrouter_ai', async () => {
+      const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${key.trim()}`,
-          'HTTP-Referer': 'https://clinic-flow-ten-sigma.vercel.app',
+          'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://clinicflow.app',
           'X-Title': 'ClinicFlow Doctor AI Assistant'
         },
         body: JSON.stringify({
-          model: FALLBACK_AI_MODEL,
+          model: targetModel,
           messages: formattedMessages,
           temperature: 0.7,
           max_tokens: 800
         })
       });
-      const fallbackData = await fallbackRes.json().catch(() => ({}));
-      if (fallbackRes.ok && fallbackData.choices?.[0]?.message?.content) {
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.choices?.[0]?.message?.content) {
         return {
           success: true,
-          model: FALLBACK_AI_MODEL,
-          content: fallbackData.choices[0].message.content.trim()
+          model: targetModel,
+          content: data.choices[0].message.content.trim()
         };
       }
-    }
 
-    return {
-      success: false,
-      error: data?.error?.message || 'فشل استلام رد من نموذج الذكاء الاصطناعي.'
-    };
+      // Fallback to openrouter/auto if primary model returned 429/404
+      if (targetModel !== FALLBACK_AI_MODEL) {
+        const fallbackRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${key.trim()}`,
+            'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://clinicflow.app',
+            'X-Title': 'ClinicFlow Doctor AI Assistant'
+          },
+          body: JSON.stringify({
+            model: FALLBACK_AI_MODEL,
+            messages: formattedMessages,
+            temperature: 0.7,
+            max_tokens: 800
+          })
+        });
+        const fallbackData = await fallbackRes.json().catch(() => ({}));
+        if (fallbackRes.ok && fallbackData.choices?.[0]?.message?.content) {
+          return {
+            success: true,
+            model: FALLBACK_AI_MODEL,
+            content: fallbackData.choices[0].message.content.trim()
+          };
+        }
+      }
+
+      return {
+        success: false,
+        error: data?.error?.message || 'فشل استلام رد من نموذج الذكاء الاصطناعي.'
+      };
+    });
   } catch (err) {
     console.error('Doctor AI Assistant OpenRouter Error:', err);
     return {

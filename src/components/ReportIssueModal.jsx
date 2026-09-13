@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog } from '@ark-ui/react/dialog';
+import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { reportUserBug } from '../services/systemErrorService';
 import { useTenant } from '../context/TenantContext';

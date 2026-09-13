@@ -6,7 +6,7 @@ import {
   Search, User, Calendar, Clock, ArrowLeft, X, 
   Smartphone, Users, Plus, CheckCircle2, AlertCircle, ShieldCheck
 } from 'lucide-react';
-import { Dialog } from '@ark-ui/react/dialog';
+import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 
 import './GlobalSearchModal.css';

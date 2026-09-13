@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog } from '@ark-ui/react/dialog';
+import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, 
-  FileSpreadsheet, X, Edit3
+  FileSpreadsheet, X, Edit3, Wallet
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
 import TreatmentPlanModal from '../../components/TreatmentPlanModal';
+import PatientWalletPanel from '../../components/PatientWalletPanel';
 import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
 import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
 import './PatientDossierDrawer.css';
@@ -182,6 +183,29 @@ export default function PatientDossierDrawer({
                     <span>خطط العلاج ({treatmentPlans.length})</span>
                   </button>
                 </Tabs.Trigger>
+
+                <Tabs.Trigger value="wallet" asChild>
+                  <button
+                    type="button"
+                    className={`btn-dossier-tab ${activeTab === 'wallet' ? 'active' : ''}`}
+                    style={{
+                      background: activeTab === 'wallet' ? 'var(--primary)' : 'var(--surface)',
+                      color: activeTab === 'wallet' ? '#FFFFFF' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      padding: '0.45rem 0.95rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 700,
+                      fontSize: '0.84rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <Wallet size={14} />
+                    <span>المحفظة الرقمية</span>
+                  </button>
+                </Tabs.Trigger>
               </Tabs.List>
 
         <div className="dossier-body" style={{ maxHeight: '72vh', overflowY: 'auto', padding: '1.25rem' }}>
@@ -333,6 +357,13 @@ export default function PatientDossierDrawer({
                   ))}
                 </div>
               )}
+            </div>
+          </Tabs.Content>
+
+          {/* TAB 4: DIGITAL WALLET */}
+          <Tabs.Content value="wallet">
+            <div style={{ padding: '0.5rem 0' }}>
+              <PatientWalletPanel patientId={patientId} patientName={patientName} />
             </div>
           </Tabs.Content>
 

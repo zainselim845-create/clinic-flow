@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   X, Plus, Trash2, Wallet, Download 
 } from 'lucide-react';
-import { Dialog } from '@ark-ui/react/dialog';
+import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 
 import { useApp } from '../context/AppContext';

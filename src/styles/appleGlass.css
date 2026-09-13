@@ -170,21 +170,28 @@
 /* 5. visionOS Spatial / Apple Floating Dock */
 .apple-dock,
 .apple-glass-spatial {
-  background: rgba(245, 245, 247, 0.72);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: var(--squircle-xl, 26px);
+  background: rgba(245, 245, 247, 0.78);
   backdrop-filter: blur(40px) saturate(210%);
   -webkit-backdrop-filter: blur(40px) saturate(210%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow: 
     0 25px 50px -12px rgba(0, 0, 0, 0.18),
     0 8px 16px -4px rgba(0, 0, 0, 0.08),
     inset 0 1px 2px 0 rgba(255, 255, 255, 0.75);
+  pointer-events: auto;
+  user-select: none;
 }
 
 .dark .apple-dock,
 .dark .apple-glass-spatial,
 [data-theme="dark"] .apple-dock,
 [data-theme="dark"] .apple-glass-spatial {
-  background: rgba(20, 20, 22, 0.75);
+  background: rgba(20, 20, 22, 0.85);
   backdrop-filter: blur(40px) saturate(210%);
   -webkit-backdrop-filter: blur(40px) saturate(210%);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -192,6 +199,121 @@
     0 30px 60px -15px rgba(0, 0, 0, 0.7),
     0 10px 20px -5px rgba(0, 0, 0, 0.4),
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.apple-dock-container-fixed {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  max-width: 95vw;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.apple-dock-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--squircle-md, 16px);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+  pointer-events: auto;
+}
+
+.apple-dock-btn:hover {
+  background: #FFFFFF;
+  transform: translateY(-8px) scale(1.12);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.16);
+}
+
+.apple-dock-btn:active {
+  transform: translateY(-2px) scale(0.95);
+}
+
+[data-theme="dark"] .apple-dock-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #F8FAFC;
+}
+
+[data-theme="dark"] .apple-dock-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.5);
+}
+
+.apple-dock-btn-active {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: var(--apple-blue, #0071E3);
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
+}
+
+[data-theme="dark"] .apple-dock-btn-active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--apple-blue, #0071E3);
+}
+
+.apple-dock-tooltip {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(15, 23, 42, 0.9);
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 1010;
+}
+
+.apple-dock-btn:hover .apple-dock-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.apple-dock-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: var(--apple-red, #FF3B30);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(255, 59, 48, 0.4);
+  border: 1.5px solid #FFFFFF;
+  line-height: 1;
+}
+
+.apple-dock-dot {
+  position: absolute;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--apple-blue, #0071E3);
 }
 
 /* ==========================================================================

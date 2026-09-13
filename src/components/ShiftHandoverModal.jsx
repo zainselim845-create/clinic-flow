@@ -3,7 +3,7 @@ import {
   X, Landmark, DollarSign, CreditCard, ArrowRightLeft, 
   CheckCircle2, AlertCircle, Printer, Download, User, Clock
 } from 'lucide-react';
-import { Dialog } from '@ark-ui/react/dialog';
+import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';

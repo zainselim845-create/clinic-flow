@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { safeStorage } from '../utils/safeStorage';
 import { checkActionRateLimit } from '../utils/rateLimiter';
+import { circuitBreaker } from '../utils/circuitBreaker';
 
 /**
  * Get active SMS gateway configuration from LocalStorage or Environment variables.
@@ -241,30 +242,36 @@ export async function sendSMS(phone, message) {
   }
 
   try {
-    if (config.provider === 'easysendsms' && config.easysendsmsApiKey) {
-      return await sendViaEasySend(config, plainPhone, message);
-    }
-
-    if (config.provider === 'smsmisr' && config.smsmisrUsername && config.smsmisrPassword) {
-      return await sendViaSmsMisr(config, plainPhone, message);
-    }
-
-    if (config.provider === 'cequens' && config.cequensApiKey) {
-      return await sendViaCequens(config, formattedPhone, message);
-    }
-
-    if (config.provider === 'textbee' && config.apiKey && config.deviceId) {
-      return await sendViaTextBee(config, formattedPhone, message);
-    }
-
-    if (isSupabaseConfigured()) {
-      const { data, error } = await supabase.functions.invoke('send-sms', {
-        body: { phone: formattedPhone, message },
-      });
-      if (!error) {
-        return { success: true, method: 'supabase', data };
+    const result = await circuitBreaker.execute('sms_gateway', async () => {
+      if (config.provider === 'easysendsms' && config.easysendsmsApiKey) {
+        return await sendViaEasySend(config, plainPhone, message);
       }
-    }
+
+      if (config.provider === 'smsmisr' && config.smsmisrUsername && config.smsmisrPassword) {
+        return await sendViaSmsMisr(config, plainPhone, message);
+      }
+
+      if (config.provider === 'cequens' && config.cequensApiKey) {
+        return await sendViaCequens(config, formattedPhone, message);
+      }
+
+      if (config.provider === 'textbee' && config.apiKey && config.deviceId) {
+        return await sendViaTextBee(config, formattedPhone, message);
+      }
+
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase.functions.invoke('send-sms', {
+          body: { phone: formattedPhone, message },
+        });
+        if (!error) {
+          return { success: true, method: 'supabase', data };
+        }
+      }
+
+      return null;
+    });
+
+    if (result) return result;
   } catch (error) {
     console.error(`[SMS Error] Failed sending SMS via ${config.provider}:`, error);
     return { success: false, method: config.provider, error: error.message };

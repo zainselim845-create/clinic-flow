@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { CheckCheck, Trash2, Bell, Calendar, Clock, Smartphone } from 'lucide-react';
+import { CheckCheck, Trash2, Bell, Smartphone } from 'lucide-react';
+import NotificationItem from '../components/NotificationItem';
+import EmptyState from '../components/EmptyState';
 import './Notifications.css';
 
 const Notifications = () => {
@@ -27,27 +29,6 @@ const Notifications = () => {
 
   const handleMarkRead = (id) => {
     dispatch({ type: 'MARK_NOTIFICATION_READ', payload: id });
-  };
-
-  const getIcon = (type) => {
-    switch(type) {
-      case 'appointment': return <Calendar size={20} className="notif-icon appointment" />;
-      case 'reminder': return <Clock size={20} className="notif-icon reminder" />;
-      default: return <Bell size={20} className="notif-icon default" />;
-    }
-  };
-
-  const formatTime = (isoString) => {
-    if (!isoString) return 'الآن';
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return String(isoString);
-    try {
-      return new Intl.DateTimeFormat('ar-EG', { 
-        month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' 
-      }).format(date);
-    } catch {
-      return 'الآن';
-    }
   };
 
   return (
@@ -82,27 +63,18 @@ const Notifications = () => {
       <div className="notifications-list">
         {filteredNotifications.length > 0 ? (
           filteredNotifications.map(notif => (
-            <div 
+            <NotificationItem 
               key={notif.id} 
-              className={`notification-item glass-card ${notif.read ? 'read' : 'unread'}`}
-              onClick={() => !notif.read && handleMarkRead(notif.id)}
-            >
-              <div className="notif-icon-wrapper">
-                {getIcon(notif.type)}
-              </div>
-              <div className="notif-content">
-                <h4 className="notif-title">{notif.title}</h4>
-                <p className="notif-message">{notif.message}</p>
-                <span className="notif-time">{formatTime(notif.timestamp)}</span>
-              </div>
-              {!notif.read && <div className="unread-dot"></div>}
-            </div>
+              notification={notif} 
+              onRead={handleMarkRead} 
+            />
           ))
         ) : (
-          <div className="empty-state">
-            <Bell size={48} className="empty-icon" />
-            <p>لا توجد إشعارات حالياً.</p>
-          </div>
+          <EmptyState 
+            icon={Bell} 
+            title="لا توجد إشعارات حالياً" 
+            description="ستظهر هنا إشعارات المواعيد، التحصيل، وتنبيهات العيادة فور حدوثها."
+          />
         )}
       </div>
     </div>

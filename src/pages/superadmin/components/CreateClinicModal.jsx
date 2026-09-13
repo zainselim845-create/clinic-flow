@@ -1,5 +1,5 @@
-import React from 'react';
-import { Dialog } from '@ark-ui/react/dialog';
+import React, { useState } from 'react';
+import { Dialog } from '../../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { X } from 'lucide-react';
 import { slugifyClinic } from '../../../services/authService';

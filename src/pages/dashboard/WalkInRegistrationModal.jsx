@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserPlus, X } from 'lucide-react';
-import { Dialog } from '@ark-ui/react/dialog';
+import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../../utils/phoneValidation';
 import { getTodayDateStr } from '../../utils/timeSlots';
