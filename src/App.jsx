@@ -58,13 +58,11 @@ const Attendance = lazyWithRetry(() => import('./pages/Attendance'));
 const SuperAdminDashboard = lazyWithRetry(() => import('./pages/superadmin/SuperAdminDashboard'));
 const Onboarding = lazyWithRetry(() => import('./pages/Onboarding'));
 const LandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
-const AppleClinicalHub = lazyWithRetry(() => import('./pages/AppleClinicalHub'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 const pageTitles = {
   '/': 'لوحة التحكم السريرية',
   '/dashboard': 'لوحة التحكم السريرية',
-  '/apple-hub': 'واجهة آبل السريرية (Apple HIG Hub)',
   '/appointments': 'إدارة المواعيد والتقويم',
   '/patients': 'السجلات والملفات الطبية',
   '/invoices': 'الفوترة والتحصيلات المالية',
@@ -281,9 +279,6 @@ function App() {
             } />
             <Route path="/settings" element={
               <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>
-            } />
-            <Route path="/apple-hub" element={
-              <ProtectedRoute allowedRoles={['doctor', 'staff', 'assistant']}><AppleClinicalHub /></ProtectedRoute>
             } />
           </Route>
 

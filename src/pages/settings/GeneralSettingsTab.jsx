@@ -8,6 +8,7 @@ import {
 
 import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
 import { formatSenderId } from '../../services/smsService';
+import ClinicPalettePicker from '../../components/ClinicPalettePicker';
 
 export default function GeneralSettingsTab({
   clinicForm,
@@ -74,6 +75,26 @@ export default function GeneralSettingsTab({
           <span>تم حفظ وتحديث بيانات الطبيب والعيادة بنجاح!</span>
         </div>
       )}
+
+      {/* ======================================================== */}
+      {/* BRAND & MONOCHROME COLOR PALETTE CUSTOMIZER               */}
+      {/* ======================================================== */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <ClinicPalettePicker
+          value={clinicForm.branding?.primaryColor || clinicForm.primaryColor || '#09090B'}
+          onChange={(newColor, palette) => {
+            setClinicForm(prev => ({
+              ...prev,
+              branding: {
+                ...(prev.branding || {}),
+                primaryColor: newColor,
+                paletteId: palette.id
+              }
+            }));
+          }}
+          onSaveDirectly={true}
+        />
+      </div>
 
       {/* ======================================================== */}
       {/* CARD 1: DOCTOR PROFESSIONAL PROFILE                      */}

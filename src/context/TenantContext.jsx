@@ -368,14 +368,41 @@ export const TenantProvider = ({ children }) => {
     return fallback;
   }, [allTenants]);
 
-  // 3. Inject Tenant Brand Colors into CSS Variables Dynamically
+  // 3. Inject Tenant Brand Colors into CSS Variables Dynamically (Monochrome Bedrock + Curated Accent)
   const applyBranding = (branding) => {
-    if (typeof document === 'undefined' || !branding) return;
+    if (typeof document === 'undefined') return;
     const root = document.documentElement;
-    if (branding.primaryColor) {
-      root.style.setProperty('--primary', branding.primaryColor);
+    const primary = branding?.primaryColor;
+    const isMonochrome = !primary || primary === 'monochrome' || primary === '#000000' || primary === '#09090B' || primary === '#18181B';
+
+    if (isMonochrome) {
+      root.style.removeProperty('--clinic-primary');
+      root.style.removeProperty('--clinic-primary-hover');
+      root.style.removeProperty('--clinic-primary-light');
+      root.style.removeProperty('--clinic-primary-glow');
+      root.style.removeProperty('--clinic-gradient-primary');
+      root.style.removeProperty('--clinic-on-primary');
+      const isDark = root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark';
+      root.style.setProperty('--primary', isDark ? '#FFFFFF' : '#09090B');
+      root.style.setProperty('--primary-hover', isDark ? '#E4E4E7' : '#27272A');
+      root.style.setProperty('--primary-light', isDark ? 'rgba(255, 255, 255, 0.12)' : '#F4F4F5');
+      root.style.setProperty('--primary-glow', isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.12)');
+      root.style.setProperty('--md-sys-color-on-primary', isDark ? '#09090B' : '#FFFFFF');
+    } else {
+      root.style.setProperty('--clinic-primary', primary);
+      root.style.setProperty('--clinic-primary-hover', primary);
+      root.style.setProperty('--clinic-primary-light', `${primary}18`);
+      root.style.setProperty('--clinic-primary-glow', `${primary}33`);
+      root.style.setProperty('--clinic-gradient-primary', `linear-gradient(135deg, ${primary} 0%, ${primary}E6 100%)`);
+      root.style.setProperty('--clinic-on-primary', '#FFFFFF');
+      root.style.setProperty('--primary', primary);
+      root.style.setProperty('--primary-hover', primary);
+      root.style.setProperty('--primary-light', `${primary}18`);
+      root.style.setProperty('--primary-glow', `${primary}33`);
+      root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
     }
-    if (branding.accentColor) {
+
+    if (branding?.accentColor) {
       root.style.setProperty('--accent', branding.accentColor);
     }
   };

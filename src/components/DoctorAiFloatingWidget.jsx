@@ -7,21 +7,26 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { useTenant } from '../context/TenantContext';
 import { processDoctorIntent } from '../utils/clinicalAssistantActions';
 import { askDoctorAiAssistant } from '../services/aiAssistantService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
 import * as appointmentsService from '../services/appointmentsService';
 import './DoctorAiFloatingWidget.css';
 
-const CHAT_STORAGE_KEY = 'clinicflow_doctor_chat_history';
-
 export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggle }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { state, dispatch, useSupabase } = useApp();
   const { user, clinic } = useAuth();
-  const currentClinic = state.clinicInfo || clinic;
-  const doctorName = currentClinic?.doctorName || user?.name || 'د. أحمد';
+  const { tenant } = useTenant();
+  
+  const activeClinic = tenant || state.clinicInfo || clinic;
+  const currentSlug = tenant?.slug || state.currentTenantSlug || state.clinicInfo?.slug || user?.clinicSlug || 'default';
+  const chatStorageKey = `clinicflow_chat_${currentSlug}`;
+
+  const rawDoctor = tenant?.doctorName || user?.name || activeClinic?.doctorName || tenant?.name || 'طبيب العيادة';
+  const doctorName = rawDoctor.startsWith('د.') || rawDoctor.startsWith('د/') ? rawDoctor : `د. ${rawDoctor}`;
 
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -32,37 +37,57 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
 
   const [inputText, setInputText] = useState('');
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+
+  const getInitialWelcome = (slug, doc, clinicTitle) => [
+    {
+      id: `msg-welcome-${slug}`,
+      sender: 'agent',
+      text: `أهلاً بك ${doc}! 🩺✨\nأنا مساعدك الطبي الذكي لـ (${clinicTitle}). اسألني عن أي مريض، أو اطلب حجز موعد، أو استعلم عن كشوفات اليوم وصالة الانتظار، أو مديونيات العيادة وسأنفذ طلبك فوراً! 🚀`,
+      timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+    }
+  ];
+
   const [messages, setMessages] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem(CHAT_STORAGE_KEY);
+        localStorage.removeItem('clinicflow_doctor_chat_history'); // purge legacy leak
+        const saved = localStorage.getItem(chatStorageKey);
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         }
       } catch (_) {}
     }
-    return [
-      {
-        id: 'msg-welcome',
-        sender: 'agent',
-        text: `أهلاً بك ${doctorName}! 🩺✨\nأنا مساعدك الطبي الذكي. اسألني عن أي مريض، أو اطلب حجز موعد، أو استعلم عن كشوفات اليوم وصالة الانتظار، أو مديونيات العيادة، أو إجازاتك وسأنفذ طلبك فوراً! 🚀`,
-        timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
-      }
-    ];
+    return getInitialWelcome(currentSlug, doctorName, tenant?.name || activeClinic?.name || 'العيادة');
   });
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Sync to localStorage
+  // Re-sync messages when tenant/clinic changes
+  useEffect(() => {
+    try {
+      localStorage.removeItem('clinicflow_doctor_chat_history');
+      const saved = localStorage.getItem(chatStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          return;
+        }
+      }
+    } catch (_) {}
+    setMessages(getInitialWelcome(currentSlug, doctorName, tenant?.name || activeClinic?.name || 'العيادة'));
+  }, [currentSlug, doctorName, chatStorageKey, tenant?.name, activeClinic?.name]);
+
+  // Sync to scoped localStorage
   useEffect(() => {
     if (typeof window !== 'undefined' && messages.length > 0) {
       try {
-        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+        localStorage.setItem(chatStorageKey, JSON.stringify(messages));
       } catch (_) {}
     }
-  }, [messages]);
+  }, [messages, chatStorageKey]);
 
   // Scroll on message
   useEffect(() => {
@@ -146,8 +171,19 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
     setMessages(newHistory);
     setIsAiGenerating(true);
 
+    // Strict Tenant Scoping for AI and NLP Engine
+    const activeClinicId = tenant?.id || activeClinic?.id;
+    const scopedPatients = (state.patients || []).filter(p => !p.clinicId || p.clinicId === activeClinicId);
+    const scopedAppointments = (state.appointments || []).filter(a => !a.clinicId || a.clinicId === activeClinicId);
+    const scopedState = {
+      ...state,
+      clinicInfo: activeClinic,
+      patients: scopedPatients,
+      appointments: scopedAppointments
+    };
+
     // 1. Direct Rule-based Clinical NLP Processing
-    const actionResult = processDoctorIntent(query, state);
+    const actionResult = processDoctorIntent(query, scopedState);
     if (actionResult.isAction) {
       executeDoctorAction(actionResult);
       const agentMsg = {
@@ -164,7 +200,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
 
     // 2. OpenRouter AI Fallback with live clinic context
     try {
-      const aiRes = await askDoctorAiAssistant(newHistory, currentClinic, state.patients || [], state);
+      const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, scopedPatients, scopedState);
       let replyText = '';
       if (aiRes.isQuotaExceeded) {
         replyText = `⚠️ **تنبيه استهلاك الرصيد**: ${aiRes.error}`;
@@ -202,13 +238,14 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
         {
           id: 'msg-welcome-' + Date.now(),
           sender: 'agent',
-          text: `مرحباً ${doctorName}! تم بدء جلسة محادثة جديدة. أنا رهن إشارتك لكافة ملفات ومهام العيادة. 🩺`,
+          text: `مرحباً ${doctorName}! تم بدء جلسة محادثة جديدة لـ (${tenant?.name || activeClinic?.name || 'العيادة'}). أنا رهن إشارتك لكافة ملفات ومهام العيادة. 🩺`,
           timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
         }
       ];
       setMessages(fresh);
       try {
-        localStorage.removeItem(CHAT_STORAGE_KEY);
+        localStorage.removeItem(chatStorageKey);
+        localStorage.removeItem('clinicflow_doctor_chat_history');
       } catch (_) {}
     }
   };

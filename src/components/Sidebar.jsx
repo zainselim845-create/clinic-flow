@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, 
   Stethoscope, LogOut, Smartphone, Bot, Receipt, Layers, 
-  Package, UserCheck, Sparkles, ShieldCheck, Settings, Apple
+  Package, UserCheck, Sparkles, ShieldCheck, Settings
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -66,10 +66,6 @@ const Sidebar = () => {
         <NavLink to="/" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'} end>
           <LayoutDashboard size={19} />
           <span>لوحة التحكم</span>
-        </NavLink>
-        <NavLink to="/apple-hub" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'} title="واجهة آبل السريرية (Apple HIG Edition)">
-          <Apple size={19} />
-          <span>واجهة آبل (HIG Hub)</span>
         </NavLink>
         {hasPermission(user, 'appointments') && (
           <NavLink to="/appointments" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>

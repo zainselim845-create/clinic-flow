@@ -26,9 +26,14 @@ export const CAMPAIGN_TEMPLATES = [
   }
 ];
 
-export const formatDoctorName = (name) => {
-  if (!name) return 'د. أحمد الشريف';
-  const trimmed = name.trim();
+export const formatDoctorName = (name, fallback = '') => {
+  if (!name || !String(name).trim()) {
+    if (!fallback) return 'طبيب العيادة';
+    const trimmedFb = String(fallback).trim();
+    if (trimmedFb.startsWith('د.') || trimmedFb.startsWith('د/')) return trimmedFb;
+    return `د. ${trimmedFb}`;
+  }
+  const trimmed = String(name).trim();
   if (trimmed.startsWith('د.') || trimmed.startsWith('د/')) return trimmed;
   return `د. ${trimmed}`;
 };
@@ -36,7 +41,7 @@ export const formatDoctorName = (name) => {
 export const personalizeMessage = (templateText, patient, clinicInfo) => {
   if (!templateText) return '';
   const clinicName = clinicInfo?.name || 'عيادة كلينك فلو';
-  const doctorName = formatDoctorName(clinicInfo?.doctorName);
+  const doctorName = formatDoctorName(clinicInfo?.doctorName || clinicInfo?.name, 'طبيب العيادة');
   const bookingLink = typeof window !== 'undefined' ? `${window.location.origin}/booking` : 'https://clinic-flow-lh3g.vercel.app/booking';
 
 

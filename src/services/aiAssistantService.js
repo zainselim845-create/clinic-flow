@@ -63,17 +63,23 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
     };
   }
 
-  const doctorName = clinicContext?.doctorName || 'د. أحمد الشريف';
-  const specialty = clinicContext?.specialty || 'استشاري الباطنة والجهاز الهضمي والكبد';
+  const clinicId = clinicContext?.id;
+  const rawDoctor = clinicContext?.doctorName || clinicContext?.name || 'طبيب العيادة';
+  const doctorName = rawDoctor.startsWith('د.') || rawDoctor.startsWith('د/') ? rawDoctor : `د. ${rawDoctor}`;
+  const specialty = clinicContext?.specialty || 'الطب العام والتخصصي';
   const clinicName = clinicContext?.name || 'عيادة كلينك فلو';
   const todayStr = new Date().toISOString().split('T')[0];
 
-  const blockedList = (systemState?.blockedSlots || [])
+  const allBlocked = systemState?.blockedSlots || [];
+  const scopedBlocked = clinicId ? allBlocked.filter(b => !b.clinicId || b.clinicId === clinicId) : allBlocked;
+  const blockedList = scopedBlocked
     .map(b => `${b.date} (${b.time === 'FULL_DAY' || b.isFullDay ? 'يوم كامل' : b.time})`)
     .join(', ') || 'لا توجد أيام محظورة';
 
-  // Live Clinic Database Context Assembly
-  const todayAppts = (systemState?.appointments || []).filter(a => a.date === todayStr && a.status !== 'cancelled');
+  // Live Clinic Database Context Assembly strictly scoped to active clinic
+  const allAppts = systemState?.appointments || [];
+  const scopedAppts = clinicId ? allAppts.filter(a => !a.clinicId || a.clinicId === clinicId) : allAppts;
+  const todayAppts = scopedAppts.filter(a => a.date === todayStr && a.status !== 'cancelled');
   const todayScheduleStr = todayAppts.length > 0 
     ? todayAppts.map(a => `${a.time}: ${a.patientName} (${a.type || 'كشف'} | ${a.status})`).join(' | ') 
     : 'لا توجد مواعيد مسجلة اليوم';
@@ -83,12 +89,15 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
     ? lowStock.map(i => `${i.name} (المتبقي: ${i.quantity} ${i.unit || ''})`).join(', ') 
     : 'المخزون متوفر ومستقر';
 
-  const debtors = (systemState?.patients || []).filter(p => (Number(p.balance) || 0) > 0);
+  const allPatients = (systemState?.patients || patientsSummary || []);
+  const scopedPatients = clinicId ? allPatients.filter(p => !p.clinicId || p.clinicId === clinicId) : allPatients;
+
+  const debtors = scopedPatients.filter(p => (Number(p.balance) || 0) > 0);
   const debtorsStr = debtors.length > 0 
     ? debtors.slice(0, 10).map(p => `${p.name} (مديونية: ${p.balance} ج.م)`).join(', ') 
     : 'لا توجد مديونيات معلقة';
 
-  const samplePatients = (systemState?.patients || patientsSummary || []).slice(0, 20)
+  const samplePatients = scopedPatients.slice(0, 20)
     .map(p => `${p.name}${p.phone ? ` (${p.phone})` : ''}${p.allergies && p.allergies !== 'لا يوجد' ? ` [حساسية: ${p.allergies}]` : ''}`)
     .join(' | ');
 

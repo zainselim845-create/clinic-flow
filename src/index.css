@@ -133,6 +133,7 @@ h1, h2, h3, h4, h5, h6 {
   --primary-light: #E8F0FE;    /* Google Blue 50 / Surface container */
   --primary-glow: rgba(26, 115, 232, 0.25);
   --gradient-primary: linear-gradient(135deg, #1A73E8 0%, #4285F4 100%);
+  --clinic-on-primary: #FFFFFF;
   
   --accent: #1B6EF3;
   --accent-hover: #0B57D0;
@@ -153,7 +154,7 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Material You Color Roles */
   --md-sys-color-primary: var(--primary);
-  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-on-primary: var(--clinic-on-primary, #FFFFFF);
   --md-sys-color-primary-container: var(--primary-light);
   --md-sys-color-on-primary-container: #041E49;
 
@@ -238,6 +239,7 @@ h1, h2, h3, h4, h5, h6 {
   --primary-light: rgba(56, 189, 248, 0.12);
   --primary-glow: rgba(56, 189, 248, 0.25);
   --gradient-primary: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+  --clinic-on-primary: #09090B;
 
   --text-primary: #F8FAFC;     /* Slate 50 */
   --text-secondary: #94A3B8;   /* Slate 400 */
