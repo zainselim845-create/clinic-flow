@@ -21,7 +21,8 @@ import {
   Printer,
   ChevronRight,
   FileText,
-  BadgePercent
+  BadgePercent,
+  Laptop
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
