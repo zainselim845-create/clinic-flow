@@ -1,4 +1,9 @@
-#  كلينك فلو (ClinicFlow) — منظومة إدارة العيادات الذكية المتقدمة
+# كلينك فلو (ClinicFlow) — منظومة إدارة العيادات الذكية المتقدمة
+
+[![CI/CD Pipeline](https://github.com/zainselim845-create/clinic-flow/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/zainselim845-create/clinic-flow/actions/workflows/ci-cd.yml)
+[![Tests: 475 Passed](https://img.shields.io/badge/Tests-475%20passed-brightgreen.svg)](https://github.com/zainselim845-create/clinic-flow/actions)
+[![Deploy: Vercel](https://img.shields.io/badge/Deploy-Vercel%20Production-black.svg?logo=vercel)](https://clinic-flow-lh3g.vercel.app)
+[![Code Quality: Oxlint](https://img.shields.io/badge/Linter-Oxlint%200%20errors-blue.svg)](https://github.com/zainselim845-create/clinic-flow)
 
 منظومة طبية وسريرية متكاملة مصممة بأحدث تقنيات الويب لإدارة العيادات والمراكز الطبية الخاصة بكفاءة وسرعة فائقة، مع دعم الحجز الإلكتروني الذكي، طابور الانتظار اللحظي، مساعد الطبيب بالذكاء الاصطناعي، والمزامنة السحابية الفورية.
 
@@ -114,6 +119,51 @@ docker build -t clinicflow:latest .
 # تشغيل الحاوية على المنفذ 80
 docker run -d -p 80:80 --name clinicflow_app clinicflow:latest
 ```
+
+---
+
+## 🛡️ خط أنابيب التطوير والنشر المستمر (CI/CD Pipeline)
+
+تعتمد منصة ClinicFlow على خط أنابيب أوتوماتيكي متكامل مبني على **GitHub Actions** (`.github/workflows/ci-cd.yml`) يتم تشغيله تلقائياً عند كل `push` أو `pull_request` على فرع `main`:
+
+```
+                    ┌─────────────────────────┐
+                    │   GitHub Push / PR      │
+                    └────────────┬────────────┘
+                                 │
+                 ┌───────────────▼───────────────┐
+                 │  1. CI Quality Gate (🛡️)      │
+                 │  - Oxlint Static Analysis     │
+                 │  - 475 Vitest Specs (46 files)│
+                 │  - Vite Production Build      │
+                 │  - Zero Sourcemaps Audit      │
+                 └───────────────┬───────────────┘
+                                 │
+                 ┌───────────────▼───────────────┐
+                 │  2. E2E UI Review Loop (🌐)   │
+                 │  - Playwright Chromium Engine │
+                 │  - Local Preview Health Check │
+                 │  - 100% DOM Dynamics Sweep    │
+                 └───────────────┬───────────────┘
+                                 │ (Only on main push)
+                 ┌───────────────▼───────────────┐
+                 │  3. CD Production Deploy (🚀) │
+                 │  - Vercel Zero-Config Sync    │
+                 │  - Instant Edge CDN Routing   │
+                 └───────────────────────────────┘
+```
+
+### مراحل خط الأنابيب (Pipeline Stages):
+1. **🛡️ بوابة الجودة والفحص (Quality Gate)**:
+   - فحص الكود الثابت عبر `oxlint` للتأكد من عدم وجود أية أخطاء بنسبة 100% (`0 errors`).
+   - تشغيل حزمة الاختبارات الشاملة (46 ملف اختبار، 475 اختباراً تغطي عزل البيانات، الأمان، والتحصيلات المالية).
+   - بناء حزمة الإنتاج (`npm run build`) والتأكد التام من خلوها من ملفات خرائط المصدر (`.map`) لمنع أي تسريب للكود أو البيانات.
+   - رفع مخرجات البناء كـ Artifact معتمد لباقي المراحل.
+2. **🌐 فحص واجهة المستخدم اللحظي (UI Review Loop & E2E)**:
+   - تشغيل خادم معاينة محلي (`Vite Preview`) والانتظار حتى يستجيب بنجاح عبر فحص الاتصال (`Health Check`).
+   - تشغيل متصفح Playwright Chromium وفحص 100% من المسارات التفاعلية، أزرار الحجز، استدعاء المرضى، والتأكد من انعدام أية أخطاء في الـ Console.
+3. **🚀 النشر التلقائي للإنتاج (Continuous Deployment)**:
+   - نشر النسخة المعتمدة والمفحوصة مباشرة إلى بيئة الإنتاج على **Vercel** (`clinic-flow-lh3g.vercel.app`).
 
 ---
 

@@ -18,11 +18,13 @@ async function runUiAudit() {
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
   };
 
-  const browser = await chromium.launch({ ...launchOptions, channel: 'chrome' }).catch(() => {
-    return chromium.launch({ ...launchOptions, channel: 'msedge' }).catch(() => {
-      return chromium.launch(launchOptions);
-    });
-  });
+  const browser = process.env.CI
+    ? await chromium.launch(launchOptions)
+    : await chromium.launch({ ...launchOptions, channel: 'chrome' }).catch(() => {
+        return chromium.launch({ ...launchOptions, channel: 'msedge' }).catch(() => {
+          return chromium.launch(launchOptions);
+        });
+      });
 
   const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
   const page = await ctx.newPage();
