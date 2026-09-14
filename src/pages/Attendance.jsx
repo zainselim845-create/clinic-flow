@@ -139,10 +139,15 @@ const Attendance = () => {
               className="staff-select"
               value={selectedStaffId}
               onChange={(e) => setSelectedStaffId(e.target.value)}
+              disabled={staffList.length === 0}
             >
-              {staffList.map(s => (
-                <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
-              ))}
+              {staffList.length === 0 ? (
+                <option value="">لا يوجد موظفون مضافون (أضف من الإعدادات)</option>
+              ) : (
+                staffList.map(s => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.role})</option>
+                ))
+              )}
             </select>
           </div>
 
@@ -150,6 +155,8 @@ const Attendance = () => {
             type="button"
             onClick={handleCheckInClick}
             className="btn-terminal-checkin"
+            disabled={staffList.length === 0 || !selectedStaffId}
+            style={staffList.length === 0 ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
           >
             <LogIn size={18} />
             <span>تسجيل حضور الآن (Check-In)</span>

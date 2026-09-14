@@ -155,7 +155,7 @@ const Labs = () => {
           <p>متابعة مراحل التيجان، الجسور، الأطقم، والعدسات من تاريخ الإرسال حتى التسليم للمريض (Nebras Lab Management)</p>
         </div>
         <div className="header-actions-btns">
-          <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
             <Plus size={18} />
             <span>إصدار طلب معمل جديد</span>
           </button>
