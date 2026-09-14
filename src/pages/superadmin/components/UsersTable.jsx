@@ -141,8 +141,8 @@ export function UsersTable({
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="section-header-filters" style={{ marginBottom: '1.25rem', width: '100%' }}>
-        <div className="saas-search-box" style={{ minWidth: '280px', flex: '1 1 300px' }}>
+      <div className="users-filter-toolbar">
+        <div className="saas-search-box" style={{ minWidth: '260px', flex: '1 1 280px' }}>
           <Search size={16} />
           <input 
             type="text" 
