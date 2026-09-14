@@ -417,7 +417,7 @@ const Dashboard = () => {
             <span className="live-pulse-dot" />
             <h1 className="workspace-title-text" style={{ fontSize: 'inherit', fontWeight: 'inherit', margin: 0, padding: 0, display: 'inline', letterSpacing: 'inherit', color: 'inherit' }}>
               {isDoctor 
-                ? `العيادة والعمليات السريرية • ${user?.name || currentClinic.doctorName || 'د. أحمد الشريف'}`
+                ? `العيادة والعمليات السريرية • ${(user?.name && !user.name.startsWith('د.') ? `د. ${user.name}` : (user?.name || currentClinic.doctorName || 'د. أحمد الشريف'))}`
                 : `مكتب الاستقبال والتنظيم • ${user?.name || 'طاقم الاستقبال'}`}
             </h1>
             <span className="workspace-role-chip">{isDoctor ? 'المدير الطبي' : 'سكرتارية واستقبال'}</span>
@@ -545,10 +545,17 @@ const Dashboard = () => {
             </span>
           </div>
           <div className="stat-card-body">
-            <h3 className="stat-main-number">{inProgressToday.length}</h3>
-            <span className="stat-card-label">
-              {currentExamPatient ? currentExamPatient.patientName : 'الغرفة مستعدة للمريض التالي'}
-            </span>
+            {currentExamPatient ? (
+              <>
+                <h3 className="stat-main-number">{inProgressToday.length}</h3>
+                <span className="stat-card-label">{currentExamPatient.patientName}</span>
+              </>
+            ) : (
+              <>
+                <h3 className="stat-main-number" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-secondary)' }}>شاغرة</h3>
+                <span className="stat-card-label">جاهزة لاستقبال المريض التالي</span>
+              </>
+            )}
           </div>
           <div className="stat-progress-bar">
             <div 
@@ -838,6 +845,8 @@ const Dashboard = () => {
               todayRevenue={todayRevenue}
               attendanceRate={attendanceRate}
               completedCount={completedToday.length}
+              todaysAppointments={todaysAppointments}
+              completedToday={completedToday}
               onOpenExpenses={() => setIsExpensesModalOpen(true)}
               onOpenRecalls={() => setIsRecallModalOpen(true)}
             />

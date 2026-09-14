@@ -130,6 +130,7 @@ export function AppProvider({ children }) {
         }
       } catch (_) {}
 
+      const isDemoTenant = currentSlug === 'dr-ahmed' || currentSlug === 'dr-sara';
       const seedData = getInitialDataForTenant(activeTenant || currentSlug);
       const today = getTodayDateStr();
 
@@ -144,9 +145,9 @@ export function AppProvider({ children }) {
           let finalExpenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
           let finalRecalls = Array.isArray(parsed.recalls) ? parsed.recalls : [];
 
-          // Auto-heal / migrate: If there are no appointments for today OR schema version changed,
-          // ensure the live operational floor has today's dynamic seed data active
-          if (!hasTodayAppts || !isUpToDate) {
+          // Auto-heal / migrate: ONLY for demo clinics (dr-ahmed / dr-sara).
+          // For custom or real doctor clinics, NEVER inject seed appointments or demo data!
+          if (isDemoTenant && (!hasTodayAppts || !isUpToDate)) {
             const nonTodayAppointments = finalAppointments.filter(a => a.date !== today);
             finalAppointments = [...seedData.appointments, ...nonTodayAppointments];
 
@@ -165,14 +166,14 @@ export function AppProvider({ children }) {
           dispatch({ 
             type: 'INIT_DATA', 
             payload: { 
-              patients: finalPatients.length > 0 ? finalPatients : seedData.patients,
-              appointments: finalAppointments.length > 0 ? finalAppointments : seedData.appointments,
-              notifications: (parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : seedData.notifications,
-              blockedSlots: parsed.blockedSlots || seedData.blockedSlots,
-              expenses: finalExpenses.length > 0 ? finalExpenses : seedData.expenses,
-              recalls: finalRecalls.length > 0 ? finalRecalls : seedData.recalls,
-              staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : seedData.staffMembers,
-              clinicInfo: activeTenant || parsed.clinicInfo || seedData.clinicInfo,
+              patients: isDemoTenant ? (finalPatients.length > 0 ? finalPatients : seedData.patients) : finalPatients,
+              appointments: isDemoTenant ? (finalAppointments.length > 0 ? finalAppointments : seedData.appointments) : finalAppointments,
+              notifications: (parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : (isDemoTenant ? seedData.notifications : []),
+              blockedSlots: parsed.blockedSlots || (isDemoTenant ? seedData.blockedSlots : []),
+              expenses: isDemoTenant ? (finalExpenses.length > 0 ? finalExpenses : seedData.expenses) : finalExpenses,
+              recalls: isDemoTenant ? (finalRecalls.length > 0 ? finalRecalls : seedData.recalls) : finalRecalls,
+              staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : (isDemoTenant ? seedData.staffMembers : []),
+              clinicInfo: activeTenant || parsed.clinicInfo || (isDemoTenant ? seedData.clinicInfo : { slug: currentSlug, name: currentSlug }),
               useSupabase: false,
               currentTenantSlug: currentSlug
             } 
@@ -182,8 +183,14 @@ export function AppProvider({ children }) {
           dispatch({ 
             type: 'INIT_DATA', 
             payload: { 
-              ...seedData, 
-              clinicInfo: activeTenant || seedData.clinicInfo, 
+              patients: isDemoTenant ? seedData.patients : [],
+              appointments: isDemoTenant ? seedData.appointments : [],
+              notifications: isDemoTenant ? seedData.notifications : [],
+              blockedSlots: isDemoTenant ? seedData.blockedSlots : [],
+              expenses: isDemoTenant ? seedData.expenses : [],
+              recalls: isDemoTenant ? seedData.recalls : [],
+              staffMembers: isDemoTenant ? seedData.staffMembers : [],
+              clinicInfo: activeTenant || (isDemoTenant ? seedData.clinicInfo : { slug: currentSlug, name: currentSlug }),
               useSupabase: false,
               currentTenantSlug: currentSlug 
             } 
@@ -193,8 +200,14 @@ export function AppProvider({ children }) {
         dispatch({ 
           type: 'INIT_DATA', 
           payload: { 
-            ...seedData, 
-            clinicInfo: activeTenant || seedData.clinicInfo, 
+            patients: isDemoTenant ? seedData.patients : [],
+            appointments: isDemoTenant ? seedData.appointments : [],
+            notifications: isDemoTenant ? seedData.notifications : [],
+            blockedSlots: isDemoTenant ? seedData.blockedSlots : [],
+            expenses: isDemoTenant ? seedData.expenses : [],
+            recalls: isDemoTenant ? seedData.recalls : [],
+            staffMembers: isDemoTenant ? seedData.staffMembers : [],
+            clinicInfo: activeTenant || (isDemoTenant ? seedData.clinicInfo : { slug: currentSlug, name: currentSlug }),
             useSupabase: false,
             currentTenantSlug: currentSlug 
           } 

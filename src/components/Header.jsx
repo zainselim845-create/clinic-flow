@@ -27,9 +27,10 @@ const Header = ({ title }) => {
   const activeSpecialty = tenant?.specialty || state.clinicInfo?.specialty || clinic?.specialty || 'المدير الطبي';
 
   // Display user name: prioritize authenticated user name; fallback to active clinic doctor
-  const displayName = user?.name 
+  const rawName = user?.name 
     ? user.name 
     : (isDoctor ? activeDoctorName : 'موظف الاستقبال');
+  const displayName = (isDoctor && rawName && !rawName.startsWith('د.')) ? `د. ${rawName}` : rawName;
 
   // Display role: prioritize authenticated user job title; fallback to active clinic specialty or role label
   let displayRole = user?.jobTitle;

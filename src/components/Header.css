@@ -252,7 +252,7 @@
   font-weight: 600;
   color: var(--text-primary, #202124);
   line-height: 1.2;
-  max-width: 140px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -262,7 +262,7 @@
   font-size: 0.7rem;
   color: var(--text-secondary, #5F6368);
   line-height: 1;
-  max-width: 140px;
+  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

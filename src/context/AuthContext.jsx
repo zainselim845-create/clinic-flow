@@ -8,7 +8,8 @@ import {
   getRegisteredTenants, 
   saveRegisteredTenant, 
   slugifyClinic,
-  completeClinicOnboarding 
+  completeClinicOnboarding,
+  saveRegisteredUser 
 } from '../services/authService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import TenantContext from './TenantContext';
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }) => {
       try {
         localStorage.setItem('clinicflow_auth_user', JSON.stringify(userData));
         sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(userData));
+        saveRegisteredUser(userData);
         recordAuditEvent({
           eventType: AUDIT_EVENT_TYPES.USER_LOGIN,
           user: userData.name || userData.email || 'مستخدم النظام',
@@ -444,10 +446,15 @@ export const AuthProvider = ({ children }) => {
     const currentSlug = userTenant?.slug || (assignedRole === 'super_admin' ? '*' : 'dr-ahmed');
     const currentId = userTenant?.id || (assignedRole === 'super_admin' ? 'superadmin-root' : '550e8400-e29b-41d4-a716-446655440000');
 
+    const docRawName = googleProfile.name || googleProfile.email.split('@')[0];
+    const doctorDisplayName = (assignedRole === 'doctor' && !docRawName.startsWith('د.')) 
+      ? `د. ${docRawName}` 
+      : docRawName;
+
     const realUser = {
       id: googleProfile.sub || googleProfile.id || `google-${Date.now()}`,
       email: googleProfile.email,
-      name: googleProfile.name || googleProfile.email.split('@')[0],
+      name: doctorDisplayName,
       avatar: googleProfile.picture || null,
       role: assignedRole,
       jobTitle: assignedRole === 'super_admin' 

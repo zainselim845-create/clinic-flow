@@ -6,6 +6,8 @@ function RevenueAnalytics({
   todayRevenue = 0,
   attendanceRate = 0,
   completedCount = 0,
+  todaysAppointments = [],
+  completedToday = [],
   onOpenExpenses,
   onOpenRecalls
 }) {
@@ -15,30 +17,30 @@ function RevenueAnalytics({
     return (state.expenses || []).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
   }, [state.expenses]);
 
-  // Breakdown of today payments
+  // Breakdown of today payments strictly scoped to completedToday
   const todayBreakdown = useMemo(() => {
-    const completed = (state.appointments || []).filter(a => a.status === 'completed');
     let cash = 0;
     let electronic = 0;
 
-    completed.forEach(a => {
+    (completedToday || []).forEach(a => {
       const rawFee = a.fee ?? a.paidAmount;
       const fee = typeof rawFee === 'number'
         ? rawFee
-        : (parseInt(String(rawFee || '300').replace(/\D/g, ''), 10) || 300);
+        : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) : 0);
+      const safeFee = isNaN(fee) ? 0 : fee;
       if (a.paymentMethod === 'card' || a.paymentMethod === 'instapay') {
-        electronic += fee;
+        electronic += safeFee;
       } else {
-        cash += fee;
+        cash += safeFee;
       }
     });
 
     return { cash, electronic };
-  }, [state.appointments]);
+  }, [completedToday]);
 
   const netTodayProfit = Math.max(0, todayRevenue - (totalExpenses > 0 ? Math.min(todayRevenue, totalExpenses) : 0));
-  const waitingCount = (state.appointments || []).filter(a => a.status === 'waiting').length;
-  const totalToday = (state.appointments || []).filter(a => a.date === new Date().toISOString().split('T')[0]).length || 5;
+  const waitingCount = (todaysAppointments || []).filter(a => a.status === 'waiting').length;
+  const totalToday = (todaysAppointments || []).length;
 
   return (
     <div className="apple-financial-card">
@@ -103,7 +105,7 @@ function RevenueAnalytics({
       {/* 4. Operational Progress Bar */}
       <div className="af-progress-box">
         <div className="af-progress-labels">
-          <span>إنجاز جدول اليوم ({completedCount} من {totalToday})</span>
+          <span>{totalToday > 0 ? `إنجاز جدول اليوم (${completedCount} من ${totalToday})` : 'جدول اليوم (0 من 0)'}</span>
           <span className="af-progress-pct">{attendanceRate}%</span>
         </div>
         <div className="af-progress-track">

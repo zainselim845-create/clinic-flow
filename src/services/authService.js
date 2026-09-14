@@ -444,15 +444,39 @@ export function getAllPlatformUsers() {
     });
   });
 
+  // Include active session user from localStorage if present
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const activeAuthStr = localStorage.getItem('clinicflow_auth_user');
+      if (activeAuthStr) {
+        const authUser = JSON.parse(activeAuthStr);
+        if (authUser && (authUser.email || authUser.id)) {
+          const key = (authUser.email || authUser.id).toLowerCase();
+          const existing = userMap.get(key) || {};
+          const resolvedClinicSlug = authUser.clinicSlug || existing.clinicSlug || 'dr-ahmed';
+          const resolvedClinicName = authUser.clinicName || clinicLookup.get(resolvedClinicSlug) || existing.clinicName || (authUser.name ? `عيادة ${authUser.name}` : 'عيادة خاصة');
+          userMap.set(key, {
+            ...existing,
+            ...authUser,
+            clinicSlug: resolvedClinicSlug,
+            clinicName: resolvedClinicName,
+            status: authUser.status || existing.status || 'active'
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
   // Guarantee every tenant has its primary doctor owner account listed
   tenants.forEach(t => {
-    if (t.doctorEmail) {
-      const key = t.doctorEmail.toLowerCase();
+    const docEmail = t.doctorEmail || (t.slug ? `${t.slug.replace(/^dr-?/, '')}@clinicflow.com` : null);
+    if (docEmail) {
+      const key = docEmail.toLowerCase();
       if (!userMap.has(key)) {
         userMap.set(key, {
           id: `doc-${t.id || t.slug}`,
           name: t.doctorName || t.name,
-          email: t.doctorEmail,
+          email: docEmail,
           phone: t.phone || '',
           role: 'doctor',
           isClinicOwner: true,
