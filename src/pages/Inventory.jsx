@@ -134,7 +134,7 @@ const Inventory = () => {
       {/* Header */}
       <div className="page-header">
         <div>
-          <h2>مخزون المستلزمات الطبية (Dental Materials & Inventory)</h2>
+          <h1>مخزون المستلزمات الطبية (Dental Materials & Inventory)</h1>
           <p>متابعة كميات الكومبوزيت، البنج، مواد الطبعات، والتعقيم مع إنذارات النقص والصلاحية</p>
         </div>
         <div className="header-actions-btns">

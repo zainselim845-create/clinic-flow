@@ -117,25 +117,7 @@ const Appointments = () => {
     if (!formData.patientId || !formData.date || !formData.time) return;
 
     const patient = patients.find(p => p.id === formData.patientId);
-    const currentClinic = state.clinicInfo || {};
-    const serviceMatch = (currentClinic.services || []).find(s => s.name === formData.type || (formData.type && s.name.includes(formData.type)));
-    const determinedFee = serviceMatch?.price || (
-      formData.type === 'استشارة' || formData.type === 'متابعة' 
-        ? (currentClinic.consultationFee || '150 ج.م')
-        : formData.type === 'تنظيف وتلميع أسنان'
-        ? '400 ج.م'
-        : formData.type === 'حشو تجميلي كومبوزيت'
-        ? '500 ج.م'
-        : formData.type === 'علاج جذور وعصب'
-        ? '900 ج.م'
-        : formData.type === 'طربوش زيركون'
-        ? '1800 ج.م'
-        : formData.type === 'تبييض أسنان'
-        ? '2000 ج.م'
-        : formData.type === 'زراعة أسنان'
-        ? '6500 ج.م'
-        : (currentClinic.regularFee || '300 ج.م')
-    );
+    const determinedFee = formData.fee?.trim() || currentClinic.regularFee || '300 ج.م';
 
     const newAppointment = {
       id: Date.now().toString(),
@@ -146,7 +128,7 @@ const Appointments = () => {
       patientPhone: patient ? patient.phone : '',
       date: formData.date,
       time: formData.time,
-      type: formData.type,
+      type: formData.type || 'كشف عيادة',
       fee: determinedFee,
       notes: formData.notes,
       status: 'booked',
@@ -163,7 +145,7 @@ const Appointments = () => {
 
     dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
     setIsModalOpen(false);
-    setFormData({ patientId: '', date: todayStr, time: '', type: 'كشف عادي', notes: '' });
+    setFormData({ patientId: '', date: todayStr, time: '', type: 'كشف عيادة', fee: defaultFee, notes: '' });
   };
 
   const isBlockerDateFullDayBlocked = (blockedSlots || []).some(
@@ -257,7 +239,7 @@ const Appointments = () => {
       )}
 
       <div className="page-header">
-        <h2>إدارة المواعيد (لوحة السكرتير والأطباء)</h2>
+        <h1>إدارة المواعيد (لوحة السكرتير والأطباء)</h1>
         <div className="header-actions-btns">
           <button className="btn btn-secondary" onClick={handleExportAppointmentsCSV} title="تصدير المواعيد لملف إكسيل">
             <Download size={16} />
@@ -567,6 +549,20 @@ const Appointments = () => {
                   </div>
                 </div>
 
+
+                <div className="form-group">
+                  <label>قيمة الكشف (ج.م)</label>
+                  <input 
+                    type="text"
+                    className="input-field"
+                    placeholder="300 ج.م"
+                    value={formData.fee || ''}
+                    onChange={(e) => setFormData({...formData, fee: e.target.value})}
+                  />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem', display: 'block' }}>
+                    قيمة كشف العيادة الموحدة (يمكن تعديلها أو إضافة خدمات إضافية أثناء فحص الطبيب).
+                  </span>
+                </div>
 
                 <div className="form-group">
                   <label>ملاحظات</label>

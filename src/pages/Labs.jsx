@@ -123,7 +123,7 @@ const Labs = () => {
       {/* Header */}
       <div className="page-header">
         <div>
-          <h2>إدارة المعامل وتتبع التركيبات (Lab Orders & Tracking)</h2>
+          <h1>إدارة المعامل وتتبع التركيبات (Lab Orders & Tracking)</h1>
           <p>متابعة مراحل التيجان، الجسور، الأطقم، والعدسات من تاريخ الإرسال حتى التسليم للمريض (Nebras Lab Management)</p>
         </div>
         <div className="header-actions-btns">

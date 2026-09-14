@@ -34,7 +34,7 @@ const Notifications = () => {
   return (
     <div className="notifications-page">
       <div className="page-header">
-        <h2>الإشعارات</h2>
+        <h1>الإشعارات</h1>
         <div className="header-actions">
           <button className="btn-primary" onClick={() => navigate('/settings')} title="إعداد وتجربة إرسال رسائل SMS المفتوحة المصدر">
             <Smartphone size={18} />

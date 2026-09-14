@@ -487,7 +487,42 @@ export const TenantProvider = ({ children }) => {
     });
   }, [allTenants]);
 
-  // 9. Feature Gating & Quota Checks
+  // 9. Update Tenant Profile & Branding Info Live
+  const updateTenantInfo = useCallback((updatedInfo) => {
+    if (!updatedInfo) return;
+    const targetId = updatedInfo.id || activeTenant?.id;
+    const targetSlug = updatedInfo.slug || activeTenant?.slug;
+
+    setAllTenants(prev => prev.map(t => {
+      if ((targetId && t.id === targetId) || (targetSlug && t.slug === targetSlug)) {
+        return { ...t, ...updatedInfo };
+      }
+      return t;
+    }));
+
+    setActiveTenant(prev => {
+      if (prev && ((targetId && prev.id === targetId) || (targetSlug && prev.slug === targetSlug))) {
+        const merged = { ...prev, ...updatedInfo };
+        applyBranding(merged?.branding);
+        return merged;
+      }
+      return prev;
+    });
+
+    try {
+      const stored = localStorage.getItem('clinicflow_registered_tenants');
+      if (stored) {
+        const list = JSON.parse(stored);
+        const idx = list.findIndex(t => (targetId && t.id === targetId) || (targetSlug && t.slug === targetSlug));
+        if (idx >= 0) {
+          list[idx] = { ...list[idx], ...updatedInfo };
+          localStorage.setItem('clinicflow_registered_tenants', JSON.stringify(list));
+        }
+      }
+    } catch (_) {}
+  }, [activeTenant]);
+
+  // 10. Feature Gating & Quota Checks
   const hasFeature = useCallback((featureName) => {
     if (!activeTenant) return false;
     const tier = activeTenant.subscriptionTier || 'starter';
@@ -548,13 +583,14 @@ export const TenantProvider = ({ children }) => {
     switchTenant,
     registerNewTenant,
     deleteTenant,
+    updateTenantInfo,
     updateTenantStatus,
     updateTenantDomain,
     hasFeature,
     checkQuota,
     tier: activeTenant?.subscriptionTier || 'pro',
     isMultiTenant: true
-  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, deleteTenant, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
+  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, deleteTenant, updateTenantInfo, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
 
   return (
     <TenantContext.Provider value={value}>

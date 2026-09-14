@@ -420,7 +420,7 @@ const DoctorAssistant = () => {
                   <Bot size={24} />
                 </div>
                 <div>
-                  <h2>مساعد الطبيب السريري الذكي (AI Patient Care Agent)</h2>
+                  <h1 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>مساعد الطبيب السريري الذكي (AI Patient Care Agent)</h1>
                   <p>تواصل مع وكيلك الذكي لتحديد شرائح المرضى وإرسال رسائل الرعاية والمتابعة الطبية المخصصة بنقرة واحدة</p>
                 </div>
               </div>

@@ -211,7 +211,7 @@ const Patients = () => {
       )}
 
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <h2 style={{ margin: 0 }}>إدارة المرضى</h2>
+        <h1 style={{ margin: 0 }}>إدارة المرضى</h1>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button 
             type="button"

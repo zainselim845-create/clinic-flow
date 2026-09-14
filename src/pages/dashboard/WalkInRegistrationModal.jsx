@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus, X } from 'lucide-react';
 import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
@@ -8,13 +8,20 @@ import { getTodayDateStr } from '../../utils/timeSlots';
 export default function WalkInRegistrationModal({
   isOpen,
   onClose,
-  onSubmit
+  onSubmit,
+  regularFee = '300 ج.م'
 }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [type, setType] = useState('كشف عادي');
+  const [fee, setFee] = useState(regularFee);
   const [notes, setNotes] = useState('');
   const [phoneError, setPhoneError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setFee(regularFee || '300 ج.م');
+    }
+  }, [isOpen, regularFee]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,7 +36,8 @@ export default function WalkInRegistrationModal({
     onSubmit({
       name: name.trim(),
       phone: cleanedPhone,
-      type,
+      type: 'كشف عيادة',
+      fee: fee?.trim() || regularFee || '300 ج.م',
       notes: notes.trim(),
       date: getTodayDateStr()
     });
@@ -85,6 +93,16 @@ export default function WalkInRegistrationModal({
             {phoneError && <span className="input-error-msg">{phoneError}</span>}
           </div>
 
+
+          <div className="form-group">
+            <label>قيمة الكشف (ج.م)</label>
+            <input
+              type="text"
+              placeholder="300 ج.م"
+              value={fee}
+              onChange={(e) => setFee(e.target.value)}
+            />
+          </div>
 
           <div className="form-group">
             <label>ملاحظات الاستقبال (اختياري)</label>

@@ -27,7 +27,7 @@ const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscri
 const Settings = () => {
   const { state, dispatch } = useApp();
   const { updateClinicInfo } = useAuth();
-  const { tenant, tenantSlug } = useTenant();
+  const { tenant, tenantSlug, updateTenantInfo } = useTenant();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState(
@@ -78,6 +78,9 @@ const Settings = () => {
     if (updateClinicInfo) {
       updateClinicInfo(clinicForm);
     }
+    if (updateTenantInfo) {
+      updateTenantInfo(clinicForm);
+    }
     try {
       const currentSlug = tenantSlug || tenant?.slug || 'dr-ahmed';
       const scopedKey = `clinicflow_data_${currentSlug}`;
@@ -101,7 +104,7 @@ const Settings = () => {
     <div className="settings-page">
       <div className="page-header">
         <div>
-          <h2>مركز إعدادات العيادة والنظام </h2>
+          <h1>مركز إعدادات العيادة والنظام </h1>
           <p>إدارة هوية العيادة، مواعيد العمل والإجازات، طاقم الاستقبال، والربط السحابي والذكي</p>
         </div>
       </div>
@@ -208,12 +211,32 @@ const Settings = () => {
 
           <Tabs.Content value="visitTypes">
             <VisitTypesTab
-              visitTypes={state.clinicInfo?.services || []}
+              visitTypes={clinicForm?.services || state.clinicInfo?.services || []}
               onUpdateVisitTypes={(newTypes) => {
+                const currentSlug = tenantSlug || tenant?.slug || 'dr-ahmed';
+                const updated = {
+                  ...(clinicForm || state.clinicInfo),
+                  services: newTypes
+                };
+                setClinicForm(updated);
                 dispatch({
                   type: 'UPDATE_CLINIC_INFO',
                   payload: { services: newTypes }
                 });
+                if (updateTenantInfo) {
+                  updateTenantInfo({ services: newTypes });
+                }
+                try {
+                  const scopedKey = `clinicflow_data_${currentSlug}`;
+                  const stored = localStorage.getItem(scopedKey);
+                  const parsed = stored ? JSON.parse(stored) : {};
+                  parsed.clinicInfo = updated;
+                  parsed.services = newTypes;
+                  localStorage.setItem(scopedKey, JSON.stringify(parsed));
+                  if (currentSlug === 'dr-ahmed') {
+                    localStorage.setItem('clinicflow_data', JSON.stringify(parsed));
+                  }
+                } catch (_) {}
               }}
             />
           </Tabs.Content>

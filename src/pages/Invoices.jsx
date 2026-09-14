@@ -124,7 +124,7 @@ const Invoices = () => {
       {/* Header */}
       <div className="page-header">
         <div>
-          <h2>الفوترة والتحصيلات المالية (Invoices & Billing)</h2>
+          <h1>الفوترة والتحصيلات المالية (Invoices & Billing)</h1>
           <p>إدارة الفواتير العلاجية، سندات القبض، المدفوعات الجزئية، والخصومات المعتمدة</p>
         </div>
         <div className="header-actions-btns">

@@ -219,7 +219,7 @@ export const MarketingCrmHub = () => {
             <Sparkles size={15} />
             <span>منظومة الـ CRM والنمو الذكي المتكاملة</span>
           </div>
-          <h2>محرك التسويق والاحتفاظ بالمرضى (11 محركاً ذكياً)</h2>
+          <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0.35rem 0', color: 'var(--text-primary)' }}>محرك التسويق والاحتفاظ بالمرضى (11 محركاً ذكياً)</h1>
           <p>تقسيم تلقائي، استعادة المواعيد، تتبع الخطط العلاجية، تحويل التقييمات لجوجل، وبرامج ولاء وإحالة المرضى.</p>
         </div>
         <div className="hero-kpis-pill">

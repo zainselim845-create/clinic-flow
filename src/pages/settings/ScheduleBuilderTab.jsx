@@ -161,22 +161,7 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
       ? workingDays.filter(d => d !== dayId)
       : [...workingDays, dayId];
 
-    const updatedConfig = {
-      ...scheduleConfig,
-      workingDays: updatedDays
-    };
-
-    if (setClinicForm && clinicForm) {
-      setClinicForm({ ...clinicForm, scheduleConfig: updatedConfig });
-    }
-
-    dispatch({
-      type: 'UPDATE_CLINIC_INFO',
-      payload: {
-        ...(clinicForm || state.clinicInfo),
-        scheduleConfig: updatedConfig
-      }
-    });
+    handleUpdateScheduleConfig({ workingDays: updatedDays });
   };
 
   // Slot blocking handler
@@ -336,11 +321,7 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
               type="time" 
               className="input-field" 
               value={startTime} 
-              onChange={(e) => {
-                const newConfig = { ...scheduleConfig, startTime: e.target.value };
-                if (setClinicForm && clinicForm) setClinicForm({ ...clinicForm, scheduleConfig: newConfig });
-                dispatch({ type: 'UPDATE_CLINIC_INFO', payload: { ...(clinicForm || state.clinicInfo), scheduleConfig: newConfig } });
-              }} 
+              onChange={(e) => handleUpdateScheduleConfig({ startTime: e.target.value })} 
             />
             <small style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
               المقابل: {formatTimeToArabic(startTime)}
@@ -353,11 +334,7 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
               type="time" 
               className="input-field" 
               value={endTime} 
-              onChange={(e) => {
-                const newConfig = { ...scheduleConfig, endTime: e.target.value };
-                if (setClinicForm && clinicForm) setClinicForm({ ...clinicForm, scheduleConfig: newConfig });
-                dispatch({ type: 'UPDATE_CLINIC_INFO', payload: { ...(clinicForm || state.clinicInfo), scheduleConfig: newConfig } });
-              }} 
+              onChange={(e) => handleUpdateScheduleConfig({ endTime: e.target.value })} 
             />
             <small style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
               المقابل: {formatTimeToArabic(endTime)}
@@ -369,11 +346,7 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
             <select 
               className="input-field" 
               value={slotDuration} 
-              onChange={(e) => {
-                const newConfig = { ...scheduleConfig, slotDuration: Number(e.target.value) };
-                if (setClinicForm && clinicForm) setClinicForm({ ...clinicForm, scheduleConfig: newConfig });
-                dispatch({ type: 'UPDATE_CLINIC_INFO', payload: { ...(clinicForm || state.clinicInfo), scheduleConfig: newConfig } });
-              }}
+              onChange={(e) => handleUpdateScheduleConfig({ slotDuration: Number(e.target.value) })}
             >
               <option value={10}>10 دقائق (كشف سريع)</option>
               <option value={15}>15 دقيقة</option>

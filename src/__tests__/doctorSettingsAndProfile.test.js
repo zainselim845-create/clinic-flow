@@ -101,4 +101,32 @@ describe('Doctor Settings, Professional Profile & Schedule Persistence', () => {
     expect(settingsCode).toContain('SmsConfigTab');
     expect(settingsCode).toContain('رسائل الـ SMS واسم المرسل');
   });
+
+  it('verifies Settings.jsx contains semantic <h1> heading and updateTenantInfo synchronization', () => {
+    const settingsFilePath = path.join(__dirname, '../pages/Settings.jsx');
+    const settingsCode = fs.readFileSync(settingsFilePath, 'utf8');
+
+    expect(settingsCode).toContain('<h1>مركز إعدادات العيادة والنظام </h1>');
+    expect(settingsCode).toContain('updateTenantInfo');
+    expect(settingsCode).toContain('onUpdateVisitTypes');
+    expect(settingsCode).toContain('scopedKey');
+  });
+
+  it('verifies ScheduleBuilderTab.jsx persists workingDays, startTime, endTime, and slotDuration through handleUpdateScheduleConfig', () => {
+    const scheduleFilePath = path.join(__dirname, '../pages/settings/ScheduleBuilderTab.jsx');
+    const scheduleCode = fs.readFileSync(scheduleFilePath, 'utf8');
+
+    expect(scheduleCode).toContain('handleUpdateScheduleConfig({ workingDays: updatedDays })');
+    expect(scheduleCode).toContain('handleUpdateScheduleConfig({ startTime: e.target.value })');
+    expect(scheduleCode).toContain('handleUpdateScheduleConfig({ endTime: e.target.value })');
+    expect(scheduleCode).toContain('handleUpdateScheduleConfig({ slotDuration: Number(e.target.value) })');
+  });
+
+  it('verifies TenantContext.jsx exports updateTenantInfo callback for live branding sync', () => {
+    const tenantContextPath = path.join(__dirname, '../context/TenantContext.jsx');
+    const tenantCode = fs.readFileSync(tenantContextPath, 'utf8');
+
+    expect(tenantCode).toContain('updateTenantInfo');
+    expect(tenantCode).toContain('applyBranding');
+  });
 });

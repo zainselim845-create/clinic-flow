@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { 
@@ -22,11 +22,22 @@ export default function ConsultationModal({
   onComplete
 }) {
   const { state, dispatch } = useApp();
+  const defaultClinicFee = state.clinicInfo?.regularFee || '300 ج.م';
+  const [customFee, setCustomFee] = useState(appointment?.fee || defaultClinicFee);
   const [diagnosis, setDiagnosis] = useState('');
   const [procedures, setProcedures] = useState('');
   const [notes, setNotes] = useState('');
   const [followUpOption, setFollowUpOption] = useState('none');
   const [recallInterval, setRecallInterval] = useState('none');
+
+  useEffect(() => {
+    if (appointment) {
+      setCustomFee(appointment.fee || state.clinicInfo?.regularFee || '300 ج.م');
+      setDiagnosis(appointment.diagnosis || '');
+      setProcedures(appointment.procedures || '');
+      setNotes(appointment.notes || '');
+    }
+  }, [appointment, state.clinicInfo]);
 
   // e-Prescription builder state
   const [medications, setMedications] = useState([]);
@@ -167,7 +178,7 @@ export default function ConsultationModal({
       diagnosis,
       procedures,
       notes,
-      fee: appointment.fee || '300 ج.م',
+      fee: customFee?.trim() || appointment.fee || '300 ج.م',
       recallInterval,
       followUpOption,
       prescription: compiledPrescription
@@ -232,6 +243,30 @@ export default function ConsultationModal({
                 placeholder="مثال: حشو تجميلي ضرس 6 سفلي، تنظيف جير، خلع ضرس عقل..."
                 value={procedures}
                 onChange={(e) => setProcedures(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group" style={{ 
+              background: 'var(--bg-secondary)', 
+              padding: '0.85rem 1rem', 
+              borderRadius: 'var(--radius-md)', 
+              border: '1px solid var(--border-color)',
+              marginBottom: '1rem'
+            }}>
+              <label htmlFor="consult-fee" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontWeight: 600, marginBottom: '0.4rem' }}>
+                <span>تكلفة الكشف / الخدمات المنفذة (ج.م)</span>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 400 }}>
+                  (يحددها الطبيب وفريقه بحسب الإجراءات المنفذة)
+                </span>
+              </label>
+              <input
+                id="consult-fee"
+                type="text"
+                className="input-field"
+                placeholder="300 ج.م"
+                value={customFee}
+                onChange={(e) => setCustomFee(e.target.value)}
+                style={{ fontWeight: 600, fontSize: '0.95rem' }}
               />
             </div>
 

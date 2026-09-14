@@ -91,7 +91,7 @@ const Attendance = () => {
       {/* Header */}
       <div className="page-header">
         <div>
-          <h2>الحضور والانصراف لطاقم العيادة (Staff Attendance)</h2>
+          <h1>الحضور والانصراف لطاقم العيادة (Staff Attendance)</h1>
           <p>تسجيل مواعيد الحضور والانصراف لموظفي الاستقبال ومساعدي أطباء الأسنان (DentaLore Attendance)</p>
         </div>
       </div>

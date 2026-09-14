@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  ArrowRight, Sparkles, Users, UserPlus, AlertCircle, Loader2 
+  ArrowRight, Sparkles, Users, UserPlus, AlertCircle, Loader2, Stethoscope 
 } from 'lucide-react';
 import BookingCalendar from '../../components/BookingCalendar';
 
@@ -132,30 +132,52 @@ export default function AppointmentDetailsStep({
             </div>
           )}
 
-          {/* SERVICE SELECTION */}
+          {/* SINGLE UNIFIED CLINIC SERVICE */}
           <div className="nebras-section">
-            <label htmlFor="patientService" className="nebras-section-heading">الخدمة الطبية المطلوبة</label>
-            <div className="nebras-input-group">
-              <select 
-                id="patientService"
-                name="service"
-                aria-label="الخدمة الطبية المطلوبة"
-                className="nebras-input nebras-select"
-                value={formData.type}
-                onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
-              >
-                {(currentClinic?.services && currentClinic.services.length > 0 ? currentClinic.services : [
-                  { id: '1', name: 'كشف وفحص تشخيصي شامل', price: '300 ج.م' },
-                  { id: '2', name: 'استشارة ومتابعة بعد العلاج', price: '150 ج.م' },
-                  { id: '3', name: 'جلسة فحص دوري', price: '200 ج.م' }
-                ])
-                .filter(s => !s.name?.includes('طوارئ'))
-                .map(s => (
-                  <option key={s.id} value={s.name}>
-                    {s.name} {s.price ? `— (${s.price}${typeof s.price === 'number' ? ' ج.م' : ''})` : ''}
-                  </option>
-                ))}
-              </select>
+            <span className="nebras-section-heading">الخدمة الطبية</span>
+            <div className="nebras-service-card" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.9rem 1.1rem',
+              background: '#f8fafc',
+              border: '1.5px solid #0284c7',
+              borderRadius: '10px',
+              marginTop: '0.35rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '8px',
+                  background: '#e0f2fe',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#0284c7'
+                }}>
+                  <Stethoscope size={20} />
+                </div>
+                <div>
+                  <strong style={{ fontSize: '0.95rem', color: '#0f172a', display: 'block' }}>
+                    كشف وفحص بعيادة الطبيب
+                  </strong>
+                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                    فحص سريري متكامل وتشخيص طبي دقيق
+                  </span>
+                </div>
+              </div>
+              <div style={{
+                background: '#e0f2fe',
+                color: '#0369a1',
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                padding: '0.35rem 0.75rem',
+                borderRadius: '8px',
+                whiteSpace: 'nowrap'
+              }}>
+                {currentClinic?.regularFee || '300 ج.م'}
+              </div>
             </div>
           </div>
 

@@ -155,7 +155,8 @@ const Dashboard = () => {
         await appointmentsService.updateAppointmentStatus(data.appointmentId, 'pending_payment', {
           notes: data.notes || '',
           diagnosis: data.diagnosis || '',
-          procedures: data.procedures || ''
+          procedures: data.procedures || '',
+          fee: data.fee
         });
         if (data.patientId && data.diagnosis) {
           await patientsService.updatePatient(data.patientId, {
@@ -177,7 +178,8 @@ const Dashboard = () => {
         status: 'pending_payment',
         notes: data.notes,
         diagnosis: data.diagnosis,
-        procedures: data.procedures || ''
+        procedures: data.procedures || '',
+        fee: data.fee
       }
     });
 
@@ -311,20 +313,8 @@ const Dashboard = () => {
       patientPhone: walkInData.phone,
       date: walkInData.date,
       time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
-      type: walkInData.type,
-      fee: (() => {
-        const match = (currentClinic.services || []).find(s => s.name === walkInData.type || (walkInData.type && s.name.includes(walkInData.type)));
-        if (match?.price) return match.price;
-        if (walkInData.type === 'استشارة') return currentClinic.consultationFee || '150 ج.م';
-        if (walkInData.type === 'تنظيف وتلميع أسنان') return '400 ج.م';
-        if (walkInData.type === 'حشو تجميلي كومبوزيت') return '500 ج.م';
-        if (walkInData.type === 'علاج جذور وعصب') return '900 ج.م';
-        if (walkInData.type === 'خلع أسنان') return '400 ج.م';
-        if (walkInData.type === 'طربوش زيركون') return '1800 ج.م';
-        if (walkInData.type === 'تبييض أسنان') return '2000 ج.م';
-        if (walkInData.type === 'زراعة أسنان') return '6500 ج.م';
-        return currentClinic.regularFee || '300 ج.م';
-      })(),
+      type: walkInData.type || 'كشف عيادة',
+      fee: walkInData.fee || currentClinic.regularFee || '300 ج.م',
       status: 'waiting',
       checkedInAt: new Date().toISOString(),
       notes: walkInData.notes
@@ -426,11 +416,11 @@ const Dashboard = () => {
         <div className="workspace-bar-info">
           <div className="workspace-title-pill">
             <span className="live-pulse-dot" />
-            <span className="workspace-title-text">
+            <h1 className="workspace-title-text" style={{ fontSize: 'inherit', fontWeight: 'inherit', margin: 0, padding: 0, display: 'inline', letterSpacing: 'inherit', color: 'inherit' }}>
               {isDoctor 
                 ? `العيادة والعمليات السريرية • ${user?.name || currentClinic.doctorName || 'د. أحمد الشريف'}`
                 : `مكتب الاستقبال والتنظيم • ${user?.name || 'طاقم الاستقبال'}`}
-            </span>
+            </h1>
             <span className="workspace-role-chip">{isDoctor ? 'المدير الطبي' : 'سكرتارية واستقبال'}</span>
           </div>
           <div className="workspace-date-chip">
