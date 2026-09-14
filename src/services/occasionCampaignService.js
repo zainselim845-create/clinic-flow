@@ -50,8 +50,8 @@ export function getOccasionCampaignCandidates(patients = [], occasionId = 'birth
  */
 export function generatePersonalizedOccasionMessage(patient, occasionId, clinicInfo, customOffer = '') {
   const patientFirstName = (patient?.patientName || patient?.name || 'مريضنا العزيز').split(' ')[0];
-  const clinicName = clinicInfo?.name || 'مركز النخبة الطبي';
-  const service = patient?.favoriteService || 'العناية بصحتك وابتسامتك';
+  const clinicName = clinicInfo?.name || 'العيادة';
+  const service = patient?.favoriteService || 'العناية بصحتك وسلامتك';
   const offer = customOffer || 'خصم خاص 20% على زيارتك القادمة';
 
   switch (occasionId) {

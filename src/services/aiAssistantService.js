@@ -63,7 +63,6 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
     };
   }
 
-  const clinicId = clinicContext?.id;
   const rawDoctor = clinicContext?.doctorName || clinicContext?.name || 'طبيب العيادة';
   const doctorName = rawDoctor.startsWith('د.') || rawDoctor.startsWith('د/') ? rawDoctor : `د. ${rawDoctor}`;
   const specialty = clinicContext?.specialty || 'الطب العام والتخصصي';

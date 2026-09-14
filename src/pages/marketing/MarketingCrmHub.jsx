@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Users, Sparkles, RefreshCw, 
   AlertTriangle, Layers, Star, 
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTenant } from '../../context/TenantContext';
 import { 
   segmentAllPatients, 
   filterPatientsBySegment 
@@ -43,9 +44,22 @@ import './MarketingCrmHub.css';
 export const MarketingCrmHub = () => {
   const { state } = useApp();
   const { clinic } = useAuth();
-  const currentClinic = state.clinicInfo || clinic;
+  const { tenant } = useTenant();
+  const currentClinic = tenant || state.clinicInfo || clinic;
+  const currentClinicId = currentClinic?.id;
 
-  const { patients = [], appointments = [], invoices = [] } = state;
+  // Tenant data isolation: strictly scope patients, appointments, and invoices to active clinic
+  const scopedPatients = useMemo(() => {
+    return (state.patients || []).filter(p => !currentClinicId || !p.clinicId || p.clinicId === currentClinicId);
+  }, [state.patients, currentClinicId]);
+
+  const scopedAppointments = useMemo(() => {
+    return (state.appointments || []).filter(a => !currentClinicId || !a.clinicId || a.clinicId === currentClinicId);
+  }, [state.appointments, currentClinicId]);
+
+  const scopedInvoices = useMemo(() => {
+    return (state.invoices || []).filter(inv => !currentClinicId || !inv.clinicId || inv.clinicId === currentClinicId);
+  }, [state.invoices, currentClinicId]);
 
   // Active Hub Tab (11 Engines)
   const [activeTab, setActiveTab] = useState('overview'); 
@@ -63,8 +77,8 @@ export const MarketingCrmHub = () => {
   const [composerGoal, setComposerGoal] = useState('reactivation');
   const [composerOffer, setComposerOffer] = useState('فحص وقائي شامل + تنظيف أسنان بخصم 25%');
 
-  // Packages State
-  const [packagesList, setPackagesList] = useState(() => getPatientPackages() || []);
+  // Packages State (scoped by clinic)
+  const [packagesList, setPackagesList] = useState(() => getPatientPackages(currentClinicId) || []);
   const [isAddPackageModalOpen, setIsAddPackageModalOpen] = useState(false);
   const [newPackageData, setNewPackageData] = useState({
     patientId: '',
@@ -75,9 +89,16 @@ export const MarketingCrmHub = () => {
     price: '3000 ج.م'
   });
 
-  // Drafts & Recovery
-  const [draftsList] = useState(() => getBookingDrafts() || []);
-  const [feedbacksList, setFeedbacksList] = useState(() => getStoredFeedbacks() || []);
+  // Drafts & Recovery (scoped by clinic)
+  const [draftsList, setDraftsList] = useState(() => getBookingDrafts(currentClinicId) || []);
+  const [feedbacksList, setFeedbacksList] = useState(() => getStoredFeedbacks(currentClinicId) || []);
+
+  // Re-sync clinic-scoped CRM data when active clinic changes
+  useEffect(() => {
+    setPackagesList(getPatientPackages(currentClinicId) || []);
+    setDraftsList(getBookingDrafts(currentClinicId) || []);
+    setFeedbacksList(getStoredFeedbacks(currentClinicId) || []);
+  }, [currentClinicId]);
 
   const showToast = (text, type = 'success') => {
     setToastMessage({ text, type });
@@ -86,22 +107,22 @@ export const MarketingCrmHub = () => {
 
   // 1. Run Realtime O(1) Segmentation
   const segmentationResult = useMemo(() => {
-    return segmentAllPatients(patients || [], appointments || [], invoices || [], packagesList || [], []);
-  }, [patients, appointments, invoices, packagesList]);
+    return segmentAllPatients(scopedPatients, scopedAppointments, scopedInvoices, packagesList || [], []);
+  }, [scopedPatients, scopedAppointments, scopedInvoices, packagesList]);
 
   const segmentedPatients = useMemo(() => segmentationResult?.patients || [], [segmentationResult]);
   
   const crmStats = useMemo(() => {
     const s = segmentationResult?.stats || {};
     return {
-      totalPatients: s.total || (patients || []).length || 0,
+      totalPatients: s.total || scopedPatients.length || 0,
       vipCount: s.vip || 0,
       dormantCount: s.dormant || 0,
       newCount: s.new || 0,
       returningCount: s.returning || 0,
       activeCount: (s.returning || 0) + (s.loyal || 0) || 0
     };
-  }, [segmentationResult, patients]);
+  }, [segmentationResult, scopedPatients]);
 
   // 2. Cross-Selling Opportunities
   const crossSellOpportunities = useMemo(() => {
@@ -120,23 +141,23 @@ export const MarketingCrmHub = () => {
 
   // 5. No-Show Appointments
   const noShowAppointments = useMemo(() => {
-    return (appointments || []).filter(a => a && (a.status === 'cancelled' || a.status === 'no_show'));
-  }, [appointments]);
+    return scopedAppointments.filter(a => a && (a.status === 'cancelled' || a.status === 'no_show'));
+  }, [scopedAppointments]);
 
   // 6. Post-Visit 24h Follow-up Patients
   const postVisitPatients = useMemo(() => {
-    return getPostVisitEligiblePatients(appointments || []);
-  }, [appointments]);
+    return getPostVisitEligiblePatients(scopedAppointments);
+  }, [scopedAppointments]);
 
   // 7. Occasion Candidates
   const occasionCandidates = useMemo(() => {
-    return getOccasionCampaignCandidates(patients || [], selectedOccasion);
-  }, [patients, selectedOccasion]);
+    return getOccasionCampaignCandidates(scopedPatients, selectedOccasion);
+  }, [scopedPatients, selectedOccasion]);
 
   // 8. Unfinished Treatment Plans
   const unfinishedPlans = useMemo(() => {
-    return detectUnfinishedTreatmentPlans() || [];
-  }, []);
+    return detectUnfinishedTreatmentPlans([], currentClinicId) || [];
+  }, [currentClinicId]);
 
   // Filtered patients for segment explorer
   const filteredPatients = useMemo(() => {
@@ -164,7 +185,7 @@ export const MarketingCrmHub = () => {
       comment: rating >= 4 ? 'خدمة متميزة جداً ورعاية راقية' : 'يحتاج تسريع وقت الانتظار قليلاً',
       date: new Date().toISOString().split('T')[0]
     };
-    const updated = saveFeedback(newFb);
+    const updated = saveFeedback(newFb, currentClinicId);
     setFeedbacksList(updated);
     if (rating >= 4) {
       showToast(`تم توجيه تقييم (${rating} نجوم) إلى صفحة Google Reviews بنجاح! ⭐`, 'success');
@@ -175,7 +196,7 @@ export const MarketingCrmHub = () => {
 
   const handleAddPackageSubmit = (e) => {
     e.preventDefault();
-    const p = (patients || []).find(pat => pat && pat.id === newPackageData.patientId);
+    const p = (scopedPatients || []).find(pat => pat && pat.id === newPackageData.patientId);
     if (!p) {
       showToast('يرجى اختيار المريض أولاً', 'error');
       return;
@@ -196,7 +217,7 @@ export const MarketingCrmHub = () => {
       status: 'active'
     };
 
-    const updated = savePatientPackage(newPkg);
+    const updated = savePatientPackage(newPkg, currentClinicId);
     setPackagesList(updated);
     setIsAddPackageModalOpen(false);
     showToast('تمت إضافة الباقة وتفعيل تتبع الجلسات بنجاح');
@@ -416,7 +437,7 @@ export const MarketingCrmHub = () => {
 
       {activeTab === 'referrals' && (
         <ReferralsTab
-          patients={patients}
+          patients={scopedPatients}
           handleCopyLink={handleCopyLink}
           copiedLinkIndex={copiedLinkIndex}
         />
@@ -442,7 +463,7 @@ export const MarketingCrmHub = () => {
         onSubmit={handleAddPackageSubmit}
         packageData={newPackageData}
         setPackageData={setNewPackageData}
-        patients={patients}
+        patients={scopedPatients}
       />
     </div>
   );

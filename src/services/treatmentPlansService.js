@@ -112,7 +112,7 @@ export function detectUnfinishedTreatmentPlans(plans = [], clinicId) {
  */
 export function generateTreatmentPlanFollowUpMessage(plan, patient, clinicInfo) {
   const patientFirstName = (patient?.name || plan?.patientName || 'مريضنا العزيز').split(' ')[0];
-  const clinicName = clinicInfo?.name || 'مركز النخبة لطب الأسنان';
+  const clinicName = clinicInfo?.name || 'العيادة';
   const pending = plan?.pendingProcedures || 'المراحل المتبقية في خطتك العلاجية';
 
   return (

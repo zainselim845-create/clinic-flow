@@ -458,9 +458,9 @@
 
 .google-account-item:hover {
   background: #FFFFFF;
-  border-color: var(--apple-blue, #0071E3);
+  border-color: var(--primary, #09090B);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px -4px rgba(0, 113, 227, 0.15);
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.1);
 }
 
 .google-avatar-circle {
@@ -643,7 +643,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: var(--apple-blue, #0071E3);
+  color: var(--primary, #09090B);
   font-weight: 700;
   margin-right: 4px;
   text-decoration: underline;
@@ -752,7 +752,7 @@
 }
 
 .google-dev-summary:hover {
-  color: var(--apple-blue, #0071E3);
+  color: var(--primary, #09090B);
 }
 
 .google-dev-content {

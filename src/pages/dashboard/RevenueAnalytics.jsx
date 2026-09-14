@@ -43,7 +43,7 @@ function RevenueAnalytics({
   const totalToday = (todaysAppointments || []).length;
 
   return (
-    <div className="apple-financial-card">
+    <div className="monochrome-financial-card">
       {/* 1. Header */}
       <div className="af-header">
         <div className="af-title-group">

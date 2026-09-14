@@ -21,7 +21,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
         <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <Dialog.Content className={`modal-container size-${size}`}>
               <div className="modal-header" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '6px' }}>
-                <div className="apple-sheet-grabber" />
+                <div className="sheet-modal-grabber" />
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                   <Dialog.Title asChild>
                     <h2 className="modal-title">{title}</h2>

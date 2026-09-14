@@ -96,11 +96,11 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS clinics (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
-    doctor_name TEXT DEFAULT 'د. أحمد الشريف',
+    doctor_name TEXT,
     specialty TEXT,
     address TEXT,
     phone TEXT,
-    doctor_email TEXT DEFAULT 'doctor@clinicflow.com',
+    doctor_email TEXT,
     regular_fee TEXT DEFAULT '300 ج.م',
     consultation_fee TEXT DEFAULT '150 ج.م',
     working_hours TEXT DEFAULT 'السبت - الخميس: ٥:٠٠ مساءً - ١٠:٠٠ مساءً',

@@ -17,7 +17,6 @@ import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
 import ExpensesModal from '../components/ExpensesModal';
 import PatientRecallModal from '../components/PatientRecallModal';
 import ShiftHandoverModal from '../components/ShiftHandoverModal';
-import { AppleGlassDock } from '../components/ui';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
@@ -349,24 +348,24 @@ const Dashboard = () => {
     }
   };
 
-  // Apple Glass Floating Dock Shortcuts
+  // Minimalist Monochrome Quick Actions Dock Shortcuts
   const dockItems = useMemo(() => [
     {
       id: 'walkin',
       label: 'تسجيل سريع',
-      icon: <UserPlus className="w-5 h-5 text-[var(--apple-blue)]" />,
+      icon: <UserPlus className="w-5 h-5" />,
       onClick: () => setIsWalkInModalOpen(true)
     },
     {
       id: 'shift',
       label: 'الخزينة والوردية',
-      icon: <Landmark className="w-5 h-5 text-[var(--apple-purple)]" />,
+      icon: <Landmark className="w-5 h-5" />,
       onClick: () => setIsShiftModalOpen(true)
     },
     {
       id: 'waiting',
       label: 'صالة الانتظار',
-      icon: <Clock className="w-5 h-5 text-[var(--apple-orange)]" />,
+      icon: <Clock className="w-5 h-5" />,
       badge: waitingToday.length > 0 ? waitingToday.length : undefined,
       onClick: () => setActiveFilterTab('waiting'),
       active: activeFilterTab === 'waiting'
@@ -374,7 +373,7 @@ const Dashboard = () => {
     ...(pendingPaymentToday.length > 0 ? [{
       id: 'pending_payment',
       label: 'بانتظار التحصيل',
-      icon: <Wallet className="w-5 h-5 text-[var(--apple-green)]" />,
+      icon: <Wallet className="w-5 h-5" />,
       badge: pendingPaymentToday.length,
       onClick: () => setActiveFilterTab('pending_payment'),
       active: activeFilterTab === 'pending_payment'
@@ -382,13 +381,13 @@ const Dashboard = () => {
     {
       id: 'doctor_agent',
       label: 'مساعد الطبيب الذكي',
-      icon: <Sparkles className="w-5 h-5 text-[var(--apple-pink)]" />,
+      icon: <Sparkles className="w-5 h-5" />,
       onClick: () => navigate('/doctor-agent')
     },
     {
       id: 'recalls',
       label: 'استدعاء دوري',
-      icon: <BellRing className="w-5 h-5 text-[var(--apple-teal)]" />,
+      icon: <BellRing className="w-5 h-5" />,
       onClick: () => setIsRecallModalOpen(true)
     }
   ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab, navigate]);
@@ -417,7 +416,7 @@ const Dashboard = () => {
             <span className="live-pulse-dot" />
             <h1 className="workspace-title-text" style={{ fontSize: 'inherit', fontWeight: 'inherit', margin: 0, padding: 0, display: 'inline', letterSpacing: 'inherit', color: 'inherit' }}>
               {isDoctor 
-                ? `العيادة والعمليات السريرية • ${(user?.name && !user.name.startsWith('د.') ? `د. ${user.name}` : (user?.name || currentClinic.doctorName || 'د. أحمد الشريف'))}`
+                ? `العيادة والعمليات السريرية • ${(user?.name && !user.name.startsWith('د.') ? `د. ${user.name}` : (user?.name || tenant?.doctorName || currentClinic.doctorName || tenant?.name || 'طبيب العيادة'))}`
                 : `مكتب الاستقبال والتنظيم • ${user?.name || 'طاقم الاستقبال'}`}
             </h1>
             <span className="workspace-role-chip">{isDoctor ? 'المدير الطبي' : 'سكرتارية واستقبال'}</span>
@@ -946,8 +945,37 @@ const Dashboard = () => {
         onClose={() => setIsShiftModalOpen(false)}
       />
 
-      {/* 4. Apple Glass Floating Action Dock (macOS & visionOS Spatial Style) */}
-      <AppleGlassDock items={dockItems} />
+      {/* 4. Minimalist Monochrome Quick Actions Bar */}
+      <div 
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-3 py-2 rounded-2xl flex items-center gap-1.5 shadow-xl transition-all"
+        style={{
+          background: 'var(--bg-primary, #FFFFFF)',
+          border: '1px solid var(--border-color, #E4E4E7)',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        {dockItems.map(item => (
+          <button
+            key={item.id}
+            onClick={item.onClick}
+            type="button"
+            className="relative px-3 py-2 rounded-xl flex items-center gap-2 text-xs font-semibold transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            style={{
+              color: item.active ? 'var(--primary, #09090B)' : 'var(--text-secondary, #71717A)',
+              backgroundColor: item.active ? 'var(--bg-secondary, #F4F4F5)' : 'transparent'
+            }}
+            title={item.label}
+          >
+            {item.icon}
+            <span className="hidden sm:inline">{item.label}</span>
+            {item.badge !== undefined && (
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
+                {item.badge}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { useTenant } from '../context/TenantContext';
 import { sendSMS } from '../services/smsService';
 import { askDoctorAiAssistant, getAiConfig } from '../services/aiAssistantService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
@@ -20,25 +21,52 @@ import {
 import MarketingCrmHub from './marketing/MarketingCrmHub';
 import './DoctorAssistant.css';
 
-
-
-const CHAT_HISTORY_STORAGE_KEY = 'clinicflow_doctor_chat_history';
-
 const DoctorAssistant = () => {
   const navigate = useNavigate();
   const { state, dispatch, useSupabase } = useApp();
-  const { clinic } = useAuth();
-  const currentClinic = state.clinicInfo || clinic;
-  const patients = state.patients || [];
-  const doctorTitle = formatDoctorName(currentClinic?.doctorName);
+  const { clinic, user } = useAuth();
+  const { tenant } = useTenant();
+
+  const activeClinic = tenant || state.clinicInfo || clinic;
+  const currentSlug = tenant?.slug || state.currentTenantSlug || state.clinicInfo?.slug || 'default';
+  const chatStorageKey = `clinicflow_chat_${currentSlug}`;
+
+  const rawDoctor = tenant?.doctorName || user?.name || state.clinicInfo?.doctorName || clinic?.doctorName || tenant?.name || 'طبيب العيادة';
+  const doctorTitle = formatDoctorName(rawDoctor);
+  const activeClinicId = tenant?.id || activeClinic?.id;
+
+  const scopedPatients = useMemo(() => {
+    return (state.patients || []).filter(p => !p.clinicId || p.clinicId === activeClinicId);
+  }, [state.patients, activeClinicId]);
+
+  const scopedAppointments = useMemo(() => {
+    return (state.appointments || []).filter(a => !a.clinicId || a.clinicId === activeClinicId);
+  }, [state.appointments, activeClinicId]);
+
+  const scopedState = useMemo(() => ({
+    ...state,
+    clinicInfo: activeClinic,
+    patients: scopedPatients,
+    appointments: scopedAppointments
+  }), [state, activeClinic, scopedPatients, scopedAppointments]);
+
   const [aiConfig, setAiConfig] = useState(() => getAiConfig());
 
+  const getInitialWelcome = (slug, title, clinicTitle) => [
+    {
+      id: `msg-welcome-${slug}`,
+      sender: 'agent',
+      text: `مرحباً ${title}! \nأنا مساعدك السريري الذكي لـ (${clinicTitle}) المدعوم بنماذج OpenRouter. يمكنك التحدث معي مباشرة وطلب البحث عن المرضى الذين أجروا خدمة معينة (مثل: كشف عادي، استشارة، أو متابعات)، واقتراح رسائل الرعاية وإرسالها فوراً عبر رسائل SMS! `,
+      timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
+    }
+  ];
 
-  // Load Conversation State from localStorage if present
+  // Load Conversation State from scoped localStorage
   const [messages, setMessages] = useState(() => {
     if (typeof window !== 'undefined') {
       try {
-        const saved = localStorage.getItem(CHAT_HISTORY_STORAGE_KEY);
+        localStorage.removeItem('clinicflow_doctor_chat_history'); // purge legacy leak
+        const saved = localStorage.getItem(chatStorageKey);
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed) && parsed.length > 0) {
@@ -49,14 +77,7 @@ const DoctorAssistant = () => {
         console.error('Failed to load chat history from localStorage', e);
       }
     }
-    return [
-      {
-        id: 'msg-welcome',
-        sender: 'agent',
-        text: `مرحباً ${doctorTitle}! \nأنا مساعدك السريري الذكي المدعوم بنماذج OpenRouter. يمكنك التحدث معي مباشرة وطلب البحث عن المرضى الذين أجروا خدمة معينة (مثل: كشف عادي، استشارة، أو متابعات)، واقتراح رسائل الرعاية وإرسالها فوراً عبر رسائل SMS! `,
-        timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
-      }
-    ];
+    return getInitialWelcome(currentSlug, doctorTitle, tenant?.name || activeClinic?.name || 'العيادة');
   });
 
   const [viewMode, setViewMode] = useState('crm'); // 'crm' | 'chat'
@@ -74,16 +95,32 @@ const DoctorAssistant = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isAiGenerating]);
 
-  // Automatically save chat history across tab switches & page navigation
+  // Re-sync messages when clinic/tenant changes
+  useEffect(() => {
+    try {
+      localStorage.removeItem('clinicflow_doctor_chat_history');
+      const saved = localStorage.getItem(chatStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          return;
+        }
+      }
+    } catch (_) {}
+    setMessages(getInitialWelcome(currentSlug, doctorTitle, tenant?.name || activeClinic?.name || 'العيادة'));
+  }, [currentSlug, doctorTitle, chatStorageKey, tenant?.name, activeClinic?.name]);
+
+  // Automatically save chat history scoped per clinic
   useEffect(() => {
     if (typeof window !== 'undefined' && messages.length > 0) {
       try {
-        localStorage.setItem(CHAT_HISTORY_STORAGE_KEY, JSON.stringify(messages));
+        localStorage.setItem(chatStorageKey, JSON.stringify(messages));
       } catch (e) {
         console.error('Failed to save chat history to localStorage', e);
       }
     }
-  }, [messages]);
+  }, [messages, chatStorageKey]);
 
   // Clear chat handler
   const handleClearChat = () => {
@@ -92,21 +129,22 @@ const DoctorAssistant = () => {
         {
           id: 'msg-welcome-' + Date.now(),
           sender: 'agent',
-          text: `مرحباً ${doctorTitle}! \nتم مسح المحادثة السابقة. أنا جاهز لمساعدتك في أي استفسار جديد حول رعاية المرضى أو استخراج السجلات! `,
+          text: `مرحباً ${doctorTitle}! \nتم مسح المحادثة السابقة لـ (${tenant?.name || activeClinic?.name || 'العيادة'}). أنا جاهز لمساعدتك في أي استفسار جديد حول رعاية المرضى أو استخراج السجلات! `,
           timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
         }
       ];
       setMessages(freshWelcome);
       if (typeof window !== 'undefined') {
-        localStorage.removeItem(CHAT_HISTORY_STORAGE_KEY);
+        localStorage.removeItem(chatStorageKey);
+        localStorage.removeItem('clinicflow_doctor_chat_history');
       }
     }
   };
 
-  // Target Patients List
+  // Target Patients List strictly scoped to this clinic
   const targetPatients = useMemo(() => {
-    return filterTargetPatients(state.patients || [], state.appointments || [], activeFilter);
-  }, [state.patients, state.appointments, activeFilter]);
+    return filterTargetPatients(scopedPatients, scopedAppointments, activeFilter);
+  }, [scopedPatients, scopedAppointments, activeFilter]);
 
   // Execute Clinical Action helper
   const executeDoctorAction = (actionResult) => {
@@ -157,7 +195,7 @@ const DoctorAssistant = () => {
     setIsAiGenerating(true);
 
     // 1. Check if quick prompt is an administrative action
-    const actionResult = processDoctorIntent(promptText, state);
+    const actionResult = processDoctorIntent(promptText, scopedState);
     if (actionResult.isAction) {
       executeDoctorAction(actionResult);
       const agentMsg = {
@@ -172,11 +210,11 @@ const DoctorAssistant = () => {
     }
 
     setActiveFilter(filterKey);
-    const matched = filterTargetPatients(state.patients || [], state.appointments || [], filterKey);
+    const matched = filterTargetPatients(scopedPatients, scopedAppointments, filterKey);
     setSelectedPatientIds(new Set(matched.map(p => p.id)));
 
     try {
-      const aiRes = await askDoctorAiAssistant(newHistory, currentClinic, matched, state);
+      const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, matched, scopedState);
       let agentReply = '';
       if (aiRes.isQuotaExceeded) {
         agentReply = `⚠️ **تنبيه استهلاك الرصيد**: ${aiRes.error}`;
@@ -185,8 +223,8 @@ const DoctorAssistant = () => {
       } else {
         const count = matched.length;
         agentReply = count > 0 
-          ? `${doctorTitle}، قمت بمسح السجلات السريرية ووجدت **${count} مريضاً** مطابقين لمعايير (${promptText}). يمكنك استعراضهم بالأسفل وتخصيص رسالة الرعاية! `
-          : `${doctorTitle}، لم أجد حالياً مرضى مطابقين لمعايير (${promptText}) بالسجل.`;
+          ? `${doctorTitle}، قمت بمسح السجلات السريرية لـ (${tenant?.name || activeClinic?.name || 'العيادة'}) ووجدت **${count} مريضاً** مطابقين لمعايير (${promptText}). يمكنك استعراضهم بالأسفل وتخصيص رسالة الرعاية! `
+          : `${doctorTitle}، لم أجد حالياً مرضى مطابقين لمعايير (${promptText}) بسجل العيادة.`;
       }
 
       const agentMsg = {
@@ -229,7 +267,7 @@ const DoctorAssistant = () => {
     setIsAiGenerating(true);
 
     // 1. Process Intent / Action (Blocking days, slots, summaries, list queries)
-    const actionResult = processDoctorIntent(query, state);
+    const actionResult = processDoctorIntent(query, scopedState);
     if (actionResult.isAction) {
       executeDoctorAction(actionResult);
       const agentMsg = {
@@ -250,11 +288,11 @@ const DoctorAssistant = () => {
     else if (query.includes('طوارئ')) detectedFilter = 'urgent';
 
     setActiveFilter(detectedFilter);
-    const matched = filterTargetPatients(state.patients || [], state.appointments || [], detectedFilter);
+    const matched = filterTargetPatients(scopedPatients, scopedAppointments, detectedFilter);
     setSelectedPatientIds(new Set(matched.map(p => p.id)));
 
     try {
-      const aiRes = await askDoctorAiAssistant(newHistory, currentClinic, matched, state);
+      const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, matched, scopedState);
       let replyText = '';
       if (aiRes.isQuotaExceeded) {
         replyText = `⚠️ **تنبيه استهلاك الرصيد**: ${aiRes.error}`;

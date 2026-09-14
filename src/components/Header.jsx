@@ -23,7 +23,7 @@ const Header = ({ title, onOpenAiCopilot }) => {
   // Real Logged-in User Identity (strictly reflects logged-in user or active tenant doctor)
   const effectiveRole = user?.role || role || 'doctor';
   const isDoctor = effectiveRole === 'doctor' || effectiveRole === 'super_admin' || effectiveRole === 'multi_clinic_owner';
-  const activeDoctorName = tenant?.doctorName || state.clinicInfo?.doctorName || clinic?.doctorName || 'د. أحمد الشريف';
+  const activeDoctorName = tenant?.doctorName || state.clinicInfo?.doctorName || clinic?.doctorName || tenant?.name || 'طبيب العيادة';
   const activeSpecialty = tenant?.specialty || state.clinicInfo?.specialty || clinic?.specialty || 'المدير الطبي';
 
   // Display user name: prioritize authenticated user name; fallback to active clinic doctor

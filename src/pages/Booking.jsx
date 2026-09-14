@@ -87,7 +87,7 @@ const Booking = () => {
   // Resume abandoned draft if param present
   useEffect(() => {
     if (resumeId) {
-      const drafts = getBookingDrafts();
+      const drafts = getBookingDrafts(currentClinic?.id);
       const match = drafts.find(d => d.id === resumeId);
       if (match) {
         setFormData(prev => ({
@@ -99,7 +99,7 @@ const Booking = () => {
         setCurrentStep('appointment_details');
       }
     }
-  }, [resumeId]);
+  }, [resumeId, currentClinic?.id]);
 
   const [phoneError, setPhoneError] = useState('');
   const [bookingError, setBookingError] = useState('');
@@ -206,7 +206,7 @@ const Booking = () => {
         service: formData.type,
         date: formData.date,
         step: 2
-      });
+      }, currentClinic?.id);
 
       setCurrentStep('appointment_details');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -347,7 +347,7 @@ const Booking = () => {
       }
 
       dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
-      completeBookingDraft(cleanedPhone);
+      completeBookingDraft(cleanedPhone, currentClinic?.id);
 
       if (refCode) {
         recordReferral(refCode, formData.name.trim(), cleanedPhone);

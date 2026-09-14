@@ -5,7 +5,7 @@
 .consultation-modal-box {
   background: var(--surface, #FFFFFF);
   border-radius: 20px;
-  border: 0.5px solid var(--apple-separator, var(--border-color, #DADCE0));
+  border: 1px solid var(--border-color, #DADCE0);
   box-shadow: 0 8px 28px 0 rgba(0, 0, 0, 0.12), 0 16px 40px 6px rgba(0, 0, 0, 0.08);
   width: 100%;
   max-width: 620px;
@@ -22,7 +22,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 0.85rem;
-  border-bottom: 0.5px solid var(--apple-separator, var(--border-subtle, #E8EAED));
+  border-bottom: 1px solid var(--border-subtle, #E8EAED);
   flex-shrink: 0;
 }
 

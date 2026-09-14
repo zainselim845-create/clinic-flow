@@ -110,7 +110,7 @@ export default function ExcelPatientImportModal({
         <Dialog.Backdrop className="modal-backdrop" />
         <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <Dialog.Content className="modal-content excel-import-modal-card">
-            <div className="apple-sheet-grabber" style={{ marginBottom: '8px' }} />
+            <div className="sheet-modal-grabber" style={{ marginBottom: '8px' }} />
             
             {/* Modal Header */}
             <div className="modal-header">

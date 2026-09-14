@@ -120,7 +120,7 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
         <Dialog.Backdrop className="modal-backdrop-shift" />
         <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <Dialog.Content className="shift-modal-card glass-card">
-            <div className="apple-sheet-grabber" style={{ marginBottom: '8px' }} />
+            <div className="sheet-modal-grabber" style={{ marginBottom: '8px' }} />
             {/* Header */}
             <div className="shift-modal-header">
               <div className="shift-title-group">

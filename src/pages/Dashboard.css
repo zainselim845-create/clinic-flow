@@ -562,7 +562,7 @@
 
 .queue-item-card {
   background: var(--surface);
-  border: 0.5px solid var(--apple-separator, var(--border-color));
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 0.75rem 0.85rem;
   display: flex;
@@ -573,15 +573,15 @@
 }
 
 .queue-item-card:hover {
-  border-color: var(--apple-blue, #007AFF);
+  border-color: var(--primary);
 }
 
 .queue-number {
   width: 28px;
   height: 28px;
   border-radius: 7px;
-  background: rgba(0, 122, 255, 0.12);
-  color: var(--apple-blue, #007AFF);
+  background: rgba(9, 9, 11, 0.08);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -595,14 +595,14 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.95rem;
-  background: var(--apple-blue, #007AFF);
+  background: var(--primary);
   color: #FFFFFF !important;
   border-radius: 9999px;
   font-size: 0.82rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 122, 255, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   transition: transform 150ms ease-out, opacity 150ms ease-out;
   white-space: nowrap;
 }
@@ -943,7 +943,7 @@
 
 
 /* ==========================================================================
-   Apple Health / Minimalist Hero Actions & Financial Card
+   Minimalist Monochrome Hero Actions & Financial Card
    ========================================================================== */
 .btn-hero-primary-action {
   display: inline-flex;
@@ -951,13 +951,13 @@
   gap: 0.5rem;
   padding: 0.65rem 1.4rem;
   border-radius: 9999px;
-  background: #0071E3;
+  background: var(--primary, #09090B);
   color: #FFFFFF;
   font-weight: 600;
   font-size: 0.88rem;
   border: none;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 113, 227, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 .btn-hero-primary-action:hover {
@@ -989,7 +989,8 @@
   padding: 0.55rem;
 }
 
-/* Apple Financial Operations Card */
+/* Minimalist Monochrome Financial Operations Card */
+.monochrome-financial-card,
 .apple-financial-card {
   background: var(--surface, #FFFFFF);
   border: 1px solid var(--border-color, #E5E7EB);

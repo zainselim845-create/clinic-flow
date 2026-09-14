@@ -51,7 +51,7 @@ export default function WalkInRegistrationModal({
         <Dialog.Backdrop className="modal-backdrop" />
         <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <Dialog.Content className="modal-content walk-in-modal">
-            <div className="apple-sheet-grabber" style={{ marginBottom: '8px' }} />
+            <div className="sheet-modal-grabber" style={{ marginBottom: '8px' }} />
             <div className="modal-header">
               <div className="title-row">
                 <UserPlus className="text-primary" size={20} />
