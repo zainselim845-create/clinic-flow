@@ -24,6 +24,7 @@ import {
   BadgePercent
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
 import {
   AppleButton,
@@ -39,6 +40,7 @@ import {
 export default function AppleClinicalHub() {
   const navigate = useNavigate();
   const { state, dispatch } = useApp();
+  const { user } = useAuth();
   const { tenant } = useTenant();
 
   // Active Segmented Control Tab
@@ -150,7 +152,7 @@ export default function AppleClinicalHub() {
                 {tenant?.name || 'عيادة كلينيك فلو التخصصية'}
               </h1>
               <p className="text-[12px] font-medium text-[#8E8E93] leading-none truncate">
-                Apple Clinical Interface &bull; iOS 18 Design
+                {user?.name || tenant?.doctorName || 'طبيب العيادة'} &bull; Apple HIG Edition
               </p>
             </div>
           </div>
@@ -581,6 +583,30 @@ export default function AppleClinicalHub() {
                   <AppleToggle
                     checked={cloudSyncActive}
                     onChange={setCloudSyncActive}
+                  />
+                }
+              />
+              <AppleListRow
+                icon={Zap}
+                iconBg="#FF9500"
+                title="الاستدعاء التلقائي للمريض التالي"
+                subtitle="نداء المريض فور إنهاء واعتماد الكشف الحالي"
+                accessory={
+                  <AppleToggle
+                    checked={autoCallNextPatient}
+                    onChange={setAutoCallNextPatient}
+                  />
+                }
+              />
+              <AppleListRow
+                icon={CreditCard}
+                iconBg="#000000"
+                title="الدفع الفوري عبر Apple Pay وNFC"
+                subtitle="تمكين التحصيل اللاتلامسي الفوري عند انتهاء الكشف"
+                accessory={
+                  <AppleToggle
+                    checked={instantApplePay}
+                    onChange={setInstantApplePay}
                   />
                 }
               />
