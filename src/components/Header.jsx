@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon, LogOut, Menu, ShieldCheck } from 'lucide-react';
+import { Search, Bell, Sun, Moon, LogOut, Menu, ShieldCheck, Bot, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -10,7 +10,7 @@ import ReportIssueModal from './ReportIssueModal';
 import { isSupabaseConfigured } from '../lib/supabase';
 import './Header.css';
 
-const Header = ({ title }) => {
+const Header = ({ title, onOpenAiCopilot }) => {
   const { state, toggleTheme, setMobileNavOpen } = useApp();
   const { user, clinic, role, signOut } = useAuth();
   const { tenant } = useTenant();
@@ -89,6 +89,20 @@ const Header = ({ title }) => {
             <span className="sync-status-dot" />
             <span className="sync-status-text">{isCloudConnected ? 'سحابي' : 'تخزين محلي'}</span>
           </div>
+
+          {/* AI Copilot Quick Trigger Button */}
+          <button
+            type="button"
+            className="header-ai-copilot-btn"
+            onClick={() => onOpenAiCopilot ? onOpenAiCopilot() : navigate('/doctor-agent')}
+            title="المساعد الطبي الذكي (Alt + A)"
+            aria-label="فتح المساعد الطبي الذكي"
+          >
+            <Sparkles size={15} className="sparkle-pulse" />
+            <Bot size={16} />
+            <span className="copilot-btn-text">المساعد الذكي</span>
+            <span className="copilot-btn-kbd">Alt+A</span>
+          </button>
 
           {/* Google Material 3 Global Search Trigger Bar */}
           <button 

@@ -119,6 +119,53 @@
   box-shadow: 0 0 6px rgba(26, 115, 232, 0.5);
 }
 
+/* AI Copilot Quick Header Button */
+.header-ai-copilot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(3, 105, 161, 0.14) 100%);
+  color: var(--primary, #0284c7);
+  transition: all var(--transition-fast);
+  user-select: none;
+  font-family: inherit;
+}
+
+.header-ai-copilot-btn:hover {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.16) 0%, rgba(3, 105, 161, 0.24) 100%);
+  border-color: #0284c7;
+  transform: translateY(-1px);
+}
+
+.header-ai-copilot-btn .sparkle-pulse {
+  color: #f59e0b;
+  animation: pulse-sparkle 2s ease-in-out infinite;
+}
+
+.copilot-btn-kbd {
+  font-size: 0.68rem;
+  background: rgba(2, 132, 199, 0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .copilot-btn-text, .copilot-btn-kbd {
+    display: none;
+  }
+  .header-ai-copilot-btn {
+    padding: 0.4rem;
+    border-radius: 50%;
+  }
+}
+
 .search-bar {
   position: relative;
   display: flex;

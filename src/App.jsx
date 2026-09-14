@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate, Outlet } from 'react-router-dom';
 import { useApp } from './context/AppContext';
 import { useAuth } from './context/AuthContext';
@@ -6,6 +6,7 @@ import { useTenant } from './context/TenantContext';
 import { ShieldCheck, ArrowLeft } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import DoctorAiFloatingWidget from './components/DoctorAiFloatingWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import SeoHeadManager from './components/SeoHeadManager';
@@ -115,6 +116,7 @@ const AdminLayout = () => {
   const { state } = useApp();
   const { user, isImpersonating, stopImpersonating } = useAuth();
   const { tenant } = useTenant();
+  const [isAiCopilotOpen, setIsAiCopilotOpen] = useState(false);
 
   const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true || isImpersonating;
 
@@ -158,12 +160,21 @@ const AdminLayout = () => {
       )}
       <Sidebar />
       <div className="main-content">
-        <Header title={pageTitles[location.pathname] || 'لوحة التحكم'} />
+        <Header 
+          title={pageTitles[location.pathname] || 'لوحة التحكم'} 
+          onOpenAiCopilot={() => setIsAiCopilotOpen(prev => !prev)}
+        />
         <main className="page-content">
           <Breadcrumbs />
           <Outlet />
         </main>
       </div>
+
+      {/* Ubiquitous Floating AI Copilot for Doctors & Clinic Staff */}
+      <DoctorAiFloatingWidget 
+        isOpen={isAiCopilotOpen} 
+        onToggle={(val) => setIsAiCopilotOpen(val)} 
+      />
     </div>
   );
 };

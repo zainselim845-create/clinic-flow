@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { sendSMS } from '../services/smsService';
 import { askDoctorAiAssistant, getAiConfig } from '../services/aiAssistantService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
+import * as appointmentsService from '../services/appointmentsService';
 import { processDoctorIntent } from '../utils/clinicalAssistantActions';
 import { 
   CAMPAIGN_TEMPLATES, 
@@ -129,6 +130,15 @@ const DoctorAssistant = () => {
       dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: actionResult.payload });
       if (useSupabase) {
         blockedSlotsService.unblockSlotInDb(actionResult.payload.date, actionResult.payload.time, activeClinicId).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'BOOK_APPOINTMENT') {
+      dispatch({ type: 'ADD_APPOINTMENT', payload: actionResult.payload });
+      if (useSupabase) {
+        appointmentsService.addAppointment({ ...actionResult.payload, clinicId: activeClinicId }).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'NAVIGATE') {
+      if (actionResult.payload?.path) {
+        navigate(actionResult.payload.path);
       }
     }
   };

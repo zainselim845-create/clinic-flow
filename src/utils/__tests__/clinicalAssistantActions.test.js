@@ -95,6 +95,100 @@ describe('Clinical Assistant Actions & NLP Intent Processing', () => {
       expect(res.replyText).toContain('300 ج.م');
     });
 
+    it('detects booking intent and prepares appointment payload', () => {
+      const stateWithPatients = {
+        ...mockState,
+        patients: [{ id: 'p1', name: 'محمد علي', phone: '01011223344', allergies: 'بنسلين', balance: 0 }]
+      };
+      const res = processDoctorIntent('احجز لمحمد علي موعد بكرة الساعة 06:00 م كشف عادي', stateWithPatients);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('BOOK_APPOINTMENT');
+      expect(res.payload.patientName).toBe('محمد علي');
+      expect(res.payload.phone).toBe('01011223344');
+      expect(res.payload.time).toBe('06:00 م');
+      expect(res.payload.type).toBe('كشف عادي');
+      expect(res.replyText).toContain('تم حجز الموعد بنجاح');
+    });
+
+    it('detects patient dossier query and retrieves patient details', () => {
+      const stateWithPatients = {
+        ...mockState,
+        patients: [{ id: 'p1', name: 'سارة أحمد', phone: '01234567890', allergies: 'لا يوجد', chronicDiseases: 'سكر', balance: 150 }]
+      };
+      const res = processDoctorIntent('شوفلي ملف المريض سارة أحمد', stateWithPatients);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('SHOW_PATIENT');
+      expect(res.payload.name).toBe('سارة أحمد');
+      expect(res.replyText).toContain('الملف الطبي للمريض: سارة أحمد');
+      expect(res.replyText).toContain('150 ج.م');
+    });
+
+    it('detects inventory low stock query and warns about items under minQuantity', () => {
+      const stateWithInventory = {
+        ...mockState,
+        inventory: [
+          { id: 'i1', name: 'بنج أسنان', quantity: 2, minQuantity: 10, unit: 'أمبول' },
+          { id: 'i2', name: 'قفازات طبية', quantity: 50, minQuantity: 20, unit: 'علبة' }
+        ]
+      };
+      const res = processDoctorIntent('ايه الأدوية الناقصة في المخزن؟', stateWithInventory);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('INFO');
+      expect(res.replyText).toContain('بنج أسنان');
+      expect(res.replyText).toContain('تنبيه نواقص المخزن الطبي');
+    });
+
+    it('detects debtors and financial inquiry', () => {
+      const stateWithDebts = {
+        ...mockState,
+        patients: [
+          { id: 'p1', name: 'محمود خالد', phone: '01099887766', balance: 400 },
+          { id: 'p2', name: 'منى السيد', phone: '01122334455', balance: 0 }
+        ]
+      };
+      const res = processDoctorIntent('مين عليه فلوس في العيادة؟', stateWithDebts);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('INFO');
+      expect(res.replyText).toContain('تقرير المديونيات المعلقة');
+      expect(res.replyText).toContain('محمود خالد');
+      expect(res.replyText).toContain('400 ج.م');
+    });
+
+    it('detects in-app navigation intent to inventory and settings', () => {
+      const resInv = processDoctorIntent('وديني للمخزن', mockState);
+      expect(resInv.isAction).toBe(true);
+      expect(resInv.actionType).toBe('NAVIGATE');
+      expect(resInv.payload.path).toBe('/inventory');
+
+      const resSet = processDoctorIntent('افتح شاشة الإعدادات', mockState);
+      expect(resSet.isAction).toBe(true);
+      expect(resSet.actionType).toBe('NAVIGATE');
+      expect(resSet.payload.path).toBe('/settings');
+    });
+
+    it('detects 1-click WhatsApp messaging intent', () => {
+      const stateWithPatients = {
+        ...mockState,
+        patients: [{ id: 'p1', name: 'كريم حسن', phone: '01012345678' }]
+      };
+      const res = processDoctorIntent('ابعت واتساب لكريم حسن', stateWithPatients);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('SEND_WHATSAPP');
+      expect(res.payload.phone).toBe('01012345678');
+      expect(res.payload.url).toContain('https://wa.me/201012345678');
+    });
+
+    it('handles optional labs query gracefully', () => {
+      const stateWithLabs = {
+        ...mockState,
+        labs: []
+      };
+      const res = processDoctorIntent('ايه التحاليل المعلقة؟', stateWithLabs);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('INFO');
+      expect(res.replyText).toContain('لا توجد أي تحاليل');
+    });
+
     it('returns isAction: false for general conversation', () => {
       const res = processDoctorIntent('ازيك يا مساعد', mockState);
       expect(res.isAction).toBe(false);
@@ -102,3 +196,4 @@ describe('Clinical Assistant Actions & NLP Intent Processing', () => {
   });
 
 });
+

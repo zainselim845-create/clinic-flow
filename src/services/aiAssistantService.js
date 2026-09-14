@@ -72,17 +72,44 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
     .map(b => `${b.date} (${b.time === 'FULL_DAY' || b.isFullDay ? 'يوم كامل' : b.time})`)
     .join(', ') || 'لا توجد أيام محظورة';
 
-  // Contextual Clinical System Prompt
+  // Live Clinic Database Context Assembly
+  const todayAppts = (systemState?.appointments || []).filter(a => a.date === todayStr && a.status !== 'cancelled');
+  const todayScheduleStr = todayAppts.length > 0 
+    ? todayAppts.map(a => `${a.time}: ${a.patientName} (${a.type || 'كشف'} | ${a.status})`).join(' | ') 
+    : 'لا توجد مواعيد مسجلة اليوم';
+
+  const lowStock = (systemState?.inventory || []).filter(i => (i.quantity || 0) <= (i.minQuantity || 5));
+  const lowStockStr = lowStock.length > 0 
+    ? lowStock.map(i => `${i.name} (المتبقي: ${i.quantity} ${i.unit || ''})`).join(', ') 
+    : 'المخزون متوفر ومستقر';
+
+  const debtors = (systemState?.patients || []).filter(p => (Number(p.balance) || 0) > 0);
+  const debtorsStr = debtors.length > 0 
+    ? debtors.slice(0, 10).map(p => `${p.name} (مديونية: ${p.balance} ج.م)`).join(', ') 
+    : 'لا توجد مديونيات معلقة';
+
+  const samplePatients = (systemState?.patients || patientsSummary || []).slice(0, 20)
+    .map(p => `${p.name}${p.phone ? ` (${p.phone})` : ''}${p.allergies && p.allergies !== 'لا يوجد' ? ` [حساسية: ${p.allergies}]` : ''}`)
+    .join(' | ');
+
+  // Contextual Clinical System Prompt with Full Clinic Intelligence
   const systemPrompt = `أنت "المساعد السريري والإداري الذكي" المخصص لـ ${doctorName} في ${clinicName} (${specialty}).
 تاريخ اليوم في النظام: ${todayStr}.
-الأيام والمواعيد المغلقة حالياً في السيستم: ${blockedList}.
-عدد المرضى المسجلين: ${patientsSummary.length} مريض.
 
-قواعد الاستجابة:
-1. تحدث مع الطبيب كشريك ذكي وإداري سريري يفهم فوراً متطلبات العيادة بالعامية المصرية الراقية والفصحى البسيطة.
-2. إذا ذكر الطبيب أنه يعمل في يوم معين أو سأل عن حالة يوم أو طلب فتح أو إغلاق موعد، أجب بوضوح وتأكيد مباشر عن حالة الجدول مع التاريخ.
-3. إذا طلب الطبيب صياغة رسائل للمرضى، صغ رسائل احترافية متضمنة المتغيرات {اسم_المريض} و {اسم_العيادة}.
-4. كن ذكياً وموجزاً ومباشراً ولا تكرر المقدمات الطويلة.`;
+بيانات وسجلات العيادة اللحظية:
+• جدول مواعيد اليوم (${todayAppts.length} مواعيد): ${todayScheduleStr}
+• الأيام والمواعيد المغلقة حالياً: ${blockedList}
+• عينة من المرضى المسجلين: ${samplePatients || 'لا توجد سجلات'}
+• نواقص المستلزمات الطبية بالمخزن: ${lowStockStr}
+• المديونيات المعلقة على المرضى: ${debtorsStr}
+• ملاحظة خاصة: وحدة التحاليل والأشعة اختيارية بالعيادة ولا يتم التطرق إليها إلا إذا سأل الطبيب عنها تحديداً.
+
+قواعد الاستجابة والتعامل:
+1. تحدث مع الطبيب كشريك سريري وإداري ذكي يفهم فوراً كل تفاصيل العيادة بالعامية المصرية الراقية أو الفصحى المبسطة.
+2. لديك وصول كامل لكل ما يذكره الطبيب: ملفات المرضى، المواعيد، الإجازات، المخزن، الفواتير، وحجز المواعيد.
+3. إذا طلب الطبيب حجز موعد، أكد له تسجيل الموعد وبياناته فوراً.
+4. إذا سأل عن مريض، قدم ملخصاً سريرياً دقيقاً (الهاتف، الحساسيات، آخر كشف، المديونية).
+5. كن ذكياً وموجزاً ومباشراً ولا تكرر المقدمات الطويلة، واعرض الأرقام والأسماء بدقة كما هي في سجلات العيادة.`;
 
   const formattedMessages = [
     { role: 'system', content: systemPrompt },
