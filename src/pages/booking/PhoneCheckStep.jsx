@@ -58,7 +58,7 @@ export default function PhoneCheckStep({
               type="submit" 
               id="searchPatient"
               className="default-custom-btn"
-              disabled={isCheckingPhone || !formData.phone || formData.phone.length < 11}
+              disabled={isCheckingPhone}
             >
               {isCheckingPhone ? (
                 <>

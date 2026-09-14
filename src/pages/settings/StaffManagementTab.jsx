@@ -16,7 +16,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     name: '',
     email: '',
     phone: '',
-    password: '123',
+    password: '',
     roleKey: 'receptionist',
     role: 'سكرتير أول',
     shift: 'مسائي (04:00 م - 10:00 م)',
@@ -33,7 +33,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
       name: '',
       email: '',
       phone: '',
-      password: '123',
+      password: '',
       role: 'سكرتير أول',
       shift: 'مسائي (04:00 م - 10:00 م)',
       status: 'active',
@@ -54,6 +54,10 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     setStaffError('');
     if (!staffForm.name || !staffForm.phone) {
       setStaffError('يرجى إدخال اسم ورقم هاتف الموظف');
+      return;
+    }
+    if (!editingStaff && (!staffForm.password || staffForm.password.trim().length < 4)) {
+      setStaffError('يرجى إدخال كلمة مرور مكونة من 4 خانات على الأقل للموظف');
       return;
     }
 
@@ -313,7 +317,9 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
                     type={showStaffPass ? 'text' : 'password'}
                     value={staffForm.password}
                     onChange={(e) => setStaffForm({ ...staffForm, password: e.target.value })}
-                    required
+                    placeholder="كلمة المرور (4 خانات على الأقل)"
+                    minLength={4}
+                    required={!editingStaff}
                   />
                   <button
                     type="button"

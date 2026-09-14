@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2 } from 'lucide-react';
 import { getClinicUsage } from '../../../services/usageMeteringService';
 import { getClinicSenderId } from '../../../services/smsService';
 
@@ -20,7 +20,8 @@ export function ClinicsTable({
   onSuspendClinic,
   onReactivateClinic,
   onSwitchAndVisit,
-  onTopUpClinic
+  onTopUpClinic,
+  onDeleteClinic
 }) {
   return (
     <div className="saas-section-card">
@@ -321,6 +322,28 @@ export function ClinicsTable({
                           <span>لوحة العيادة</span>
                           <ExternalLink size={13} />
                         </button>
+
+                        {onDeleteClinic && (
+                          <button
+                            type="button"
+                            onClick={() => onDeleteClinic(t.slug || t.id)}
+                            className="btn-delete-tenant"
+                            title="حذف العيادة نهائياً من المنصة"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: '#FEE2E2',
+                              border: '1px solid #FCA5A5',
+                              borderRadius: '6px',
+                              padding: '0.35rem 0.5rem',
+                              cursor: 'pointer',
+                              color: '#DC2626'
+                            }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

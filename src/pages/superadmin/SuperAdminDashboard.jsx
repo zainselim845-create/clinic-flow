@@ -135,6 +135,14 @@ export default function SuperAdminDashboard() {
     navigate('/dashboard');
   };
 
+  const handleDeleteClinic = (slugOrId) => {
+    const target = allTenants.find(t => t.slug === slugOrId || t.id === slugOrId);
+    const clinicName = target?.name || slugOrId;
+    if (window.confirm(`تحذير أمني: هل أنت متأكد من رغبتك في حذف عيادة (${clinicName}) نهائياً من المنصة؟\nسيتم إزالة كافة الحسابات والبيانات التابعة لها.`)) {
+      deleteTenant(slugOrId);
+    }
+  };
+
   const handleCreateClinic = (e) => {
     e.preventDefault();
     if (!newClinic.name || !newClinic.slug) return;
@@ -339,6 +347,7 @@ export default function SuperAdminDashboard() {
               setSelectedTopUpClinic(clinic);
               setIsTopUpModalOpen(true);
             }}
+            onDeleteClinic={handleDeleteClinic}
           />
         ) : activeTab === 'telemetry_bugs' ? (
           <TelemetryBugsCenter
