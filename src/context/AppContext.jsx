@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { getInitialData, getInitialDataForTenant, demoClinics } from '../data/demoData';
+import { getInitialDataForTenant, demoClinics } from '../data/demoData';
 import { combinedAppReducer } from './reducers';
 import TenantContext from './TenantContext';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';

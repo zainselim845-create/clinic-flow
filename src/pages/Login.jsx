@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, ArrowLeft, AlertTriangle, KeyRound, Building2, ShieldCheck, Globe, Copy, Check, ExternalLink, Sparkles, LogIn, User, Info, CheckCircle2, Mail, Users } from 'lucide-react';
+import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, AlertTriangle, KeyRound, Building2, ShieldCheck, Globe, Copy, Check, ExternalLink, Sparkles, LogIn, User, Info, CheckCircle2, Mail, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Tabs } from '../components/ui/tabs';
 import { Dialog } from '../components/ui/dialog';
@@ -8,7 +8,6 @@ import { Collapsible } from '../components/ui/collapsible';
 import { 
   getGoogleClientId, 
   saveGoogleClientId, 
-  isGoogleAuthAvailable, 
   triggerGoogleOAuthPopup, 
   getGoogleOAuthSetupInfo 
 } from '../services/googleAuthService';

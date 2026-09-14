@@ -35,8 +35,8 @@ const Settings = () => {
   );
 
   useEffect(() => {
-    if (tabFromUrl && VALID_TABS.includes(tabFromUrl) && tabFromUrl !== activeTab) {
-      setActiveTab(tabFromUrl);
+    if (tabFromUrl && VALID_TABS.includes(tabFromUrl)) {
+      setActiveTab((prev) => (prev !== tabFromUrl ? tabFromUrl : prev));
     }
   }, [tabFromUrl]);
 
@@ -120,7 +120,7 @@ const Settings = () => {
             className={`tab-btn ${activeTab === 'clinic' ? 'active' : ''}`}
           >
             <Building2 size={18} />
-            <span>ملف العيادة والتسعير</span>
+            <span>ملف العيادة</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -128,7 +128,7 @@ const Settings = () => {
             className={`tab-btn ${activeTab === 'schedule' ? 'active' : ''}`}
           >
             <CalendarDays size={18} />
-            <span>الجدول والإجازات والحظر</span>
+            <span>مواعيد العمل</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -136,7 +136,7 @@ const Settings = () => {
             className={`tab-btn ${activeTab === 'visitTypes' ? 'active' : ''}`}
           >
             <Stethoscope size={18} />
-            <span>أنواع الزيارات (Visit Types)</span>
+            <span>أنواع الزيارات</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -144,7 +144,7 @@ const Settings = () => {
             className={`tab-btn ${activeTab === 'staff' ? 'active' : ''}`}
           >
             <Users size={18} />
-            <span>فريق العمل والاستقبال</span>
+            <span>طاقم العمل</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -160,7 +160,7 @@ const Settings = () => {
             className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`}
           >
             <CreditCard size={18} />
-            <span>الاشتراك ورصيد الباقة</span>
+            <span>الاشتراك والباقة</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -168,7 +168,7 @@ const Settings = () => {
             className={`tab-btn ${activeTab === 'customDomain' ? 'active' : ''}`}
           >
             <Globe size={18} />
-            <span>الدومين والـ SSL</span>
+            <span>الدومين الخاص</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -176,7 +176,7 @@ const Settings = () => {
             className={`tab-btn ${activeTab === 'database' ? 'active' : ''}`}
           >
             <Database size={18} />
-            <span>الربط السحابي والنسخ</span>
+            <span>السحابة والنسخ</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -184,7 +184,7 @@ const Settings = () => {
             className={`tab-btn ${activeTab === 'aiAssistant' ? 'active' : ''}`}
           >
             <Bot size={18} />
-            <span>المساعد الذكي (AI)</span>
+            <span>المساعد الذكي</span>
           </Tabs.Trigger>
         </Tabs.List>
 

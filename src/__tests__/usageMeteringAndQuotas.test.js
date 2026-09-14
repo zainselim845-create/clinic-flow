@@ -2,9 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { 
   getClinicUsage, 
   canClinicSendSms, 
-  deductSmsCredit, 
   canClinicUseAi, 
-  deductAiTokens, 
   topUpClinicCredits, 
   getClinicUsageLedger,
   resetMonthlyUsageCycle

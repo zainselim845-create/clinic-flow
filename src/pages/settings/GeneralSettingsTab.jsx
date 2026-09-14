@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Building2, Save, CheckCircle2, Phone, Mail, Clock, 
   CalendarDays, ArrowLeft, Stethoscope, Globe, 
-  FileText, Printer, ShieldCheck, UserCheck, Sparkles, AlertCircle,
+  FileText, Printer, ShieldCheck, UserCheck, Sparkles,
   Copy, ExternalLink, MessageSquare
 } from 'lucide-react';
 
@@ -226,11 +226,11 @@ export default function GeneralSettingsTab({
               className="saas-filter-select"
               style={{ height: '42px', width: '100%' }}
             >
-              <option value={15}>15 دقيقة (كشف سريع واستشارات)</option>
+              <option value={15}>15 دقيقة (كشف واستشارة سريعة)</option>
               <option value={20}>20 دقيقة (فحص طبي قياسي)</option>
-              <option value={30}>30 دقيقة (كشف مفصل / أسنان / تجميل)</option>
-              <option value={45}>45 دقيقة (جلسات علاجية متقدمة)</option>
-              <option value={60}>60 دقيقة (عمليات وفحص شامل)</option>
+              <option value={30}>30 دقيقة (كشف وفحص سريري مفصل)</option>
+              <option value={45}>45 دقيقة (جلسة علاجية مطولة)</option>
+              <option value={60}>60 دقيقة (فحص شامل أو إجراء علاجي)</option>
             </select>
           </div>
 

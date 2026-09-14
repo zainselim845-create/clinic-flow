@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { localDb, openLocalDatabase } from '../localDatabase';
 
 describe('Local Database Engine (IndexedDB)', () => {

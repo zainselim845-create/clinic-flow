@@ -250,11 +250,21 @@ export class MillionUserPartitionedIndex {
    * Avoids expensive array slices and memory duplication
    */
   searchKeyset({ cursor = null, limit = 25, clinicId = null } = {}) {
-    const sourceMap = clinicId ? (this.clinicPartitions.get(clinicId) || new Map()) : this.prefixShards.get('010');
+    let sourceEntries;
+    if (clinicId) {
+      sourceEntries = (this.clinicPartitions.get(clinicId) || new Map()).entries();
+    } else {
+      const shards = Array.from(this.prefixShards.values());
+      sourceEntries = (function* () {
+        for (const s of shards) {
+          yield* s.entries();
+        }
+      })();
+    }
     const items = [];
     let foundCursor = cursor === null;
 
-    for (const [key, value] of sourceMap.entries()) {
+    for (const [key, value] of sourceEntries) {
       if (!foundCursor) {
         if (key === cursor) {
           foundCursor = true;

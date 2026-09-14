@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { 
   DENTAL_WORK_TYPES, TOOTH_SHADES 
 } from '../services/labsService';

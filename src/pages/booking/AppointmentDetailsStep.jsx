@@ -176,7 +176,9 @@ export default function AppointmentDetailsStep({
                 borderRadius: '8px',
                 whiteSpace: 'nowrap'
               }}>
-                {currentClinic?.regularFee || '300 ج.م'}
+                {String(currentClinic?.regularFee || '300').includes('ج.م') 
+                  ? currentClinic.regularFee 
+                  : `${currentClinic?.regularFee || 300} ج.م`}
               </div>
             </div>
           </div>

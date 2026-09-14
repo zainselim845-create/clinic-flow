@@ -19,16 +19,18 @@ const Sidebar = () => {
   const isDoctor = isDoctorRole(user);
 
   const clinicSpecialty = tenant?.specialty || state.clinicInfo?.specialty || '';
-  const isDental = !clinicSpecialty || clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('فم') || clinicSpecialty.includes('Dental');
-  const isDerma = !isDental && (clinicSpecialty.includes('جلدية') || clinicSpecialty.includes('تجميل') || clinicSpecialty.includes('ليزر') || clinicSpecialty.includes('Derma'));
+  const isDental = Boolean(clinicSpecialty && (clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('فم') || clinicSpecialty.toLowerCase().includes('dental')));
+  const isDerma = Boolean(clinicSpecialty && !isDental && (clinicSpecialty.includes('جلدية') || clinicSpecialty.includes('تجميل') || clinicSpecialty.includes('ليزر') || clinicSpecialty.toLowerCase().includes('derma')));
 
-  let brandTitle = 'كلينيك فلو دنتال';
-  if (isDerma) {
-    brandTitle = tenant?.branding?.brandTitle || 'كلينيك فلو ديرما';
-  } else if (!isDental) {
-    brandTitle = tenant?.branding?.brandTitle || tenant?.name || 'كلينيك فلو ميديكال';
-  } else {
-    brandTitle = tenant?.branding?.brandTitle || 'كلينيك فلو دنتال';
+  let brandTitle = tenant?.branding?.brandTitle || tenant?.name || 'كلينك فلو';
+  if (!tenant?.branding?.brandTitle && !tenant?.name) {
+    if (isDental) {
+      brandTitle = 'كلينيك فلو دنتال';
+    } else if (isDerma) {
+      brandTitle = 'كلينيك فلو ديرما';
+    } else {
+      brandTitle = 'كلينك فلو';
+    }
   }
 
   const LogoIcon = isDerma ? Sparkles : Stethoscope;
@@ -92,7 +94,7 @@ const Sidebar = () => {
         {hasPermission(user, 'labs') && (
           <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Layers size={19} />
-            <span>المعامل والتركيبات</span>
+            <span>{isDental ? 'المعامل والتركيبات' : 'المعامل والتحاليل'}</span>
           </NavLink>
         )}
         <NavLink to="/attendance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>

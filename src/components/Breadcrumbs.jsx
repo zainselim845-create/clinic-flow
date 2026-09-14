@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, Home } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';
@@ -26,9 +26,7 @@ export default function Breadcrumbs({ customTrail = null, className = '' }) {
   const { tenant } = useTenant();
   const pathname = location.pathname;
 
-  // Don't render breadcrumbs on root landing page
-  if (pathname === '/') return null;
-
+  const isRoot = pathname === '/';
   const segments = pathname.split('/').filter(Boolean);
   
   // Build trail
@@ -53,6 +51,8 @@ export default function Breadcrumbs({ customTrail = null, className = '' }) {
     const schemaId = 'breadcrumbs-jsonld-schema';
     let script = document.getElementById(schemaId);
     if (script) script.remove();
+
+    if (isRoot || !trail || trail.length === 0) return;
 
     const breadcrumbSchema = {
       '@context': 'https://schema.org',
@@ -83,7 +83,10 @@ export default function Breadcrumbs({ customTrail = null, className = '' }) {
       const el = document.getElementById(schemaId);
       if (el) el.remove();
     };
-  }, [trail]);
+  }, [trail, isRoot]);
+
+  // Don't render breadcrumbs on root landing page
+  if (isRoot) return null;
 
   return (
     <nav 

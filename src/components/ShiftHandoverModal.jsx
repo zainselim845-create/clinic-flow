@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   X, Landmark, DollarSign, CreditCard, ArrowRightLeft, 
-  CheckCircle2, AlertCircle, Printer, Download, User, Clock
+  CheckCircle2, AlertCircle, Printer
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
@@ -11,7 +11,7 @@ import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerServ
 import './ShiftHandoverModal.css';
 
 export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
-  const { state, dispatch } = useApp();
+  const { state } = useApp();
   const today = getTodayDateStr();
 
   const [staffName, setStaffName] = useState('موظف الاستقبال (وردية اليوم)');

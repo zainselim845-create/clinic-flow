@@ -2,8 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { 
-  Stethoscope, Check, CalendarPlus, BellRing, X, AlertTriangle, 
-  ShieldAlert, Pill, Plus, Trash2, Printer, Sparkles 
+  Stethoscope, Check, CalendarPlus, BellRing, X, 
+  ShieldAlert, Pill, Plus, Trash2, Printer 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { checkPrescriptionSafety } from '../../services/drugInteractionService';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   CreditCard, Sparkles, Smartphone, Users, ShieldCheck, 
-  ArrowUpRight, Database, Zap, AlertTriangle, History, CheckCircle2
+  ArrowUpRight, Database, Zap, AlertTriangle, History
 } from 'lucide-react';
 import { useTenant } from '../../context/TenantContext';
 import { useApp } from '../../context/AppContext';
@@ -19,12 +19,11 @@ export default function SubscriptionPlanTab() {
 
   const smsUsed = usage.smsUsed || 0;
   const smsTotal = usage.totalSmsAllowed || 1000;
-  const remainingSms = usage.remainingSms;
+  const remainingSms = usage.remainingSms ?? Math.max(0, smsTotal - smsUsed);
   const smsPercent = Math.min(100, Math.round((smsUsed / Math.max(1, smsTotal)) * 100));
 
   const aiUsed = usage.aiTokensUsed || 0;
   const aiTotal = usage.totalAiAllowed || 2000000;
-  const remainingAi = usage.remainingAiTokens;
   const aiPercent = Math.min(100, Math.round((aiUsed / Math.max(1, aiTotal)) * 100));
 
   const staffCount = (state.staffMembers || []).length;
@@ -158,7 +157,7 @@ export default function SubscriptionPlanTab() {
               <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>رسائل الـ SMS والتذكيرات</strong>
             </div>
             <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-              {smsTotal - smsUsed} رسالة متبقية
+              {remainingSms} رسالة متبقية
             </span>
           </div>
 

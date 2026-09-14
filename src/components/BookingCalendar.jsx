@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronRight, ChevronLeft, Calendar as CalendarIcon, Clock, CheckCircle2, AlertCircle, Coffee } from 'lucide-react';
 import { 
-  generateDynamicSlots, 
   getSlotsForDate, 
   formatTimeToArabic, 
   formatLocalDate, 
@@ -42,9 +41,6 @@ const BookingCalendar = ({
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
 
-  // Working days from config: default [6,0,1,2,3,4] (Sat to Thu, Fri off)
-  const workingDays = scheduleConfig?.workingDays || [6, 0, 1, 2, 3, 4];
-  
   // Dynamic slots based on selected date's specific shift, breaks, and vacations
   const selectedDateResolution = useMemo(() => {
     if (!selectedDate) return { isVacation: false, isDayOff: false, slots: [] };

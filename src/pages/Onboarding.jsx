@@ -13,13 +13,9 @@ import {
   Sparkles, 
   Palette, 
   Users, 
-  Phone, 
-  Mail, 
-  Lock, 
-  KeyRound, 
+  Phone,
   MapPin, 
   Stethoscope, 
-  Activity, 
   ArrowRight, 
   ArrowLeft, 
   HeartPulse, 
@@ -27,8 +23,6 @@ import {
   CheckCircle2, 
   AlertCircle,
   Check,
-  Smile,
-  Calendar,
   Briefcase
 } from 'lucide-react';
 import './Onboarding.css';

@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
   UserPlus, Search, FolderOpen, Share2, RotateCcw,
-  CalendarDays, Clock, Stethoscope, Wallet, TrendingUp, Landmark, CheckCircle2,
+  CalendarDays, Clock, Stethoscope, Wallet, Landmark, CheckCircle2,
   Sparkles, BellRing, Plus, Calendar
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -31,7 +31,6 @@ const Dashboard = () => {
   const { user } = useAuth();
   
   const isDoctor = isDoctorRole(user);
-  const isStaff = !isDoctor;
   const canViewRevenue = hasCapability(user, CAPABILITIES.BILLING_REVENUE_VIEW);
   const navigate = useNavigate();
   

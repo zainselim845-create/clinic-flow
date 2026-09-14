@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon, LogOut, Bug, Menu, ShieldCheck } from 'lucide-react';
+import { Search, Bell, Sun, Moon, LogOut, Menu, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +11,7 @@ import { isSupabaseConfigured } from '../lib/supabase';
 import './Header.css';
 
 const Header = ({ title }) => {
-  const { state, toggleTheme, mobileNavOpen, setMobileNavOpen } = useApp();
+  const { state, toggleTheme, setMobileNavOpen } = useApp();
   const { user, clinic, role, signOut } = useAuth();
   const { tenant } = useTenant();
   const navigate = useNavigate();

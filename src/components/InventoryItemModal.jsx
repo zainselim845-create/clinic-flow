@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { INVENTORY_CATEGORIES } from '../services/inventoryService';
 import { Package, X, CheckCircle2 } from 'lucide-react';
 import { Dialog } from './ui/dialog';

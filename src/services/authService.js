@@ -673,7 +673,7 @@ export function provisionStaffAccount({
  * @param {Object} [options]
  * @returns {Object|null} user account if authenticated, or throws Error
  */
-export function authenticateUser(identifier, password, options = {}) {
+export function authenticateUser(identifier, password, _options = {}) {
   const cleanId = (identifier || '').trim().toLowerCase();
   const cleanPass = (password || '').trim();
   const cleanPhoneInput = cleanId.replace(/\D/g, '');

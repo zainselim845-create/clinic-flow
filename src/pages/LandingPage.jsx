@@ -7,7 +7,7 @@ import {
   ArrowLeft, CheckCircle2, ChevronDown, 
   Search, MapPin, Phone, Lock, 
   Activity, DollarSign, Cpu, Award, Clock,
-  Building2, Shield, Calendar
+  Building2, Calendar
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import './LandingPage.css';
