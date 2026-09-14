@@ -1,4 +1,4 @@
-﻿{
+{
   "_doc": "ClinicFlow Enterprise UI Review Loop Coverage Inventory - 100% Active Production Views & Interactive Controls",
   "views": [
     {
@@ -72,6 +72,22 @@
       "path": "/settings",
       "elements": [
         { "id": "settings-container", "el": ".settings-container", "expects": ["mut"], "note": "Clinic profile and pricing configuration" }
+      ]
+    },
+    {
+      "id": "view-apple-hub",
+      "path": "/apple-hub",
+      "elements": [
+        { "id": "apple-hub-segmented-control", "el": "button:has-text('الطابور الحي')", "expects": ["toggle", "mut"], "note": "Switches between Apple HIG tabs" },
+        { "id": "apple-hub-finish-btn", "el": "button:has-text('إنهاء الكشف وإصدار الروشتة')", "expects": ["mut"], "note": "Approves and completes clinical consultation" }
+      ]
+    },
+    {
+      "id": "view-superadmin",
+      "path": "/super-admin",
+      "elements": [
+        { "id": "superadmin-kpi-grid", "el": ".saas-stats-grid", "expects": ["mut"], "note": "SaaS Platform telemetry & metrics grid" },
+        { "id": "superadmin-telemetry-tab", "el": "button:has-text('مركز الأعطال وبلاغات النظام')", "expects": ["toggle", "mut"], "note": "Switches to System Health and Bug Center" }
       ]
     },
     {

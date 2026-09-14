@@ -125,17 +125,52 @@ export default function AppleClinicalHub() {
     setActionSheetOpen(true);
   };
 
+  // Apple Dynamic Island Toast Feedback
+  const [toastMessage, setToastMessage] = useState('');
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3200);
+  };
+
   const handleFinishConsultation = () => {
     if (activeConsultation?.id) {
       dispatch({
         type: 'UPDATE_APPOINTMENT',
         payload: { ...activeConsultation, status: 'completed' }
       });
+
+      let msg = `تم إنهاء واعتماد كشف ${activeConsultation.patientName || 'المريض'}`;
+
+      if (autoCallNextPatient) {
+        const nextInLine = todayAppointments.find(
+          a => a.id !== activeConsultation.id && a.status !== 'completed' && a.status !== 'in-progress'
+        );
+        if (nextInLine) {
+          dispatch({
+            type: 'UPDATE_APPOINTMENT',
+            payload: { ...nextInLine, status: 'in-progress' }
+          });
+          msg += ` • تم استدعاء ${nextInLine.patientName} تلقائياً`;
+        }
+      }
+
+      showToast(msg);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#F2F2F7] dark:bg-[#000000] text-[#000000] dark:text-[#FFFFFF] transition-colors duration-200 antialiased pb-28">
+      {/* Apple Dynamic Island Floating Toast */}
+      {toastMessage && (
+        <div 
+          role="status"
+          aria-live="polite"
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2 rounded-full bg-black/90 dark:bg-white/95 text-white dark:text-black shadow-2xl backdrop-blur-xl border border-white/10 dark:border-black/10 text-[13px] font-semibold transition-all animate-bounce"
+        >
+          <CheckCircle2 size={16} className="text-[#34C759] shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
       
       {/* =========================================================================
           1. SYSTEM GLASS STICKY NAVIGATION BAR (Strict Apple Material Blur)
@@ -670,6 +705,7 @@ export default function AppleClinicalHub() {
                   type: 'UPDATE_APPOINTMENT',
                   payload: { ...selectedPatientForAction, status: 'in-progress' }
                 });
+                showToast(`تم استدعاء ${selectedPatientForAction.patientName} إلى غرفة الكشف`);
               }
             }
           },
@@ -682,6 +718,7 @@ export default function AppleClinicalHub() {
                   type: 'UPDATE_APPOINTMENT',
                   payload: { ...selectedPatientForAction, status: 'completed' }
                 });
+                showToast(`تم تحويل ${selectedPatientForAction.patientName} إلى الخزينة`);
               }
             }
           },
@@ -695,6 +732,7 @@ export default function AppleClinicalHub() {
                   type: 'DELETE_APPOINTMENT',
                   payload: selectedPatientForAction.id
                 });
+                showToast(`تم إلغاء موعد ${selectedPatientForAction.patientName}`);
               }
             }
           }

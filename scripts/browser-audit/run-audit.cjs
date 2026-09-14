@@ -246,8 +246,62 @@ async function runUiAudit() {
     bad('view-settings', 'settings-container', e.message);
   }
 
-  // --- 10. VIEW BOOKING PORTAL ---
-  console.log('\n--- 10. Testing View: view-booking-portal ---');
+  // --- 10. VIEW APPLE CLINICAL HUB ---
+  console.log('\n--- 10. Testing View: view-apple-hub ---');
+  await page.goto(BASE + '/apple-hub', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(600);
+
+  try {
+    const queueTab = await page.waitForSelector('button:has-text("الطابور الحي")', { timeout: 5000 });
+    if (queueTab) {
+      await queueTab.click();
+      await page.waitForTimeout(300);
+      hit('view-apple-hub', 'apple-hub-segmented-control');
+    }
+  } catch (e) {
+    bad('view-apple-hub', 'apple-hub-segmented-control', e.message);
+  }
+
+  try {
+    const consultTab = await page.$('button:has-text("غرفة الكشف")');
+    if (consultTab) await consultTab.click();
+    await page.waitForTimeout(300);
+
+    const finishBtn = await page.waitForSelector('button:has-text("إنهاء الكشف وإصدار الروشتة")', { timeout: 5000 });
+    if (finishBtn) {
+      await finishBtn.click();
+      await page.waitForTimeout(400);
+      hit('view-apple-hub', 'apple-hub-finish-btn');
+    }
+  } catch (e) {
+    bad('view-apple-hub', 'apple-hub-finish-btn', e.message);
+  }
+
+  // --- 11. VIEW SUPER ADMIN ---
+  console.log('\n--- 11. Testing View: view-superadmin ---');
+  await page.goto(BASE + '/super-admin', { waitUntil: 'networkidle' });
+  await page.waitForTimeout(600);
+
+  try {
+    const kpiGrid = await page.waitForSelector('.saas-stats-grid', { timeout: 5000 });
+    if (kpiGrid) hit('view-superadmin', 'superadmin-kpi-grid');
+  } catch (e) {
+    bad('view-superadmin', 'superadmin-kpi-grid', e.message);
+  }
+
+  try {
+    const telemetryBtn = await page.waitForSelector('button:has-text("مركز الأعطال وبلاغات النظام")', { timeout: 5000 });
+    if (telemetryBtn) {
+      await telemetryBtn.click();
+      await page.waitForTimeout(300);
+      hit('view-superadmin', 'superadmin-telemetry-tab');
+    }
+  } catch (e) {
+    bad('view-superadmin', 'superadmin-telemetry-tab', e.message);
+  }
+
+  // --- 12. VIEW BOOKING PORTAL ---
+  console.log('\n--- 12. Testing View: view-booking-portal ---');
   await page.goto(BASE + '/booking', { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
 
@@ -273,8 +327,8 @@ async function runUiAudit() {
     bad('view-booking-portal', 'booking-step1-continue', e.message);
   }
 
-  // --- 11. VIEW MANAGE BOOKING ---
-  console.log('\n--- 11. Testing View: view-manage-booking ---');
+  // --- 13. VIEW MANAGE BOOKING ---
+  console.log('\n--- 13. Testing View: view-manage-booking ---');
   await page.goto(BASE + '/manage-booking', { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
 
