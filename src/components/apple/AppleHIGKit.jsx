@@ -105,6 +105,7 @@ export const AppleToggle = ({
       name={name}
       type="button"
       role="switch"
+      dir="ltr"
       aria-checked={checked}
       aria-label={ariaLabel || 'Apple Switch'}
       disabled={disabled}
@@ -241,9 +242,9 @@ export const AppleListRow = ({
         content
       )}
 
-      {/* 0.5px Indented Divider (ml-[52px]) */}
+      {/* 0.5px Indented Divider (ms-[52px] for RTL & LTR alignment) */}
       {showDivider && (
-        <div className="ml-[52px] h-[0.5px] bg-black/[0.08] dark:bg-white/[0.1]" />
+        <div className="ms-[52px] rtl:mr-[52px] rtl:ml-0 ltr:ml-[52px] h-[0.5px] bg-black/[0.08] dark:bg-white/[0.1]" />
       )}
     </div>
   );
