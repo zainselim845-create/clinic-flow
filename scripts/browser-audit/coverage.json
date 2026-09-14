@@ -75,11 +75,11 @@
       ]
     },
     {
-      "id": "view-apple-hub",
-      "path": "/apple-hub",
+      "id": "view-crm-hub",
+      "path": "/doctor-assistant",
       "elements": [
-        { "id": "apple-hub-segmented-control", "el": "button:has-text('الطابور الحي')", "expects": ["toggle", "mut"], "note": "Switches between Apple HIG tabs" },
-        { "id": "apple-hub-finish-btn", "el": "button:has-text('إنهاء الكشف وإصدار الروشتة')", "expects": ["mut"], "note": "Approves and completes clinical consultation" }
+        { "id": "crm-hero-banner", "el": ".crm-header-hero", "expects": ["mut"], "note": "11-Engine Smart CRM & Growth Hero" },
+        { "id": "crm-reactivation-tab", "el": "button:has-text('إعادة التنشيط')", "expects": ["toggle", "mut"], "note": "Switches to Patient Reactivation Engine" }
       ]
     },
     {

@@ -91,17 +91,19 @@ export default function SaasBrandingModal({
         <Dialog.Backdrop className="modal-backdrop" />
         <Dialog.Positioner className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
           <Dialog.Content 
-            className="modal-content"
+            className="saas-branding-modal-card"
             style={{
               maxWidth: '680px',
               width: '100%',
-              maxHeight: '92vh',
+              maxHeight: '90vh',
               overflowY: 'auto',
               borderRadius: '20px',
-              background: 'var(--bg-primary, #FFFFFF)',
-              border: '1px solid var(--border-color, #E4E4E7)',
+              background: '#FFFFFF',
+              border: '1px solid #E4E4E7',
               padding: '1.75rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              position: 'relative',
+              zIndex: 1056
             }}
             dir="rtl"
           >
@@ -156,7 +158,13 @@ export default function SaasBrandingModal({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div 
+                  style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+                    gap: '0.75rem' 
+                  }}
+                >
                   {CURATED_CLINIC_PALETTES.map((palette) => {
                     const isSelected = selectedPaletteId === palette.id;
                     const isMonochrome = palette.id === 'monochrome';
@@ -166,42 +174,46 @@ export default function SaasBrandingModal({
                         key={palette.id}
                         type="button"
                         onClick={() => setSelectedPaletteId(palette.id)}
-                        className={`
-                          p-3.5 rounded-xl border-2 text-right transition-all cursor-pointer relative flex flex-col justify-between
-                          ${isSelected
-                            ? (isMonochrome 
-                                ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white shadow-md' 
-                                : 'bg-white dark:bg-zinc-800 border-2 shadow-md')
-                            : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400'
-                          }
-                        `}
                         style={{
-                          borderColor: isSelected && !isMonochrome ? palette.hex : undefined
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          padding: '0.85rem',
+                          borderRadius: '12px',
+                          border: isSelected ? (isMonochrome ? '2px solid #09090B' : `2px solid ${palette.hex}`) : '1.5px solid #E4E4E7',
+                          backgroundColor: isSelected ? (isMonochrome ? '#09090B' : '#FFFFFF') : '#FAFAFA',
+                          color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B',
+                          boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.08)' : 'none',
+                          cursor: 'pointer',
+                          textAlign: 'right',
+                          minHeight: '115px',
+                          transition: 'all 0.15s ease'
                         }}
                       >
-                        <div className="flex items-center justify-between mb-2">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '0.5rem' }}>
                           {isMonochrome ? (
-                            <div className="w-6 h-6 rounded-full overflow-hidden border border-current flex">
-                              <div className="w-1/2 h-full bg-white" />
-                              <div className="w-1/2 h-full bg-zinc-900" />
+                            <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1.5px solid currentColor', overflow: 'hidden', display: 'flex' }}>
+                              <div style={{ width: '50%', height: '100%', backgroundColor: '#FFFFFF' }} />
+                              <div style={{ width: '50%', height: '100%', backgroundColor: '#09090B' }} />
                             </div>
                           ) : (
                             <div 
-                              style={{ backgroundColor: palette.hex }}
-                              className="w-6 h-6 rounded-full shadow-sm"
+                              style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: palette.hex, boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
                             />
                           )}
 
-                          {isSelected && <Check size={16} strokeWidth={3} className={isSelected && isMonochrome ? 'text-white dark:text-zinc-900' : 'text-emerald-500'} />}
+                          {isSelected && (
+                            <Check size={16} strokeWidth={3} color={isMonochrome ? '#FFFFFF' : '#10B981'} />
+                          )}
                         </div>
 
                         <div>
-                          <h6 className={`text-[13px] font-bold leading-tight ${isSelected && isMonochrome ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 800, lineHeight: 1.3, color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B' }}>
                             {palette.name}
-                          </h6>
-                          <p className={`text-[11px] mt-1 line-clamp-2 ${isSelected && isMonochrome ? 'text-zinc-200 dark:text-zinc-600' : 'text-zinc-500'}`}>
+                          </div>
+                          <div style={{ fontSize: '0.72rem', marginTop: '0.25rem', color: isSelected && isMonochrome ? 'rgba(255,255,255,0.75)' : '#71717A', lineHeight: 1.35 }}>
                             {palette.specialty}
-                          </p>
+                          </div>
                         </div>
                       </button>
                     );
@@ -227,48 +239,84 @@ export default function SaasBrandingModal({
                   )}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
+                <div 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    padding: '1rem',
+                    borderRadius: '12px',
+                    border: '1px solid #E4E4E7',
+                    backgroundColor: '#FAFAFA'
+                  }}
+                >
                   {/* Logo Preview Disc */}
-                  <div className="w-20 h-20 rounded-2xl bg-white dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-700 p-2 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+                  <div 
+                    style={{
+                      width: '64px',
+                      height: '64px',
+                      borderRadius: '14px',
+                      backgroundColor: '#FFFFFF',
+                      border: '1.5px solid #E4E4E7',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      overflow: 'hidden'
+                    }}
+                  >
                     {logoUrl ? (
-                      <img src={logoUrl} alt="شعار العيادة" className="w-full h-full object-contain" />
+                      <img src={logoUrl} alt="شعار العيادة" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     ) : (
-                      <div className="text-center text-zinc-400">
-                        <ImageIcon size={24} className="mx-auto mb-1" />
-                        <span className="text-[9px] block">بدون شعار</span>
+                      <div style={{ textAlign: 'center', color: '#A1A1AA' }}>
+                        <ImageIcon size={22} style={{ margin: '0 auto 2px' }} />
+                        <span style={{ fontSize: '9px', display: 'block' }}>بدون شعار</span>
                       </div>
                     )}
                   </div>
 
                   {/* Upload Controls */}
-                  <div className="flex-1 space-y-2 w-full">
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
-                      className="hidden"
+                      style={{ display: 'none' }}
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
                           handleFile(e.target.files[0]);
                         }
                       }}
                     />
-                    <div className="flex items-center gap-2">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 transition-opacity flex items-center gap-1.5 cursor-pointer"
+                        style={{
+                          padding: '0.4rem 0.85rem',
+                          borderRadius: '8px',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          backgroundColor: '#09090B',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem'
+                        }}
                       >
                         <Upload size={14} />
                         <span>رفع صورة الشعار</span>
                       </button>
-                      <span className="text-[11px] text-zinc-400">
+                      <span style={{ fontSize: '0.72rem', color: '#71717A' }}>
                         PNG, SVG, JPG حتى 5MB
                       </span>
                     </div>
 
                     {/* Or URL input */}
-                    <div className="flex items-center gap-2 mt-1">
+                    <div style={{ marginTop: '2px' }}>
                       <input
                         type="text"
                         placeholder="أو الصق رابط صورة الشعار مباشرة (URL)..."
@@ -278,18 +326,26 @@ export default function SaasBrandingModal({
                             setLogoUrl(e.target.value);
                           }
                         }}
-                        className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono"
+                        style={{
+                          width: '100%',
+                          padding: '0.35rem 0.65rem',
+                          fontSize: '0.76rem',
+                          borderRadius: '8px',
+                          border: '1px solid #E4E4E7',
+                          backgroundColor: '#FFFFFF',
+                          fontFamily: 'monospace'
+                        }}
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Preset Monograms for Quick Setup */}
-                <div className="pt-2">
-                  <span className="text-[11px] text-zinc-500 block mb-2">
+                <div style={{ paddingTop: '0.35rem' }}>
+                  <span style={{ fontSize: '0.74rem', color: '#71717A', display: 'block', marginBottom: '0.4rem' }}>
                     أيقونات طبية مقترحة سريعة في حال عدم توفر ملف الشعار لدى الطبيب:
                   </span>
-                  <div className="flex flex-wrap gap-2">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                     {MEDICAL_PRESET_LOGOS.map((preset) => {
                       const Icon = preset.icon;
                       return (
@@ -300,9 +356,21 @@ export default function SaasBrandingModal({
                             const svgData = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="48" fill="#09090B"/><text x="50%" y="55%" font-family="sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">${preset.name.slice(0, 2)}</text></svg>`;
                             setLogoUrl(`data:image/svg+xml;utf8,${encodeURIComponent(svgData)}`);
                           }}
-                          className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-900 dark:hover:border-zinc-100 transition-all text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 cursor-pointer"
+                          style={{
+                            padding: '0.3rem 0.6rem',
+                            borderRadius: '8px',
+                            backgroundColor: '#FFFFFF',
+                            border: '1px solid #E4E4E7',
+                            fontSize: '0.74rem',
+                            fontWeight: 600,
+                            color: '#3F3F46',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            cursor: 'pointer'
+                          }}
                         >
-                          <Icon size={14} />
+                          <Icon size={13} />
                           <span>{preset.name}</span>
                         </button>
                       );
@@ -312,34 +380,62 @@ export default function SaasBrandingModal({
               </div>
 
               {/* SECTION 3: LIVE PREVIEW ACCROSS SURFACES */}
-              <div className="p-4 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3">
-                <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300">
+              <div 
+                style={{
+                  padding: '0.85rem',
+                  borderRadius: '12px',
+                  backgroundColor: '#F4F4F5',
+                  border: '1px solid #E4E4E7',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.65rem'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.76rem', fontWeight: 700, color: '#3F3F46' }}>
                   <span>معاينة فورية لكيفية ظهور العيادة للمرضى والأطباء:</span>
-                  <span className="font-mono text-[10px] text-zinc-400">Live Simulation</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: '0.68rem', color: '#71717A' }}>Live Simulation</span>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                <div 
+                  style={{
+                    padding: '0.75rem 1rem',
+                    borderRadius: '10px',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E4E4E7',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <div 
                       style={{
                         backgroundColor: activePalette.id === 'monochrome' ? '#09090B' : `${activePalette.hex}20`,
-                        color: activePalette.id === 'monochrome' ? '#FFFFFF' : activePalette.hex
+                        color: activePalette.id === 'monochrome' ? '#FFFFFF' : activePalette.hex,
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        fontWeight: 700
                       }}
-                      className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden font-bold"
                     >
                       {logoUrl ? (
-                        <img src={logoUrl} alt="شعار" className="w-full h-full object-contain" />
+                        <img src={logoUrl} alt="شعار" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       ) : (
-                        <Stethoscope size={20} />
+                        <Stethoscope size={18} />
                       )}
                     </div>
                     <div>
-                      <h6 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 m-0">
+                      <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#09090B' }}>
                         {clinic.name}
-                      </h6>
-                      <p className="text-xs text-zinc-500 m-0">
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: '#71717A' }}>
                         {clinic.doctorName} • {activePalette.name}
-                      </p>
+                      </div>
                     </div>
                   </div>
 
@@ -347,9 +443,14 @@ export default function SaasBrandingModal({
                     type="button"
                     style={{
                       backgroundColor: activePalette.id === 'monochrome' ? '#09090B' : activePalette.hex,
-                      color: '#FFFFFF'
+                      color: '#FFFFFF',
+                      padding: '0.35rem 0.85rem',
+                      borderRadius: '8px',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      border: 'none',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-bold shadow-sm"
                   >
                     حجز موعد الآن
                   </button>
@@ -357,18 +458,41 @@ export default function SaasBrandingModal({
               </div>
 
               {/* ACTION BUTTONS */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.65rem', paddingTop: '0.85rem', borderTop: '1px solid #E4E4E7' }}>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  style={{
+                    padding: '0.45rem 1rem',
+                    borderRadius: '10px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    color: '#71717A',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #E4E4E7',
+                    cursor: 'pointer'
+                  }}
                 >
                   إلغاء
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90 transition-opacity shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  style={{
+                    padding: '0.5rem 1.25rem',
+                    borderRadius: '10px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    backgroundColor: '#09090B',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    cursor: 'pointer',
+                    opacity: isSaving ? 0.6 : 1
+                  }}
                 >
                   <ShieldCheck size={16} />
                   <span>{isSaving ? 'جاري الحفظ والتعميم...' : 'حفظ وتطبيق هوية العيادة فوراً'}</span>

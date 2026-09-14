@@ -246,35 +246,27 @@ async function runUiAudit() {
     bad('view-settings', 'settings-container', e.message);
   }
 
-  // --- 10. VIEW APPLE CLINICAL HUB ---
-  console.log('\n--- 10. Testing View: view-apple-hub ---');
-  await page.goto(BASE + '/apple-hub', { waitUntil: 'networkidle' });
+  // --- 10. VIEW MARKETING CRM & GROWTH HUB ---
+  console.log('\n--- 10. Testing View: view-crm-hub ---');
+  await page.goto(BASE + '/doctor-assistant', { waitUntil: 'networkidle' });
   await page.waitForTimeout(600);
 
   try {
-    const queueTab = await page.waitForSelector('button:has-text("الطابور الحي")', { timeout: 5000 });
-    if (queueTab) {
-      await queueTab.click();
-      await page.waitForTimeout(300);
-      hit('view-apple-hub', 'apple-hub-segmented-control');
-    }
+    const crmHero = await page.waitForSelector('.crm-header-hero, .crm-hub-page', { timeout: 5000 });
+    if (crmHero) hit('view-crm-hub', 'crm-hero-banner');
   } catch (e) {
-    bad('view-apple-hub', 'apple-hub-segmented-control', e.message);
+    bad('view-crm-hub', 'crm-hero-banner', e.message);
   }
 
   try {
-    const consultTab = await page.$('button:has-text("غرفة الكشف")');
-    if (consultTab) await consultTab.click();
-    await page.waitForTimeout(300);
-
-    const finishBtn = await page.waitForSelector('button:has-text("إنهاء الكشف وإصدار الروشتة")', { timeout: 5000 });
-    if (finishBtn) {
-      await finishBtn.click();
-      await page.waitForTimeout(400);
-      hit('view-apple-hub', 'apple-hub-finish-btn');
+    const reactivateTab = await page.waitForSelector('button:has-text("إعادة التنشيط")', { timeout: 5000 });
+    if (reactivateTab) {
+      await reactivateTab.click();
+      await page.waitForTimeout(300);
+      hit('view-crm-hub', 'crm-reactivation-tab');
     }
   } catch (e) {
-    bad('view-apple-hub', 'apple-hub-finish-btn', e.message);
+    bad('view-crm-hub', 'crm-reactivation-tab', e.message);
   }
 
   // --- 11. VIEW SUPER ADMIN ---
