@@ -1025,3 +1025,286 @@
   }
 }
 
+/* ==========================================================================
+   Users & Client Accounts Management Styles
+   ========================================================================== */
+.user-total-counter-pill {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid #bae6fd;
+}
+
+.users-stat-summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+
+.stat-pill-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.stat-pill-item:hover {
+  background: #f1f5f9;
+}
+
+.stat-pill-item.warning {
+  background: #fef2f2;
+}
+
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.pill-dot.gray { background: #94a3b8; }
+.pill-dot.blue { background: #0284c7; }
+.pill-dot.green { background: #16a34a; }
+.pill-dot.emerald { background: #10b981; }
+.pill-dot.red { background: #ef4444; }
+
+.pill-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.pill-val {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.user-profile-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+}
+
+.user-avatar-circle.doctor {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.user-avatar-circle.staff, .user-avatar-circle.receptionist {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.user-avatar-circle.super_admin {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.user-avatar-circle.multi_clinic_owner {
+  background: #f3e8ff;
+  color: #7e22ce;
+}
+
+.user-name-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.user-full-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.user-job-title {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.user-contact-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.contact-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.user-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.user-role-badge.doctor {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.user-role-badge.staff {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.user-role-badge.owner {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+}
+
+.user-role-badge.super-admin {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.user-clinic-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.user-clinic-cell strong {
+  font-size: 0.85rem;
+  color: #1e293b;
+}
+
+.clinic-slug-code {
+  font-size: 0.75rem;
+  background: #f1f5f9;
+  color: #0284c7;
+  padding: 1px 5px;
+  border-radius: 4px;
+  display: inline-block;
+  direction: ltr;
+  text-align: right;
+  width: fit-content;
+}
+
+.user-date-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.user-actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-impersonate-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-impersonate-user:hover {
+  background: #0369a1;
+}
+
+.btn-edit-user, .btn-reset-pw, .btn-suspend-user, .btn-activate-user {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.btn-edit-user {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+.btn-edit-user:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.btn-reset-pw {
+  background: #fef3c7;
+  color: #d97706;
+  border-color: #fcd34d;
+}
+
+.btn-reset-pw:hover {
+  background: #fde68a;
+  color: #b45309;
+}
+
+.btn-suspend-user {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.btn-suspend-user:hover {
+  background: #fecaca;
+}
+
+.btn-activate-user {
+  background: #dcfce7;
+  color: #16a34a;
+  border-color: #86efac;
+}
+
+.btn-activate-user:hover {
+  background: #bbf7d0;
+}
+
+

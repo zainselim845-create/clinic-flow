@@ -335,6 +335,246 @@ export function updateStaffAccountStatus(staffIdOrPhone, status) {
   }
 }
 
+/**
+ * Returns all platform users (doctors, clinic owners, staff, superadmins)
+ * Merges demo/built-in accounts + all registered accounts + clinic owners
+ * @returns {Array<Object>}
+ */
+export function getAllPlatformUsers() {
+  const registered = getRegisteredUsers();
+  const tenants = getRegisteredTenants();
+
+  const defaultUsers = [
+    {
+      id: 'doc-master',
+      name: 'د. أحمد الشريف',
+      email: 'doctor@clinicflow.com',
+      phone: '01006285031',
+      role: 'doctor',
+      isClinicOwner: true,
+      jobTitle: 'المدير الطبي / استشاري طب وجراحة وتجميل الأسنان',
+      clinicSlug: 'dr-ahmed',
+      clinicId: '550e8400-e29b-41d4-a716-446655440000',
+      clinicName: 'مركز النخبة لطب وجراحة الأسنان',
+      status: 'active',
+      authProvider: 'password',
+      createdAt: '2026-01-10T08:00:00.000Z'
+    },
+    {
+      id: 'doc-sara-master',
+      name: 'د. سارة محمود',
+      email: 'sara.clinic@clinicflow.com',
+      phone: '01123456780',
+      role: 'doctor',
+      isClinicOwner: true,
+      jobTitle: 'استشاري الأمراض الجلدية وتجميل الليزر',
+      clinicSlug: 'dr-sara',
+      clinicId: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
+      clinicName: 'عيادة د. سارة للجلدية والتجميل والليزر',
+      status: 'active',
+      authProvider: 'password',
+      createdAt: '2026-02-01T09:30:00.000Z'
+    },
+    {
+      id: 'user-multi-clinic-owner',
+      name: 'د. شريف العوضي',
+      email: 'owner@clinicflow.com',
+      phone: '01200000001',
+      role: 'multi_clinic_owner',
+      isClinicOwner: true,
+      jobTitle: 'مالك ومستثمر طبي — مجمع عيادات كلينيك فلو',
+      clinicSlug: 'dr-ahmed',
+      clinicName: 'مجمع عيادات كلينيك فلو (فروع متعددة)',
+      status: 'active',
+      authProvider: 'password',
+      createdAt: '2026-02-15T11:00:00.000Z'
+    },
+    {
+      id: 'staff-reception-master',
+      name: 'سارة كمال',
+      email: 'reception@clinicflow.com',
+      phone: '01012345678',
+      role: 'staff',
+      jobTitle: 'سكرتارية واستقبال العيادة',
+      clinicSlug: 'dr-ahmed',
+      clinicId: '550e8400-e29b-41d4-a716-446655440000',
+      clinicName: 'مركز النخبة لطب وجراحة الأسنان',
+      status: 'active',
+      authProvider: 'password',
+      createdAt: '2026-01-12T10:00:00.000Z'
+    },
+    {
+      id: 'user-superadmin-master',
+      name: 'مدير المنصة العام (Super Admin)',
+      email: 'superadmin@clinicflow.com',
+      phone: '01000000000',
+      role: 'super_admin',
+      isSuperAdmin: true,
+      jobTitle: 'مدير عام المنصة والسحابة السريرية',
+      clinicSlug: '*',
+      clinicName: 'إدارة المنصة المركزية (Control Plane)',
+      status: 'active',
+      authProvider: 'password',
+      createdAt: '2026-01-01T00:00:00.000Z'
+    }
+  ];
+
+  const clinicLookup = new Map();
+  clinicLookup.set('dr-ahmed', 'مركز النخبة لطب وجراحة الأسنان');
+  clinicLookup.set('dr-sara', 'عيادة د. سارة للجلدية والتجميل والليزر');
+  tenants.forEach(t => {
+    if (t.slug) clinicLookup.set(t.slug, t.name || t.slug);
+    if (t.id) clinicLookup.set(t.id, t.name || t.slug);
+  });
+
+  const userMap = new Map();
+  defaultUsers.forEach(u => userMap.set((u.email || u.id).toLowerCase(), u));
+
+  registered.forEach(u => {
+    const key = (u.email || u.id || '').toLowerCase();
+    const existing = userMap.get(key) || {};
+    const resolvedClinicSlug = u.clinicSlug || existing.clinicSlug || 'dr-ahmed';
+    const resolvedClinicName = u.clinicName || clinicLookup.get(resolvedClinicSlug) || existing.clinicName || 'عيادة خاصة';
+    userMap.set(key, {
+      ...existing,
+      ...u,
+      clinicSlug: resolvedClinicSlug,
+      clinicName: resolvedClinicName,
+      status: u.status || existing.status || 'active'
+    });
+  });
+
+  // Guarantee every tenant has its primary doctor owner account listed
+  tenants.forEach(t => {
+    if (t.doctorEmail) {
+      const key = t.doctorEmail.toLowerCase();
+      if (!userMap.has(key)) {
+        userMap.set(key, {
+          id: `doc-${t.id || t.slug}`,
+          name: t.doctorName || t.name,
+          email: t.doctorEmail,
+          phone: t.phone || '',
+          role: 'doctor',
+          isClinicOwner: true,
+          jobTitle: t.specialty || 'المدير الطبي واستشاري العيادة',
+          clinicSlug: t.slug,
+          clinicId: t.id,
+          clinicName: t.name || t.slug,
+          status: t.subscriptionStatus === 'suspended' ? 'suspended' : 'active',
+          authProvider: 'password',
+          createdAt: t.createdAt || new Date().toISOString()
+        });
+      }
+    }
+  });
+
+  // Also discover any staff members saved under clinic-scoped storage (clinicflow_data_*)
+  if (typeof localStorage !== 'undefined') {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('clinicflow_data_')) {
+          const slug = k.replace('clinicflow_data_', '');
+          const dataStr = localStorage.getItem(k);
+          if (dataStr) {
+            const parsed = JSON.parse(dataStr);
+            if (Array.isArray(parsed.staffMembers)) {
+              parsed.staffMembers.forEach(sm => {
+                const staffKey = (sm.email || sm.phone || sm.id || '').toLowerCase();
+                if (staffKey && !userMap.has(staffKey)) {
+                  userMap.set(staffKey, {
+                    id: sm.id || `staff-${Date.now()}-${Math.random()}`,
+                    name: sm.name,
+                    email: sm.email || '',
+                    phone: sm.phone || '',
+                    role: sm.role || 'staff',
+                    jobTitle: sm.jobTitle || (sm.role === 'nurse' ? 'تمريض' : sm.role === 'accountant' ? 'محاسب' : 'سكرتارية واستقبال'),
+                    clinicSlug: slug,
+                    clinicName: clinicLookup.get(slug) || slug,
+                    status: sm.status || 'active',
+                    authProvider: 'password',
+                    createdAt: sm.createdAt || new Date().toISOString()
+                  });
+                }
+              });
+            }
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  return Array.from(userMap.values());
+}
+
+/**
+ * Updates a user account's profile details
+ * @param {string} userId
+ * @param {Object} updates
+ */
+export function updateUserAccount(userId, updates = {}) {
+  if (!userId) return null;
+  const existing = getRegisteredUsers();
+  const allUsers = getAllPlatformUsers();
+  const targetUser = allUsers.find(u => u.id === userId || u.email === userId);
+  if (!targetUser) return null;
+
+  const updatedUser = { ...targetUser, ...updates };
+
+  const idx = existing.findIndex(u => u.id === targetUser.id || (u.email && u.email.toLowerCase() === targetUser.email.toLowerCase()));
+  if (idx >= 0) {
+    existing[idx] = updatedUser;
+  } else {
+    existing.push(updatedUser);
+  }
+
+  memoryUsersCache = existing;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(existing));
+    } catch (_) {}
+  }
+  return updatedUser;
+}
+
+/**
+ * Resets or updates a user's password
+ * @param {string} userId
+ * @param {string} newPassword
+ */
+export function resetUserPassword(userId, newPassword) {
+  if (!userId || !newPassword) return false;
+  return !!updateUserAccount(userId, { password: newPassword.trim() });
+}
+
+/**
+ * Toggles a user's active/inactive/suspended status
+ * @param {string} userId
+ * @param {'active'|'inactive'|'suspended'} status
+ */
+export function toggleUserAccountStatus(userId, status) {
+  if (!userId) return null;
+  return updateUserAccount(userId, { status });
+}
+
+/**
+ * Permanently deletes a user account from registry
+ * @param {string} userId
+ * @returns {boolean}
+ */
+export function deleteUserAccount(userId) {
+  if (!userId) return false;
+  const existing = getRegisteredUsers();
+  const filtered = existing.filter(u => u.id !== userId && u.email?.toLowerCase() !== userId.toLowerCase());
+  memoryUsersCache = filtered;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(filtered));
+    } catch (_) {}
+  }
+  return true;
+}
+
 export const RESERVED_USERNAMES = new Set([
   'admin', 'super-admin', 'superadmin', 'saas-admin', 'administrator', 
   'root', 'api', 'support', 'booking', 'manage-booking', 'dashboard', 

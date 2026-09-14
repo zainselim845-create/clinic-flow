@@ -4,7 +4,7 @@ import { useTenant } from '../../context/TenantContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Building2, Plus, ShieldCheck, 
-  ExternalLink, AlertTriangle, Globe, LogOut, Server
+  ExternalLink, AlertTriangle, Globe, LogOut, Server, Users
 } from 'lucide-react';
 import { 
   getSystemErrors, 
@@ -16,11 +16,22 @@ import {
 import {
   SaasStatsGrid,
   ClinicsTable,
+  UsersTable,
   TelemetryBugsCenter,
   CreateClinicModal,
+  CreateUserModal,
+  EditUserModal,
   TopUpCreditsModal
 } from './components';
-import { saveRegisteredTenant, saveRegisteredUser } from '../../services/authService';
+import { 
+  saveRegisteredTenant, 
+  saveRegisteredUser,
+  getAllPlatformUsers,
+  updateUserAccount,
+  resetUserPassword,
+  toggleUserAccountStatus,
+  deleteUserAccount
+} from '../../services/authService';
 import { formatSenderId } from '../../services/smsService';
 import { getClinicUsage } from '../../services/usageMeteringService';
 import { useApp } from '../../context/AppContext';
@@ -31,10 +42,10 @@ import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { signOut, impersonateUser } = useAuth();
   const { state, dispatch } = useApp();
   const { allTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant } = useTenant();
-  const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'telemetry_bugs' | 'infrastructure'
+  const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'users' | 'telemetry_bugs' | 'infrastructure'
   const [infraSubTab, setInfraSubTab] = useState('database'); // 'database' | 'sms' | 'ai'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
   const [bugReports, setBugReports] = useState(getBugReports());
@@ -45,6 +56,17 @@ export default function SuperAdminDashboard() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
   const [selectedTopUpClinic, setSelectedTopUpClinic] = useState(null);
+
+  // User accounts management state
+  const [allUsers, setAllUsers] = useState(() => getAllPlatformUsers());
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('all');
+  const [userStatusFilter, setUserStatusFilter] = useState('all');
+  const [userClinicFilter, setUserClinicFilter] = useState('all');
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [selectedUserToEdit, setSelectedUserToEdit] = useState(null);
+
   const [newClinic, setNewClinic] = useState({
     name: '',
     doctorName: '',
@@ -142,6 +164,61 @@ export default function SuperAdminDashboard() {
       deleteTenant(slugOrId);
     }
   };
+
+  const handleImpersonateUser = (targetUser) => {
+    if (impersonateUser) {
+      impersonateUser(targetUser);
+      navigate('/dashboard');
+    }
+  };
+
+  const handleOpenEditUser = (targetUser) => {
+    setSelectedUserToEdit(targetUser);
+    setIsEditUserModalOpen(true);
+  };
+
+  const handleOpenResetPassword = (targetUser) => {
+    const newPass = window.prompt(`إدخال كلمة مرور جديدة لحساب (${targetUser.name}):`, '');
+    if (newPass && newPass.trim()) {
+      resetUserPassword(targetUser.id, newPass.trim());
+      setAllUsers(getAllPlatformUsers());
+      alert(`تم تحديث كلمة مرور (${targetUser.name}) بنجاح!`);
+    }
+  };
+
+  const handleToggleUserStatus = (userId, currentStatus) => {
+    const nextStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+    toggleUserAccountStatus(userId, nextStatus);
+    setAllUsers(getAllPlatformUsers());
+  };
+
+  const handleDeleteUser = (userId) => {
+    const target = allUsers.find(u => u.id === userId);
+    const name = target?.name || userId;
+    if (window.confirm(`تحذير أمني: هل أنت متأكد من رغبتك في حذف حساب (${name}) نهائياً من المنصة؟`)) {
+      deleteUserAccount(userId);
+      setAllUsers(getAllPlatformUsers());
+    }
+  };
+
+  const handleCreateUser = (userData) => {
+    saveRegisteredUser(userData);
+    setAllUsers(getAllPlatformUsers());
+    setIsCreateUserModalOpen(false);
+  };
+
+  const handleUpdateUser = (userId, updates) => {
+    updateUserAccount(userId, updates);
+    setAllUsers(getAllPlatformUsers());
+    setIsEditUserModalOpen(false);
+    setSelectedUserToEdit(null);
+  };
+
+  const handleDirectResetPassword = (userId, newPassword) => {
+    resetUserPassword(userId, newPassword);
+    setAllUsers(getAllPlatformUsers());
+  };
+
 
   const handleCreateClinic = (e) => {
     e.preventDefault();
@@ -306,6 +383,17 @@ export default function SuperAdminDashboard() {
           <button
             type="button"
             onClick={() => {
+              setActiveTab('users');
+              setAllUsers(getAllPlatformUsers());
+            }}
+            className={`saas-tab-btn ${activeTab === 'users' ? 'active-clinics' : ''}`}
+          >
+            <Users size={16} />
+            <span>حسابات العملاء والمستخدمين ({allUsers.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
               setActiveTab('telemetry_bugs');
               setSystemErrors(getSystemErrors());
               setBugReports(getBugReports());
@@ -348,6 +436,25 @@ export default function SuperAdminDashboard() {
               setIsTopUpModalOpen(true);
             }}
             onDeleteClinic={handleDeleteClinic}
+          />
+        ) : activeTab === 'users' ? (
+          <UsersTable
+            users={allUsers}
+            searchTerm={userSearchTerm}
+            setSearchTerm={setUserSearchTerm}
+            roleFilter={userRoleFilter}
+            setRoleFilter={setUserRoleFilter}
+            statusFilter={userStatusFilter}
+            setStatusFilter={setUserStatusFilter}
+            clinicFilter={userClinicFilter}
+            setClinicFilter={setUserClinicFilter}
+            allTenants={allTenants}
+            onImpersonate={handleImpersonateUser}
+            onEdit={handleOpenEditUser}
+            onResetPassword={handleOpenResetPassword}
+            onToggleStatus={handleToggleUserStatus}
+            onDelete={handleDeleteUser}
+            onOpenCreate={() => setIsCreateUserModalOpen(true)}
           />
         ) : activeTab === 'telemetry_bugs' ? (
           <TelemetryBugsCenter
@@ -459,6 +566,27 @@ export default function SuperAdminDashboard() {
         onSuccess={() => {
           setAllTenants([...allTenants]);
         }}
+      />
+
+      {/* Modal: Create User Account */}
+      <CreateUserModal
+        isOpen={isCreateUserModalOpen}
+        onClose={() => setIsCreateUserModalOpen(false)}
+        onSubmit={handleCreateUser}
+        allTenants={allTenants}
+      />
+
+      {/* Modal: Edit User Account */}
+      <EditUserModal
+        isOpen={isEditUserModalOpen}
+        onClose={() => {
+          setIsEditUserModalOpen(false);
+          setSelectedUserToEdit(null);
+        }}
+        user={selectedUserToEdit}
+        onSubmit={handleUpdateUser}
+        onResetPassword={handleDirectResetPassword}
+        allTenants={allTenants}
       />
     </div>
   );

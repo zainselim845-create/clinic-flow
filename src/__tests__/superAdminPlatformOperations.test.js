@@ -1,10 +1,15 @@
-﻿import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { 
   saveRegisteredTenant, 
   getRegisteredTenants, 
   deleteRegisteredTenant,
   saveRegisteredUser,
-  getRegisteredUsers
+  getRegisteredUsers,
+  getAllPlatformUsers,
+  updateUserAccount,
+  resetUserPassword,
+  toggleUserAccountStatus,
+  deleteUserAccount
 } from '../services/authService';
 import { formatSenderId } from '../services/smsService';
 import { 
@@ -226,4 +231,63 @@ describe('Super Admin Platform Control Plane & Tenant Lifecycle', () => {
     updateBugReportStatus(report.id, 'resolved');
     expect(getBugReports().find(b => b.id === report.id).status).toBe('resolved');
   });
+
+  it('manages client user accounts (list, update, password reset, toggle status, and delete)', () => {
+    // 1. Check all platform users retrieval
+    const initialUsers = getAllPlatformUsers();
+    expect(initialUsers.length).toBeGreaterThanOrEqual(4);
+    expect(initialUsers.some(u => u.email === 'doctor@clinicflow.com')).toBe(true);
+    expect(initialUsers.some(u => u.role === 'super_admin')).toBe(true);
+
+    // 2. Register a new doctor user
+    const testDoc = {
+      id: 'doc-test-99',
+      name: 'د. يوسف الشناوي',
+      email: 'dr.youssef@testclinic.com',
+      phone: '01099988877',
+      password: 'initialPassword123',
+      role: 'doctor',
+      isClinicOwner: true,
+      jobTitle: 'استشاري المخ والأعصاب',
+      clinicSlug: 'dr-youssef',
+      clinicName: 'مركز الشناوي للأعصاب',
+      status: 'active'
+    };
+    saveRegisteredUser(testDoc);
+
+    let users = getAllPlatformUsers();
+    const foundUser = users.find(u => u.id === 'doc-test-99' || u.email === 'dr.youssef@testclinic.com');
+    expect(foundUser).toBeDefined();
+    expect(foundUser.name).toBe('د. يوسف الشناوي');
+    expect(foundUser.status).toBe('active');
+
+    // 3. Update account details
+    updateUserAccount('doc-test-99', {
+      jobTitle: 'رئيس قسم جراحة المخ والأعصاب',
+      phone: '01155544433'
+    });
+    users = getAllPlatformUsers();
+    const updatedUser = users.find(u => u.id === 'doc-test-99');
+    expect(updatedUser.jobTitle).toBe('رئيس قسم جراحة المخ والأعصاب');
+    expect(updatedUser.phone).toBe('01155544433');
+
+    // 4. Reset password
+    const pwReset = resetUserPassword('doc-test-99', 'newSecurePassword456');
+    expect(pwReset).toBe(true);
+
+    // 5. Toggle status (suspend and reactivate)
+    toggleUserAccountStatus('doc-test-99', 'suspended');
+    users = getAllPlatformUsers();
+    expect(users.find(u => u.id === 'doc-test-99').status).toBe('suspended');
+
+    toggleUserAccountStatus('doc-test-99', 'active');
+    users = getAllPlatformUsers();
+    expect(users.find(u => u.id === 'doc-test-99').status).toBe('active');
+
+    // 6. Delete user account
+    deleteUserAccount('doc-test-99');
+    users = getAllPlatformUsers();
+    expect(users.some(u => u.id === 'doc-test-99')).toBe(false);
+  });
 });
+

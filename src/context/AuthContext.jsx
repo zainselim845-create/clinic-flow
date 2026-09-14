@@ -674,6 +674,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const impersonateUser = (targetUser) => {
+    if (!targetUser) return;
+    persistUser(targetUser);
+    localStorage.setItem('clinicflow_role', targetUser.role || 'doctor');
+    setUser(targetUser);
+    setRole(targetUser.role || 'doctor');
+    if (targetUser.clinicSlug && targetUser.clinicSlug !== '*') {
+      switchTenant?.(targetUser.clinicSlug);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{
@@ -690,6 +700,7 @@ export const AuthProvider = ({ children }) => {
       completeOnboarding,
       signOut,
       updateClinicInfo,
+      impersonateUser,
       isDemoMode
     }}>
       {children}
