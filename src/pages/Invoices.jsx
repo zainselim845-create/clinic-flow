@@ -20,10 +20,13 @@ const Invoices = () => {
       const stored = localStorage.getItem(`clinicflow_invoices_${slug}`);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (_) {}
-    return (defaultInvoices || []).filter(inv => !inv.clinicId || inv.clinicId === cid);
+    if (slug === 'dr-ahmed' || slug === 'dr-sara') {
+      return (defaultInvoices || []).filter(inv => inv.clinicId === cid);
+    }
+    return [];
   };
 
   const [invoicesList, setInvoicesList] = useState(() => loadScopedInvoices(clinicSlug, clinicId));

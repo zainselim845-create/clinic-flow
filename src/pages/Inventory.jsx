@@ -17,70 +17,100 @@ const Inventory = () => {
   const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id;
 
-  const [items, setItems] = useState([
-    {
-      id: 'inv-item-1',
-      name: 'كومبوزيت تجميلي 3M Filtek Z250 (A2)',
-      category: 'composite',
-      unit: 'سرنجة 4g',
-      minQuantity: 3,
-      currentQty: 2, // Low stock!
-      costPerUnit: 350,
-      lotNumber: 'LOT-3M-889',
-      expiryDate: '2027-05-15'
-    },
-    {
-      id: 'inv-item-2',
-      name: 'بنج موضعي ميبافاكيين أحمر (Mepivacaine 2%)',
-      category: 'anesthetics',
-      unit: 'علبة (50 كاربول)',
-      minQuantity: 2,
-      currentQty: 5,
-      costPerUnit: 420,
-      lotNumber: 'LOT-MEP-102',
-      expiryDate: '2026-11-20' // Soon!
-    },
-    {
-      id: 'inv-item-3',
-      name: 'بودرة مقاسات هيدروجوم الجينات (Hydrogum 5)',
-      category: 'impression',
-      unit: 'كيس 453g',
-      minQuantity: 4,
-      currentQty: 8,
-      costPerUnit: 280,
-      lotNumber: 'LOT-ALG-44',
-      expiryDate: '2028-01-10'
-    },
-    {
-      id: 'inv-item-4',
-      name: 'قفازات لاتكس فحص طبي مقاس M (Latex Gloves)',
-      category: 'infection_control',
-      unit: 'علبة (100 قفاز)',
-      minQuantity: 5,
-      currentQty: 1, // Critical!
-      costPerUnit: 180,
-      lotNumber: 'LOT-GLV-09',
-      expiryDate: '2029-08-30'
-    },
-    {
-      id: 'inv-item-5',
-      name: 'سنابل توربين حفر ماسية ألمانية (Diamond Burs Kit)',
-      category: 'burs',
-      unit: 'طقم 10 بيرز',
-      minQuantity: 2,
-      currentQty: 4,
-      costPerUnit: 450,
-      lotNumber: 'LOT-BUR-77',
-      expiryDate: '2030-01-01'
-    }
-  ]);
+  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
+  const isDemoClinic = currentSlug === 'dr-ahmed';
+
+  const loadScopedInventory = () => {
+    try {
+      const stored = localStorage.getItem(`clinicflow_inventory_${currentSlug}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (_) {}
+    return isDemoClinic ? [
+      {
+        id: 'inv-item-1',
+        clinicId: currentClinicId,
+        name: 'كومبوزيت تجميلي 3M Filtek Z250 (A2)',
+        category: 'composite',
+        unit: 'سرنجة 4g',
+        minQuantity: 3,
+        currentQty: 2, // Low stock!
+        costPerUnit: 350,
+        lotNumber: 'LOT-3M-889',
+        expiryDate: '2027-05-15'
+      },
+      {
+        id: 'inv-item-2',
+        clinicId: currentClinicId,
+        name: 'بنج موضعي ميبافاكيين أحمر (Mepivacaine 2%)',
+        category: 'anesthetics',
+        unit: 'علبة (50 كاربول)',
+        minQuantity: 2,
+        currentQty: 5,
+        costPerUnit: 420,
+        lotNumber: 'LOT-MEP-102',
+        expiryDate: '2026-11-20' // Soon!
+      },
+      {
+        id: 'inv-item-3',
+        clinicId: currentClinicId,
+        name: 'بودرة مقاسات هيدروجوم الجينات (Hydrogum 5)',
+        category: 'impression',
+        unit: 'كيس 453g',
+        minQuantity: 4,
+        currentQty: 8,
+        costPerUnit: 280,
+        lotNumber: 'LOT-ALG-44',
+        expiryDate: '2028-01-10'
+      },
+      {
+        id: 'inv-item-4',
+        clinicId: currentClinicId,
+        name: 'قفازات لاتكس فحص طبي مقاس M (Latex Gloves)',
+        category: 'infection_control',
+        unit: 'علبة (100 قفاز)',
+        minQuantity: 5,
+        currentQty: 1, // Critical!
+        costPerUnit: 180,
+        lotNumber: 'LOT-GLV-09',
+        expiryDate: '2029-08-30'
+      },
+      {
+        id: 'inv-item-5',
+        clinicId: currentClinicId,
+        name: 'سنابل توربين حفر ماسية ألمانية (Diamond Burs Kit)',
+        category: 'burs',
+        unit: 'طقم 10 بيرز',
+        minQuantity: 2,
+        currentQty: 4,
+        costPerUnit: 450,
+        lotNumber: 'LOT-BUR-77',
+        expiryDate: '2030-01-01'
+      }
+    ] : [];
+  };
+
+  const [items, setItems] = useState(loadScopedInventory);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    setItems(loadScopedInventory());
+  }, [currentSlug]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`clinicflow_inventory_${currentSlug}`, JSON.stringify(items));
+    } catch (_) {}
+  }, [items, currentSlug]);
+
+  useEffect(() => {
     async function load() {
+      if (!currentClinicId) return;
       const { data } = await getInventoryItems(currentClinicId);
       if (data && data.length > 0) {
         setItems(data);

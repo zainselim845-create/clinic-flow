@@ -17,58 +17,86 @@ const Labs = () => {
   const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id;
 
-  const [orders, setOrders] = useState([
-    {
-      id: 'lab-101',
-      patientName: 'أحمد محمود سليمان',
-      labName: 'معمل الأهرام للتركيبات الرقمية',
-      workType: 'طربوش زيركون (Zirconia Crown)',
-      toothNumber: 16,
-      shade: 'A2',
-      cost: 450,
-      status: 'first_try',
-      sentDate: '2026-08-25',
-      dueDate: '2026-08-31',
-      notes: 'إطباق خفيف مع نقطة تماس دقيقة',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'lab-102',
-      patientName: 'مريم علي عبد الله',
-      labName: 'معمل الدقي للأسنان',
-      workType: 'عدسة / فينير تجميلي (Veneer)',
-      toothNumber: 11,
-      shade: 'Bleach 2 (BL2)',
-      cost: 650,
-      status: 'sent',
-      sentDate: '2026-08-28',
-      dueDate: '2026-09-03',
-      notes: 'شفافية عالية في طرف السن',
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 'lab-103',
-      patientName: 'طارق حسام نبيل',
-      labName: 'معمل مودرن دنت',
-      workType: 'طقم جزئي متحرك (Partial Denture)',
-      toothNumber: null,
-      shade: 'A3',
-      cost: 900,
-      status: 'delivered',
-      sentDate: '2026-08-15',
-      dueDate: '2026-08-22',
-      receivedDate: '2026-08-21',
-      notes: 'تم تثبيت الطقم بنجاح للمريض',
-      createdAt: new Date().toISOString()
-    }
-  ]);
+  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
+  const isDemoClinic = currentSlug === 'dr-ahmed';
+
+  const loadScopedOrders = () => {
+    try {
+      const stored = localStorage.getItem(`clinicflow_labs_${currentSlug}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (_) {}
+    return isDemoClinic ? [
+      {
+        id: 'lab-101',
+        clinicId: currentClinicId,
+        patientName: 'أحمد محمود سليمان',
+        labName: 'معمل الأهرام للتركيبات الرقمية',
+        workType: 'طربوش زيركون (Zirconia Crown)',
+        toothNumber: 16,
+        shade: 'A2',
+        cost: 450,
+        status: 'first_try',
+        sentDate: '2026-08-25',
+        dueDate: '2026-08-31',
+        notes: 'إطباق خفيف مع نقطة تماس دقيقة',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'lab-102',
+        clinicId: currentClinicId,
+        patientName: 'مريم علي عبد الله',
+        labName: 'معمل الدقي للأسنان',
+        workType: 'عدسة / فينير تجميلي (Veneer)',
+        toothNumber: 11,
+        shade: 'Bleach 2 (BL2)',
+        cost: 650,
+        status: 'sent',
+        sentDate: '2026-08-28',
+        dueDate: '2026-09-03',
+        notes: 'شفافية عالية في طرف السن',
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'lab-103',
+        clinicId: currentClinicId,
+        patientName: 'طارق حسام نبيل',
+        labName: 'معمل مودرن دنت',
+        workType: 'طقم جزئي متحرك (Partial Denture)',
+        toothNumber: null,
+        shade: 'A3',
+        cost: 900,
+        status: 'delivered',
+        sentDate: '2026-08-15',
+        dueDate: '2026-08-22',
+        receivedDate: '2026-08-21',
+        notes: 'تم تثبيت الطقم بنجاح للمريض',
+        createdAt: new Date().toISOString()
+      }
+    ] : [];
+  };
+
+  const [orders, setOrders] = useState(loadScopedOrders);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    setOrders(loadScopedOrders());
+  }, [currentSlug]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`clinicflow_labs_${currentSlug}`, JSON.stringify(orders));
+    } catch (_) {}
+  }, [orders, currentSlug]);
+
+  useEffect(() => {
     async function load() {
+      if (!currentClinicId) return;
       const { data } = await getLabOrders(currentClinicId);
       if (data && data.length > 0) {
         setOrders(data);

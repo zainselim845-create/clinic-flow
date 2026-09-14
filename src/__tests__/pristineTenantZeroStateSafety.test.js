@@ -135,4 +135,28 @@ describe('Pristine Tenant Zero-State Safety & Anti-Leakage Architecture', () => 
     expect(match.name).toBe('د. zain selim');
     expect(match.role).toBe('doctor');
   });
+
+  it('guarantees secondary modules (Invoices, Labs, Inventory, Attendance) never leak demo records into custom doctor clinics', () => {
+    const customSlug = 'dr-zainselim845';
+
+    // 1. Invoices
+    const storedInvoices = localStorage.getItem(`clinicflow_invoices_${customSlug}`);
+    const scopedInvoices = storedInvoices ? JSON.parse(storedInvoices) : [];
+    expect(scopedInvoices).toHaveLength(0);
+
+    // 2. Labs
+    const storedLabs = localStorage.getItem(`clinicflow_labs_${customSlug}`);
+    const scopedLabs = storedLabs ? JSON.parse(storedLabs) : [];
+    expect(scopedLabs).toHaveLength(0);
+
+    // 3. Inventory
+    const storedInventory = localStorage.getItem(`clinicflow_inventory_${customSlug}`);
+    const scopedInventory = storedInventory ? JSON.parse(storedInventory) : [];
+    expect(scopedInventory).toHaveLength(0);
+
+    // 4. Attendance
+    const storedAttendance = localStorage.getItem(`clinicflow_attendance_${customSlug}`);
+    const scopedAttendance = storedAttendance ? JSON.parse(storedAttendance) : [];
+    expect(scopedAttendance).toHaveLength(0);
+  });
 });

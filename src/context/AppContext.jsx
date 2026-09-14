@@ -226,15 +226,13 @@ export function AppProvider({ children }) {
   // حفظ في localStorage معزول لكل عيادة بدون تجميد أو تسريب
   // ==========================================
   useEffect(() => {
-    if (state.isLoading) return;
+    if (state.isLoading || !state.currentTenantSlug) return;
     const currentSlug = tenantSlug || 'dr-ahmed';
 
     // Strict Isolation Guard: DO NOT save state if state does not match the active tenant slug!
-    if (state.currentTenantSlug && state.currentTenantSlug !== currentSlug) {
+    if (state.currentTenantSlug !== currentSlug) {
       return;
     }
-
-    if (state.patients.length === 0 && state.appointments.length === 0 && !state._freshReset) return;
 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);

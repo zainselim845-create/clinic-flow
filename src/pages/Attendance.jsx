@@ -13,29 +13,53 @@ const Attendance = () => {
   const { state } = useApp();
   const staffList = state.staffMembers || [];
 
-  const [attendanceRecords, setAttendanceRecords] = useState([
-    {
-      id: 'att-1',
-      staffName: 'سارة كمال (سكرتارية أولى)',
-      staffRole: 'سكرتير أول',
-      checkIn: new Date(Date.now() - 4 * 3600000).toISOString(),
-      checkOut: null,
-      totalHours: 4.0,
-      status: 'active'
-    },
-    {
-      id: 'att-2',
-      staffName: 'مينا سمير (مساعد طبيب أسنان)',
-      staffRole: 'مساعد طبيب',
-      checkIn: new Date(Date.now() - 6 * 3600000).toISOString(),
-      checkOut: new Date(Date.now() - 1 * 3600000).toISOString(),
-      totalHours: 5.0,
-      status: 'completed'
-    }
-  ]);
+  const currentSlug = state.clinicInfo?.slug || 'dr-ahmed';
+  const isDemoClinic = currentSlug === 'dr-ahmed';
+
+  const loadScopedAttendance = () => {
+    try {
+      const stored = localStorage.getItem(`clinicflow_attendance_${currentSlug}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (_) {}
+    return isDemoClinic ? [
+      {
+        id: 'att-1',
+        staffName: 'سارة كمال (سكرتارية أولى)',
+        staffRole: 'سكرتير أول',
+        checkIn: new Date(Date.now() - 4 * 3600000).toISOString(),
+        checkOut: null,
+        totalHours: 4.0,
+        status: 'active'
+      },
+      {
+        id: 'att-2',
+        staffName: 'مينا سمير (مساعد طبيب أسنان)',
+        staffRole: 'مساعد طبيب',
+        checkIn: new Date(Date.now() - 6 * 3600000).toISOString(),
+        checkOut: new Date(Date.now() - 1 * 3600000).toISOString(),
+        totalHours: 5.0,
+        status: 'completed'
+      }
+    ] : [];
+  };
+
+  const [attendanceRecords, setAttendanceRecords] = useState(loadScopedAttendance);
 
   const [selectedStaffId, setSelectedStaffId] = useState(staffList[0]?.id || 'staff-1');
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('ar-EG'));
+
+  useEffect(() => {
+    setAttendanceRecords(loadScopedAttendance());
+  }, [currentSlug]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`clinicflow_attendance_${currentSlug}`, JSON.stringify(attendanceRecords));
+    } catch (_) {}
+  }, [attendanceRecords, currentSlug]);
 
   useEffect(() => {
     async function loadAttendance() {

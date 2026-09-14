@@ -75,6 +75,10 @@ export function systemReducer(state, action) {
 
     case 'REFRESH_TODAY_DEMO_DATA': {
       const slug = state.currentTenantSlug || 'dr-ahmed';
+      const isDemoTenant = slug === 'dr-ahmed' || slug === 'dr-sara';
+      if (!isDemoTenant) {
+        return state;
+      }
       const freshSeed = getInitialDataForTenant(state.clinicInfo || slug);
       const today = getTodayDateStr();
       const nonToday = (state.appointments || []).filter(a => a.date !== today);

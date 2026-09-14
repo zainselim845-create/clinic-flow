@@ -4,28 +4,32 @@ import {
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { recallPresets } from '../data/demoData';
 import './PatientRecallModal.css';
 
 export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
   const { state, dispatch } = useApp();
+  const { tenant } = useTenant();
   const today = getTodayDateStr();
-  const currentClinicId = state?.clinicInfo?.id;
+  const currentClinicId = tenant?.id || state?.clinicInfo?.id;
 
   const patients = useMemo(() => {
-    if (!currentClinicId) return [];
     return (state?.patients || []).filter(p => {
+      if (!p) return false;
       const pClinicId = p.clinicId || p.clinic_id;
-      return pClinicId === currentClinicId;
+      if (pClinicId && currentClinicId) return pClinicId === currentClinicId;
+      return true;
     });
   }, [state?.patients, currentClinicId]);
 
   const clinicRecalls = useMemo(() => {
-    if (!currentClinicId) return [];
     return (state?.recalls || []).filter(r => {
+      if (!r) return false;
       const rClinicId = r.clinicId || r.clinic_id;
-      return rClinicId === currentClinicId;
+      if (rClinicId && currentClinicId) return rClinicId === currentClinicId;
+      return true;
     });
   }, [state?.recalls, currentClinicId]);
 

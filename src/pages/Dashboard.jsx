@@ -449,14 +449,16 @@ const Dashboard = () => {
             <Landmark size={15} />
             <span>تسليم وردية الاستقبال</span>
           </button>
-          <button 
-            type="button" 
-            onClick={handleRefreshToday} 
-            className="google-m3-icon-btn" 
-            title="تحديث واستعادة جدول اليوم"
-          >
-            <RotateCcw size={15} />
-          </button>
+          {(currentClinic?.slug === 'dr-ahmed' || currentClinic?.slug === 'dr-sara') && (
+            <button 
+              type="button" 
+              onClick={handleRefreshToday} 
+              className="google-m3-icon-btn" 
+              title="تحديث واستعادة جدول اليوم التجريبي"
+            >
+              <RotateCcw size={15} />
+            </button>
+          )}
           <button 
             type="button" 
             onClick={() => setIsWalkInModalOpen(true)} 
