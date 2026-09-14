@@ -17,86 +17,42 @@ import { useTenant } from '../context/TenantContext';
 export const CURATED_CLINIC_PALETTES = [
   {
     id: 'monochrome',
-    name: 'الأبيض والأسود الأساسي',
-    englishName: 'Architectural Monochrome',
+    name: 'الأبيض والأسود المعماري النقي',
+    englishName: 'Architectural Monochrome Noir',
     hex: '#09090B',
     lightHex: '#09090B',
     darkHex: '#FFFFFF',
     isDefault: true,
-    category: 'الأساس المعماري المعتمد للمنظومة',
-    badgeText: 'الأساسي الفاخر (Default Noir)',
-    specialty: 'كافة التخصصات الطبية والمراكز الاستشارية',
-    description: 'الهوية الأساسية الفاخرة لـ ClinicFlow — تباين عالٍ وأناقة معمارية مطلقة باللونين الأبيض والأسود النقي (Linear & Apple Aesthetic).'
+    category: 'الأساس المعماري الفاخر للمنظومة',
+    badgeText: 'الأساسي النخبوي (Default Noir)',
+    specialty: 'كافة التخصصات، المراكز الاستشارية، وعشاق الهدوء المعماري النقي',
+    description: 'الهوية الأساسية الفاخرة لـ ClinicFlow — تباين عالٍ وأناقة معمارية مطلقة باللونين الأبيض والأسود النقي (Minimalist Monochrome).'
   },
   {
     id: 'royal-blue',
-    name: 'أزرق سريري ملكي',
+    name: 'الأزرق السريري الملكي',
     englishName: 'Royal Medical Blue',
     hex: '#007AFF',
-    category: 'الاستشارات والجراحة',
-    badgeText: 'Royal Blue',
-    specialty: 'الجراحة العامة، العيون، والمراكز التخصصية',
-    description: 'لون نظام آبل السريري المعتمد، يمنح شعوراً بالثقة التامة والمصداقية الطبية الرفيعة.'
+    lightHex: '#007AFF',
+    darkHex: '#0A84FF',
+    isDefault: false,
+    category: 'الطب الكلاسيكي والعمليات الجراحية',
+    badgeText: 'Royal Medical',
+    specialty: 'الجراحة العامة، الاستشارات التخصصية، العيون، والمستشفيات الخاصة',
+    description: 'لون طبي استشاري عريق، يمنح أعلى درجات المصداقية والوقار والثقة الطبية المتبادلة بين المريض والطبيب.'
   },
   {
     id: 'clinical-emerald',
-    name: 'زمردي طبي هادئ',
-    englishName: 'Clinical Emerald',
+    name: 'الزمردي الصحي والتعافي الحيوي',
+    englishName: 'Clinical Emerald & Wellness',
     hex: '#10B981',
-    category: 'طب الأسنان والمراكز الصحية',
+    lightHex: '#10B981',
+    darkHex: '#34D399',
+    isDefault: false,
+    category: 'طب الأسنان، الجلدية، والتأهيل الصحي',
     badgeText: 'Health Emerald',
-    specialty: 'طب وجراحة الفم والأسنان، الطب الوقائي',
-    description: 'رمز الصحة والتعافي والحيوية، الخيار الأول لعيادات ومراكز طب الأسنان المتطورة.'
-  },
-  {
-    id: 'electric-indigo',
-    name: 'نيلي رقمي معاصر',
-    englishName: 'Electric Indigo',
-    hex: '#6366F1',
-    category: 'العيادات الذكية والتقنية',
-    badgeText: 'Digital Indigo',
-    specialty: 'الأشعة التخصصية، عيادات الذكاء الاصطناعي',
-    description: 'طابع مستقبلي متطور يعكس أعلى درجات الدقة والتحول الرقمي في الرعاية الصحية.'
-  },
-  {
-    id: 'warm-amber',
-    name: 'عنبر دافئ واستشاري',
-    englishName: 'Warm Amber',
-    hex: '#F59E0B',
-    category: 'طب الأطفال والعلاج الطبيعي',
-    badgeText: 'Warm Amber',
-    specialty: 'طب الأطفال، العلاج الطبيعي، التأهيل الحركي',
-    description: 'لون دافئ ومطمئن يبعث على الراحة والألفة لدى المرضى والأطفال وأسرهم.'
-  },
-  {
-    id: 'crimson-rose',
-    name: 'ياقوتي عنابي ملكي',
-    englishName: 'Crimson Rose',
-    hex: '#E11D48',
-    category: 'الجلدية والتجميل والليزر',
-    badgeText: 'Aesthetic Rose',
-    specialty: 'الجلدية، التجميل غير الجراحي، مراكز الليزر',
-    description: 'أناقة ناعمة وراقية تناسب مراكز التجميل والجلدية والعناية الفائقة بأعلى مقاييس الفخامة.'
-  },
-  {
-    id: 'ocean-cyan',
-    name: 'فيروزي بحري متجدد',
-    englishName: 'Ocean Cyan',
-    hex: '#06B6D4',
-    category: 'الصحة النفسية والباطنة',
-    badgeText: 'Ocean Cyan',
-    specialty: 'الطب النفسي، الباطنة العامة، التغذية العلاجية',
-    description: 'انتعاش وهدوء نفسي عميق يعزز صفاء الذهن والاسترخاء خلال الجلسات العلاجية.'
-  },
-  {
-    id: 'regal-violet',
-    name: 'بنفسجي ملكي نخبوي',
-    englishName: 'Regal Violet',
-    hex: '#8B5CF6',
-    category: 'المجمعات الطبية الكبرى',
-    badgeText: 'Regal Violet',
-    specialty: 'المستشفيات الخاصة، المجمعات الطبية متعددة التخصصات',
-    description: 'طابع نخبوي رفيع للمجمعات الطبية الكبرى التي تنشد التميز والفرادة البصرية.'
+    specialty: 'طب وجراحة الأسنان، الجلدية والتجميل، العلاج الطبيعي والتغذية',
+    description: 'رمز التعافي والراحة النفسية والحيوية، الخيار المفضل لعيادات ومراكز طب الأسنان والطب الوقائي والتجميلي.'
   }
 ];
 
@@ -222,74 +178,21 @@ export default function ClinicPalettePicker({
         )}
       </div>
 
-      {/* 2. Featured Monochrome Core Card */}
-      <div 
-        onClick={() => handleSelect(CURATED_CLINIC_PALETTES[0])}
-        className={`
-          p-4 sm:p-5 rounded-[16px] cursor-pointer transition-all duration-200 border-2
-          ${activePalette.id === 'monochrome'
-            ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-md'
-            : 'bg-white dark:bg-[#18181B] text-black dark:text-white border-black/[0.08] dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/30'
-          }
-        `}
-      >
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            {/* Visual Swatch disc for Monochrome */}
-            <div className="relative w-[36px] h-[36px] rounded-full overflow-hidden border-2 border-current flex shadow-inner shrink-0">
-              <div className="w-1/2 h-full bg-white" />
-              <div className="w-1/2 h-full bg-black" />
-              {activePalette.id === 'monochrome' && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 dark:bg-white/20">
-                  <Check size={16} strokeWidth={3} className="text-white dark:text-black" />
-                </div>
-              )}
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[15px] font-bold leading-tight">
-                  النمط المعماري الأساسي: الأبيض والأسود النقي (Default Noir)
-                </span>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${activePalette.id === 'monochrome' ? 'bg-white/20 text-white dark:bg-black/20 dark:text-black' : 'bg-black/10 dark:bg-white/10 text-black dark:text-white'}`}>
-                  الأساس المعتمد
-                </span>
-              </div>
-              <p className={`text-[12px] mt-0.5 leading-snug ${activePalette.id === 'monochrome' ? 'text-white/80 dark:text-black/80' : 'text-[#71717A] dark:text-[#A1A1AA]'}`}>
-                {CURATED_CLINIC_PALETTES[0].description}
-              </p>
-            </div>
-          </div>
-
-          <div className="shrink-0 flex items-center">
-            {activePalette.id === 'monochrome' ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold bg-white text-black dark:bg-black dark:text-white shadow-sm">
-                <Check size={14} strokeWidth={2.5} />
-                <span>مفعّل حالياً</span>
-              </span>
-            ) : (
-              <span className="text-[12px] font-medium text-[#71717A] dark:text-[#A1A1AA]">
-                انقر للتفعيل
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. The Curated Palette Grid */}
+      {/* 2. The 3 Curated Master Palettes Grid */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <span className="text-[13px] font-bold text-[#71717A] dark:text-[#A1A1AA] uppercase tracking-wider">
-            بلتة ألوان العيادات المختارة بعناية (7 ألوان سريرية تخصصية)
+            بلتة الألوان الثلاثية المعتمدة (تنوع يخدم كافة الأذواق مع بقاء الأساس أبيض وأسود)
           </span>
           <span className="text-[12px] text-[#71717A] dark:text-[#A1A1AA]">
-            اختر لوناً لتمييز هوية وأزرار عيادتك
+            3 اختيارات نُخبوية مدروسة
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {CURATED_CLINIC_PALETTES.filter(p => !p.isDefault).map((palette) => {
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {CURATED_CLINIC_PALETTES.map((palette) => {
             const isSelected = activePalette.id === palette.id;
+            const isMonochrome = palette.id === 'monochrome';
 
             return (
               <button
@@ -297,54 +200,86 @@ export default function ClinicPalettePicker({
                 type="button"
                 onClick={() => handleSelect(palette)}
                 className={`
-                  text-right p-4 rounded-[16px] transition-all duration-200 cursor-pointer relative flex flex-col justify-between
+                  text-right p-5 rounded-[18px] transition-all duration-200 cursor-pointer relative flex flex-col justify-between
                   ${isSelected
-                    ? 'bg-white dark:bg-[#1C1C1E] border-2 shadow-md'
-                    : 'bg-white dark:bg-[#18181B] border border-black/[0.08] dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/30'
+                    ? (isMonochrome 
+                        ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-2 border-zinc-900 dark:border-white shadow-lg scale-[1.01]'
+                        : 'bg-white dark:bg-[#1C1C1E] border-2 shadow-lg scale-[1.01]')
+                    : 'bg-white dark:bg-[#18181B] border border-black/[0.08] dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/30 hover:shadow-md'
                   }
                 `}
                 style={{
-                  borderColor: isSelected ? palette.hex : undefined
+                  borderColor: isSelected && !isMonochrome ? palette.hex : undefined
                 }}
               >
-                {/* Header: Color Swatch + Check */}
-                <div className="flex items-center justify-between w-full mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      style={{ backgroundColor: palette.hex }}
-                      className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-white shadow-sm shrink-0"
+                <div>
+                  {/* Card Header: Color Swatch + Badges */}
+                  <div className="flex items-center justify-between w-full mb-3.5">
+                    <div className="flex items-center gap-2.5">
+                      {isMonochrome ? (
+                        <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border-2 border-current flex shadow-inner shrink-0">
+                          <div className="w-1/2 h-full bg-white" />
+                          <div className="w-1/2 h-full bg-zinc-900" />
+                          {isSelected && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 dark:bg-white/20">
+                              <Check size={16} strokeWidth={3} className={isMonochrome ? 'text-white dark:text-zinc-900' : 'text-white'} />
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div
+                          style={{ backgroundColor: palette.hex }}
+                          className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-white shadow-sm shrink-0"
+                        >
+                          {isSelected && <Check size={18} strokeWidth={3} />}
+                        </div>
+                      )}
+
+                      <div>
+                        <h5 className={`text-[15px] font-bold leading-tight ${isSelected && isMonochrome ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                          {palette.name}
+                        </h5>
+                        <span className={`text-[11px] font-mono ${isSelected && isMonochrome ? 'text-zinc-300 dark:text-zinc-600' : 'text-[#71717A] dark:text-[#A1A1AA]'}`}>
+                          {palette.hex}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span 
+                      style={!isMonochrome && isSelected ? { backgroundColor: `${palette.hex}20`, color: palette.hex } : undefined}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        isSelected 
+                          ? (isMonochrome ? 'bg-white/20 text-white dark:bg-zinc-900/10 dark:text-zinc-900' : '')
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                      }`}
                     >
-                      {isSelected && <Check size={16} strokeWidth={3} />}
-                    </div>
-                    <div>
-                      <h5 className="text-[14px] font-bold text-black dark:text-white leading-tight">
-                        {palette.name}
-                      </h5>
-                      <span className="text-[11px] font-mono text-[#71717A] dark:text-[#A1A1AA]">
-                        {palette.hex}
-                      </span>
-                    </div>
+                      {isSelected ? 'اللون المعتمد' : palette.badgeText}
+                    </span>
                   </div>
 
-                  {isSelected && (
-                    <span 
-                      style={{ backgroundColor: `${palette.hex}20`, color: palette.hex }}
-                      className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                    >
-                      نشط
+                  {/* Specialty Category */}
+                  <div className="space-y-1.5 mb-4">
+                    <span className={`text-[11px] font-bold uppercase tracking-wider block ${
+                      isSelected && isMonochrome ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-400 dark:text-zinc-500'
+                    }`}>
+                      {palette.category}
                     </span>
-                  )}
+                    <p className={`text-[12px] font-medium leading-relaxed ${
+                      isSelected && isMonochrome ? 'text-zinc-100 dark:text-zinc-800' : 'text-zinc-800 dark:text-zinc-200'
+                    }`}>
+                      {palette.specialty}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Subtitle & Specialty Recommendation */}
-                <div className="text-[12px] text-[#71717A] dark:text-[#A1A1AA] space-y-1">
-                  <p className="font-medium text-black/80 dark:text-white/80">
-                    {palette.specialty}
-                  </p>
-                  <p className="text-[11px] leading-relaxed text-[#71717A] dark:text-[#A1A1AA] line-clamp-2">
-                    {palette.description}
-                  </p>
-                </div>
+                {/* Description Footer */}
+                <p className={`text-[11px] leading-relaxed pt-3 border-t ${
+                  isSelected && isMonochrome 
+                    ? 'border-white/10 dark:border-zinc-900/10 text-zinc-200 dark:text-zinc-700' 
+                    : 'border-zinc-100 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400'
+                }`}>
+                  {palette.description}
+                </p>
               </button>
             );
           })}

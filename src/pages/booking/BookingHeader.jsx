@@ -10,7 +10,15 @@ export default function BookingHeader({ clinic, onNavigate }) {
         style={{ cursor: 'pointer' }}
         title="دليل العيادات والمراكز المعتمدة"
       >
-        <Stethoscope size={24} className="brand-logo-icon" />
+        {(clinic?.logoUrl || clinic?.branding?.logoUrl) ? (
+          <img 
+            src={clinic.logoUrl || clinic.branding.logoUrl} 
+            alt={clinic?.name || 'شعار العيادة'} 
+            style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '8px', flexShrink: 0 }}
+          />
+        ) : (
+          <Stethoscope size={24} className="brand-logo-icon" />
+        )}
         <div style={{ minWidth: 0, overflow: 'hidden' }}>
           <h1 className="brand-title" style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {clinic?.name || 'حجز موعد في العيادة'}

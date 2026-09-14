@@ -13,6 +13,7 @@ export { Combobox } from './combobox';
 export { Slider } from './slider';
 export { Carousel } from './carousel';
 export { Popover } from './popover';
+export { Portal } from '@ark-ui/react/portal';
 
 // Design System Primitives
 export { Avatar, default as AvatarDefault } from './avatar';
@@ -27,22 +28,3 @@ export { Tabs as ArkTabs } from './tabs';
 export { Menu as ArkMenu } from './menu';
 export { Accordion as ArkAccordion } from './accordion';
 export { Tooltip as ArkTooltip } from './tooltip';
-
-// Apple Human Interface & Advanced Glassmorphism Primitives
-export { AppleGlassCard, default as AppleGlassCardDefault } from './AppleGlassCard';
-export { AppleGlassButton, AppleButton, default as AppleGlassButtonDefault } from './AppleGlassButton';
-export { AppleGlassDock, default as AppleGlassDockDefault } from './AppleGlassDock';
-export { AppleGlassSegmentedControl, AppleSegmentedControl, default as AppleGlassSegmentedControlDefault } from './AppleGlassSegmentedControl';
-export { AppleInsetGroupedList, AppleInsetItem, AppleInsetGroupedCard, default as AppleInsetGroupedListDefault } from './AppleInsetGroupedList';
-export { AppleSheetModal, default as AppleSheetModalDefault } from './AppleSheetModal';
-export { AppleNavigationBar, default as AppleNavigationBarDefault } from './AppleNavigationBar';
-export { AppleTabBar, default as AppleTabBarDefault } from './AppleTabBar';
-
-export type { AppleMaterialTier } from './AppleGlassCard';
-export type { AppleButtonVariant, AppleButtonSize, AppleButtonShape } from './AppleGlassButton';
-export type { AppleDockItem } from './AppleGlassDock';
-export type { SegmentOption } from './AppleGlassSegmentedControl';
-export type { AppleSystemColor, AppleInsetItemProps, AppleInsetGroupedListProps } from './AppleInsetGroupedList';
-export type { AppleSheetModalProps } from './AppleSheetModal';
-export type { AppleNavigationBarProps } from './AppleNavigationBar';
-export type { AppleTabBarProps, AppleTabItem } from './AppleTabBar';

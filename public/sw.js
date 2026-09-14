@@ -1,5 +1,5 @@
 // ClinicFlow Progressive Web App (PWA) Service Worker
-const CACHE_NAME = 'clinicflow-shell-v2';
+const CACHE_NAME = 'clinicflow-shell-v3';
 const PRECACHE_ASSETS = [
   '/',
   '/favicon.svg',

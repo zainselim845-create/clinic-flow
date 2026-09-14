@@ -26,7 +26,8 @@ import {
   CreateUserModal,
   EditUserModal,
   TopUpCreditsModal,
-  SaasInfrastructureCenter
+  SaasInfrastructureCenter,
+  SaasBrandingModal
 } from './components';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import { 
@@ -45,7 +46,7 @@ import './SuperAdminDashboard.css';
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { signOut, impersonateUser } = useAuth();
-  const { allTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant } = useTenant();
+  const { allTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant, updateTenantInfo } = useTenant();
   const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'users' | 'telemetry_bugs' | 'infrastructure'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
   const [bugReports, setBugReports] = useState(getBugReports());
@@ -56,6 +57,8 @@ export default function SuperAdminDashboard() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false);
   const [selectedTopUpClinic, setSelectedTopUpClinic] = useState(null);
+  const [isBrandingModalOpen, setIsBrandingModalOpen] = useState(false);
+  const [selectedBrandingClinic, setSelectedBrandingClinic] = useState(null);
 
   // User accounts management state
   const [allUsers, setAllUsers] = useState(() => getAllPlatformUsers());
@@ -469,6 +472,10 @@ export default function SuperAdminDashboard() {
               setSelectedTopUpClinic(clinic);
               setIsTopUpModalOpen(true);
             }}
+            onCustomizeBrand={(clinic) => {
+              setSelectedBrandingClinic(clinic);
+              setIsBrandingModalOpen(true);
+            }}
             onDeleteClinic={handleDeleteClinic}
           />
         ) : activeTab === 'users' ? (
@@ -564,6 +571,38 @@ export default function SuperAdminDashboard() {
         onSubmit={handleUpdateUser}
         onResetPassword={handleDirectResetPassword}
         allTenants={allTenants}
+      />
+
+      {/* Modal: SaaS Clinic Branding & Logo Customizer */}
+      <SaasBrandingModal
+        isOpen={isBrandingModalOpen}
+        onClose={() => {
+          setIsBrandingModalOpen(false);
+          setSelectedBrandingClinic(null);
+        }}
+        clinic={selectedBrandingClinic}
+        onSave={async (clinicIdOrSlug, brandingUpdates) => {
+          if (updateTenantInfo) {
+            updateTenantInfo({
+              id: clinicIdOrSlug,
+              slug: clinicIdOrSlug,
+              ...brandingUpdates
+            });
+          }
+          setAllTenants(prev => prev.map(t => {
+            if (t.id === clinicIdOrSlug || t.slug === clinicIdOrSlug) {
+              return {
+                ...t,
+                ...brandingUpdates,
+                branding: {
+                  ...(t.branding || {}),
+                  ...(brandingUpdates.branding || {})
+                }
+              };
+            }
+            return t;
+          }));
+        }}
       />
     </div>
   );

@@ -7,4 +7,5 @@ export { CreateUserModal } from './CreateUserModal';
 export { EditUserModal } from './EditUserModal';
 export { TopUpCreditsModal } from './TopUpCreditsModal';
 export { SaasInfrastructureCenter } from './SaasInfrastructureCenter';
+export { default as SaasBrandingModal } from './SaasBrandingModal';
 

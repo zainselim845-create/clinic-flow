@@ -61,7 +61,7 @@ jobs:
           echo "✅ Production index.html verified" >> $GITHUB_STEP_SUMMARY
           echo "✅ Zero production sourcemaps leaked (100% IP & Data Protection)" >> $GITHUB_STEP_SUMMARY
           echo "✅ Total production bundle size: **$TOTAL_SIZE**" >> $GITHUB_STEP_SUMMARY
-          echo "✅ 46 Test Files / 475 Specs passed with 0 failures" >> $GITHUB_STEP_SUMMARY
+          echo "✅ 47 Test Files / 480 Specs passed with 0 failures" >> $GITHUB_STEP_SUMMARY
 
       - name: 📤 Upload Production Build Artifacts
         uses: actions/upload-artifact@v4

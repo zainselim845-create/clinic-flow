@@ -154,7 +154,17 @@ const Header = ({ title, onOpenAiCopilot }) => {
 
           {/* Unified Google-Style Profile Chip */}
           <div className="doctor-profile">
-            <div className="avatar">{initial}</div>
+            <div className="avatar" style={{ overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {(tenant?.logoUrl || tenant?.branding?.logoUrl || state.clinicInfo?.logoUrl) ? (
+                <img 
+                  src={tenant?.logoUrl || tenant?.branding?.logoUrl || state.clinicInfo?.logoUrl} 
+                  alt="شعار العيادة" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                initial
+              )}
+            </div>
             <div className="doctor-info">
               <span className="doctor-name">{displayName}</span>
               <span className="doctor-role">{displayRole}</span>

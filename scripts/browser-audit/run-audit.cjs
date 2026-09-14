@@ -76,7 +76,7 @@ async function runUiAudit() {
   await page.waitForTimeout(600);
 
   try {
-    await page.click('button:has-text("تسجيل حضور مباشر")');
+    await page.click('button:has-text("تسجيل حضور مباشر"), button:has-text("تسجيل مريض جديد"), button:has-text("تسجيل مريض")');
     await page.waitForTimeout(300);
     const closeBtn = await page.$('.modal-content button.close-btn, .btn-close, button:has-text("إلغاء")');
     if (closeBtn) await closeBtn.click();

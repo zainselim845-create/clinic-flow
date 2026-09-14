@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2 } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette } from 'lucide-react';
 import { getClinicUsage } from '../../../services/usageMeteringService';
 import { getClinicSenderId } from '../../../services/smsService';
 
@@ -21,6 +21,7 @@ export function ClinicsTable({
   onReactivateClinic,
   onSwitchAndVisit,
   onTopUpClinic,
+  onCustomizeBrand,
   onDeleteClinic
 }) {
   return (
@@ -277,6 +278,30 @@ export function ClinicsTable({
                         >
                           <Zap size={13} color="#D97706" />
                           <span>شحن رصيد</span>
+                        </button>
+
+                        {/* Brand & Logo Customization Button for SaaS SuperAdmin */}
+                        <button
+                          type="button"
+                          onClick={() => onCustomizeBrand && onCustomizeBrand(t)}
+                          className="btn-brand-clinic"
+                          title="تخصيص الشعار والباليتة الثلاثية للعيادة"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            background: '#F4F4F5',
+                            border: '1px solid #E4E4E7',
+                            borderRadius: '6px',
+                            padding: '0.32rem 0.6rem',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            color: '#09090B'
+                          }}
+                        >
+                          <Palette size={13} color="#09090B" />
+                          <span>الهوية والشعار</span>
                         </button>
 
                         {isPending && (

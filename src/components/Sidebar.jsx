@@ -54,10 +54,22 @@ const Sidebar = () => {
           className="logo-icon-wrap"
           style={{ 
             backgroundColor: tenant?.branding?.primaryColor ? `${tenant.branding.primaryColor}1A` : undefined,
-            color: tenant?.branding?.primaryColor || 'var(--primary)'
+            color: tenant?.branding?.primaryColor || 'var(--primary)',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
-          <LogoIcon size={22} />
+          {(tenant?.logoUrl || tenant?.branding?.logoUrl) ? (
+            <img 
+              src={tenant.logoUrl || tenant.branding.logoUrl} 
+              alt={brandTitle}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '10px' }} 
+            />
+          ) : (
+            <LogoIcon size={22} />
+          )}
         </div>
         <h2>{brandTitle}</h2>
       </div>

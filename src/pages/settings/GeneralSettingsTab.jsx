@@ -9,6 +9,7 @@ import {
 import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
 import { formatSenderId } from '../../services/smsService';
 import ClinicPalettePicker from '../../components/ClinicPalettePicker';
+import ClinicLogoUploader from '../../components/ClinicLogoUploader';
 
 export default function GeneralSettingsTab({
   clinicForm,
@@ -77,9 +78,24 @@ export default function GeneralSettingsTab({
       )}
 
       {/* ======================================================== */}
-      {/* BRAND & MONOCHROME COLOR PALETTE CUSTOMIZER               */}
+      {/* BRAND & IDENTITY: LOGO UPLOADER & 3-COLOR PALETTE         */}
       {/* ======================================================== */}
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '1.75rem' }}>
+        <ClinicLogoUploader
+          value={clinicForm.logoUrl || clinicForm.branding?.logoUrl || ''}
+          onChange={(newLogoUrl) => {
+            setClinicForm(prev => ({
+              ...prev,
+              logoUrl: newLogoUrl,
+              branding: {
+                ...(prev.branding || {}),
+                logoUrl: newLogoUrl
+              }
+            }));
+          }}
+          onSaveDirectly={true}
+        />
+
         <ClinicPalettePicker
           value={clinicForm.branding?.primaryColor || clinicForm.primaryColor || '#09090B'}
           onChange={(newColor, palette) => {
