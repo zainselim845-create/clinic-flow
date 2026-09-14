@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTenant } from '../context/TenantContext';
 
@@ -168,6 +168,22 @@ export default function SeoHeadManager() {
     updateOg('og:title', finalTitle);
     updateOg('og:description', finalDesc);
     updateOg('og:url', canonicalUrl);
+    updateOg('og:image', `${hostDomain}/og-image.png`);
+    updateOg('og:image:alt', finalTitle);
+
+    const updateTwitterMeta = (name, content) => {
+      let tag = document.querySelector(`meta[name="${name}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('name', name);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+    updateTwitterMeta('twitter:title', finalTitle);
+    updateTwitterMeta('twitter:description', finalDesc);
+    updateTwitterMeta('twitter:image', `${hostDomain}/og-image.png`);
+    updateTwitterMeta('twitter:image:alt', finalTitle);
 
     // 5. Update Robots meta for 404
     let robotsTag = document.querySelector('meta[name="robots"]');

@@ -3,6 +3,7 @@ import {
   Building2, Search, Stethoscope, Award, MapPin, Globe, ArrowLeft 
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../../utils/specialtyUtils';
+import Breadcrumbs from '../../components/Breadcrumbs';
 
 export default function ClinicDiscoveryView({
   allTenants,
@@ -52,6 +53,7 @@ export default function ClinicDiscoveryView({
 
       {/* Directory Content */}
       <div className="nebras-body-container" style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem 1.5rem' }}>
+        <Breadcrumbs />
         {/* Header Hero */}
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div style={{

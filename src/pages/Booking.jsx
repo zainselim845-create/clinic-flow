@@ -20,6 +20,7 @@ import SuspendedClinicView from './booking/SuspendedClinicView';
 import PhoneCheckStep from './booking/PhoneCheckStep';
 import AppointmentDetailsStep from './booking/AppointmentDetailsStep';
 import BookingSuccessStep from './booking/BookingSuccessStep';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 import './Booking.css';
 
@@ -430,6 +431,7 @@ const Booking = () => {
       <BookingHeader clinic={currentClinic} onNavigate={navigate} />
 
       <div className="nebras-body-container">
+        <Breadcrumbs />
         {/* Visual Progress Stepper */}
         <div className="booking-visual-stepper">
           <div className={`stepper-step ${currentStep === 'phone_check' ? 'active' : 'completed'}`}>

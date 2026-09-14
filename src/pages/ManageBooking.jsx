@@ -13,6 +13,7 @@ import { cleanEgyptianPhone } from '../utils/phoneValidation';
 import { checkActionRateLimit } from '../utils/rateLimiter';
 import * as appointmentsService from '../services/appointmentsService';
 import { isSupabaseConfigured } from '../lib/supabase';
+import Breadcrumbs from '../components/Breadcrumbs';
 import './ManageBooking.css';
 
 const ManageBooking = () => {
@@ -318,7 +319,7 @@ const ManageBooking = () => {
   return (
     <div className="manage-booking-page">
       <div className="manage-booking-container glass-card">
-        
+        <Breadcrumbs />
         {/* Header */}
         <div className="manage-header">
           <div className="brand-badge">

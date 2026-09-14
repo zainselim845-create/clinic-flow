@@ -28,6 +28,7 @@ import {
   TopUpCreditsModal,
   SaasInfrastructureCenter
 } from './components';
+import Breadcrumbs from '../../components/Breadcrumbs';
 import { 
   saveRegisteredTenant, 
   saveRegisteredUser,
@@ -393,6 +394,7 @@ export default function SuperAdminDashboard() {
 
       {/* Main Container */}
       <div className="super-admin-container">
+        <Breadcrumbs />
         {/* KPI Cards Grid */}
         <SaasStatsGrid 
           totalClinics={totalClinics}
