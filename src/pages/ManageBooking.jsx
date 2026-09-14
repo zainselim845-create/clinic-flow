@@ -323,7 +323,7 @@ const ManageBooking = () => {
         <div className="manage-header">
           <div className="brand-badge">
             <Stethoscope size={28} className="text-primary" />
-            <h2>بوابة إدارة مواعيد المرضى المؤمنة</h2>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>بوابة إدارة مواعيد المرضى المؤمنة</h1>
           </div>
           <p className="subtitle">عرض وتعديل أو إلغاء موعدك الطبي بأمان تام وخصوصية مشددة بدون أي رسوم أو اشتراكات</p>
           <div className="security-notice-badge">

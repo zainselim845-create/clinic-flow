@@ -12,9 +12,9 @@ export default function BookingHeader({ clinic, onNavigate }) {
       >
         <Stethoscope size={24} className="brand-logo-icon" />
         <div style={{ minWidth: 0, overflow: 'hidden' }}>
-          <span className="brand-title" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {clinic?.name}
-          </span>
+          <h1 className="brand-title" style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {clinic?.name || 'حجز موعد في العيادة'}
+          </h1>
           {clinic?.doctorName && (
             <span className="brand-subtitle" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {clinic.doctorName} — {clinic.specialty}

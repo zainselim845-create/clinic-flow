@@ -22,6 +22,7 @@ import {
 } from './components';
 import { saveRegisteredTenant, saveRegisteredUser } from '../../services/authService';
 import { formatSenderId } from '../../services/smsService';
+import { getClinicUsage } from '../../services/usageMeteringService';
 import { useApp } from '../../context/AppContext';
 import DatabaseSyncTab from '../settings/DatabaseSyncTab';
 import SmsConfigTab from '../settings/SmsConfigTab';
@@ -32,7 +33,7 @@ export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { state, dispatch } = useApp();
-  const { allTenants, setAllTenants, switchTenant, updateTenantStatus } = useTenant();
+  const { allTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant } = useTenant();
   const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'telemetry_bugs' | 'infrastructure'
   const [infraSubTab, setInfraSubTab] = useState('database'); // 'database' | 'sms' | 'ai'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
@@ -51,7 +52,9 @@ export default function SuperAdminDashboard() {
     phone: '01000000000',
     slug: '',
     senderId: '',
-    subscriptionTier: 'pro'
+    subscriptionTier: 'pro',
+    doctorEmail: '',
+    doctorPassword: ''
   });
 
   // Calculate high-level platform stats
@@ -59,8 +62,14 @@ export default function SuperAdminDashboard() {
   const activeClinics = allTenants.filter(t => (t.subscriptionStatus || 'active') === 'active').length;
   const pendingClinics = allTenants.filter(t => t.subscriptionStatus === 'pending_approval').length;
   const suspendedClinics = allTenants.filter(t => t.subscriptionStatus === 'suspended').length;
-  const totalSmsUsed = allTenants.reduce((sum, t) => sum + (t.quotas?.smsUsed || 0), 0);
-  const totalSmsQuota = allTenants.reduce((sum, t) => sum + (t.quotas?.monthlySmsQuota || 1000), 0);
+  const totalSmsUsed = allTenants.reduce((sum, t) => {
+    const usage = getClinicUsage(t.id, t.quotas, t.subscriptionTier);
+    return sum + (usage.smsUsed || 0);
+  }, 0);
+  const totalSmsQuota = allTenants.reduce((sum, t) => {
+    const usage = getClinicUsage(t.id, t.quotas, t.subscriptionTier);
+    return sum + (usage.totalSmsAllowed || usage.monthlySmsQuota || 1000);
+  }, 0);
   const estimatedMRR = allTenants.reduce((sum, t) => {
     if (t.subscriptionStatus === 'suspended') return sum; // Exclude suspended from MRR
     const tier = t.subscriptionTier || 'pro';
@@ -69,11 +78,13 @@ export default function SuperAdminDashboard() {
     return sum + 850;
   }, 0);
 
-  // Filtered tenants
+  // Filtered tenants with safe nil handling
+  const cleanSearch = (searchTerm || '').trim().toLowerCase();
   const filteredTenants = allTenants.filter(t => {
-    const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          t.doctorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          t.slug?.toLowerCase().includes(searchTerm.toLowerCase());
+    const nameStr = (t.name || '').toLowerCase();
+    const doctorStr = (t.doctorName || '').toLowerCase();
+    const slugStr = (t.slug || '').toLowerCase();
+    const matchesSearch = !cleanSearch || nameStr.includes(cleanSearch) || doctorStr.includes(cleanSearch) || slugStr.includes(cleanSearch);
     const matchesTier = tierFilter === 'all' || t.subscriptionTier === tierFilter;
     const currentStatus = t.subscriptionStatus || 'active';
     const matchesStatus = statusFilter === 'all' || currentStatus === statusFilter;

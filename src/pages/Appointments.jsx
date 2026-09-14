@@ -36,11 +36,15 @@ const Appointments = () => {
   const [isBlockerModalOpen, setIsBlockerModalOpen] = useState(false);
   const [blockerDate, setBlockerDate] = useState(todayStr);
 
+  const currentClinic = state.clinicInfo || {};
+  const defaultFee = currentClinic.regularFee || '300 ج.م';
+
   const [formData, setFormData] = useState({
     patientId: '',
     date: todayStr,
     time: '',
-    type: 'كشف عادي',
+    type: 'كشف عيادة',
+    fee: defaultFee,
     notes: ''
   });
 
@@ -563,24 +567,6 @@ const Appointments = () => {
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>نوع الكشف أو الخدمة</label>
-                  <select 
-                    className="input-field"
-                    value={formData.type}
-                    onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  >
-                    <option value="كشف عادي">كشف وفحص تشخيصي شامل (300 ج.م)</option>
-                    <option value="استشارة">استشارة ومتابعة بعد العلاج (150 ج.م)</option>
-                    <option value="تنظيف وتلميع أسنان">تنظيف وتلميع وإزالة جير (400 ج.م)</option>
-                    <option value="حشو تجميلي كومبوزيت">حشو تجميلي كومبوزيت ليزر (500 ج.م)</option>
-                    <option value="علاج جذور وعصب">علاج جذور وعصب السن RCT (900 ج.م)</option>
-                    <option value="خلع أسنان">خلع ضرس عادي أو مخلخل (400 ج.م)</option>
-                    <option value="طربوش زيركون">طربوش / تاج زيركون تجميلي (1800 ج.م)</option>
-                    <option value="تبييض أسنان">تبييض أسنان احترافي بالعيادة (2000 ج.م)</option>
-                    <option value="زراعة أسنان">زراعة سن تيتانيوم ألماني (6500 ج.م)</option>
-                  </select>
-                </div>
 
                 <div className="form-group">
                   <label>ملاحظات</label>

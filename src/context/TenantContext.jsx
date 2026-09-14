@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { clinicInfo as defaultClinicInfo, demoClinics as fallbackDemoClinics } from '../data/demoData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { fromDbClinic } from '../services/clinicsService';
+import { fromDbClinic, getAllClinicsFromDb } from '../services/clinicsService';
 import { canSwitchTenants } from '../utils/permissions';
 import { patientIndex } from '../services/indexedSearchService';
-import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus } from '../services/authService';
+import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus, deleteRegisteredTenant } from '../services/authService';
 import { getClinicDomainSettings } from '../services/customDomainService';
 
 const TenantContext = createContext(null);
@@ -208,7 +208,63 @@ export const TenantProvider = ({ children }) => {
   const [dedicatedDomainActive, setDedicatedDomainActive] = useState(initialResolution.isDedicatedDomain);
   const [isLoadingTenant, setIsLoadingTenant] = useState(true);
 
-  // 1. Resolve Tenant from Subdomain, Custom Domain, or URL Path
+  // 1. Cross-tab and Broadcast Synchronization (Multi-window & Multi-tab reactivity)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (!e || e.key === 'clinicflow_registered_tenants' || e.key === 'clinicflow_active_tenant_slug') {
+        const fresh = getCombinedTenants();
+        setAllTenants(fresh);
+      }
+    };
+
+    let channel = null;
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        channel = new BroadcastChannel('clinicflow_tenants_sync');
+        channel.onmessage = () => {
+          const fresh = getCombinedTenants();
+          setAllTenants(fresh);
+        };
+      } catch (_) {}
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('storage', handleStorageChange);
+      }
+      if (channel) {
+        channel.close();
+      }
+    };
+  }, []);
+
+  // 2. Background Supabase Cloud Clinics Synchronization
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+    let isMounted = true;
+    getAllClinicsFromDb().then(({ data: dbClinics }) => {
+      if (!isMounted || !Array.isArray(dbClinics) || dbClinics.length === 0) return;
+      setAllTenants(prev => {
+        const merged = [...prev];
+        dbClinics.forEach(dbc => {
+          const idx = merged.findIndex(t => t.id === dbc.id || t.slug === dbc.slug);
+          if (idx >= 0) {
+            merged[idx] = { ...merged[idx], ...dbc };
+          } else {
+            merged.push(dbc);
+          }
+        });
+        return merged;
+      });
+    }).catch(err => console.warn('Cloud clinics fetch notice:', err));
+    return () => { isMounted = false; };
+  }, []);
+
+  // 3. Resolve Tenant from Subdomain, Custom Domain, or URL Path
   const resolveTenantSlug = useCallback(() => {
     return resolveTenantFromLocation(allTenants).slug;
   }, [allTenants]);
@@ -418,7 +474,20 @@ export const TenantProvider = ({ children }) => {
     });
   }, []);
 
-  // 7. Feature Gating & Quota Checks
+  // 8. Delete Tenant Permanently
+  const deleteTenant = useCallback((clinicIdOrSlug) => {
+    deleteRegisteredTenant(clinicIdOrSlug);
+    setAllTenants(prev => prev.filter(t => t.id !== clinicIdOrSlug && t.slug !== clinicIdOrSlug));
+    setActiveTenant(prev => {
+      if (prev && (prev.id === clinicIdOrSlug || prev.slug === clinicIdOrSlug)) {
+        const remaining = allTenants.filter(t => t.id !== clinicIdOrSlug && t.slug !== clinicIdOrSlug);
+        return remaining[0] || null;
+      }
+      return prev;
+    });
+  }, [allTenants]);
+
+  // 9. Feature Gating & Quota Checks
   const hasFeature = useCallback((featureName) => {
     if (!activeTenant) return false;
     const tier = activeTenant.subscriptionTier || 'starter';
@@ -478,13 +547,14 @@ export const TenantProvider = ({ children }) => {
     isDedicatedDomain: dedicatedDomainActive,
     switchTenant,
     registerNewTenant,
+    deleteTenant,
     updateTenantStatus,
     updateTenantDomain,
     hasFeature,
     checkQuota,
     tier: activeTenant?.subscriptionTier || 'pro',
     isMultiTenant: true
-  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
+  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, deleteTenant, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
 
   return (
     <TenantContext.Provider value={value}>

@@ -1,0 +1,30 @@
+﻿# ClinicFlow Robots Configuration
+# https://clinicflow.app
+
+User-agent: *
+Allow: /
+Allow: /booking
+Allow: /manage-booking
+Allow: /login
+Allow: /c/
+Allow: /sitemap.xml
+Allow: /llms.txt
+
+# Secure Private Dashboards and Admin Portals
+Disallow: /dashboard
+Disallow: /super-admin
+Disallow: /admin
+Disallow: /saas-admin
+Disallow: /appointments
+Disallow: /patients
+Disallow: /invoices
+Disallow: /inventory
+Disallow: /labs
+Disallow: /attendance
+Disallow: /settings
+Disallow: /doctor-agent
+Disallow: /notifications
+Disallow: /onboarding
+
+# Sitemap Reference
+Sitemap: https://clinicflow.app/sitemap.xml

@@ -1,0 +1,20 @@
+﻿# ClinicFlow (كلينك فلو) - AI Agent Discovery & System Capabilities
+> Next-Generation Multi-Tenant Clinical Operating System & EHR/EMR SaaS
+
+## System Overview
+ClinicFlow is an enterprise-grade medical and dental clinic management platform built for single practices and multi-clinic healthcare networks. It provides zero-latency offline-first data caching with PostgreSQL Row-Level Security (RLS) tenant isolation.
+
+## Architecture Highlights
+- Multi-Tenancy: Strict data segregation per clinic_id. Each clinic operates either under dedicated subdomains (slug.clinicflow.app), custom domains (dr-ahmed-dental.com), or path routes (/c/:slug).
+- Booking Flow: Phone-first friction-free booking with Nebras digital QR appointment tickets, WhatsApp reminder automation, and self-service booking portal (/manage-booking).
+- Clinical EMR: Electronic medical records, treatment plans, interactive dental chart, prescription generator, and lab tracking.
+- Practice Ledger: Dual-entry financial ledger, invoices, insurance co-pays, inventory lot tracking, and receptionist cash drawer handover.
+- Regulatory Compliance: NTRA-certified Egyptian SMS sender ID formatting and telecom gateway integration.
+
+## Public Endpoints
+- Homepage & Platform Overview: https://clinicflow.app/
+- Public Clinic Discovery Hub: https://clinicflow.app/booking
+- Patient Self-Service Portal: https://clinicflow.app/manage-booking
+- Staff & Doctor Portal: https://clinicflow.app/login
+- Example Dedicated Clinic: https://clinicflow.app/c/dr-ahmed/booking
+- System Sitemap: https://clinicflow.app/sitemap.xml

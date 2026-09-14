@@ -8,6 +8,8 @@ import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import SeoHeadManager from './components/SeoHeadManager';
+import Breadcrumbs from './components/Breadcrumbs';
 import { initGlobalErrorListeners } from './services/systemErrorService';
 import './App.css';
 
@@ -141,6 +143,7 @@ const AdminLayout = () => {
       <div className="main-content">
         <Header title={pageTitles[location.pathname] || 'لوحة التحكم'} />
         <main className="page-content">
+          <Breadcrumbs />
           <Outlet />
         </main>
       </div>
@@ -159,6 +162,7 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <SeoHeadManager />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* 1. Public Pages (Clean Canvas Layout) */}

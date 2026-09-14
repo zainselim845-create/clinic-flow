@@ -2,7 +2,7 @@ import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
-  Plus, Search, LayoutGrid, List, X, Download, 
+  Plus, Search, LayoutGrid, List, X, Download, Upload,
   ChevronLeft, ChevronRight, Users 
 } from 'lucide-react';
 import { Dialog } from '../components/ui/dialog';
@@ -10,6 +10,7 @@ import { Portal } from '@ark-ui/react/portal';
 import PatientCard from '../components/PatientCard';
 import PatientRecallModal from '../components/PatientRecallModal';
 import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
+import ExcelPatientImportModal from '../components/ExcelPatientImportModal';
 import { patientIndex } from '../services/indexedSearchService';
 import * as patientsService from '../services/patientsService';
 import './Patients.css';
@@ -39,6 +40,7 @@ const Patients = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isRecallModalOpen, setIsRecallModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const [toastMessage, setToastMessage] = useState(null);
   const showToast = (text, type = 'info') => {
@@ -173,6 +175,21 @@ const Patients = () => {
     showToast('تم تصدير ملف المرضى (CSV) بنجاح ', 'success');
   };
 
+  const handleImportPatients = async (newPatientsList) => {
+    if (!newPatientsList || newPatientsList.length === 0) return;
+
+    if (useSupabase) {
+      try {
+        await patientsService.addPatientsBulk(newPatientsList);
+      } catch (err) {
+        console.error('Failed to import patients to Supabase:', err);
+      }
+    }
+
+    dispatch({ type: 'ADD_PATIENTS_BULK', payload: newPatientsList });
+    showToast(`تم استيراد ${newPatientsList.length} مريض بنجاح إلى قاعدة بيانات العيادة! 🎉`, 'success');
+  };
+
   return (
     <div className="patients-page">
       {toastMessage && (
@@ -195,12 +212,22 @@ const Patients = () => {
 
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <h2 style={{ margin: 0 }}>إدارة المرضى</h2>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <button className="btn btn-secondary" onClick={handleExportCSV} title="تصدير قائمة المرضى لملف إكسيل">
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button 
+            type="button"
+            className="btn btn-secondary" 
+            onClick={() => setIsImportModalOpen(true)} 
+            title="استيراد المرضى من ملف إكسيل قديم أو CSV"
+            style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)', fontWeight: 600 }}
+          >
+            <Upload size={18} />
+            <span>استيراد من إكسيل (النظام القديم)</span>
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={handleExportCSV} title="تصدير قائمة المرضى لملف إكسيل">
             <Download size={18} />
             <span>تصدير إكسيل (CSV)</span>
           </button>
-          <button className="btn btn-primary" onClick={() => {
+          <button type="button" className="btn btn-primary" onClick={() => {
             setSelectedPatient(null);
             setFormData({ name: '', age: '', gender: 'ذكر', phone: '', bloodType: '', diagnosis: '', notes: '' });
             setIsModalOpen(true);
@@ -475,6 +502,14 @@ const Patients = () => {
         isOpen={isRecallModalOpen}
         onClose={() => setIsRecallModalOpen(false)}
         initialPatient={selectedPatient}
+      />
+
+      <ExcelPatientImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        existingPatients={clinicPatients}
+        clinicId={currentClinicId}
+        onImportComplete={handleImportPatients}
       />
     </div>
   );

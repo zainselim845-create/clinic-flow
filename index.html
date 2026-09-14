@@ -6,6 +6,26 @@
   <meta name="description" content="ClinicFlow - نظام إدارة عيادات طبية ذكي. إدارة المواعيد، ملفات المرضى، والحجوزات أونلاين." />
   <meta name="keywords" content="عيادات, دكتور, حجز مواعيد, إدارة عيادات, clinic management" />
   
+  <!-- Canonical & Alternate Links -->
+  <link rel="canonical" href="https://clinicflow.app/" />
+  
+  <!-- Open Graph / Facebook / WhatsApp -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ClinicFlow" />
+  <meta property="og:title" content="كلينك فلو (ClinicFlow) - منظومة إدارة العيادات والمراكز الطبية الذكية" />
+  <meta property="og:description" content="نظام إدارة العيادات السحابي المتكامل: حجز مواعيد فوري، ملفات مرضى سريرية، فوترة إلكترونية، وربط مخصص مع عزل أمني فائق." />
+  <meta property="og:image" content="https://clinicflow.app/og-image.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:url" content="https://clinicflow.app/" />
+  <meta property="og:locale" content="ar_EG" />
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="كلينك فلو (ClinicFlow) - منظومة إدارة العيادات الذكية" />
+  <meta name="twitter:description" content="نظام إدارة العيادات السحابي المتكامل: حجز مواعيد فوري، ملفات مرضى سريرية، وفوترة ذكية." />
+  <meta name="twitter:image" content="https://clinicflow.app/og-image.svg" />
+
   <!-- Performance DNS & Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,13 +35,53 @@
   <!-- Google Modern UI Typography (Readex Pro + Cairo + Plus Jakarta Sans) -->
   <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=Cairo:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
   
+  <!-- Icons & Web Manifest -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#1A73E8" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="ClinicFlow" />
   <title>كلينك فلو (ClinicFlow) - منظومة إدارة العيادات الذكية</title>
+
+  <!-- Structured Data: SoftwareApplication & MedicalOrganization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "ClinicFlow",
+        "alternateName": "كلينك فلو",
+        "applicationCategory": "BusinessApplication, HealthApplication",
+        "operatingSystem": "Web, iOS, Android, macOS, Windows",
+        "offers": {
+          "@type": "AggregateOffer",
+          "priceCurrency": "EGP",
+          "lowPrice": "850",
+          "highPrice": "3500",
+          "offerCount": "3"
+        },
+        "description": "منظومة سحابية متطورة لإدارة العيادات والمراكز الطبية التخصصية، تشمل حجز المواعيد بالهاتف، تذاكر الانتظار الذكية، والملفات السريرية.",
+        "url": "https://clinicflow.app"
+      },
+      {
+        "@type": "MedicalOrganization",
+        "name": "ClinicFlow Network",
+        "url": "https://clinicflow.app",
+        "logo": "https://clinicflow.app/favicon.svg",
+        "medicalSpecialty": [
+          "Dentistry",
+          "Dermatology",
+          "Pediatrics",
+          "Cardiology",
+          "InternalMedicine"
+        ]
+      }
+    ]
+  }
+  </script>
 
   <!-- Google Identity Services (GIS) for Real Google Sign-In -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>

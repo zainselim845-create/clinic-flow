@@ -85,20 +85,6 @@ export default function WalkInRegistrationModal({
             {phoneError && <span className="input-error-msg">{phoneError}</span>}
           </div>
 
-          <div className="form-group">
-            <label>نوع الكشف أو الخدمة</label>
-            <select value={type} onChange={(e) => setType(e.target.value)}>
-              <option value="كشف عادي">كشف وفحص تشخيصي شامل (300 ج.م)</option>
-              <option value="استشارة">استشارة ومتابعة بعد العلاج (150 ج.م)</option>
-              <option value="تنظيف وتلميع أسنان">تنظيف وتلميع وإزالة جير (400 ج.م)</option>
-              <option value="حشو تجميلي كومبوزيت">حشو تجميلي كومبوزيت ليزر (500 ج.م)</option>
-              <option value="علاج جذور وعصب">علاج جذور وعصب السن RCT (900 ج.م)</option>
-              <option value="خلع أسنان">خلع ضرس عادي أو مخلخل (400 ج.م)</option>
-              <option value="طربوش زيركون">طربوش / تاج زيركون تجميلي (1800 ج.م)</option>
-              <option value="تبييض أسنان">تبييض أسنان احترافي بالعيادة (2000 ج.م)</option>
-              <option value="زراعة أسنان">زراعة سن تيتانيوم ألماني (6500 ج.م)</option>
-            </select>
-          </div>
 
           <div className="form-group">
             <label>ملاحظات الاستقبال (اختياري)</label>

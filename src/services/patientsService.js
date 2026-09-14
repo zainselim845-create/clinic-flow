@@ -116,6 +116,32 @@ export async function addPatient(patient) {
 }
 
 /**
+ * Add multiple patients in bulk (e.g. from Excel import)
+ */
+export async function addPatientsBulk(patientsList) {
+  if (!isSupabaseConfigured()) {
+    return { data: null, error: NOT_CONFIGURED_ERROR };
+  }
+  if (!Array.isArray(patientsList) || patientsList.length === 0) {
+    return { data: [], error: null };
+  }
+  try {
+    const dbPayloads = patientsList.map(toDbPatient);
+    const { data, error } = await supabase
+      .from('patients')
+      .insert(dbPayloads)
+      .select();
+
+    if (error) throw error;
+    return { data: (data || []).map(fromDbPatient), error: null };
+  } catch (error) {
+    console.error('Error adding patients bulk:', error);
+    return { data: null, error };
+  }
+}
+
+
+/**
  * Update an existing patient
  */
 export async function updatePatient(id, updateData) {

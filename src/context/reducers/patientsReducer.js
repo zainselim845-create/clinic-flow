@@ -3,6 +3,9 @@ export function patientsReducer(state, action) {
     case 'ADD_PATIENT':
       return { ...state, patients: [action.payload, ...state.patients] };
 
+    case 'ADD_PATIENTS_BULK':
+      return { ...state, patients: [...(action.payload || []), ...state.patients] };
+
     case 'UPDATE_PATIENT':
       return { 
         ...state, 

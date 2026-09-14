@@ -6,9 +6,21 @@
 
 import { CLINIC_SPECIALTIES } from '../data/specialtiesData';
 import { formatSenderId } from './smsService';
+import { isSupabaseConfigured } from '../lib/supabase';
+import { createClinicInDb, deleteClinicFromDb } from './clinicsService';
 
 const REGISTERED_TENANTS_KEY = 'clinicflow_registered_tenants';
 const REGISTERED_USERS_KEY = 'clinicflow_registered_users';
+
+export function broadcastTenantUpdate(type, payload) {
+  if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+    try {
+      const channel = new BroadcastChannel('clinicflow_tenants_sync');
+      channel.postMessage({ type, payload, timestamp: Date.now() });
+      channel.close();
+    } catch (_) {}
+  }
+}
 
 /**
  * Creates a URL-friendly slug from Arabic/English name
@@ -93,6 +105,69 @@ export function saveRegisteredTenant(tenant) {
       localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(memoryTenantsCache));
     } catch (_) {}
   }
+
+  // Cross-tab broadcast
+  broadcastTenantUpdate('REGISTER_TENANT', tenant);
+
+  // Background Cloud Sync if Supabase is connected
+  try {
+    if (isSupabaseConfigured()) {
+      createClinicInDb(tenant).catch(err => console.warn('Supabase tenant creation sync note:', err));
+    }
+  } catch (_) {}
+}
+
+/**
+ * Permanently deletes a registered clinic from persistent storage and cleans up associated users
+ * @param {string} clinicIdOrSlug
+ * @returns {boolean}
+ */
+export function deleteRegisteredTenant(clinicIdOrSlug) {
+  if (!clinicIdOrSlug) return false;
+  const clean = String(clinicIdOrSlug).trim();
+  const existing = getRegisteredTenants();
+
+  const target = existing.find(t => t.id === clean || t.slug === clean);
+  const targetId = target?.id || clean;
+  const targetSlug = target?.slug || clean;
+
+  memoryTenantsCache = existing.filter(t => t.id !== targetId && t.slug !== targetSlug);
+  registeredSlugsSet.delete(targetSlug);
+
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(memoryTenantsCache));
+    } catch (_) {}
+  }
+
+  // Also clean up users registered specifically for this clinic
+  const users = getRegisteredUsers();
+  const filteredUsers = users.filter(u => {
+    const isThisClinic = u.clinicId === targetId || u.clinicSlug === targetSlug || 
+      (Array.isArray(u.allowedClinics) && u.allowedClinics.length === 1 && u.allowedClinics[0] === targetSlug);
+    // Never delete super admin accounts
+    if (u.role === 'super_admin' || u.isSuperAdmin) return true;
+    return !isThisClinic;
+  });
+
+  memoryUsersCache = filteredUsers;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(filteredUsers));
+    } catch (_) {}
+  }
+
+  // Broadcast deletion to all open tabs
+  broadcastTenantUpdate('DELETE_TENANT', { id: targetId, slug: targetSlug });
+
+  // Cloud Supabase sync if connected
+  try {
+    if (isSupabaseConfigured()) {
+      deleteClinicFromDb(targetId).catch(err => console.warn('Supabase tenant deletion sync note:', err));
+    }
+  } catch (_) {}
+
+  return true;
 }
 
 /**
