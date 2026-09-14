@@ -6,4 +6,5 @@ export { CreateClinicModal } from './CreateClinicModal';
 export { CreateUserModal } from './CreateUserModal';
 export { EditUserModal } from './EditUserModal';
 export { TopUpCreditsModal } from './TopUpCreditsModal';
+export { SaasInfrastructureCenter } from './SaasInfrastructureCenter';
 

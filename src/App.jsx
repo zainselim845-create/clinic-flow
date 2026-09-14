@@ -113,10 +113,10 @@ const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { state } = useApp();
-  const { user } = useAuth();
+  const { user, isImpersonating, stopImpersonating } = useAuth();
   const { tenant } = useTenant();
 
-  const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true;
+  const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true || isImpersonating;
 
   return (
     <div className={`app-wrapper ${isSuperAdmin ? 'has-saas-banner' : ''}`} data-theme={state.theme}>
@@ -124,23 +124,33 @@ const AdminLayout = () => {
         <aside className="saas-admin-floating-banner" aria-label="شريط مدير الساس">
           <div className="saas-admin-banner-inner">
             <div className="saas-admin-meta">
-              <span className="saas-admin-badge">
+              <span className="saas-admin-badge" style={isImpersonating ? { background: 'rgba(234, 88, 12, 0.4)', borderColor: '#F97316', color: '#FFEDD5' } : {}}>
                 <ShieldCheck size={14} />
-                <span>وضع مدير الساس (SaaS Admin)</span>
+                <span>{isImpersonating ? 'وضع محاكاة العميل (Active Impersonation)' : 'وضع مدير الساس (SaaS Admin)'}</span>
               </span>
               <span className="saas-admin-text">
-                أنت تعاين حالياً عيادة العميل: <strong>{tenant?.name || 'عيادة تجريبية'}</strong>
+                {isImpersonating ? (
+                  <>أنت تتصفح النظام بصلاحيات: <strong>{user?.name}</strong> ({user?.jobTitle || user?.role}) • عيادة: <strong>{tenant?.name}</strong></>
+                ) : (
+                  <>أنت تعاين حالياً عيادة العميل: <strong>{tenant?.name || 'عيادة تجريبية'}</strong></>
+                )}
               </span>
             </div>
             <div className="saas-admin-actions">
               <button 
                 type="button" 
-                onClick={() => navigate('/super-admin')} 
+                onClick={() => {
+                  if (isImpersonating && stopImpersonating) {
+                    stopImpersonating();
+                  }
+                  navigate('/super-admin');
+                }} 
                 className="btn-return-to-saas-admin"
+                style={isImpersonating ? { background: '#EA580C', color: '#FFFFFF', borderColor: '#C2410C' } : {}}
                 title="العودة إلى لوحة تحكم إدارة الساس المركزية"
               >
                 <ArrowLeft size={14} />
-                <span>العودة للوحة إدارة الساس (Control Plane)</span>
+                <span>{isImpersonating ? 'إنهاء المحاكاة والعودة الفورية للساس' : 'العودة للوحة إدارة الساس (Control Plane)'}</span>
               </button>
             </div>
           </div>
@@ -221,8 +231,11 @@ function App() {
               <SuperAdminDashboard />
             </ProtectedRoute>
           } />
+          <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
           <Route path="/admin" element={<Navigate to="/super-admin" replace />} />
           <Route path="/saas-admin" element={<Navigate to="/super-admin" replace />} />
+          <Route path="/saas" element={<Navigate to="/super-admin" replace />} />
+          <Route path="/control-plane" element={<Navigate to="/super-admin" replace />} />
 
           {/* 2. Admin Protected Routes with Sidebar & Header Layout */}
           <Route element={

@@ -21,7 +21,8 @@ import {
   CreateClinicModal,
   CreateUserModal,
   EditUserModal,
-  TopUpCreditsModal
+  TopUpCreditsModal,
+  SaasInfrastructureCenter
 } from './components';
 import { 
   saveRegisteredTenant, 
@@ -34,19 +35,13 @@ import {
 } from '../../services/authService';
 import { formatSenderId } from '../../services/smsService';
 import { getClinicUsage } from '../../services/usageMeteringService';
-import { useApp } from '../../context/AppContext';
-import DatabaseSyncTab from '../settings/DatabaseSyncTab';
-import SmsConfigTab from '../settings/SmsConfigTab';
-import AiAssistantConfigTab from '../settings/AiAssistantConfigTab';
 import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { signOut, impersonateUser } = useAuth();
-  const { state, dispatch } = useApp();
   const { allTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant } = useTenant();
   const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'users' | 'telemetry_bugs' | 'infrastructure'
-  const [infraSubTab, setInfraSubTab] = useState('database'); // 'database' | 'sms' | 'ai'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
   const [bugReports, setBugReports] = useState(getBugReports());
   const [searchTerm, setSearchTerm] = useState('');
@@ -157,15 +152,24 @@ export default function SuperAdminDashboard() {
     navigate('/dashboard');
   };
 
+  // Keep platform users reactive to tenant additions/deletions
+  React.useEffect(() => {
+    setAllUsers(getAllPlatformUsers());
+  }, [allTenants, activeTab]);
+
   const handleDeleteClinic = (slugOrId) => {
     const target = allTenants.find(t => t.slug === slugOrId || t.id === slugOrId);
     const clinicName = target?.name || slugOrId;
     if (window.confirm(`تحذير أمني: هل أنت متأكد من رغبتك في حذف عيادة (${clinicName}) نهائياً من المنصة؟\nسيتم إزالة كافة الحسابات والبيانات التابعة لها.`)) {
       deleteTenant(slugOrId);
+      setTimeout(() => setAllUsers(getAllPlatformUsers()), 100);
     }
   };
 
   const handleImpersonateUser = (targetUser) => {
+    if (targetUser?.clinicSlug && targetUser.clinicSlug !== '*') {
+      switchTenant(targetUser.clinicSlug);
+    }
     if (impersonateUser) {
       impersonateUser(targetUser);
       navigate('/dashboard');
@@ -276,6 +280,7 @@ export default function SuperAdminDashboard() {
     }
 
     setAllTenants(prev => [...prev, created]);
+    setAllUsers(getAllPlatformUsers());
     setIsCreateModalOpen(false);
     setNewClinic({
       name: '',
@@ -299,6 +304,14 @@ export default function SuperAdminDashboard() {
       {/* Top Bar */}
       <header className="super-admin-header">
         <div className="header-brand-group">
+          <div className="header-title-text">
+            <div className="platform-tag">
+              <ShieldCheck size={14} />
+              <span>Platform Control Plane</span>
+            </div>
+            <h1>إدارة منصة ClinicFlow B2B SaaS</h1>
+          </div>
+
           <div className="header-nav-shortcuts">
             <button 
               onClick={() => navigate('/dashboard')} 
@@ -324,14 +337,6 @@ export default function SuperAdminDashboard() {
               <ExternalLink size={15} />
               <span>بوابة المرضى</span>
             </button>
-          </div>
-
-          <div className="header-title-text">
-            <div className="platform-tag">
-              <ShieldCheck size={14} />
-              <span>Platform Control Plane</span>
-            </div>
-            <h1>إدارة منصة ClinicFlow B2B SaaS</h1>
           </div>
         </div>
 
@@ -469,68 +474,7 @@ export default function SuperAdminDashboard() {
             onUpdateBugStatus={handleUpdateBugStatus}
           />
         ) : (
-          <div className="saas-infra-container" style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', padding: '1.5rem', boxShadow: 'var(--shadow-card)' }}>
-            <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => setInfraSubTab('database')}
-                style={{
-                  background: infraSubTab === 'database' ? 'var(--primary)' : 'var(--bg-tertiary)',
-                  color: infraSubTab === 'database' ? '#FFFFFF' : 'var(--text-primary)',
-                  border: 'none',
-                  padding: '0.55rem 1.1rem',
-                  borderRadius: '10px',
-                  fontWeight: 700,
-                  fontSize: '0.88rem',
-                  cursor: 'pointer'
-                }}
-              >
-                قاعدة بيانات Supabase المركزية
-              </button>
-              <button
-                type="button"
-                onClick={() => setInfraSubTab('sms')}
-                style={{
-                  background: infraSubTab === 'sms' ? 'var(--primary)' : 'var(--bg-tertiary)',
-                  color: infraSubTab === 'sms' ? '#FFFFFF' : 'var(--text-primary)',
-                  border: 'none',
-                  padding: '0.55rem 1.1rem',
-                  borderRadius: '10px',
-                  fontWeight: 700,
-                  fontSize: '0.88rem',
-                  cursor: 'pointer'
-                }}
-              >
-                بوابات الرسائل المركزية (SMS Gateways)
-              </button>
-              <button
-                type="button"
-                onClick={() => setInfraSubTab('ai')}
-                style={{
-                  background: infraSubTab === 'ai' ? 'var(--primary)' : 'var(--bg-tertiary)',
-                  color: infraSubTab === 'ai' ? '#FFFFFF' : 'var(--text-primary)',
-                  border: 'none',
-                  padding: '0.55rem 1.1rem',
-                  borderRadius: '10px',
-                  fontWeight: 700,
-                  fontSize: '0.88rem',
-                  cursor: 'pointer'
-                }}
-              >
-                نماذج الذكاء الاصطناعي السريرية (AI Core)
-              </button>
-            </div>
-
-            {infraSubTab === 'database' && (
-              <DatabaseSyncTab state={state} dispatch={dispatch} />
-            )}
-            {infraSubTab === 'sms' && (
-              <SmsConfigTab />
-            )}
-            {infraSubTab === 'ai' && (
-              <AiAssistantConfigTab />
-            )}
-          </div>
+          <SaasInfrastructureCenter allTenants={allTenants} />
         )}
 
         {/* Security & Architectural Invariants */}

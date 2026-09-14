@@ -293,15 +293,36 @@ export function UsersTable({
                     <td>
                       <div className="user-actions-cell">
                         {/* 1-Click Impersonate / Login as Client */}
-                        <button
-                          type="button"
-                          onClick={() => onImpersonate && onImpersonate(u)}
-                          className="btn-impersonate-user"
-                          title="دخول فوري كعميل وتصفح النظام باسم هذا الحساب"
-                        >
-                          <LogIn size={13} />
-                          <span>دخول كعميل</span>
-                        </button>
+                        {isSuperAdmin ? (
+                          <span 
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              background: '#FEF3C7',
+                              color: '#92400E',
+                              border: '1px solid #FCD34D',
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              fontSize: '0.74rem',
+                              fontWeight: 700
+                            }}
+                            title="هذا هو حساب إدارة الساس الحالي"
+                          >
+                            <Shield size={11} />
+                            <span>حساب الإدارة</span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => onImpersonate && onImpersonate(u)}
+                            className="btn-impersonate-user"
+                            title="دخول فوري كعميل وتصفح النظام باسم هذا الحساب"
+                          >
+                            <LogIn size={13} />
+                            <span>دخول كعميل</span>
+                          </button>
+                        )}
 
                         {/* Edit User Details */}
                         <button

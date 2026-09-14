@@ -488,3 +488,24 @@ export function getRecallReminderWhatsAppUrl({ patientName, phone, clinicName, r
   return getWhatsAppUri(phone, msg);
 }
 
+/**
+ * Super Admin SaaS Platform Infrastructure Helpers
+ */
+export function getGlobalSmsProvider() {
+  const cfg = getSmsConfig();
+  return cfg.provider || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SMS_PROVIDER) || 'none';
+}
+
+export function saveGlobalSmsProvider(provider) {
+  const current = getSmsConfig();
+  saveSmsConfig({ ...current, provider });
+}
+
+export async function testSmsConnection({ phone, message }) {
+  try {
+    const res = await sendSMS(phone, message || 'رسالة اختبارية من لوحة إدارة منصة كلينك فلو', 'default');
+    return res;
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}

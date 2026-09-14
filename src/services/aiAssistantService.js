@@ -188,3 +188,32 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
     };
   }
 }
+
+/**
+ * Super Admin SaaS Platform Infrastructure Helpers
+ */
+export function getOpenRouterConfig() {
+  return getAiConfig();
+}
+
+export function saveOpenRouterConfig(config) {
+  return saveAiConfig(config);
+}
+
+export async function testOpenRouterConnection(apiKey, model) {
+  try {
+    if (apiKey) {
+      saveAiConfig({ apiKey, model: model || DEFAULT_AI_MODEL, enabled: true });
+    }
+    const res = await askDoctorAiAssistant([
+      { role: 'user', content: 'فحص الاتصال بمحرك الذكاء الاصطناعي المركزي لمنصة كلينك فلو' }
+    ], { doctorName: 'مدير المنصة', name: 'إدارة الساس' });
+    if (res.success) {
+      return { success: true, message: 'الاتصال بمحرك الذكاء الاصطناعي يعمل بنجاح!', content: res.content, model: res.model };
+    } else {
+      return { success: false, message: res.error || 'تعذر الاتصال بمحرك الذكاء الاصطناعي' };
+    }
+  } catch (err) {
+    return { success: false, message: err.message || 'خطأ أثناء فحص محرك الذكاء الاصطناعي' };
+  }
+}

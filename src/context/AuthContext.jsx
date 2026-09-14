@@ -59,6 +59,32 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [clinic, setClinic] = useState(activeTenant || defaultClinicInfo);
   const [loading, setLoading] = useState(false);
+
+  // SaaS Impersonation State: track original superadmin across sessions
+  const [impersonatorAdmin, setImpersonatorAdmin] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('clinicflow_impersonator_admin');
+      return stored ? JSON.parse(stored) : null;
+    } catch (_) {
+      return null;
+    }
+  });
+
+  const isImpersonating = Boolean(impersonatorAdmin);
+
+  const stopImpersonating = () => {
+    if (impersonatorAdmin) {
+      persistUser(impersonatorAdmin);
+      setUser(impersonatorAdmin);
+      setRole(impersonatorAdmin.role || 'super_admin');
+      localStorage.setItem('clinicflow_role', impersonatorAdmin.role || 'super_admin');
+      setImpersonatorAdmin(null);
+      try {
+        sessionStorage.removeItem('clinicflow_impersonator_admin');
+      } catch (_) {}
+    }
+  };
+
   const [role, setRole] = useState(() => {
     const savedUser = getInitialUser();
     if (savedUser) {
@@ -683,12 +709,31 @@ export const AuthProvider = ({ children }) => {
 
   const impersonateUser = (targetUser) => {
     if (!targetUser) return;
+    // Save current admin if we are super admin
+    const currentAdmin = (user?.role === 'super_admin' || user?.isSuperAdmin) ? user : (impersonatorAdmin || {
+      id: 'sa-root',
+      email: 'superadmin@clinicflow.com',
+      name: 'مدير المنصة العام',
+      role: 'super_admin',
+      isSuperAdmin: true,
+      permissions: ['*'],
+      clinicSlug: '*'
+    });
+    setImpersonatorAdmin(currentAdmin);
+    try {
+      sessionStorage.setItem('clinicflow_impersonator_admin', JSON.stringify(currentAdmin));
+    } catch (_) {}
+
     persistUser(targetUser);
     localStorage.setItem('clinicflow_role', targetUser.role || 'doctor');
     setUser(targetUser);
     setRole(targetUser.role || 'doctor');
     if (targetUser.clinicSlug && targetUser.clinicSlug !== '*') {
-      switchTenant?.(targetUser.clinicSlug);
+      try {
+        localStorage.setItem('clinicflow_current_tenant', targetUser.clinicSlug);
+        sessionStorage.setItem('clinicflow_current_tenant', targetUser.clinicSlug);
+        window.dispatchEvent(new CustomEvent('clinicflow:tenant-changed', { detail: targetUser.clinicSlug }));
+      } catch (_) {}
     }
   };
 
@@ -708,6 +753,8 @@ export const AuthProvider = ({ children }) => {
       signOut,
       updateClinicInfo,
       impersonateUser,
+      stopImpersonating,
+      isImpersonating,
       isDemoMode
     }}>
       {children}

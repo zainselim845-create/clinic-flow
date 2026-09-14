@@ -10,10 +10,12 @@
 .super-admin-header {
   background: #ffffff;
   border-bottom: 1px solid #e2e8f0;
-  padding: 16px 32px;
+  padding: 14px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -21,6 +23,14 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  flex-wrap: wrap;
+}
+
+.header-action-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .header-nav-shortcuts {
@@ -120,6 +130,27 @@
 
 .btn-create-tenant:hover {
   background: #005bb5;
+  transform: translateY(-1px);
+}
+
+.btn-superadmin-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff1f2;
+  color: #e11d48;
+  border: 1px solid #fecdd3;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-superadmin-logout:hover {
+  background: #ffe4e6;
+  color: #be123c;
   transform: translateY(-1px);
 }
 
@@ -1236,6 +1267,7 @@
   gap: 4px;
   font-size: 0.78rem;
   color: #64748b;
+  white-space: nowrap;
 }
 
 .user-actions-cell {
