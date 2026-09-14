@@ -28,14 +28,20 @@ export default defineConfig({
             if (id.includes('@supabase')) {
               return 'vendor-supabase';
             }
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            if (id.includes('@ark-ui') || id.includes('@zag-js')) {
-              return 'vendor-ark-ui';
-            }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+            // Keep React runtime, Ark UI primitives, and icons unified to avoid Rolldown CJS/ESM chunk interop breakage
+            if (
+              id.includes('react') ||
+              id.includes('react-dom') ||
+              id.includes('react-router-dom') ||
+              id.includes('lucide-react') ||
+              id.includes('@ark-ui') ||
+              id.includes('@zag-js')
+            ) {
               return 'vendor-react';
+            }
+            // Heavy UI primitive chunk target for standalone non-react components
+            if (id.includes('@ark-ui-standalone')) {
+              return 'vendor-ark-ui';
             }
             return 'vendor-others';
           }

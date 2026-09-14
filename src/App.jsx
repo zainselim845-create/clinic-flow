@@ -13,20 +13,27 @@ import Breadcrumbs from './components/Breadcrumbs';
 import { initGlobalErrorListeners } from './services/systemErrorService';
 import './App.css';
 
-// Smart Lazy Load with Auto-Retry on Deployment Update
+// Smart Lazy Load with Auto-Retry on Deployment Update & Missing Export Shield
 const lazyWithRetry = (componentImport) =>
   lazy(async () => {
-    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
-      window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
-    );
+    let pageHasAlreadyBeenForceRefreshed = false;
+    try {
+      pageHasAlreadyBeenForceRefreshed = JSON.parse(
+        window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
+      );
+    } catch (_) {}
 
     try {
       const component = await componentImport();
-      window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
-      return component;
+      try {
+        window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
+      } catch (_) {}
+      return component && component.default ? component : { default: component || (() => null) };
     } catch (error) {
       if (!pageHasAlreadyBeenForceRefreshed && typeof window !== 'undefined' && window.location?.reload) {
-        window.sessionStorage?.setItem('page-has-been-force-refreshed', 'true');
+        try {
+          window.sessionStorage?.setItem('page-has-been-force-refreshed', 'true');
+        } catch (_) {}
         window.location.reload();
       }
       throw error;

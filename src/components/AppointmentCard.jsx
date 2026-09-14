@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import './AppointmentCard.css';
 
 const AppointmentCard = ({ appointment, onUpdateStatus }) => {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
 
   const getStatusText = (status) => {
     switch (status) {
