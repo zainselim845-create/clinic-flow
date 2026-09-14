@@ -114,7 +114,7 @@ const Dashboard = () => {
               const rawFee = appt.fee ?? appt.paidAmount;
               const fee = typeof rawFee === 'number'
                 ? rawFee
-                : (parseInt(String(rawFee || '300').replace(/\D/g, ''), 10) || 300);
+                : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) || 0 : 0);
               revenues[dayName] += fee;
             }
           }
@@ -213,7 +213,7 @@ const Dashboard = () => {
     const rawFee = targetAppt?.fee ?? targetAppt?.paidAmount;
     const numericFee = typeof rawFee === 'number'
       ? rawFee
-      : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) || 300 : 300);
+      : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) || 0 : (currentClinic.regularFee || 0));
 
     const clinicSlug = currentClinic.slug || 'dr-ahmed';
     const invoiceNumber = getNextInvoiceNumber(currentClinicId || clinicSlug);

@@ -42,7 +42,7 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
         const cleaned = parseFloat(String(val).replace(/[^\d.]/g, ''));
         return isNaN(cleaned) ? 0 : cleaned;
       };
-      const fee = parseAmt(appt.paidAmount) || parseAmt(appt.fee) || 300;
+      const fee = parseAmt(appt.paidAmount) || parseAmt(appt.fee) || 0;
       const method = appt.paymentMethod || 'cash';
       if (method === 'cash') cashReceived += fee;
       else if (method === 'card') cardReceived += fee;

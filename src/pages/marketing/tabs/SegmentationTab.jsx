@@ -74,8 +74,8 @@ export function SegmentationTab({
                       {p.valueTier === 'vip' ? '⭐ VIP مريض مميز' : p.lifecycle === 'new' ? '✨ جديد' : p.lifecycle === 'dormant' ? '⏳ خامل 6+ أشهر' : '🟢 نشط دائم'}
                     </span>
                   </td>
-                  <td><strong>{p.visitsCount || 1}</strong> زيارة</td>
-                  <td><strong>{p.ltv || 300} ج.م</strong></td>
+                  <td><strong>{p.visitsCount || 0}</strong> زيارة</td>
+                  <td><strong>{(p.ltv ?? 0).toLocaleString('en-US')} ج.م</strong></td>
                   <td>{p.daysSinceLastVisit ? `${p.daysSinceLastVisit} يوم مضت` : 'حديث التسجيل'}</td>
                   <td>
                     <button 

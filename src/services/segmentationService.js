@@ -48,7 +48,7 @@ export function calculatePatientLtv(patient, appointments = [], invoices = []) {
   // 2. From completed appointments fee
   const patientAppts = safeAppointments.filter(a => a && a.patientId === patient.id && a.status === 'completed');
   return patientAppts.reduce((sum, a) => {
-    const feeNum = parseInt(String(a.fee || '300').replace(/\D/g, ''), 10) || 300;
+    const feeNum = parseInt(String(a.fee || '0').replace(/\D/g, ''), 10) || 0;
     return sum + feeNum;
   }, 0);
 }
