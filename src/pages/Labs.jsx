@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Layers, Plus, Search, Clock, CheckCircle2, 
   AlertCircle, ChevronRight, Calendar 
@@ -20,7 +20,7 @@ const Labs = () => {
   const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
   const isDemoClinic = currentSlug === 'dr-ahmed';
 
-  const loadScopedOrders = () => {
+  const loadScopedOrders = useCallback(() => {
     try {
       const stored = localStorage.getItem(`clinicflow_labs_${currentSlug}`);
       if (stored) {
@@ -76,7 +76,7 @@ const Labs = () => {
         createdAt: new Date().toISOString()
       }
     ] : [];
-  };
+  }, [currentSlug, currentClinicId, isDemoClinic]);
 
   const [orders, setOrders] = useState(loadScopedOrders);
 
@@ -86,7 +86,7 @@ const Labs = () => {
 
   useEffect(() => {
     setOrders(loadScopedOrders());
-  }, [currentSlug]);
+  }, [loadScopedOrders]);
 
   useEffect(() => {
     try {
