@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
-  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Database, Bot, Smartphone
+  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Smartphone
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
@@ -14,15 +14,13 @@ import VisitTypesTab from './settings/VisitTypesTab';
 import StaffManagementTab from './settings/StaffManagementTab';
 import SubscriptionPlanTab from './settings/SubscriptionPlanTab';
 import CustomDomainTab from './settings/CustomDomainTab';
-import DatabaseSyncTab from './settings/DatabaseSyncTab';
-import AiAssistantConfigTab from './settings/AiAssistantConfigTab';
 import SmsConfigTab from './settings/SmsConfigTab';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
 import { Tabs } from '../components/ui/tabs';
 import './Settings.css';
 
-const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain', 'database', 'aiAssistant'];
+const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain'];
 
 const Settings = () => {
   const { state, dispatch } = useApp();
@@ -105,7 +103,7 @@ const Settings = () => {
       <div className="page-header">
         <div>
           <h1>مركز إعدادات العيادة والنظام </h1>
-          <p>إدارة هوية العيادة، مواعيد العمل والإجازات، طاقم الاستقبال، والربط السحابي والذكي</p>
+          <p>إدارة هوية العيادة، مواعيد العمل والإجازات، طاقم الاستقبال، رسائل التذكير، والاشتراك</p>
         </div>
       </div>
 
@@ -169,22 +167,6 @@ const Settings = () => {
           >
             <Globe size={18} />
             <span>الدومين الخاص</span>
-          </Tabs.Trigger>
-
-          <Tabs.Trigger 
-            value="database"
-            className={`tab-btn ${activeTab === 'database' ? 'active' : ''}`}
-          >
-            <Database size={18} />
-            <span>السحابة والنسخ</span>
-          </Tabs.Trigger>
-
-          <Tabs.Trigger 
-            value="aiAssistant"
-            className={`tab-btn ${activeTab === 'aiAssistant' ? 'active' : ''}`}
-          >
-            <Bot size={18} />
-            <span>المساعد الذكي</span>
           </Tabs.Trigger>
         </Tabs.List>
 
@@ -258,14 +240,6 @@ const Settings = () => {
 
           <Tabs.Content value="customDomain">
             <CustomDomainTab />
-          </Tabs.Content>
-
-          <Tabs.Content value="database">
-            <DatabaseSyncTab state={state} dispatch={dispatch} />
-          </Tabs.Content>
-
-          <Tabs.Content value="aiAssistant">
-            <AiAssistantConfigTab />
           </Tabs.Content>
         </div>
       </Tabs.Root>

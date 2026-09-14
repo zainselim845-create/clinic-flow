@@ -20,10 +20,14 @@ import {
   captureSystemError, 
   getSystemErrors, 
   resolveSystemError, 
+  resolveAllSystemErrors,
+  deleteSystemError,
   clearSystemErrors,
   reportUserBug,
   getBugReports,
-  updateBugReportStatus
+  updateBugReportStatus,
+  deleteBugReport,
+  clearBugReports
 } from '../services/systemErrorService';
 
 const createStorageMock = () => {
@@ -204,12 +208,33 @@ describe('Super Admin Platform Control Plane & Tenant Lifecycle', () => {
     const resolved = errors.find(e => e.id === targetError.id);
     expect(resolved.status).toBe('resolved');
 
+    // Test resolveAllSystemErrors
+    captureSystemError({
+      type: 'test_err_1',
+      message: 'Unresolved error 1'
+    });
+    captureSystemError({
+      type: 'test_err_2',
+      message: 'Unresolved error 2'
+    });
+    let unres = getSystemErrors().filter(e => e.status !== 'resolved');
+    expect(unres.length).toBe(2);
+
+    resolveAllSystemErrors();
+    unres = getSystemErrors().filter(e => e.status !== 'resolved');
+    expect(unres.length).toBe(0);
+
+    // Test deleteSystemError
+    const errorToDelete = getSystemErrors()[0];
+    deleteSystemError(errorToDelete.id);
+    expect(getSystemErrors().some(e => e.id === errorToDelete.id)).toBe(false);
+
     clearSystemErrors();
     expect(getSystemErrors().length).toBe(0);
   });
 
-  it('manages doctor bug reports and status transitions', () => {
-    const report = reportUserBug({
+  it('manages doctor bug reports and status transitions, deletion, and bulk clear', () => {
+    const report1 = reportUserBug({
       title: 'بطء في تحميل جدول المواعيد',
       description: 'يستغرق الجدول 3 ثوان للظهور عند وجود 50 موعد',
       category: 'performance',
@@ -219,17 +244,36 @@ describe('Super Admin Platform Control Plane & Tenant Lifecycle', () => {
       path: '/appointments'
     });
 
-    expect(report.id).toBeDefined();
-    expect(report.status).toBe('open');
+    const report2 = reportUserBug({
+      title: 'تعطل غير متوقع في الواجهة',
+      description: 'useEffect is not defined',
+      category: 'bug',
+      clinicId: 'general',
+      path: '/settings'
+    });
+
+    expect(report1.id).toBeDefined();
+    expect(report1.status).toBe('open');
 
     let reports = getBugReports();
-    expect(reports.some(b => b.id === report.id)).toBe(true);
+    expect(reports.some(b => b.id === report1.id)).toBe(true);
+    expect(reports.some(b => b.id === report2.id)).toBe(true);
 
-    updateBugReportStatus(report.id, 'in_progress');
-    expect(getBugReports().find(b => b.id === report.id).status).toBe('in_progress');
+    updateBugReportStatus(report1.id, 'in_progress');
+    expect(getBugReports().find(b => b.id === report1.id).status).toBe('in_progress');
 
-    updateBugReportStatus(report.id, 'resolved');
-    expect(getBugReports().find(b => b.id === report.id).status).toBe('resolved');
+    updateBugReportStatus(report1.id, 'resolved');
+    expect(getBugReports().find(b => b.id === report1.id).status).toBe('resolved');
+
+    // Test deleteBugReport
+    deleteBugReport(report1.id);
+    reports = getBugReports();
+    expect(reports.some(b => b.id === report1.id)).toBe(false);
+    expect(reports.some(b => b.id === report2.id)).toBe(true);
+
+    // Test clearBugReports
+    clearBugReports();
+    expect(getBugReports().length).toBe(0);
   });
 
   it('manages client user accounts (list, update, password reset, toggle status, and delete)', () => {

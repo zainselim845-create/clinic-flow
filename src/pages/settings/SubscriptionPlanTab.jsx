@@ -74,6 +74,47 @@ export default function SubscriptionPlanTab() {
         </div>
       </div>
 
+      {/* SaaS Central Control Plane Banner */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 113, 227, 0.08) 100%)',
+        border: '1px solid rgba(16, 185, 129, 0.3)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '1.1rem 1.35rem',
+        marginBottom: '1.25rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '1rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <div style={{ background: '#10B981', color: '#FFF', padding: '0.55rem', borderRadius: '12px', display: 'flex' }}>
+            <ShieldCheck size={22} />
+          </div>
+          <div>
+            <strong style={{ fontSize: '1rem', color: 'var(--text-primary)', display: 'block', marginBottom: '0.2rem' }}>
+              خطة وباقتك معتمدة وتدار مركزياً من منصة الساس (SaaS Control Plane)
+            </strong>
+            <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--text-secondary)' }}>
+              إعدادات الباقة، رصيد الرسائل، حصص الذكاء الاصطناعي، وموارد السحابة مخصصة ومؤمّنة لعيادتك مباشرة من إدارة المنصة.
+            </p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{
+            fontSize: '0.8rem',
+            background: 'rgba(16, 185, 129, 0.15)',
+            color: '#059669',
+            fontWeight: 800,
+            padding: '0.35rem 0.85rem',
+            borderRadius: '999px',
+            border: '1px solid rgba(16, 185, 129, 0.3)'
+          }}>
+            ربط سحابي موثق ومفعل ✓
+          </span>
+        </div>
+      </div>
+
       {/* Plan Overview Card */}
       <div style={{
         background: 'var(--surface)',

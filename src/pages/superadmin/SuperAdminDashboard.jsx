@@ -9,9 +9,13 @@ import {
 import { 
   getSystemErrors, 
   resolveSystemError, 
+  resolveAllSystemErrors,
   clearSystemErrors, 
+  deleteSystemError,
   getBugReports, 
-  updateBugReportStatus 
+  updateBugReportStatus,
+  deleteBugReport,
+  clearBugReports 
 } from '../../services/systemErrorService';
 import {
   SaasStatsGrid,
@@ -110,23 +114,6 @@ export default function SuperAdminDashboard() {
 
   const handleApproveClinic = (slug) => {
     updateTenantStatus(slug, 'active');
-  };
-
-  const handleResolveError = (errorId) => {
-    const updated = resolveSystemError(errorId);
-    setSystemErrors([...updated]);
-  };
-
-  const handleClearErrors = () => {
-    if (window.confirm('هل تريد مسح جميع سجلات الأعطال القديمة؟')) {
-      clearSystemErrors();
-      setSystemErrors([]);
-    }
-  };
-
-  const handleUpdateBugStatus = (reportId, newStatus) => {
-    const updated = updateBugReportStatus(reportId, newStatus);
-    setBugReports([...updated]);
   };
 
   const handleSuspendClinic = (slug) => {
@@ -293,6 +280,46 @@ export default function SuperAdminDashboard() {
       doctorEmail: '',
       doctorPassword: ''
     });
+  };
+
+  // Telemetry and Bug Report Handlers
+  const handleClearErrors = () => {
+    if (window.confirm('هل أنت متأكد من رغبتك في مسح كافة سجلات الأعطال البرمجية والتشخيصية من النظام؟')) {
+      clearSystemErrors();
+      setSystemErrors([]);
+    }
+  };
+
+  const handleResolveError = (errorId) => {
+    const updated = resolveSystemError(errorId);
+    setSystemErrors([...updated]);
+  };
+
+  const handleResolveAllErrors = () => {
+    const updated = resolveAllSystemErrors();
+    setSystemErrors([...updated]);
+  };
+
+  const handleDeleteError = (errorId) => {
+    const updated = deleteSystemError(errorId);
+    setSystemErrors([...updated]);
+  };
+
+  const handleUpdateBugStatus = (bugId, newStatus) => {
+    const updated = updateBugReportStatus(bugId, newStatus);
+    setBugReports([...updated]);
+  };
+
+  const handleDeleteBug = (bugId) => {
+    const updated = deleteBugReport(bugId);
+    setBugReports([...updated]);
+  };
+
+  const handleClearBugs = () => {
+    if (window.confirm('هل أنت متأكد من رغبتك في مسح كافة بلاغات المستخدمين من المنصة؟')) {
+      clearBugReports();
+      setBugReports([]);
+    }
   };
 
   const unresolvedIncidentsCount = 
@@ -471,7 +498,11 @@ export default function SuperAdminDashboard() {
             }}
             onClearErrors={handleClearErrors}
             onResolveError={handleResolveError}
+            onResolveAllErrors={handleResolveAllErrors}
+            onDeleteError={handleDeleteError}
             onUpdateBugStatus={handleUpdateBugStatus}
+            onDeleteBug={handleDeleteBug}
+            onClearBugs={handleClearBugs}
           />
         ) : (
           <SaasInfrastructureCenter allTenants={allTenants} />

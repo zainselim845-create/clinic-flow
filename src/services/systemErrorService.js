@@ -216,3 +216,63 @@ export function updateBugReportStatus(reportId, status) {
   }
   return inMemoryBugReports;
 }
+
+/**
+ * Deletes an individual bug report
+ */
+export function deleteBugReport(reportId) {
+  const reports = getBugReports();
+  inMemoryBugReports = reports.filter(r => r.id !== reportId);
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(inMemoryBugReports));
+    } catch (_) {}
+  }
+  return inMemoryBugReports;
+}
+
+/**
+ * Clears all user bug reports (admin maintenance)
+ */
+export function clearBugReports() {
+  inMemoryBugReports = [];
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.removeItem(BUG_REPORTS_KEY);
+    } catch (_) {}
+  }
+  return [];
+}
+
+/**
+ * Deletes a single captured system error
+ */
+export function deleteSystemError(errorId) {
+  const errors = getSystemErrors();
+  inMemoryErrors = errors.filter(e => e.id !== errorId);
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(inMemoryErrors));
+    } catch (_) {}
+  }
+  return inMemoryErrors;
+}
+
+/**
+ * Resolves all captured system errors in bulk
+ */
+export function resolveAllSystemErrors() {
+  const errors = getSystemErrors();
+  const now = new Date().toISOString();
+  inMemoryErrors = errors.map(err => ({
+    ...err,
+    status: 'resolved',
+    resolvedAt: err.resolvedAt || now
+  }));
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(inMemoryErrors));
+    } catch (_) {}
+  }
+  return inMemoryErrors;
+}

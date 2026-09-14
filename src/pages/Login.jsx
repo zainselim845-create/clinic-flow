@@ -970,6 +970,20 @@ const Login = () => {
               <button 
                 type="button" 
                 className="preset-btn"
+                onClick={() => handleDirectRoleLogin('zainselim845@gmail.com', 'admin')}
+                disabled={isLocked}
+                title="دخول مباشر لعيادة د. زين سليم"
+              >
+                <Shield size={16} style={{ color: '#10B981' }} />
+                <div>
+                  <strong>دخول: د. زين سليم (Dr. Zain)</strong>
+                  <span>عيادة د. zain selim • dr-zainselim845</span>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                className="preset-btn"
                 onClick={() => handleDirectRoleLogin('reception@clinicflow.com', '123')}
                 disabled={isLocked}
                 title="دخول مباشر بصلاحية موظف استقبال وسكرتارية"

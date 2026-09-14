@@ -295,6 +295,33 @@ export const AuthProvider = ({ children }) => {
         return { data: { user: saraDoctorUser }, error: null };
       }
 
+      // Match Dr. Zain Selim
+      if (cleanId === 'zainselim845@gmail.com' || cleanId === 'dr-zainselim845') {
+        if (cleanPass !== 'admin') {
+          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب د. zain selim.') };
+        }
+        const zainClinic = demoClinics.find(c => c.slug === 'dr-zainselim845') || demoClinics[2];
+        const zainDoctorUser = {
+          id: 'doc-zainselim-master',
+          name: zainClinic?.doctorName || 'د. zain selim',
+          email: 'zainselim845@gmail.com',
+          phone: zainClinic?.phone || '01006285031',
+          role: 'doctor',
+          jobTitle: zainClinic?.specialty || 'استشاري طب وجراحة الأسنان',
+          clinicSlug: 'dr-zainselim845',
+          clinicName: zainClinic?.name || 'عيادة د. zain selim',
+          allowedClinics: ['dr-zainselim845'],
+          authenticatedAt: new Date().toISOString()
+        };
+        persistUser(zainDoctorUser);
+        localStorage.setItem('clinicflow_role', 'doctor');
+        setUser(zainDoctorUser);
+        setRole('doctor');
+        switchTenant?.('dr-zainselim845');
+        isolateTenantStorage('dr-zainselim845');
+        return { data: { user: zainDoctorUser }, error: null };
+      }
+
       // Match Dr. Ahmed (Dental Doctor Master Login)
       const ahmedClinic = demoClinics.find(c => c.slug === 'dr-ahmed') || currentClinic || defaultClinicInfo;
       const doctorEmail = (ahmedClinic.doctorEmail || 'doctor@clinicflow.com').toLowerCase();

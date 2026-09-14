@@ -416,12 +416,28 @@ export function getAllPlatformUsers() {
       status: 'active',
       authProvider: 'password',
       createdAt: '2026-01-01T00:00:00.000Z'
+    },
+    {
+      id: 'doc-zainselim-master',
+      name: 'د. zain selim',
+      email: 'zainselim845@gmail.com',
+      phone: '01006285031',
+      role: 'doctor',
+      isClinicOwner: true,
+      jobTitle: 'المدير الطبي / استشاري العيادة (Verified)',
+      clinicSlug: 'dr-zainselim845',
+      clinicId: 'clinic-zainselim845',
+      clinicName: 'عيادة د. zain selim',
+      status: 'active',
+      authProvider: 'google',
+      createdAt: '2026-01-15T10:00:00.000Z'
     }
   ];
 
   const clinicLookup = new Map();
   clinicLookup.set('dr-ahmed', 'مركز النخبة لطب وجراحة الأسنان');
   clinicLookup.set('dr-sara', 'عيادة د. سارة للجلدية والتجميل والليزر');
+  clinicLookup.set('dr-zainselim845', 'عيادة د. zain selim');
   tenants.forEach(t => {
     if (t.slug) clinicLookup.set(t.slug, t.name || t.slug);
     if (t.id) clinicLookup.set(t.id, t.name || t.slug);

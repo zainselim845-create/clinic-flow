@@ -128,6 +128,45 @@ export const demoClinics = [
       slotDuration: 30,
       workingHoursText: 'السبت - الأربعاء: ١:٠٠ م - ٨:٠٠ م'
     }
+  },
+  {
+    id: 'clinic-zainselim845',
+    slug: 'dr-zainselim845',
+    senderId: 'ZainSelim',
+    customDomain: 'zainselim-clinic.com',
+    name: 'عيادة د. zain selim',
+    doctorName: 'د. zain selim',
+    doctorEmail: 'zainselim845@gmail.com',
+    specialty: 'طب وجراحة الفم والأسنان وتجميل الابتسامة',
+    phone: '01006285031',
+    address: 'القاهرة — التجمع الخامس، شارع التسعين، مجمع الميديكال بارك',
+    regularFee: '350 ج.م',
+    consultationFee: '200 ج.م',
+    emergencyFee: '500 ج.م',
+    subscriptionTier: 'pro',
+    subscriptionStatus: 'active',
+    branding: {
+      primaryColor: '#0071E3',
+      accentColor: '#10B981',
+      badgeText: 'العيادة التخصصية',
+      brandTitle: 'كلينيك فلو'
+    },
+    quotas: {
+      maxDoctors: 3,
+      monthlySmsQuota: 2000,
+      smsUsed: 210,
+      aiTokensQuota: 10000000,
+      aiTokensUsed: 650000
+    },
+    services: defaultServices,
+    workingHours: 'السبت - الخميس: ٥:٠٠ م - ١٠:٠٠ م',
+    scheduleConfig: {
+      workingDays: [6, 0, 1, 2, 3, 4],
+      startTime: '17:00',
+      endTime: '22:00',
+      slotDuration: 30,
+      workingHoursText: 'السبت - الخميس: ٥:٠٠ م - ١٠:٠٠ م'
+    }
   }
 ];
 
@@ -540,6 +579,21 @@ export const getInitialDataForTenant = (tenantOrSlug) => {
       blockedSlots: drSaraBlockedSlots,
       staffMembers: drSaraStaffMembers,
       clinicInfo: saraClinic
+    };
+  }
+
+  if (slug === 'dr-zainselim845' || targetId === 'clinic-zainselim845') {
+    const zainClinic = demoClinics.find(c => c.slug === 'dr-zainselim845') || demoClinics[2];
+    return {
+      patients: [],
+      appointments: [],
+      invoices: [],
+      expenses: [],
+      recalls: [],
+      notifications: [],
+      blockedSlots: [],
+      staffMembers: [],
+      clinicInfo: zainClinic
     };
   }
 
