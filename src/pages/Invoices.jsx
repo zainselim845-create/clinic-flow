@@ -135,7 +135,7 @@ const Invoices = () => {
             <Download size={16} />
             <span>تصدير إكسيل (CSV)</span>
           </button>
-          <button onClick={handleOpenNew} className="btn btn-primary">
+          <button onClick={handleOpenNew} onSelect={handleCreateInvoice} className="btn btn-primary">
             <Plus size={18} />
             <span>إصدار فاتورة جديدة</span>
           </button>

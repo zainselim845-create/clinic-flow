@@ -113,195 +113,193 @@ export default function ClinicLogoUploader({
   };
 
   return (
-    <div className="clinic-logo-uploader space-y-5" dir="rtl">
-      {/* Header Banner */}
-      <div className="p-5 rounded-[18px] bg-white dark:bg-[#18181B] border border-black/[0.08] dark:border-white/[0.1] shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-[42px] h-[42px] rounded-[12px] bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0 shadow-sm">
-              <ImageIcon size={22} strokeWidth={2.2} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="text-[17px] font-bold text-black dark:text-white leading-tight">
-                  شعار العيادة والهوية الرسمية (Clinic Official Logo)
-                </h4>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-black/[0.06] dark:bg-white/[0.1] text-black dark:text-white">
-                  يظهر في الروشتات، البوابة، والقائمة
-                </span>
-              </div>
-              <p className="text-[13px] text-[#71717A] dark:text-[#A1A1AA] mt-1 leading-relaxed">
-                ارفع الشعار الرسمي المعتمد لعيادتك ليتم تضمينه تلقائياً في ترويسة الروشتات الطبية المطبوعة، فواتير العلاج، وبوابة الحجز الإلكتروني للمرضى.
-              </p>
-            </div>
-          </div>
+    <div 
+      className="clinic-logo-uploader" 
+      dir="rtl"
+      style={{
+        backgroundColor: 'var(--bg-primary, #FFFFFF)',
+        border: '1px solid var(--border-color, #E4E4E7)',
+        borderRadius: '16px',
+        padding: '1.25rem 1.5rem',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+      }}
+    >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          if (e.target.files && e.target.files[0]) {
+            handleFile(e.target.files[0]);
+          }
+        }}
+      />
 
-          {logoPreview && (
-            <button
-              type="button"
-              onClick={handleRemoveLogo}
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full text-[12px] font-semibold bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition-all shrink-0 cursor-pointer"
-              title="إزالة الشعار والرجوع للأيقونة الافتراضية"
-            >
-              <Trash2 size={14} />
-              <span>إزالة الشعار</span>
-            </button>
-          )}
+      {/* Header Info */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div>
+          <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary, #09090B)' }}>
+            شعار العيادة
+          </h4>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary, #71717A)' }}>
+            يظهر تلقائياً في ترويسة الروشتات المطبوعة، شريط التنقل العلوي، وبوابة حجز المرضى.
+          </p>
         </div>
 
         {saveSuccess && (
-          <div className="mt-4 p-3 rounded-[12px] bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-[13px] font-semibold flex items-center gap-2 animate-fade-in">
-            <CheckCircle2 size={16} />
-            <span>تم حفظ وتحديث شعار العيادة بنجاح! يظهر الآن عبر كافة واجهات المنظمة والمستندات.</span>
-          </div>
-        )}
-
-        {uploadError && (
-          <div className="mt-4 p-3 rounded-[12px] bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[13px] font-semibold flex items-center gap-2">
-            <AlertCircle size={16} />
-            <span>{uploadError}</span>
-          </div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', fontWeight: 600, color: '#059669', backgroundColor: 'rgba(16, 185, 129, 0.08)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
+            <CheckCircle2 size={13} />
+            تم حفظ الشعار
+          </span>
         )}
       </div>
 
-      {/* Main Upload Zone & Live Preview Box */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+      {uploadError && (
+        <div style={{ marginBottom: '0.85rem', padding: '0.5rem 0.75rem', borderRadius: '8px', backgroundColor: '#FEF2F2', border: '1px solid #FEE2E2', color: '#DC2626', fontSize: '0.76rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <AlertCircle size={14} />
+          <span>{uploadError}</span>
+        </div>
+      )}
+
+      {/* Sleek Row: Logo Preview + Actions + Presets */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.25rem', paddingTop: '0.25rem' }}>
         
-        {/* Left/Main: Drag & Drop Dropzone */}
-        <div className="md:col-span-7">
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`
-              p-6 rounded-[18px] border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center min-h-[220px]
-              ${isDragging
-                ? 'border-black dark:border-white bg-black/[0.04] dark:bg-white/[0.06] scale-[0.99]'
-                : 'border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/30 hover:border-black/50 dark:hover:border-white/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/40'
-              }
-            `}
+        {/* Left Side: Thumbnail + Upload buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {/* Logo Thumbnail */}
+          <div 
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '12px',
+              backgroundColor: '#FAFAFA',
+              border: '1.5px solid #E4E4E7',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              flexShrink: 0,
+              padding: '4px'
+            }}
           >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
-              className="hidden"
-              onChange={(e) => {
-                if (e.target.files && e.target.files[0]) {
-                  handleFile(e.target.files[0]);
-                }
-              }}
-            />
-
-            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm flex items-center justify-center text-zinc-700 dark:text-zinc-200 mb-3">
-              <Upload size={24} />
-            </div>
-
-            <h5 className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 mb-1">
-              اسحب وأفلت ملف الشعار هنا، أو انقر للاختيار
-            </h5>
-            <p className="text-[12px] text-zinc-500 dark:text-zinc-400 max-w-sm mb-3">
-              صيغ الصور المدعومة: PNG, JPG, SVG, WebP حتى حجم أقصى 5 ميجابايت. يُفضل استخدام خلفية شفافة.
-            </p>
-
-            <button
-              type="button"
-              className="px-4 py-2 rounded-full text-[12px] font-bold bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow hover:opacity-90 transition-opacity"
-            >
-              اختيار ملف من الجهاز
-            </button>
+            {logoPreview ? (
+              <img 
+                src={logoPreview} 
+                alt="شعار العيادة" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <Stethoscope size={22} color="#A1A1AA" />
+            )}
           </div>
-        </div>
 
-        {/* Right: Live Current Logo & Surrounding Preview */}
-        <div className="md:col-span-5 flex flex-col gap-4">
-          <div className="p-5 rounded-[18px] bg-white dark:bg-[#18181B] border border-black/[0.08] dark:border-white/[0.1] shadow-sm flex-1 flex flex-col justify-between">
-            <div>
-              <span className="text-[12px] font-bold text-zinc-500 dark:text-zinc-400 block mb-3">
-                معاينة الشعار المعتمد الحالي:
-              </span>
-
-              <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-[16px] border-2 border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-2 flex items-center justify-center overflow-hidden shadow-inner shrink-0">
-                  {logoPreview ? (
-                    <img 
-                      src={logoPreview} 
-                      alt="شعار العيادة" 
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-zinc-400">
-                      <Stethoscope size={30} />
-                      <span className="text-[9px] font-bold mt-1">بدون شعار</span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="text-right">
-                  <h5 className="text-[14px] font-bold text-zinc-900 dark:text-zinc-100">
-                    {tenant?.name || 'عيادة تخصصية'}
-                  </h5>
-                  <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
-                    {tenant?.doctorName || 'طبيب العيادة'}
-                  </p>
-                  <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                    {logoPreview ? 'شعار مخصص نشط' : 'الأيقونة الطبية الافتراضية'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Prescriptions preview mock badge */}
-            <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[11px] text-zinc-500">
-              <span className="flex items-center gap-1">
-                <FileCheck size={14} className="text-emerald-500" />
-                <span>جاهز للطباعة على الروشتات</span>
-              </span>
-              <span className="font-mono">ClinicFlow Brand Engine</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Preset Medical Monograms (If Doctor Doesn't Have a Logo Yet) */}
-      <div className="p-4 rounded-[16px] bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[12px] font-bold text-zinc-700 dark:text-zinc-300">
-            أو اختر أيقونة طبية احترافية سريعة كبديل مؤقت للشعار:
-          </span>
-          <span className="text-[11px] text-zinc-400">
-            5 أيقونات تخصصية جاهزة
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-          {MEDICAL_PRESET_LOGOS.map((preset) => {
-            const Icon = preset.icon;
-            return (
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <button
-                key={preset.id}
                 type="button"
-                onClick={() => {
-                  const svgData = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="48" fill="#09090B"/><text x="50%" y="55%" font-family="sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">${preset.name.slice(0, 2)}</text></svg>`;
-                  const dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgData)}`;
-                  applyLogo(dataUrl);
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  padding: '0.42rem 0.9rem',
+                  borderRadius: '8px',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  backgroundColor: '#09090B',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.15s ease'
                 }}
-                className="p-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:border-black dark:hover:border-white transition-all text-center flex flex-col items-center gap-1.5 cursor-pointer"
+                onMouseOver={(e) => e.currentTarget.style.opacity = '0.85'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
               >
-                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center text-zinc-800 dark:text-zinc-200">
-                  <Icon size={18} />
-                </div>
-                <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200">
-                  {preset.name}
-                </span>
-                <span className="text-[9px] text-zinc-400 truncate max-w-full">
-                  {preset.label}
-                </span>
+                <Upload size={13} />
+                <span>{logoPreview ? 'تغيير الشعار' : 'رفع شعار'}</span>
               </button>
-            );
-          })}
+
+              {logoPreview && (
+                <button
+                  type="button"
+                  onClick={handleRemoveLogo}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    padding: '0.42rem 0.75rem',
+                    borderRadius: '8px',
+                    fontSize: '0.76rem',
+                    fontWeight: 600,
+                    color: '#DC2626',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #FCA5A5',
+                    cursor: 'pointer'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#FEF2F2'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <Trash2 size={13} />
+                  <span>إزالة</span>
+                </button>
+              )}
+            </div>
+
+            <span style={{ fontSize: '0.72rem', color: '#71717A' }}>
+              PNG, JPG, SVG حتى 5MB
+            </span>
+          </div>
         </div>
+
+        {/* Right Side: Quick Medical Icons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <span style={{ fontSize: '0.74rem', color: '#71717A', whiteSpace: 'nowrap' }}>
+            أو رمز سريع:
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            {MEDICAL_PRESET_LOGOS.map((preset) => {
+              const Icon = preset.icon;
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => {
+                    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><circle cx="50" cy="50" r="48" fill="#09090B"/><text x="50%" y="55%" font-family="sans-serif" font-size="28" font-weight="bold" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">${preset.name.slice(0, 2)}</text></svg>`;
+                    const dataUrl = `data:image/svg+xml;utf8,${encodeURIComponent(svgData)}`;
+                    applyLogo(dataUrl);
+                  }}
+                  title={preset.name}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E4E4E7',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#3F3F46',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.borderColor = '#09090B';
+                    e.currentTarget.style.backgroundColor = '#FAFAFA';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.borderColor = '#E4E4E7';
+                    e.currentTarget.style.backgroundColor = '#FFFFFF';
+                  }}
+                >
+                  <Icon size={15} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
       </div>
     </div>
   );

@@ -28,6 +28,7 @@ const DoctorAssistant = () => {
   const { tenant } = useTenant();
 
   const activeClinic = tenant || state.clinicInfo || clinic;
+  const currentClinic = activeClinic;
   const currentSlug = tenant?.slug || state.currentTenantSlug || state.clinicInfo?.slug || 'default';
   const chatStorageKey = `clinicflow_chat_${currentSlug}`;
 

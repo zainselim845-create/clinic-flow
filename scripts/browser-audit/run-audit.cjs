@@ -271,11 +271,23 @@ async function runUiAudit() {
 
   // --- 11. VIEW SUPER ADMIN ---
   console.log('\n--- 11. Testing View: view-superadmin ---');
+  await page.evaluate(() => {
+    const adminUser = {
+      id: 'superadmin_1',
+      name: 'مدير المنصة العام',
+      email: 'superadmin@clinicflow.com',
+      role: 'super_admin',
+      isSuperAdmin: true,
+      clinicSlug: 'saas-hq'
+    };
+    localStorage.setItem('clinicflow_auth_user', JSON.stringify(adminUser));
+    sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(adminUser));
+  });
   await page.goto(BASE + '/super-admin', { waitUntil: 'networkidle' });
   await page.waitForTimeout(600);
 
   try {
-    const kpiGrid = await page.waitForSelector('.saas-stats-grid', { timeout: 5000 });
+    const kpiGrid = await page.waitForSelector('.saas-stats-grid, .saas-kpi-grid', { timeout: 5000 });
     if (kpiGrid) hit('view-superadmin', 'superadmin-kpi-grid');
   } catch (e) {
     bad('view-superadmin', 'superadmin-kpi-grid', e.message);

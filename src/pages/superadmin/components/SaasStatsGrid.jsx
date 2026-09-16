@@ -11,7 +11,7 @@ export function SaasStatsGrid({
   const smsPercent = Math.round((totalSmsUsed / (totalSmsQuota || 1)) * 100);
 
   return (
-    <div className="saas-kpi-grid">
+    <div className="saas-kpi-grid saas-stats-grid">
       <div className="saas-kpi-card">
         <div className="kpi-icon-wrap primary">
           <Building2 size={24} />

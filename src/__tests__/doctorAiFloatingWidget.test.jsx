@@ -43,17 +43,14 @@ describe('DoctorAiFloatingWidget & Ubiquitous Copilot Access', () => {
     expect(content).toContain('clinicflow_doctor_chat_history');
   });
 
-  it('verifies ubiquitous integration in App.jsx and Header.jsx', () => {
+  it('verifies that floating clutter is removed from App.jsx and Header.jsx for clean UX', () => {
     const appPath = path.resolve(__dirname, '../App.jsx');
     const appContent = fs.readFileSync(appPath, 'utf-8');
-    expect(appContent).toContain('DoctorAiFloatingWidget');
-    expect(appContent).toContain('isAiCopilotOpen');
-    expect(appContent).toContain('setIsAiCopilotOpen');
+    expect(appContent).not.toContain('<DoctorAiFloatingWidget');
 
     const headerPath = path.resolve(__dirname, '../components/Header.jsx');
     const headerContent = fs.readFileSync(headerPath, 'utf-8');
-    expect(headerContent).toContain('header-ai-copilot-btn');
-    expect(headerContent).toContain('onOpenAiCopilot');
+    expect(headerContent).not.toContain('header-ai-copilot-btn');
   });
 
   it('verifies that secondary modules (Labs, Radiology, Inventory) are marked as optional in clinicalAssistantActions', () => {

@@ -379,18 +379,12 @@ const Dashboard = () => {
       active: activeFilterTab === 'pending_payment'
     }] : []),
     {
-      id: 'doctor_agent',
-      label: 'مساعد الطبيب الذكي',
-      icon: <Sparkles className="w-5 h-5" />,
-      onClick: () => navigate('/doctor-agent')
-    },
-    {
       id: 'recalls',
       label: 'استدعاء دوري',
       icon: <BellRing className="w-5 h-5" />,
       onClick: () => setIsRecallModalOpen(true)
     }
-  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab, navigate]);
+  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab]);
 
   // Schedule filtering (Memoized for high performance)
   const filteredAppointments = useMemo(() => {
@@ -409,61 +403,130 @@ const Dashboard = () => {
   return (
     <div className="dashboard-page">
       
-      {/* 1. Google Workspace Operational Action Bar */}
-      <div className="google-workspace-bar">
-        <div className="workspace-bar-info">
-          <div className="workspace-title-pill">
-            <span className="live-pulse-dot" />
-            <h1 className="workspace-title-text" style={{ fontSize: 'inherit', fontWeight: 'inherit', margin: 0, padding: 0, display: 'inline', letterSpacing: 'inherit', color: 'inherit' }}>
+      {/* 1. Sleek Minimal Architectural Command Bar */}
+      <div 
+        className="dashboard-command-bar"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          backgroundColor: 'var(--bg-primary, #FFFFFF)',
+          border: '1px solid var(--border-color, #E4E4E7)',
+          borderRadius: '16px',
+          padding: '1rem 1.5rem',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary, #09090B)' }}>
               {isDoctor 
-                ? `العيادة والعمليات السريرية • ${(user?.name && !user.name.startsWith('د.') ? `د. ${user.name}` : (user?.name || tenant?.doctorName || currentClinic.doctorName || tenant?.name || 'طبيب العيادة'))}`
-                : `مكتب الاستقبال والتنظيم • ${user?.name || 'طاقم الاستقبال'}`}
-            </h1>
-            <span className="workspace-role-chip">{isDoctor ? 'المدير الطبي' : 'سكرتارية واستقبال'}</span>
-          </div>
-          <div className="workspace-date-chip">
-            <CalendarDays size={14} className="date-icon" />
-            <span>{today}</span>
-            <span className="bullet-sep">•</span>
-            <span className="queue-live-count">{waitingToday.length} بالانتظار</span>
+                ? `العمليات السريرية • ${(user?.name && !user.name.startsWith('د.') ? `د. ${user.name}` : (user?.name || tenant?.doctorName || currentClinic.doctorName || tenant?.name || 'طبيب العيادة'))}`
+                : `مكتب الاستقبال • ${user?.name || 'طاقم الاستقبال'}`}
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', fontSize: '0.78rem', color: 'var(--text-secondary, #71717A)' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                <CalendarDays size={13} />
+                <span>{today}</span>
+              </span>
+              <span>•</span>
+              <span style={{ fontWeight: 600, color: waitingToday.length > 0 ? '#09090B' : 'inherit' }}>
+                {waitingToday.length} في صالة الانتظار
+              </span>
+            </div>
           </div>
         </div>
 
-        <div className="workspace-bar-actions">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button 
             type="button" 
             onClick={handleCopyBookingLink} 
-            className="google-m3-tonal-btn" 
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.45rem 0.85rem',
+              borderRadius: '8px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              backgroundColor: 'transparent',
+              border: '1px solid #E4E4E7',
+              color: '#09090B',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
             title="نسخ رابط حجز العيادة المباشر للمرضى"
           >
-            <Share2 size={15} />
+            <Share2 size={13} />
             <span>{copiedBookingLink ? 'تم النسخ!' : 'رابط الحجز'}</span>
           </button>
+
           <button 
             type="button" 
             onClick={() => setIsShiftModalOpen(true)} 
-            className="google-m3-tonal-btn" 
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.45rem 0.85rem',
+              borderRadius: '8px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              backgroundColor: 'transparent',
+              border: '1px solid #E4E4E7',
+              color: '#09090B',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease'
+            }}
             title="تصفية الخزينة وتسليم وردية الاستقبال"
           >
-            <Landmark size={15} />
-            <span>تسليم وردية الاستقبال</span>
+            <Landmark size={13} />
+            <span>الخزينة والوردية</span>
           </button>
+
           {(currentClinic?.slug === 'dr-ahmed' || currentClinic?.slug === 'dr-sara') && (
             <button 
               type="button" 
               onClick={handleRefreshToday} 
-              className="google-m3-icon-btn" 
-              title="تحديث واستعادة جدول اليوم التجريبي"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                backgroundColor: 'transparent',
+                border: '1px solid #E4E4E7',
+                color: '#71717A',
+                cursor: 'pointer'
+              }}
+              title="تحديث جدول اليوم التجريبي"
             >
-              <RotateCcw size={15} />
+              <RotateCcw size={14} />
             </button>
           )}
+
           <button 
             type="button" 
             onClick={() => setIsWalkInModalOpen(true)} 
-            className="google-m3-fab-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.48rem 1rem',
+              borderRadius: '8px',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              backgroundColor: '#09090B',
+              color: '#FFFFFF',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
+            }}
           >
-            <UserPlus size={17} />
+            <UserPlus size={15} />
             <span>{isDoctor ? 'تسجيل مريض جديد' : 'تسجيل حضور مباشر (Walk-in)'}</span>
           </button>
         </div>

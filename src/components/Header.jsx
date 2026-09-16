@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Sun, Moon, LogOut, Menu, ShieldCheck, Bot, Sparkles } from 'lucide-react';
+import { Search, Bell, Sun, Moon, LogOut, Menu, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -74,35 +74,6 @@ const Header = ({ title, onOpenAiCopilot }) => {
         </div>
 
         <div className="header-actions">
-          {/* Subtle Google Cloud Sync Status Indicator */}
-          <div 
-            role="button"
-            tabIndex={0}
-            className={`google-sync-indicator ${isCloudConnected ? 'synced' : 'local'}`}
-            onClick={() => navigate('/settings?tab=database')}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/settings?tab=database'); } }}
-            title={isCloudConnected 
-              ? 'متصل بالسحابة (Supabase): التزامن الفوري نشط والبيانات مشفرة ومحفوظة سحابياً. اضغط لإدارة الاتصال والنسخ الاحتياطي' 
-              : 'وضع محلي فوري (Local Mode): العيادة تعمل بنجاح على التخزين المحلي الآمن. اضغط لربط Supabase السحابي'}
-            aria-label={isCloudConnected ? 'حالة المزامنة: متصل بالسحابة' : 'حالة المزامنة: وضع تخزين محلي'}
-          >
-            <span className="sync-status-dot" />
-            <span className="sync-status-text">{isCloudConnected ? 'سحابي' : 'تخزين محلي'}</span>
-          </div>
-
-          {/* AI Copilot Quick Trigger Button */}
-          <button
-            type="button"
-            className="header-ai-copilot-btn"
-            onClick={() => onOpenAiCopilot ? onOpenAiCopilot() : navigate('/doctor-agent')}
-            title="المساعد الطبي الذكي (Alt + A)"
-            aria-label="فتح المساعد الطبي الذكي"
-          >
-            <Sparkles size={15} className="sparkle-pulse" />
-            <Bot size={16} />
-            <span className="copilot-btn-text">المساعد الذكي</span>
-            <span className="copilot-btn-kbd">Alt+A</span>
-          </button>
 
           {/* Google Material 3 Global Search Trigger Bar */}
           <button 

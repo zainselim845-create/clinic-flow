@@ -169,12 +169,6 @@ const AdminLayout = () => {
           <Outlet />
         </main>
       </div>
-
-      {/* Ubiquitous Floating AI Copilot for Doctors & Clinic Staff */}
-      <DoctorAiFloatingWidget 
-        isOpen={isAiCopilotOpen} 
-        onToggle={(val) => setIsAiCopilotOpen(val)} 
-      />
     </div>
   );
 };
@@ -277,6 +271,7 @@ function App() {
             <Route path="/doctor-agent" element={
               <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
             } />
+            <Route path="/doctor-assistant" element={<Navigate to="/doctor-agent" replace />} />
             <Route path="/settings" element={
               <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>
             } />

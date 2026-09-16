@@ -134,228 +134,136 @@ export default function ClinicPalettePicker({
   };
 
   return (
-    <div className="clinic-palette-picker space-y-6" dir="rtl">
-      
-      {/* 1. Header Banner & Architecture Statement */}
-      <div className="p-5 rounded-[18px] bg-white dark:bg-[#18181B] border border-black/[0.08] dark:border-white/[0.1] shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-[42px] h-[42px] rounded-[12px] bg-black dark:bg-white text-white dark:text-black flex items-center justify-center shrink-0 shadow-sm">
-              <Palette size={22} strokeWidth={2.2} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="text-[17px] font-bold text-black dark:text-white leading-tight">
-                  هوية العيادة وبالتة الألوان المعتمدة (Clinic Brand & Palette)
-                </h4>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-black/[0.06] dark:bg-white/[0.1] text-black dark:text-white">
-                  الأساس: أبيض وأسود مع التخصيص
-                </span>
-              </div>
-              <p className="text-[13px] text-[#71717A] dark:text-[#A1A1AA] mt-1 leading-relaxed">
-                الأساس المعماري لـ ClinicFlow مبني بنقاء مطلق على <strong className="text-black dark:text-white">الأبيض والأسود</strong>. 
-                أمامك أدناه بالتة ألوان سريرية مختارة بعناية لتخصيص هوية عيادتك، مع بقاء الأساس أبيض وأسود.
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleResetToMonochrome}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-full text-[12px] font-semibold bg-black/[0.05] dark:bg-white/[0.08] text-black dark:text-white hover:bg-black/[0.1] dark:hover:bg-white/[0.15] transition-all shrink-0 cursor-pointer"
-            title="الرجوع إلى النمط الأساسي المعتمد باللونين الأبيض والأسود"
-          >
-            <RotateCcw size={14} />
-            <span>استعادة الأساسي (أبيض وأسود)</span>
-          </button>
+    <div 
+      className="clinic-palette-picker" 
+      dir="rtl"
+      style={{
+        backgroundColor: 'var(--bg-primary, #FFFFFF)',
+        border: '1px solid var(--border-color, #E4E4E7)',
+        borderRadius: '16px',
+        padding: '1.25rem 1.5rem',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+      }}
+    >
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div>
+          <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary, #09090B)' }}>
+            اللون والسمة السريرية
+          </h4>
+          <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary, #71717A)' }}>
+            الأساس المعماري يظل أبيض وأسود، مع تخصيص لون الإشارات والأزرار النشطة.
+          </p>
         </div>
 
-        {saveSuccess && (
-          <div className="mt-4 p-3 rounded-[12px] bg-[#10B981]/10 border border-[#10B981]/20 text-[#10B981] text-[13px] font-semibold flex items-center gap-2 animate-fade-in">
-            <CheckCircle2 size={16} />
-            <span>تم تفعيل وحفظ هوية العيادة بنجاح! كافة الأزرار والعناصر تعكس اللون المختار فورياً.</span>
-          </div>
-        )}
-      </div>
-
-      {/* 2. The 3 Curated Master Palettes Grid */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[13px] font-bold text-[#71717A] dark:text-[#A1A1AA] uppercase tracking-wider">
-            بلتة الألوان الثلاثية المعتمدة (تنوع يخدم كافة الأذواق مع بقاء الأساس أبيض وأسود)
-          </span>
-          <span className="text-[12px] text-[#71717A] dark:text-[#A1A1AA]">
-            3 اختيارات نُخبوية مدروسة
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {CURATED_CLINIC_PALETTES.map((palette) => {
-            const isSelected = activePalette.id === palette.id;
-            const isMonochrome = palette.id === 'monochrome';
-
-            return (
-              <button
-                key={palette.id}
-                type="button"
-                onClick={() => handleSelect(palette)}
-                className={`
-                  text-right p-5 rounded-[18px] transition-all duration-200 cursor-pointer relative flex flex-col justify-between
-                  ${isSelected
-                    ? (isMonochrome 
-                        ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-2 border-zinc-900 dark:border-white shadow-lg scale-[1.01]'
-                        : 'bg-white dark:bg-[#1C1C1E] border-2 shadow-lg scale-[1.01]')
-                    : 'bg-white dark:bg-[#18181B] border border-black/[0.08] dark:border-white/[0.1] hover:border-black/30 dark:hover:border-white/30 hover:shadow-md'
-                  }
-                `}
-                style={{
-                  borderColor: isSelected && !isMonochrome ? palette.hex : undefined
-                }}
-              >
-                <div>
-                  {/* Card Header: Color Swatch + Badges */}
-                  <div className="flex items-center justify-between w-full mb-3.5">
-                    <div className="flex items-center gap-2.5">
-                      {isMonochrome ? (
-                        <div className="relative w-[38px] h-[38px] rounded-full overflow-hidden border-2 border-current flex shadow-inner shrink-0">
-                          <div className="w-1/2 h-full bg-white" />
-                          <div className="w-1/2 h-full bg-zinc-900" />
-                          {isSelected && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 dark:bg-white/20">
-                              <Check size={16} strokeWidth={3} className={isMonochrome ? 'text-white dark:text-zinc-900' : 'text-white'} />
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div
-                          style={{ backgroundColor: palette.hex }}
-                          className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-white shadow-sm shrink-0"
-                        >
-                          {isSelected && <Check size={18} strokeWidth={3} />}
-                        </div>
-                      )}
-
-                      <div>
-                        <h5 className={`text-[15px] font-bold leading-tight ${isSelected && isMonochrome ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-zinc-100'}`}>
-                          {palette.name}
-                        </h5>
-                        <span className={`text-[11px] font-mono ${isSelected && isMonochrome ? 'text-zinc-300 dark:text-zinc-600' : 'text-[#71717A] dark:text-[#A1A1AA]'}`}>
-                          {palette.hex}
-                        </span>
-                      </div>
-                    </div>
-
-                    <span 
-                      style={!isMonochrome && isSelected ? { backgroundColor: `${palette.hex}20`, color: palette.hex } : undefined}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                        isSelected 
-                          ? (isMonochrome ? 'bg-white/20 text-white dark:bg-zinc-900/10 dark:text-zinc-900' : '')
-                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
-                      }`}
-                    >
-                      {isSelected ? 'اللون المعتمد' : palette.badgeText}
-                    </span>
-                  </div>
-
-                  {/* Specialty Category */}
-                  <div className="space-y-1.5 mb-4">
-                    <span className={`text-[11px] font-bold uppercase tracking-wider block ${
-                      isSelected && isMonochrome ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-400 dark:text-zinc-500'
-                    }`}>
-                      {palette.category}
-                    </span>
-                    <p className={`text-[12px] font-medium leading-relaxed ${
-                      isSelected && isMonochrome ? 'text-zinc-100 dark:text-zinc-800' : 'text-zinc-800 dark:text-zinc-200'
-                    }`}>
-                      {palette.specialty}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Description Footer */}
-                <p className={`text-[11px] leading-relaxed pt-3 border-t ${
-                  isSelected && isMonochrome 
-                    ? 'border-white/10 dark:border-zinc-900/10 text-zinc-200 dark:text-zinc-700' 
-                    : 'border-zinc-100 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400'
-                }`}>
-                  {palette.description}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 4. Live Interactive UI Simulation Box */}
-      <div className="p-5 rounded-[18px] bg-[#F4F4F5] dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-[13px] font-bold text-black dark:text-white">
-            <Eye size={16} className="text-[#71717A]" />
-            <span>معاينة حية فورية لعناصر العيادة باللون المختار ({activePalette.name}):</span>
-          </div>
-          <span className="text-[12px] text-[#71717A]">
-            الخلفية والأسطح تبقى بأناقة الأبيض والأسود
-          </span>
-        </div>
-
-        <div className="p-4 rounded-[14px] bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] shadow-sm flex flex-wrap items-center justify-between gap-4">
-          
-          {/* Clinic Brand Badge */}
-          <div className="flex items-center gap-3">
-            <div 
-              style={{
-                backgroundColor: activePalette.id === 'monochrome' ? '#09090B' : `${activePalette.hex}20`,
-                color: activePalette.id === 'monochrome' ? '#FFFFFF' : activePalette.hex
-              }}
-              className="w-[40px] h-[40px] rounded-[12px] flex items-center justify-center font-bold shadow-sm"
-            >
-              <Stethoscope size={20} />
-            </div>
-            <div>
-              <p className="text-[15px] font-bold text-black dark:text-white">
-                {tenant?.name || 'عيادة كلينيك فلو النموذجية'}
-              </p>
-              <p className="text-[12px] text-[#71717A]">
-                {activePalette.specialty}
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons with active primary color */}
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              style={{
-                backgroundColor: activePalette.id === 'monochrome' ? '#09090B' : activePalette.hex,
-                color: '#FFFFFF'
-              }}
-              className="px-4 py-2 rounded-full text-[13px] font-bold shadow-sm active:scale-95 transition-all cursor-pointer"
-            >
-              زر الإجراء الرئيسي (حفظ كشف)
-            </button>
-
-            <button
-              type="button"
-              style={{
-                backgroundColor: activePalette.id === 'monochrome' ? 'rgba(0,0,0,0.06)' : `${activePalette.hex}18`,
-                color: activePalette.id === 'monochrome' ? '#09090B' : activePalette.hex
-              }}
-              className="px-4 py-2 rounded-full text-[13px] font-bold transition-all cursor-pointer"
-            >
-              زر ثانوي مظلل
-            </button>
-
-            <span 
-              style={{
-                borderColor: activePalette.id === 'monochrome' ? '#09090B' : activePalette.hex,
-                color: activePalette.id === 'monochrome' ? '#09090B' : activePalette.hex
-              }}
-              className="px-3 py-1 rounded-full text-[11px] font-bold border"
-            >
-              مؤشر الموعد القادم
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          {saveSuccess && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', fontWeight: 600, color: '#059669', backgroundColor: 'rgba(16, 185, 129, 0.08)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
+              <CheckCircle2 size={13} />
+              تم تطبيق اللون
             </span>
-          </div>
+          )}
+
+          {activePalette.id !== 'monochrome' && (
+            <button
+              type="button"
+              onClick={handleResetToMonochrome}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: '#71717A',
+                backgroundColor: 'transparent',
+                border: '1px solid #E4E4E7',
+                borderRadius: '6px',
+                padding: '0.25rem 0.6rem',
+                cursor: 'pointer'
+              }}
+              title="الرجوع للأبيض والأسود النقي"
+            >
+              <RotateCcw size={12} />
+              <span>استعادة الأساسي</span>
+            </button>
+          )}
         </div>
+      </div>
+
+      {/* 3 Curated Segmented Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
+        {CURATED_CLINIC_PALETTES.map((palette) => {
+          const isSelected = activePalette.id === palette.id;
+          const isMonochrome = palette.id === 'monochrome';
+
+          return (
+            <button
+              key={palette.id}
+              type="button"
+              onClick={() => handleSelect(palette)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                border: isSelected ? (isMonochrome ? '2px solid #09090B' : `2px solid ${palette.hex}`) : '1px solid #E4E4E7',
+                backgroundColor: isSelected ? (isMonochrome ? '#09090B' : '#FFFFFF') : '#FAFAFA',
+                color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B',
+                cursor: 'pointer',
+                textAlign: 'right',
+                transition: 'all 0.15s ease',
+                boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.06)' : 'none'
+              }}
+            >
+              {/* Color Swatch Disc */}
+              <div style={{ flexShrink: 0 }}>
+                {isMonochrome ? (
+                  <div 
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      border: '1.5px solid currentColor',
+                      overflow: 'hidden',
+                      display: 'flex'
+                    }}
+                  >
+                    <div style={{ width: '50%', height: '100%', backgroundColor: '#FFFFFF' }} />
+                    <div style={{ width: '50%', height: '100%', backgroundColor: '#09090B' }} />
+                  </div>
+                ) : (
+                  <div 
+                    style={{
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      backgroundColor: palette.hex,
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.12)'
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Title & Short Subtitle */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {palette.name}
+                </div>
+                <div style={{ fontSize: '0.7rem', color: isSelected && isMonochrome ? 'rgba(255,255,255,0.7)' : '#71717A', marginTop: '1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {palette.specialty.split('،')[0]}
+                </div>
+              </div>
+
+              {/* Selection Checkmark */}
+              {isSelected && (
+                <div style={{ flexShrink: 0 }}>
+                  <Check size={16} strokeWidth={3} color={isMonochrome ? '#FFFFFF' : palette.hex} />
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
