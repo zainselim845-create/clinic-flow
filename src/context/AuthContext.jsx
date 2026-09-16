@@ -90,7 +90,12 @@ export const AuthProvider = ({ children }) => {
     if (savedUser) {
       return savedUser.role || 'doctor';
     }
-    return localStorage.getItem('clinicflow_role') || 'doctor';
+    try {
+      if (typeof localStorage !== 'undefined') {
+        return localStorage.getItem('clinicflow_role') || 'doctor';
+      }
+    } catch (_) {}
+    return 'doctor';
   });
   
   const isDemoMode = !isSupabaseConfigured();

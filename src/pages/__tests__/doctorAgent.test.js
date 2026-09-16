@@ -139,5 +139,41 @@ describe('Doctor AI Agent & Follow-up Engine', () => {
       expect(html).toContain('مركز التسويق ونمو العيادة');
       expect(html).toContain('المساعد السريري الذكي');
     });
+
+    it('renders DoctorAssistant in chat mode without ReferenceError: patients is not defined', async () => {
+      const React = await import('react');
+      const { renderToString } = await import('react-dom/server');
+      const { MemoryRouter } = await import('react-router-dom');
+      const { AppProvider } = await import('../../context/AppContext');
+      const { AuthProvider } = await import('../../context/AuthContext');
+      const { TenantProvider } = await import('../../context/TenantContext');
+      const { default: DoctorAssistant } = await import('../DoctorAssistant');
+
+      const chatHtml = renderToString(
+        React.createElement(
+          MemoryRouter,
+          { initialEntries: ['/doctor-agent?mode=chat'] },
+          React.createElement(
+            AuthProvider,
+            null,
+            React.createElement(
+              TenantProvider,
+              null,
+              React.createElement(
+                AppProvider,
+                null,
+                React.createElement(DoctorAssistant, { initialMode: 'chat' })
+              )
+            )
+          )
+        )
+      );
+
+      expect(chatHtml).toBeDefined();
+      expect(chatHtml).toContain('مساعد الطبيب السريري الذكي (AI Patient Care Agent)');
+      expect(chatHtml).toContain('إجمالي المرضى بالسجل:');
+      expect(chatHtml).toContain('قائمة المرضى المستهدفين');
+      expect(chatHtml).toContain('صياغة رسالة الرعاية والمتابعة');
+    });
   });
 });

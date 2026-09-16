@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Bot, Send, Sparkles, Users, MessageSquare, CheckSquare, 
   Square, Stethoscope, RefreshCw, CheckCircle2, MessageCircle, Filter, Trash2, Settings
@@ -21,8 +21,9 @@ import {
 import MarketingCrmHub from './marketing/MarketingCrmHub';
 import './DoctorAssistant.css';
 
-const DoctorAssistant = () => {
+const DoctorAssistant = ({ initialMode }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { state, dispatch, useSupabase } = useApp();
   const { clinic, user } = useAuth();
   const { tenant } = useTenant();
@@ -82,7 +83,7 @@ const DoctorAssistant = () => {
     return getInitialWelcome(currentSlug, doctorTitle, tenant?.name || activeClinic?.name || 'العيادة');
   });
 
-  const [viewMode, setViewMode] = useState('crm'); // 'crm' | 'chat'
+  const [viewMode, setViewMode] = useState(() => initialMode || searchParams.get('mode') || 'crm'); // 'crm' | 'chat'
   const [inputText, setInputText] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedPatientIds, setSelectedPatientIds] = useState(new Set());
