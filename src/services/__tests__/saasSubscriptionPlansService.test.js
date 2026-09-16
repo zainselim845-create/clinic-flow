@@ -8,6 +8,7 @@ import {
   updateClinicSubscriptionDetails,
   DEFAULT_SAAS_PLANS
 } from '../saasSubscriptionPlansService';
+import { clearAuthCache } from '../authService';
 import { safeStorage } from '../../utils/safeStorage';
 
 const createStorageMock = () => {
@@ -28,6 +29,7 @@ describe('saasSubscriptionPlansService Unit Tests', () => {
   beforeEach(() => {
     localStorage.clear();
     safeStorage.clear();
+    clearAuthCache();
   });
 
   it('retrieves default SaaS subscription tiers', () => {
@@ -139,4 +141,54 @@ describe('saasSubscriptionPlansService Unit Tests', () => {
     expect(updated.subscriptionStatus).toBe('suspended');
     expect(updated.suspensionReason).toBe('تأخر سداد الاشتراك الشهري');
   });
+
+  it('supports custom agreed pricing, flexible billing cycles, and lifetime portal buyout licenses', () => {
+    const mockTenant = {
+      id: 'clinic_vip',
+      slug: 'vip-clinic',
+      name: 'VIP Dental Clinic',
+      subscriptionTier: 'pro',
+      subscriptionStatus: 'active'
+    };
+    safeStorage.setItem('clinicflow_registered_tenants', [mockTenant]);
+
+    // Update with lifetime license and buyout offline payment
+    const updateRes = updateClinicSubscriptionDetails('vip-clinic', {
+      isLifetimeLicense: true,
+      subscriptionStatus: 'lifetime',
+      customAgreedPrice: 25000,
+      billingCycle: 'lifetime',
+      offlinePayment: {
+        amount: 25000,
+        method: 'instapay',
+        notes: 'شراء ترخيص البورتال بالكامل مدى الحياة',
+        type: 'lifetime_buyout'
+      }
+    });
+
+    expect(updateRes).toBe(true);
+
+    const tenants = safeStorage.getItem('clinicflow_registered_tenants', []);
+    const vipClinic = tenants.find(t => t.slug === 'vip-clinic');
+    expect(vipClinic.isLifetimeLicense).toBe(true);
+    expect(vipClinic.subscriptionStatus).toBe('lifetime');
+    expect(vipClinic.customAgreedPrice).toBe(25000);
+    expect(vipClinic.subscriptionPaymentHistory.length).toBe(1);
+    expect(vipClinic.subscriptionPaymentHistory[0].type).toBe('lifetime_buyout');
+    expect(vipClinic.subscriptionPaymentHistory[0].amount).toBe(25000);
+
+    // Test getSaaSBillingMetrics with lifetime and custom pricing
+    const allMockTenants = [
+      vipClinic,
+      { id: '2', name: 'Clinic Quarterly', subscriptionTier: 'starter', subscriptionStatus: 'active', billingCycle: 'quarterly', customAgreedPrice: 1500 }, // 1500 / 3 = 500/mo
+      { id: '3', name: 'Clinic Annual', subscriptionTier: 'pro', subscriptionStatus: 'active', billingCycle: 'annual', customAgreedPrice: 12000 }, // 12000 / 12 = 1000/mo
+    ];
+
+    const metrics = getSaaSBillingMetrics(allMockTenants);
+    expect(metrics.lifetimeCount).toBe(1);
+    expect(metrics.totalLifetimeRevenue).toBe(25000);
+    // MRR from quarterly (500) + annual (1000) = 1500
+    expect(metrics.mrr).toBe(1500);
+  });
 });
+
