@@ -1610,8 +1610,15 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           setSelectedTenantToControl(null);
         }}
         clinic={selectedTenantToControl}
-        onSuccess={() => {
+        onSuccess={(updates) => {
           setPlans(getSaaSSubscriptionPlans());
+          if (selectedTenantToControl && updates) {
+            updateTenantInfo({
+              id: selectedTenantToControl.id,
+              slug: selectedTenantToControl.slug,
+              ...updates
+            });
+          }
         }}
       />
 </div>

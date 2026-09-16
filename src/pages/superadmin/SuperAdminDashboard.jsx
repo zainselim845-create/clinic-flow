@@ -616,8 +616,15 @@ export default function SuperAdminDashboard() {
           setSelectedClinicForControl(null);
         }}
         clinic={selectedClinicForControl}
-        onSuccess={() => {
-          setAllTenants(getRegisteredTenants());
+        onSuccess={(updates) => {
+          if (selectedClinicForControl && updates) {
+            updateTenantInfo({
+              id: selectedClinicForControl.id,
+              slug: selectedClinicForControl.slug,
+              ...updates
+            });
+          }
+          setAllTenants(getCombinedTenants());
         }}
       />
     </div>
