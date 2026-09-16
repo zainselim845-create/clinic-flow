@@ -62,6 +62,7 @@ const SuperAdminDashboard = lazyWithRetry(() => import('./pages/superadmin/Super
 const Onboarding = lazyWithRetry(() => import('./pages/Onboarding'));
 const LandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
 const SmsIntegration = lazyWithRetry(() => import('./pages/SmsIntegration'));
+const Labs = lazyWithRetry(() => import('./pages/Labs'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 const pageTitles = {
@@ -75,6 +76,7 @@ const pageTitles = {
   '/doctor-agent': 'مساعد الطبيب الذكي',
   '/notifications': 'التنبيهات والإشعارات',
   '/sms-integration': 'بوابة الرسائل النصية والتكامل',
+  '/labs': 'معمل التركيبات والتحاليل',
   '/settings': 'إعدادات وإدارة العيادة',
   '/booking': 'حجز موعد',
   '/manage-booking': 'إدارة الحجز والمواعيد',
@@ -278,6 +280,9 @@ function App() {
               <Route path="/doctor-assistant" element={<Navigate to="/doctor-agent" replace />} />
               <Route path="/sms-integration" element={
                 <ProtectedRoute allowedRoles={['doctor']}><SmsIntegration /></ProtectedRoute>
+              } />
+              <Route path="/labs" element={
+                <ProtectedRoute allowedRoles={['doctor', 'super_admin']}><Labs /></ProtectedRoute>
               } />
               <Route path="/settings" element={
                 <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>

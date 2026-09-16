@@ -126,6 +126,12 @@ const Sidebar = () => {
           </NavLink>
         )}
         {isDoctor && (
+          <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Layers size={19} />
+            <span>معمل التركيبات والتحاليل</span>
+          </NavLink>
+        )}
+        {isDoctor && (
           <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Settings size={19} />
             <span>إدارة وإعدادات العيادة</span>

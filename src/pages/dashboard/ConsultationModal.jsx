@@ -3,10 +3,12 @@ import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { 
   Stethoscope, Check, CalendarPlus, BellRing, X, 
-  ShieldAlert 
+  ShieldAlert, Pill, Plus, Trash2, Printer
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useTenant } from '../../context/TenantContext';
 import { checkPrescriptionSafety } from '../../services/drugInteractionService';
+import { COMMON_MEDICATIONS, createPrescriptionRecord } from '../../services/prescriptionService';
 import './ConsultationModal.css';
 
 export default function ConsultationModal({
@@ -16,6 +18,7 @@ export default function ConsultationModal({
   onComplete
 }) {
   const { state, dispatch } = useApp();
+  const { tenant } = useTenant();
   const defaultClinicFee = state.clinicInfo?.regularFee || '300 ج.م';
   const [customFee, setCustomFee] = useState(appointment?.fee || defaultClinicFee);
   const [diagnosis, setDiagnosis] = useState('');
@@ -24,14 +27,62 @@ export default function ConsultationModal({
   const [followUpOption, setFollowUpOption] = useState('none');
   const [recallInterval, setRecallInterval] = useState('none');
 
+  // e-Prescription States
+  const [medications, setMedications] = useState([]);
+  const [selectedQuickMed, setSelectedQuickMed] = useState('');
+  const [newMedName, setNewMedName] = useState('');
+  const [newMedDose, setNewMedDose] = useState('قرص واحد');
+  const [newMedFreq, setNewMedFreq] = useState('كل 8 ساعات بعد الأكل');
+  const [newMedDuration, setNewMedDuration] = useState('لمدة 5 أيام');
+  const [newMedInstructions, setNewMedInstructions] = useState('');
+  const [printPrescriptionImmediate, setPrintPrescriptionImmediate] = useState(false);
+
   useEffect(() => {
     if (appointment) {
       setCustomFee(appointment.fee || state.clinicInfo?.regularFee || '300 ج.م');
       setDiagnosis(appointment.diagnosis || '');
       setProcedures(appointment.procedures || '');
       setNotes(appointment.notes || '');
+      setMedications([]);
+      setNewMedName('');
+      setSelectedQuickMed('');
+      setPrintPrescriptionImmediate(false);
     }
   }, [appointment, state.clinicInfo]);
+
+  const handleSelectQuickMed = (medId) => {
+    setSelectedQuickMed(medId);
+    const found = COMMON_MEDICATIONS.find(m => m.id === medId);
+    if (found) {
+      setNewMedName(found.name);
+      setNewMedDose(found.defaultDose);
+      setNewMedFreq(found.defaultFrequency);
+      setNewMedDuration(found.defaultDuration);
+      setNewMedInstructions(found.defaultInstructions);
+    }
+  };
+
+  const handleAddMedication = () => {
+    if (!newMedName.trim()) return;
+    setMedications(prev => [
+      ...prev,
+      {
+        id: 'med_' + Date.now(),
+        name: newMedName.trim(),
+        dose: newMedDose.trim(),
+        frequency: newMedFreq.trim(),
+        duration: newMedDuration.trim(),
+        instructions: newMedInstructions.trim()
+      }
+    ]);
+    setNewMedName('');
+    setSelectedQuickMed('');
+    setNewMedInstructions('');
+  };
+
+  const handleRemoveMedication = (id) => {
+    setMedications(prev => prev.filter(m => m.id !== id));
+  };
 
   // Retrieve patient health factors & allergy history
   const patientRecord = useMemo(() => {
@@ -44,10 +95,11 @@ export default function ConsultationModal({
 
   // Real-time Clinical Decision Support (CDS) Drug & Allergy Safety Warnings
   const safetyWarnings = useMemo(() => {
-    const combinedClinicalText = `${diagnosis} ${procedures} ${notes}`.trim();
+    const medNames = medications.map(m => m.name).join(' ');
+    const combinedClinicalText = `${diagnosis} ${procedures} ${notes} ${newMedName} ${medNames}`.trim();
     if (!combinedClinicalText || !patientRecord) return [];
     return checkPrescriptionSafety(combinedClinicalText, patientRecord);
-  }, [diagnosis, procedures, notes, patientRecord]);
+  }, [diagnosis, procedures, notes, newMedName, medications, patientRecord]);
 
   if (!appointment) return null;
 
@@ -83,6 +135,25 @@ export default function ConsultationModal({
       });
     }
 
+    // Build e-Prescription if medications added
+    let prescriptionRecord = null;
+    if (medications.length > 0) {
+      prescriptionRecord = createPrescriptionRecord({
+        clinic: tenant || state.clinicInfo,
+        doctor: { name: tenant?.doctorName || state.clinicInfo?.doctorName || 'د. استشاري العيادة' },
+        patient: {
+          id: appointment.patientId || appointment.id,
+          name: appointment.patientName,
+          phone: appointment.patientPhone
+        },
+        appointment,
+        diagnosis,
+        procedures,
+        medications,
+        generalInstructions: notes
+      });
+    }
+
     // Doctor only writes clinical data — payment is handled by secretary
     onComplete({
       appointmentId: appointment.id,
@@ -95,7 +166,8 @@ export default function ConsultationModal({
       fee: customFee?.trim() || appointment.fee || '300 ج.م',
       recallInterval,
       followUpOption,
-      prescription: null
+      prescription: prescriptionRecord,
+      printPrescriptionImmediate
     });
   };
 
@@ -193,6 +265,138 @@ export default function ConsultationModal({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
+            </div>
+
+            {/* e-Prescription Section */}
+            <div style={{
+              background: 'var(--surface, #FFFFFF)',
+              border: '1px solid var(--border-color, #E4E4E7)',
+              borderRadius: '12px',
+              padding: '1rem',
+              marginBottom: '1rem'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Pill size={18} color="var(--primary)" />
+                  <strong style={{ fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                    الروشتة الطبية الإلكترونية (e-Prescription)
+                  </strong>
+                  {medications.length > 0 && (
+                    <span style={{ fontSize: '0.75rem', background: '#ECFDF5', color: '#047857', padding: '0.15rem 0.5rem', borderRadius: '999px', fontWeight: 700 }}>
+                      {medications.length} دواء
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Pick from Library */}
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: '0.3rem', fontWeight: 600 }}>
+                  أدوية شائعة جاهزة للعيادة:
+                </label>
+                <select
+                  value={selectedQuickMed}
+                  onChange={(e) => handleSelectQuickMed(e.target.value)}
+                  style={{ width: '100%', padding: '0.45rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                >
+                  <option value="">-- اختر من قائمة الأدوية الشائعة أو اكتب يدوياً أدناه --</option>
+                  {COMMON_MEDICATIONS.map(m => (
+                    <option key={m.id} value={m.id}>{m.name} ({m.defaultFrequency})</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Manual Entry Form */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <input
+                  type="text"
+                  placeholder="اسم الدواء (مثال: أوجمنتين 1 جم)"
+                  value={newMedName}
+                  onChange={(e) => setNewMedName(e.target.value)}
+                  style={{ padding: '0.45rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem', gridColumn: 'span 2' }}
+                />
+                <input
+                  type="text"
+                  placeholder="الجرعة (مثال: قرص واحد)"
+                  value={newMedDose}
+                  onChange={(e) => setNewMedDose(e.target.value)}
+                  style={{ padding: '0.45rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                />
+                <input
+                  type="text"
+                  placeholder="التكرار (مثال: كل 8 ساعات)"
+                  value={newMedFreq}
+                  onChange={(e) => setNewMedFreq(e.target.value)}
+                  style={{ padding: '0.45rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                />
+                <input
+                  type="text"
+                  placeholder="المدة (مثال: 5 أيام)"
+                  value={newMedDuration}
+                  onChange={(e) => setNewMedDuration(e.target.value)}
+                  style={{ padding: '0.45rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddMedication}
+                  disabled={!newMedName.trim()}
+                  className="btn btn-secondary"
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem', padding: '0.45rem 0.75rem', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 700 }}
+                >
+                  <Plus size={15} />
+                  <span>إضافة للروشتة</span>
+                </button>
+              </div>
+
+              {/* Added Medications Table */}
+              {medications.length > 0 && (
+                <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '0.75rem', marginBottom: '0.75rem' }}>
+                  <table style={{ width: '100%', fontSize: '0.82rem', textAlign: 'right', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+                        <th style={{ padding: '0.35rem' }}>الدواء</th>
+                        <th style={{ padding: '0.35rem' }}>الجرعة</th>
+                        <th style={{ padding: '0.35rem' }}>التكرار</th>
+                        <th style={{ padding: '0.35rem' }}>المدة</th>
+                        <th style={{ padding: '0.35rem', textAlign: 'center' }}>حذف</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {medications.map((m, idx) => (
+                        <tr key={m.id || idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '0.35rem', fontWeight: 700 }}>{m.name}</td>
+                          <td style={{ padding: '0.35rem' }}>{m.dose}</td>
+                          <td style={{ padding: '0.35rem' }}>{m.frequency}</td>
+                          <td style={{ padding: '0.35rem' }}>{m.duration}</td>
+                          <td style={{ padding: '0.35rem', textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveMedication(m.id)}
+                              style={{ background: 'none', border: 'none', color: '#DC2626', cursor: 'pointer', padding: '0.2rem' }}
+                              title="حذف الدواء"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Print / WhatsApp Immediate Option */}
+              {medications.length > 0 && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', marginTop: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={printPrescriptionImmediate}
+                    onChange={(e) => setPrintPrescriptionImmediate(e.target.checked)}
+                  />
+                  <Printer size={14} color="var(--primary)" />
+                  <span>فتح نافذة الطباعة والإرسال عبر واتساب فور إنهاء الكشف</span>
+                </label>
+              )}
             </div>
 
             {/* Periodic Recall Selector */}

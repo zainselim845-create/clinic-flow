@@ -4,14 +4,17 @@ import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, 
-  FileSpreadsheet, X, Edit3, Wallet 
+  FileSpreadsheet, X, Edit3, Wallet, Pill, Layers, Printer, Eye 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useTenant } from '../../context/TenantContext';
 import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
 import TreatmentPlanModal from '../../components/TreatmentPlanModal';
 import PatientWalletPanel from '../../components/PatientWalletPanel';
+import PrescriptionPrintModal from '../../components/PrescriptionPrintModal';
 import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
 import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
+import { getPatientPrescriptionsFromStorage, formatPrescriptionForWhatsApp } from '../../services/prescriptionService';
 import { getWhatsAppUri } from '../../services/smsService';
 import './PatientDossierDrawer.css';
 
@@ -32,17 +35,24 @@ export default function PatientDossierDrawer({
   onEdit
 }) {
   const { state } = useApp();
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'notes' | 'plans' | 'wallet'
+  const { tenant } = useTenant();
+  const currentClinicId = tenant?.id || state?.clinicInfo?.id;
+  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
+
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'notes' | 'plans' | 'wallet' | 'prescriptions' | 'labs'
 
   const [clinicalNotes, setClinicalNotes] = useState([]);
   const [treatmentPlans, setTreatmentPlans] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [patientLabOrders, setPatientLabOrders] = useState([]);
+  const [selectedRxToPrint, setSelectedRxToPrint] = useState(null);
   const [showPlansModal, setShowPlansModal] = useState(false);
 
   const patientName = patient?.name || patient?.patientName || '';
   const patientPhone = patient?.phone || patient?.patientPhone || '';
   const patientId = patient?.id || patient?.patientId || (patientPhone ? 'pat_' + String(patientPhone).replace(/\D/g, '') : '');
 
-  // Load clinical records
+  // Load clinical records, prescriptions & lab orders
   useEffect(() => {
     async function loadData() {
       if (patientId) {
@@ -51,10 +61,27 @@ export default function PatientDossierDrawer({
 
         const { data: plansData } = await getPatientTreatmentPlans(patientId);
         if (plansData) setTreatmentPlans(plansData);
+
+        const rxList = getPatientPrescriptionsFromStorage(patientId, currentClinicId);
+        setPrescriptions(rxList || []);
+
+        try {
+          const storedLabs = localStorage.getItem(`clinicflow_labs_${currentSlug}`);
+          if (storedLabs) {
+            const parsed = JSON.parse(storedLabs);
+            if (Array.isArray(parsed)) {
+              const matches = parsed.filter(l => 
+                (l.patientName && patientName && l.patientName.trim().toLowerCase() === patientName.trim().toLowerCase()) ||
+                (patientPhone && l.patientPhone && l.patientPhone === patientPhone)
+              );
+              setPatientLabOrders(matches);
+            }
+          }
+        } catch (_) {}
       }
     }
     loadData();
-  }, [patientId]);
+  }, [patientId, patientName, patientPhone, currentClinicId, currentSlug]);
 
   return (
     <Dialog.Root open={!!patient} onOpenChange={(details) => !details.open && onClose()} lazyMount unmountOnExit>
@@ -229,6 +256,52 @@ export default function PatientDossierDrawer({
                     <span>المحفظة الرقمية</span>
                   </button>
                 </Tabs.Trigger>
+
+                <Tabs.Trigger value="prescriptions" asChild>
+                  <button
+                    type="button"
+                    className={`btn-dossier-tab ${activeTab === 'prescriptions' ? 'active' : ''}`}
+                    style={{
+                      background: activeTab === 'prescriptions' ? 'var(--primary)' : 'var(--surface)',
+                      color: activeTab === 'prescriptions' ? '#FFFFFF' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      padding: '0.45rem 0.95rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 700,
+                      fontSize: '0.84rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <Pill size={14} />
+                    <span>الروشتات الطبية ({prescriptions.length})</span>
+                  </button>
+                </Tabs.Trigger>
+
+                <Tabs.Trigger value="labs" asChild>
+                  <button
+                    type="button"
+                    className={`btn-dossier-tab ${activeTab === 'labs' ? 'active' : ''}`}
+                    style={{
+                      background: activeTab === 'labs' ? 'var(--primary)' : 'var(--surface)',
+                      color: activeTab === 'labs' ? '#FFFFFF' : 'var(--text-primary)',
+                      border: '1px solid var(--border-color)',
+                      padding: '0.45rem 0.95rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontWeight: 700,
+                      fontSize: '0.84rem',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <Layers size={14} />
+                    <span>أعمال المعمل والتركيبات ({patientLabOrders.length})</span>
+                  </button>
+                </Tabs.Trigger>
               </Tabs.List>
 
         <div className="dossier-body" style={{ maxHeight: '72vh', overflowY: 'auto', padding: '1.25rem' }}>
@@ -400,6 +473,187 @@ export default function PatientDossierDrawer({
             </div>
           </Tabs.Content>
 
+          {/* TAB 5: E-PRESCRIPTIONS */}
+          <Tabs.Content value="prescriptions">
+            <div style={{ padding: '0.5rem 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  سجل الروشتات والوصفات الطبية الصادرة للمريض
+                </h4>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                  إجمالي الروشتات: <strong>{prescriptions.length}</strong>
+                </span>
+              </div>
+
+              {prescriptions.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2.5rem 1rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                  <Pill size={36} style={{ color: 'var(--text-secondary)', opacity: 0.4, margin: '0 auto 0.75rem' }} />
+                  <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
+                    لا توجد روشتات إلكترونية مسجلة لهذا المريض حتى الآن.
+                  </p>
+                  <p style={{ margin: '0.35rem 0 0', color: 'var(--text-secondary)', fontSize: '0.78rem', opacity: 0.8 }}>
+                    يتم إصدار الروشتة وتوثيقها تلقائياً أثناء فحص الطبيب من خلال نافذة الكشف.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {prescriptions.map((rx) => (
+                    <div
+                      key={rx.id}
+                      style={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        padding: '1rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Pill size={16} color="var(--primary)" />
+                            <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                              {rx.diagnosis || 'روشتة علاجية واستشارة'}
+                            </strong>
+                            <span style={{ fontSize: '0.72rem', background: '#F4F4F5', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-secondary)' }}>
+                              {rx.verificationCode}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                            تاريخ الإصدار: {rx.date} • الطبيب: {rx.doctorName || 'طبيب العيادة'}
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRxToPrint(rx)}
+                            className="btn btn-secondary"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.75rem', fontSize: '0.78rem' }}
+                          >
+                            <Printer size={13} />
+                            <span>طباعة / معاينة</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const msg = formatPrescriptionForWhatsApp(rx);
+                              const url = getWhatsAppUri(patientPhone, msg);
+                              if (url) window.open(url, '_blank', 'noopener,noreferrer');
+                            }}
+                            className="btn btn-secondary"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.35rem 0.75rem', fontSize: '0.78rem', color: '#047857' }}
+                          >
+                            <MessageCircle size={13} />
+                            <span>واتساب</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Medications list */}
+                      {Array.isArray(rx.medications) && rx.medications.length > 0 && (
+                        <div style={{ background: 'var(--bg-secondary)', borderRadius: '8px', padding: '0.6rem 0.8rem', marginTop: '0.5rem' }}>
+                          <div style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>الأدوية المقررة:</div>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.4rem' }}>
+                            {rx.medications.map((m, idx) => (
+                              <div key={idx} style={{ fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                <span style={{ color: 'var(--primary)', fontWeight: 800 }}>•</span>
+                                <strong>{m.name}</strong>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.76rem' }}>({m.dose || ''} - {m.frequency || ''})</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Tabs.Content>
+
+          {/* TAB 6: LAB ORDERS */}
+          <Tabs.Content value="labs">
+            <div style={{ padding: '0.5rem 0' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  سجل طلبات وأعمال المعمل والتركيبات الخارجية
+                </h4>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                  إجمالي الطلبات: <strong>{patientLabOrders.length}</strong>
+                </span>
+              </div>
+
+              {patientLabOrders.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2.5rem 1rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                  <Layers size={36} style={{ color: 'var(--text-secondary)', opacity: 0.4, margin: '0 auto 0.75rem' }} />
+                  <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
+                    لا توجد أعمال معمل أو تركيبات مسجلة لهذا المريض.
+                  </p>
+                  <p style={{ margin: '0.35rem 0 0', color: 'var(--text-secondary)', fontSize: '0.78rem', opacity: 0.8 }}>
+                    يمكنك إرسال طلب جديد للمعمل مباشرة عبر قسم "معمل التركيبات والتحاليل" في القائمة الرئيسية.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {patientLabOrders.map((lab) => (
+                    <div
+                      key={lab.id}
+                      style={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        padding: '1rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <Layers size={16} color="var(--primary)" />
+                          <strong style={{ fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                            {lab.workType}
+                          </strong>
+                          {lab.toothNumber && (
+                            <span style={{ fontSize: '0.74rem', background: '#EFF6FF', color: '#2563EB', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>
+                              سن #{lab.toothNumber}
+                            </span>
+                          )}
+                          {lab.shade && (
+                            <span style={{ fontSize: '0.74rem', background: '#F4F4F5', padding: '2px 6px', borderRadius: '4px' }}>
+                              درجة اللون: {lab.shade}
+                            </span>
+                          )}
+                        </div>
+
+                        <span style={{
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          padding: '0.2rem 0.6rem',
+                          borderRadius: '999px',
+                          background: lab.status === 'delivered' ? '#ECFDF5' : lab.status === 'received' ? '#EFF6FF' : '#FEF3C7',
+                          color: lab.status === 'delivered' ? '#047857' : lab.status === 'received' ? '#1D4ED8' : '#B45309'
+                        }}>
+                          {lab.status === 'delivered' ? 'تم التسليم للمريض ✓' : lab.status === 'received' ? 'تم الاستلام بالعيادة' : lab.status === 'first_try' ? 'بروفة أولى' : 'مرسل للمعمل'}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+                        <span>المعمل: <strong>{lab.labName}</strong></span>
+                        <span>تاريخ الإرسال: {lab.sentDate || '-'}</span>
+                        <span>تاريخ الاستحقاق: <strong style={{ color: '#D97706' }}>{lab.dueDate || '-'}</strong></span>
+                        {lab.cost && <span>التكلفة: <strong>{lab.cost} ج.م</strong></span>}
+                      </div>
+
+                      {lab.notes && (
+                        <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', padding: '0.35rem 0.65rem', borderRadius: '6px' }}>
+                          💡 ملاحظات: {lab.notes}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Tabs.Content>
+
         </div>
             </Tabs.Root>
 
@@ -423,6 +677,14 @@ export default function PatientDossierDrawer({
           plans={treatmentPlans}
           onPlansUpdate={setTreatmentPlans}
           onClose={() => setShowPlansModal(false)}
+        />
+      )}
+
+      {selectedRxToPrint && (
+        <PrescriptionPrintModal
+          isOpen={!!selectedRxToPrint}
+          prescription={selectedRxToPrint}
+          onClose={() => setSelectedRxToPrint(null)}
         />
       )}
     </Dialog.Root>
