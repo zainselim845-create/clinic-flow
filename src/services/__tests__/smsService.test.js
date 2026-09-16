@@ -25,6 +25,7 @@ if (typeof globalThis.localStorage === 'undefined') {
 describe('smsService Unit Tests', () => {
   beforeEach(() => {
     localStorage.clear();
+    safeStorage.clear();
   });
 
   describe('formatEgyptianPhone', () => {

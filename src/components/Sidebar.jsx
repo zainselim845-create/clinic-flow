@@ -126,6 +126,12 @@ const Sidebar = () => {
           {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
         </NavLink>
         {isDoctor && (
+          <NavLink to="/sms-integration" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+            <Smartphone size={19} />
+            <span>بوابة الرسائل النصية (SMS)</span>
+          </NavLink>
+        )}
+        {isDoctor && (
           <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Settings size={19} />
             <span>إدارة وإعدادات العيادة</span>

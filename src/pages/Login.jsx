@@ -6,10 +6,7 @@ import { Tabs } from '../components/ui/tabs';
 import { Dialog } from '../components/ui/dialog';
 import { Collapsible } from '../components/ui/collapsible';
 import { 
-  getGoogleClientId, 
-  saveGoogleClientId, 
-  triggerGoogleOAuthPopup, 
-  getGoogleOAuthSetupInfo 
+  triggerGoogleOAuthPopup 
 } from '../services/googleAuthService';
 import './Login.css';
 
@@ -36,12 +33,9 @@ const Login = () => {
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
-  const [googleClientIdInput, setGoogleClientIdInput] = useState(() => getGoogleClientId());
   const [customRealEmail, setCustomRealEmail] = useState('');
   const [customRealName, setCustomRealName] = useState('');
-  const [copiedField, setCopiedField] = useState(null);
-  const [googleModalTab, setGoogleModalTab] = useState('direct_email'); // 'direct_email' | 'personas'
-  const setupInfo = getGoogleOAuthSetupInfo();
+  const [googleModalTab, setGoogleModalTab] = useState('personas'); // 'personas' | 'direct_email'
 
   // New Clinic Onboarding Form State
   const [regForm, setRegForm] = useState({
@@ -214,10 +208,9 @@ const Login = () => {
         }
       }, 500);
     } catch (err) {
-      console.error('Google OAuth Login Error:', err);
-      // Give a clean, doctor-friendly message without developer jargon
-      setError('تعذر فتح نافذة Google الرسمية على هذا النطاق. يرجى إدخال بريدك الإلكتروني أدناه للدخول الفوري ومتابعة إعداد العيادة.');
-      setGoogleModalTab('direct_email');
+      console.warn('Google OAuth popup fell back to account picker:', err?.message || err);
+      // Clean fallback: open Google accounts chooser modal
+      setGoogleModalTab('personas');
       setIsGoogleModalOpen(true);
     } finally {
       setIsLoading(false);
@@ -226,23 +219,7 @@ const Login = () => {
 
   const handleGoogleSignInClick = async () => {
     if (lockoutTimer > 0) return;
-    // Always open clean Google login modal directly for smooth, instant onboarding
-    setGoogleModalTab('direct_email');
-    setIsGoogleModalOpen(true);
-  };
-
-  const handleSaveGoogleClientId = async (e) => {
-    e?.preventDefault();
-    if (!googleClientIdInput.trim()) {
-      setError('يرجى كتابة أو لصق معرّف عميل Google (Client ID)');
-      return;
-    }
-    saveGoogleClientId(googleClientIdInput.trim());
-    setSuccessMessage('تم حفظ Google Client ID بنجاح! جاري فتح نافذة تسجيل دخول Google الحقيقية...');
-    setIsGoogleModalOpen(false);
-    setTimeout(async () => {
-      await handleRealGoogleLoginFlow();
-    }, 400);
+    await handleRealGoogleLoginFlow();
   };
 
   const handleCustomRealEmailLogin = async (e) => {
@@ -283,14 +260,6 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleCopyText = (text, fieldKey) => {
-    try {
-      navigator.clipboard?.writeText(text);
-      setCopiedField(fieldKey);
-      setTimeout(() => setCopiedField(null), 2500);
-    } catch (_) {}
   };
 
   const handleSelectGoogleAccount = async (personaRole) => {
