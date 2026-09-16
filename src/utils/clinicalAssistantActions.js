@@ -750,9 +750,6 @@ export function processDoctorIntent(message, state = {}) {
     } else if (text.includes('فاتورة') || text.includes('فواتير') || text.includes('حسابات') || text.includes('ماليات')) {
       targetPath = '/invoices';
       pageLabel = 'الفوترة والتحصيلات المالية';
-    } else if (text.includes('معمل') || text.includes('معامل') || text.includes('تحاليل')) {
-      targetPath = '/labs';
-      pageLabel = 'إدارة المعامل والتركيبات';
     } else if (text.includes('حضور') || text.includes('طاقم') || text.includes('موظفين')) {
       targetPath = '/attendance';
       pageLabel = 'حضور وانصراف الطاقم';

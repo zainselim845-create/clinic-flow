@@ -79,7 +79,7 @@ function WaitingRoomQueue({
                     type="button"
                     onClick={() => onOpenFinishModal(currentExamPatient)}
                     className="btn-exam-action success"
-                    title="إنهاء الكشف واعتماد التشخيص والروشتة السريرية"
+                    title="إنهاء الكشف واعتماد التشخيص الطبي"
                   >
                     <Check size={16} />
                     <span>إنهاء وحفظ الكشف</span>

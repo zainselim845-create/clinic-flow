@@ -33,12 +33,6 @@ export const SYSTEM_PERMISSIONS = [
     name: 'إرسال رسائل SMS والحملات',
     description: 'إرسال تذكيرات المواعيد واستدعاء المتابعة ورسائل الـ SMS',
     badgeColor: '#0284C7'
-  },
-  {
-    id: 'labs',
-    name: 'المعامل والتركيبات الطبية',
-    description: 'متابعة أوامر المعامل والتركيبات وحالات التسليم',
-    badgeColor: '#EC4899'
   }
 ];
 
@@ -47,7 +41,6 @@ export const ROUTE_PERMISSION_MAP = {
   '/patients': 'patients',
   '/invoices': 'invoices',
   '/inventory': 'inventory',
-  '/labs': 'labs',
   '/doctor-agent': 'doctor_only',
   '/settings': 'doctor_only',
   '/notifications': null // available to all authenticated users

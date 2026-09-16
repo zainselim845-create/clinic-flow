@@ -4,7 +4,7 @@ import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, 
-  FileSpreadsheet, X, Edit3, Wallet, Printer, Pill, MessageSquare
+  FileSpreadsheet, X, Edit3, Wallet 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
@@ -13,8 +13,6 @@ import PatientWalletPanel from '../../components/PatientWalletPanel';
 import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
 import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
 import { getWhatsAppUri } from '../../services/smsService';
-import { getPatientPrescriptionsFromStorage, formatPrescriptionForWhatsApp } from '../../services/prescriptionService';
-import PrescriptionPrintModal from '../../components/PrescriptionPrintModal';
 import './PatientDossierDrawer.css';
 
 const STATUS_LABELS = {
@@ -34,12 +32,10 @@ export default function PatientDossierDrawer({
   onEdit
 }) {
   const { state } = useApp();
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'prescriptions' | 'notes' | 'plans' | 'wallet'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'notes' | 'plans' | 'wallet'
 
   const [clinicalNotes, setClinicalNotes] = useState([]);
   const [treatmentPlans, setTreatmentPlans] = useState([]);
-  const [prescriptions, setPrescriptions] = useState([]);
-  const [selectedPrescriptionForPrint, setSelectedPrescriptionForPrint] = useState(null);
   const [showPlansModal, setShowPlansModal] = useState(false);
 
   const patientName = patient?.name || patient?.patientName || '';
@@ -55,13 +51,10 @@ export default function PatientDossierDrawer({
 
         const { data: plansData } = await getPatientTreatmentPlans(patientId);
         if (plansData) setTreatmentPlans(plansData);
-
-        const storedRx = getPatientPrescriptionsFromStorage(patientId, state.activeClinic?.id);
-        setPrescriptions(storedRx || []);
       }
     }
     loadData();
-  }, [patientId, state.activeClinic?.id]);
+  }, [patientId]);
 
   return (
     <Dialog.Root open={!!patient} onOpenChange={(details) => !details.open && onClose()} lazyMount unmountOnExit>
@@ -165,29 +158,6 @@ export default function PatientDossierDrawer({
                     }}
                   >
                     نظرة عامة والزيارات
-                  </button>
-                </Tabs.Trigger>
-
-                <Tabs.Trigger value="prescriptions" asChild>
-                  <button
-                    type="button"
-                    className={`btn-dossier-tab ${activeTab === 'prescriptions' ? 'active' : ''}`}
-                    style={{
-                      background: activeTab === 'prescriptions' ? 'var(--primary)' : 'var(--surface)',
-                      color: activeTab === 'prescriptions' ? '#FFFFFF' : 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
-                      padding: '0.45rem 0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 700,
-                      fontSize: '0.84rem',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.35rem'
-                    }}
-                  >
-                    <Pill size={14} />
-                    <span>الروشتات ({prescriptions.length})</span>
                   </button>
                 </Tabs.Trigger>
 
@@ -365,80 +335,6 @@ export default function PatientDossierDrawer({
             </div>
           </Tabs.Content>
 
-          {/* TAB: PRESCRIPTIONS */}
-          <Tabs.Content value="prescriptions">
-            <div style={{ padding: '0.5rem 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h4 style={{ margin: 0, fontWeight: 800 }}>سجل الروشتات الطبية للمريض ({prescriptions.length})</h4>
-              </div>
-
-              {prescriptions.length === 0 ? (
-                <div style={{ background: 'var(--bg-tertiary)', padding: '2rem', borderRadius: '12px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                  لا توجد روشتات محررة لهذا المريض بعد. يتم تحرير الروشتة تلقائياً عند إنهاء الكشف من لوحة التحكم.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {prescriptions.map((rx) => (
-                    <div key={rx.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '1.15rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.65rem' }}>
-                        <div>
-                          <strong style={{ fontSize: '1rem', color: 'var(--text-primary)', display: 'block' }}>{rx.diagnosis || 'كشف واستشارة طبية'}</strong>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>بواسطة: {rx.doctorName} • بتاريخ: {rx.date}</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '0.45rem' }}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const text = formatPrescriptionForWhatsApp(rx);
-                              const url = getWhatsAppUri(rx.patientPhone || patientPhone, text);
-                              if (url) window.open(url, '_blank', 'noopener,noreferrer');
-                            }}
-                            className="btn-rx-action btn-rx-whatsapp"
-                            style={{ padding: '0.3rem 0.65rem', fontSize: '0.78rem' }}
-                            title="إرسال الروشتة للمريض على واتساب"
-                          >
-                            <MessageSquare size={13} />
-                            <span>واتساب</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setSelectedPrescriptionForPrint(rx)}
-                            className="btn-rx-action btn-rx-print"
-                            style={{ padding: '0.3rem 0.65rem', fontSize: '0.78rem' }}
-                            title="طباعة الروشتة الرسمية"
-                          >
-                            <Printer size={13} />
-                            <span>طباعة</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Medications list */}
-                      <div style={{ background: 'var(--bg-primary)', borderRadius: '8px', padding: '0.6rem 0.85rem', border: '1px solid var(--border-subtle)' }}>
-                        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F766E', marginBottom: '0.4rem' }}>
-                          الأدوية المقررة (Rx):
-                        </div>
-                        <ul style={{ margin: 0, paddingRight: '1.25rem', fontSize: '0.84rem', color: 'var(--text-primary)' }}>
-                          {(rx.medications || []).map((m, mIdx) => (
-                            <li key={m.id || mIdx} style={{ marginBottom: '0.25rem' }}>
-                              <strong>{m.name}</strong> — {m.dose} ({m.frequency}) {m.duration && `• ${m.duration}`}
-                              {m.instructions && <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{m.instructions}</div>}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.6rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                        <span>كود التحقق الرقمي: <code style={{ direction: 'ltr', display: 'inline-block' }}>{rx.verificationCode}</code></span>
-                        {rx.nextVisit && <span>الاستشارة: {rx.nextVisit}</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </Tabs.Content>
-
           {/* TAB 2: CLINICAL NOTES */}
           <Tabs.Content value="notes">
             <ClinicalNotesPanel
@@ -527,15 +423,6 @@ export default function PatientDossierDrawer({
           plans={treatmentPlans}
           onPlansUpdate={setTreatmentPlans}
           onClose={() => setShowPlansModal(false)}
-        />
-      )}
-
-      {/* Prescription Print Modal */}
-      {selectedPrescriptionForPrint && (
-        <PrescriptionPrintModal
-          isOpen={!!selectedPrescriptionForPrint}
-          prescription={selectedPrescriptionForPrint}
-          onClose={() => setSelectedPrescriptionForPrint(null)}
         />
       )}
     </Dialog.Root>

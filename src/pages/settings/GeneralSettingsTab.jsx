@@ -62,7 +62,7 @@ export default function GeneralSettingsTab({
       <div className="section-header">
         <div>
           <h3>إعدادات وهوية الطبيب والعيادة (Doctor & Clinic Profile)</h3>
-          <p>إدارة البيانات المهنية للطبيب، هوية المركز والاعتمادات، وإعدادات الروشتة والطباعة</p>
+          <p>إدارة البيانات المهنية للطبيب، هوية المركز والاعتمادات الرسمية</p>
         </div>
         <button type="submit" className="btn btn-primary btn-save">
           <Save size={18} />
@@ -144,7 +144,7 @@ export default function GeneralSettingsTab({
             </div>
             <div>
               <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>الملف المهني والهوية الطبية للطبيب</h4>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>البيانات المعتمدة التي تظهر في الروشتات الطبية، التقارير، وتذاكر الحجز</p>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>البيانات المعتمدة التي تظهر في التقارير الطبية وتذاكر الحجز</p>
             </div>
           </div>
           <span style={{
@@ -210,7 +210,7 @@ export default function GeneralSettingsTab({
                 placeholder="مثال: قيد نقابة: 28419 / القاهرة" 
               />
             </div>
-            <small style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>يُطبع رسمياً في ترويسة الروشتة والتقرير السريري</small>
+            <small style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>يُطبع رسمياً في ترويسة التقارير والملف السريري</small>
           </div>
 
           <div className="form-group">
@@ -601,111 +601,7 @@ export default function GeneralSettingsTab({
         </div>
       </div>
 
-      {/* ======================================================== */}
-      {/* CARD 3: e-PRESCRIPTION & PRINT SETTINGS                  */}
-      {/* ======================================================== */}
-      <div className="settings-card-block" style={{
-        background: 'var(--bg-primary)',
-        border: '1.5px solid var(--border-color)',
-        borderRadius: 'var(--radius-xl)',
-        padding: '1.5rem',
-        marginBottom: '1rem',
-        boxShadow: 'var(--shadow-sm)'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1px solid var(--border-color)',
-          paddingBottom: '0.75rem',
-          marginBottom: '1.25rem',
-          flexWrap: 'wrap',
-          gap: '0.5rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <div style={{
-              background: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
-              color: '#FFF',
-              padding: '0.5rem',
-              borderRadius: '10px'
-            }}>
-              <Printer size={20} />
-            </div>
-            <div>
-              <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>إعدادات الروشتة الطبية والطباعة (e-Prescription Setup)</h4>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>تخصيص مقاس ورق الطباعة (A4 / A5)، الترويسة، وملاحظات تذييل الروشتة الرسمية</p>
-            </div>
-          </div>
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            fontSize: '0.78rem',
-            background: 'rgba(139, 92, 246, 0.08)',
-            color: '#7C3AED',
-            padding: '0.25rem 0.65rem',
-            borderRadius: '999px',
-            fontWeight: 700
-          }}>
-            <FileText size={13} />
-            <span>طباعة ذكية ℞</span>
-          </span>
-        </div>
 
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="rxPaperSize">مقاس ورق الطباعة الافتراضي</label>
-            <select
-              id="rxPaperSize"
-              value={clinicForm.prescriptionPaperSize || 'A4'}
-              onChange={(e) => setClinicForm({ ...clinicForm, prescriptionPaperSize: e.target.value })}
-              className="saas-filter-select"
-              style={{ height: '42px', width: '100%' }}
-            >
-              <option value="A4">A4 (210 × 297 مم) — ورقة طباعة كاملة قياسية</option>
-              <option value="A5">A5 (148 × 210 مم) — دفتر روشتات نصف صفحة مدمج</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="rxPrintMode">نمط وتصميم ورق الروشتة</label>
-            <select
-              id="rxPrintMode"
-              value={clinicForm.prescriptionPrintMode || 'full'}
-              onChange={(e) => setClinicForm({ ...clinicForm, prescriptionPrintMode: e.target.value })}
-              className="saas-filter-select"
-              style={{ height: '42px', width: '100%' }}
-            >
-              <option value="full">روشتة إلكترونية كاملة (تشمل الترويسة والشعار والعنوان للورق الأبيض)</option>
-              <option value="pad">طباعة الأدوية فقط (مخصصة لدفاتر الروشتات المطبوعة مسبقاً لدى المطبعة)</option>
-            </select>
-          </div>
-
-          <div className="form-group full-width">
-            <label htmlFor="rxHeader">نص ترويسة الروشتة الإضافي (Rx Header Subtitle)</label>
-            <input 
-              id="rxHeader"
-              name="rxHeader"
-              type="text" 
-              value={clinicForm.prescriptionHeader || ''} 
-              onChange={(e) => setClinicForm({ ...clinicForm, prescriptionHeader: e.target.value })}
-              placeholder="مثال: عيادة تخصصية متطورة — رعاية طبية وفق أحدث البروتوكولات الدولية" 
-            />
-          </div>
-
-          <div className="form-group full-width">
-            <label htmlFor="rxFooter">تذييل الروشتة وملاحظات المتابعة والتعليمات (Rx Footer)</label>
-            <input 
-              id="rxFooter"
-              name="rxFooter"
-              type="text" 
-              value={clinicForm.prescriptionFooter || ''} 
-              onChange={(e) => setClinicForm({ ...clinicForm, prescriptionFooter: e.target.value })}
-              placeholder="مثال: الاستشارة والمتابعة مجاناً خلال 14 يوماً من تاريخ الكشف — لحالات الطوارئ: 01006285031" 
-            />
-          </div>
-        </div>
-      </div>
 
       {/* ======================================================== */}
       {/* QUICK WORKFLOW SHORTCUTS                                 */}

@@ -56,7 +56,6 @@ const Login = lazyWithRetry(() => import('./pages/Login'));
 const Settings = lazyWithRetry(() => import('./pages/Settings'));
 const DoctorAssistant = lazyWithRetry(() => import('./pages/DoctorAssistant'));
 const Invoices = lazyWithRetry(() => import('./pages/Invoices'));
-const Labs = lazyWithRetry(() => import('./pages/Labs'));
 const Inventory = lazyWithRetry(() => import('./pages/Inventory'));
 const Attendance = lazyWithRetry(() => import('./pages/Attendance'));
 const SuperAdminDashboard = lazyWithRetry(() => import('./pages/superadmin/SuperAdminDashboard'));
@@ -72,7 +71,6 @@ const pageTitles = {
   '/patients': 'السجلات والملفات الطبية',
   '/invoices': 'الفوترة والتحصيلات المالية',
   '/inventory': 'مخزون المستلزمات الطبية',
-  '/labs': 'إدارة المعامل والتركيبات',
   '/attendance': 'حضور وانصراف الطاقم',
   '/doctor-agent': 'مساعد الطبيب الذكي',
   '/notifications': 'التنبيهات والإشعارات',
@@ -269,9 +267,6 @@ function App() {
               } />
               <Route path="/inventory" element={
                 <ProtectedRoute requiredPermission="inventory"><Inventory /></ProtectedRoute>
-              } />
-              <Route path="/labs" element={
-                <ProtectedRoute requiredPermission="labs"><Labs /></ProtectedRoute>
               } />
               <Route path="/attendance" element={
                 <ProtectedRoute><Attendance /></ProtectedRoute>

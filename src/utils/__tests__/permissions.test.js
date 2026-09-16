@@ -30,7 +30,7 @@ describe('ClinicFlow Permissions & Access Control Engine (test-guard compliant)'
 
   describe('1. SYSTEM_PERMISSIONS definitions', () => {
     it('has valid structure and Arabic descriptions for all permissions', () => {
-      expect(SYSTEM_PERMISSIONS.length).toBeGreaterThanOrEqual(6);
+      expect(SYSTEM_PERMISSIONS.length).toBeGreaterThanOrEqual(5);
       SYSTEM_PERMISSIONS.forEach(perm => {
         expect(perm.id).toBeDefined();
         expect(perm.name).toBeDefined();

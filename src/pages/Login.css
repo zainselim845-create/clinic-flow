@@ -386,8 +386,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
   z-index: 1051;
+  overflow-y: auto;
   pointer-events: auto;
 }
 
@@ -399,17 +400,20 @@
 
 .google-picker-card {
   position: relative;
+  margin: auto;
   z-index: 1052;
   background: #FFFFFF;
   border: 1px solid rgba(218, 220, 224, 0.9);
-  border-radius: var(--squircle-xl, 28px);
+  border-radius: var(--squircle-xl, 24px);
   width: 100%;
-  max-width: 450px;
-  padding: 1.85rem;
+  max-width: 440px;
+  max-height: min(90vh, 560px);
+  overflow-y: auto;
+  padding: 1.75rem 1.5rem;
   box-shadow: 0 20px 48px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.15rem;
   direction: rtl;
   outline: none;
   animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -611,157 +615,7 @@
   border-radius: var(--squircle-md, 14px);
 }
 
-.google-guide-container {
-  background: #F8FAFC;
-  border: 1px solid var(--border-subtle, #E2E8F0);
-  border-radius: var(--squircle-md, 16px);
-  padding: 1rem 1.15rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
 
-.guide-title-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.86rem;
-  color: var(--text-primary, #1E293B);
-}
-
-.guide-ordered-steps {
-  padding-right: 1.25rem;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  font-size: 0.82rem;
-  color: var(--text-secondary, #475569);
-  line-height: 1.5;
-}
-
-.google-console-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--primary, #09090B);
-  font-weight: 700;
-  margin-right: 4px;
-  text-decoration: underline;
-}
-
-.uri-copy-badge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  background: #FFFFFF;
-  border: 1px solid var(--border-color, #CBD5E1);
-  padding: 6px 10px;
-  border-radius: 8px;
-  margin-top: 5px;
-  direction: ltr;
-}
-
-.uri-copy-badge code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 0.78rem;
-  color: #0F172A;
-  word-break: break-all;
-  line-height: 1.4;
-  -webkit-font-smoothing: antialiased;
-}
-
-.btn-copy-uri {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: #F1F5F9;
-  border: 1px solid #CBD5E1;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #334155;
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.btn-copy-uri:hover {
-  background: #E2E8F0;
-  color: #0F172A;
-}
-
-.direct-email-explainer {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 0.84rem;
-  color: var(--text-secondary, #475569);
-  line-height: 1.45;
-  background: var(--bg-tertiary, #F4F4F5);
-  border: 1px solid var(--border-color, #E4E4E7);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-}
-
-.google-oauth-popup-alt {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.25rem;
-}
-
-.btn-alt-google-popup {
-  background: #FFFFFF;
-  border: 1px solid var(--border-color, #E2E8F0);
-  border-radius: 20px;
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary, #475569);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.btn-alt-google-popup:hover {
-  background: var(--surface-container, #F8FAFC);
-  color: var(--text-primary, #0F172A);
-  border-color: #CBD5E1;
-}
-
-.google-dev-collapse {
-  margin-top: 0.75rem;
-  border-top: 1px dashed var(--border-subtle, #E2E8F0);
-  padding-top: 0.75rem;
-}
-
-.google-dev-summary {
-  cursor: pointer;
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--text-tertiary, #94A3B8);
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  user-select: none;
-  transition: color 0.2s ease;
-}
-
-.google-dev-summary:hover {
-  color: var(--primary, #09090B);
-}
-
-.google-dev-content {
-  margin-top: 0.85rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
 
 /* ==========================================================================
    PORTAL SCOPE SWITCHER & SAAS ADMIN SEPARATION

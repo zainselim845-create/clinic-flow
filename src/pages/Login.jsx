@@ -686,7 +686,7 @@ const Login = () => {
                   <h3>تسجيل الدخول بحساب Google</h3>
                 </Dialog.Title>
                 <Dialog.Description asChild>
-                  <p>ادخل بريدك الإلكتروني (@gmail.com) واسمك للبدء الفوري وتأسيس عيادتك الطبية</p>
+                  <p>اختر حساباً للمتابعة أو سجّل دخولك بحساب Gmail للبدء الفوري</p>
                 </Dialog.Description>
               </div>
 
@@ -695,33 +695,69 @@ const Login = () => {
                 <button
                   type="button"
                   role="tab"
-                  aria-selected={googleModalTab === 'direct_email'}
-                  className={`google-tab-btn ${googleModalTab === 'direct_email' ? 'active' : ''}`}
-                  onClick={() => setGoogleModalTab('direct_email')}
-                >
-                  <Sparkles size={14} className="text-primary" />
-                  <span>دخول فوري بحساب Gmail</span>
-                </button>
-                <button
-                  type="button"
-                  role="tab"
                   aria-selected={googleModalTab === 'personas'}
                   className={`google-tab-btn ${googleModalTab === 'personas' ? 'active' : ''}`}
                   onClick={() => setGoogleModalTab('personas')}
                 >
                   <Users size={14} />
-                  <span>أدوار المحاكاة السريعة</span>
+                  <span>الحسابات الجاهزة</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={googleModalTab === 'direct_email'}
+                  className={`google-tab-btn ${googleModalTab === 'direct_email' ? 'active' : ''}`}
+                  onClick={() => setGoogleModalTab('direct_email')}
+                >
+                  <Sparkles size={14} className="text-primary" />
+                  <span>دخول بحساب Gmail مخصص</span>
                 </button>
               </div>
 
-              {/* Tab 1: Direct Real Personal Email Entry (Default) */}
-              {googleModalTab === 'direct_email' && (
-                <div className="google-tab-body">
-                  <div className="direct-email-explainer">
-                    <Sparkles size={16} className="text-primary" />
-                    <span>سجّل دخولك بحساب Google لمتابعة إعداد بيانات عيادتك واسم المستخدم في خطوات بسيطة:</span>
+              {/* Tab 1: Fast Ready Personas */}
+              {googleModalTab === 'personas' && (
+                <div className="google-accounts-list">
+                  <div 
+                    className="google-account-item" 
+                    onClick={() => handleSelectGoogleAccount('doctor')}
+                  >
+                    <div className="google-avatar-circle" style={{ background: '#0B57D0', color: '#FFF' }}>أ</div>
+                    <div className="account-details">
+                      <strong>د. أحمد الشريف (طبيب عيادة)</strong>
+                      <small>dr.ahmed.google@gmail.com</small>
+                      <span className="role-tag doctor-tag">صلاحيات سريرية ومالية كاملة</span>
+                    </div>
                   </div>
 
+                  <div 
+                    className="google-account-item" 
+                    onClick={() => handleSelectGoogleAccount('staff')}
+                  >
+                    <div className="google-avatar-circle" style={{ background: '#0284C7', color: '#FFF' }}>س</div>
+                    <div className="account-details">
+                      <strong>سارة كمال (استقبال وسكرتارية)</strong>
+                      <small>sara.kamal.reception@gmail.com</small>
+                      <span className="role-tag staff-tag">صلاحيات تنظيم المواعيد والصالة فقط</span>
+                    </div>
+                  </div>
+
+                  <div 
+                    className="google-account-item" 
+                    onClick={() => handleSelectGoogleAccount('superadmin')}
+                  >
+                    <div className="google-avatar-circle" style={{ background: '#DC2626', color: '#FFF' }}>م</div>
+                    <div className="account-details">
+                      <strong>مدير المنصة العام (Super Admin)</strong>
+                      <small>admin.google@clinicflow.com</small>
+                      <span className="role-tag admin-tag">لوحة التحكم السحابية الشاملة</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 2: Direct Real Personal Email Entry */}
+              {googleModalTab === 'direct_email' && (
+                <div className="google-tab-body">
                   <form onSubmit={handleCustomRealEmailLogin} className="google-direct-form">
                     <div className="form-group">
                       <label className="google-form-label" htmlFor="real-google-email">
@@ -762,143 +798,6 @@ const Login = () => {
                       <span>الدخول الفوري ومتابعة إعداد العيادة 🚀</span>
                     </button>
                   </form>
-
-                  {/* Optional Native Google Popup Button */}
-                  <div className="google-oauth-popup-alt">
-                    <button
-                      type="button"
-                      onClick={handleRealGoogleLoginFlow}
-                      className="btn-alt-google-popup"
-                      disabled={isLoading}
-                    >
-                      <svg className="google-icon" width="15" height="15" viewBox="0 0 18 18" aria-hidden="true">
-                        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-                        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-                        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
-                        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
-                      </svg>
-                      <span>أو تجربة فتح نافذة Google الرسمية المباشرة (Popup)</span>
-                    </button>
-                  </div>
-
-                  {/* Collapsed Developer & Google Cloud Credentials Options */}
-                  <details className="google-dev-collapse">
-                    <summary className="google-dev-summary">
-                      <KeyRound size={12} />
-                      <span>خيارات متقدمة للمطورين (إعداد Google Cloud Client ID المخصص)</span>
-                    </summary>
-                    <div className="google-dev-content">
-                      <form onSubmit={handleSaveGoogleClientId} className="google-setup-form">
-                        <label className="google-form-label" htmlFor="google-client-id-field">
-                          معرّف عميل Google (OAuth 2.0 Client ID):
-                        </label>
-                        <div className="google-input-row">
-                          <input
-                            id="google-client-id-field"
-                            type="text"
-                            dir="ltr"
-                            className="input-field google-client-input"
-                            placeholder="123456789-xxxxxxxx.apps.googleusercontent.com"
-                            value={googleClientIdInput}
-                            onChange={(e) => setGoogleClientIdInput(e.target.value)}
-                          />
-                        </div>
-                        <button type="submit" className="btn btn-primary btn-save-google" disabled={isLoading}>
-                          <CheckCircle2 size={15} />
-                          <span>حفظ Client ID المخصص</span>
-                        </button>
-                      </form>
-
-                      <div className="google-guide-container">
-                        <div className="guide-title-row">
-                          <Info size={14} className="text-primary" />
-                          <strong>بيانات الربط في Google Cloud Credentials:</strong>
-                        </div>
-                        <ol className="guide-ordered-steps">
-                          <li>
-                            رابط Google Cloud Console:
-                            <a
-                              href="https://console.cloud.google.com/apis/credentials"
-                              target="_blank"
-                              rel="noreferrer"
-                              className="google-console-link"
-                            >
-                              Credentials Console <ExternalLink size={11} />
-                            </a>
-                          </li>
-                          <li>
-                            أضف هذا الرابط في <strong>Authorized JavaScript origins</strong>:
-                            <div className="uri-copy-badge">
-                              <code>{setupInfo.origin}</code>
-                              <button
-                                type="button"
-                                onClick={() => handleCopyText(setupInfo.origin, 'origin')}
-                                className="btn-copy-uri"
-                              >
-                                {copiedField === 'origin' ? <Check size={12} className="text-success" /> : <Copy size={12} />}
-                                <span>{copiedField === 'origin' ? 'تم النسخ!' : 'نسخ'}</span>
-                              </button>
-                            </div>
-                          </li>
-                          <li>
-                            أضف هذا الرابط في <strong>Authorized redirect URIs</strong>:
-                            <div className="uri-copy-badge">
-                              <code>{setupInfo.loginRedirect}</code>
-                              <button
-                                type="button"
-                                onClick={() => handleCopyText(setupInfo.loginRedirect, 'redirect')}
-                                className="btn-copy-uri"
-                              >
-                                {copiedField === 'redirect' ? <Check size={12} className="text-success" /> : <Copy size={12} />}
-                                <span>{copiedField === 'redirect' ? 'تم النسخ!' : 'نسخ'}</span>
-                              </button>
-                            </div>
-                          </li>
-                        </ol>
-                      </div>
-                    </div>
-                  </details>
-                </div>
-              )}
-
-              {/* Tab 2: Sandbox Demo Personas */}
-              {googleModalTab === 'personas' && (
-                <div className="google-accounts-list">
-                  <div 
-                    className="google-account-item" 
-                    onClick={() => handleSelectGoogleAccount('doctor')}
-                  >
-                    <div className="google-avatar-circle" style={{ background: '#0B57D0', color: '#FFF' }}>أ</div>
-                    <div className="account-details">
-                      <strong>د. أحمد الشريف (طبيب عيادة تجريبي)</strong>
-                      <small>dr.ahmed.google@gmail.com</small>
-                      <span className="role-tag doctor-tag">صلاحيات سريرية وطبية كاملة</span>
-                    </div>
-                  </div>
-
-                  <div 
-                    className="google-account-item" 
-                    onClick={() => handleSelectGoogleAccount('staff')}
-                  >
-                    <div className="google-avatar-circle" style={{ background: '#0284C7', color: '#FFF' }}>س</div>
-                    <div className="account-details">
-                      <strong>سارة كمال (استقبال وسكرتارية)</strong>
-                      <small>sara.kamal.reception@gmail.com</small>
-                      <span className="role-tag staff-tag">صلاحيات تنظيم المواعيد والصالة فقط</span>
-                    </div>
-                  </div>
-
-                  <div 
-                    className="google-account-item" 
-                    onClick={() => handleSelectGoogleAccount('superadmin')}
-                  >
-                    <div className="google-avatar-circle" style={{ background: '#DC2626', color: '#FFF' }}>م</div>
-                    <div className="account-details">
-                      <strong>مدير المنصة العام (Super Admin)</strong>
-                      <small>admin.google@clinicflow.com</small>
-                      <span className="role-tag admin-tag">لوحة التحكم السحابية الشاملة</span>
-                    </div>
-                  </div>
                 </div>
               )}
 

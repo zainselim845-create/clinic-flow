@@ -104,12 +104,6 @@ const Sidebar = () => {
             <span>المخزون والمستلزمات</span>
           </NavLink>
         )}
-        {hasPermission(user, 'labs') && (
-          <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-            <Layers size={19} />
-            <span>{isDental ? 'المعامل والتركيبات' : 'المعامل والتحاليل'}</span>
-          </NavLink>
-        )}
         <NavLink to="/attendance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
           <UserCheck size={19} />
           <span>الحضور والانصراف</span>
