@@ -816,7 +816,7 @@ export function registerDoctorAndClinic({
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     branding: {
-      primaryColor: isDerma ? '#8B5CF6' : '#0071E3',
+      primaryColor: '#09090B',
       accentColor: '#10B981',
       brandTitle: cleanClinicName
     },
@@ -1036,7 +1036,7 @@ export function completeClinicOnboarding({
   doctorName,
   clinicName,
   specialty,
-  primaryColor = '#0071E3',
+  primaryColor = '#09090B',
   accentColor = '#10B981',
   teamSize = 'solo',
   phone = '',

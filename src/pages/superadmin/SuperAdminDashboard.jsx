@@ -232,7 +232,7 @@ export default function SuperAdminDashboard() {
       subscriptionTier: newClinic.subscriptionTier,
       subscriptionStatus: 'active',
       branding: {
-        primaryColor: newClinic.subscriptionTier === 'enterprise' ? '#7C3AED' : '#0071E3',
+        primaryColor: newClinic.subscriptionTier === 'enterprise' ? '#10B981' : '#09090B',
         accentColor: '#10B981',
         badgeText: newClinic.specialty
       },

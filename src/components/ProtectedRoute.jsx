@@ -90,9 +90,9 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
                   justifyContent: 'center',
                   gap: '0.5rem',
                   padding: '0.75rem 1.25rem',
-                  background: 'var(--primary, #0071E3)',
+                  background: 'var(--clinic-primary, #09090B)',
                   color: '#fff',
-                  borderRadius: '10px',
+                  borderRadius: '8px',
                   fontWeight: 700,
                   textDecoration: 'none'
                 }}

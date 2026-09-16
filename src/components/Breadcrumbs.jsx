@@ -125,7 +125,7 @@ export default function Breadcrumbs({ customTrail = null, className = '' }) {
             <span 
               aria-current="page"
               style={{
-                color: 'var(--primary, #0071E3)',
+                color: 'var(--clinic-primary, #09090B)',
                 fontWeight: 600
               }}
             >

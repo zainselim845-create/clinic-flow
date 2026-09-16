@@ -46,24 +46,24 @@
 .onboarding-brand-logo {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary, #0071E3), #0284c7);
+  border-radius: 8px;
+  background: var(--clinic-primary, #09090B);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .onboarding-brand-name {
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--text-primary, #0f172a);
+  color: var(--text-primary, #09090B);
 }
 
 .onboarding-brand-name span {
-  color: var(--primary, #0071E3);
+  color: var(--clinic-primary, #09090B);
 }
 
 .onboarding-nav-user {

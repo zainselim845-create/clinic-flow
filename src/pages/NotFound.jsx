@@ -75,14 +75,14 @@ export default function NotFound() {
           style={{
             width: '76px',
             height: '76px',
-            borderRadius: '20px',
-            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(16, 185, 129, 0.12))',
-            color: 'var(--primary, #0071E3)',
+            borderRadius: '12px',
+            background: 'var(--bg-tertiary, #F4F4F5)',
+            color: 'var(--clinic-primary, #09090B)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             marginBottom: '1rem',
-            border: '1px solid rgba(37, 99, 235, 0.2)'
+            border: '1px solid var(--border-color, #E4E4E7)'
           }}
         >
           <Stethoscope size={40} />
@@ -138,8 +138,8 @@ export default function NotFound() {
             type="submit"
             style={{
               padding: '10px 18px',
-              borderRadius: '10px',
-              backgroundColor: '#0071E3',
+              borderRadius: '8px',
+              backgroundColor: 'var(--clinic-primary, #09090B)',
               color: '#FFFFFF',
               border: 'none',
               fontWeight: 600,
@@ -168,8 +168,8 @@ export default function NotFound() {
               justifyContent: 'center',
               gap: '0.5rem',
               padding: '0.8rem 1rem',
-              borderRadius: '12px',
-              background: 'var(--primary, #0071E3)',
+              borderRadius: '8px',
+              background: 'var(--clinic-primary, #09090B)',
               color: '#FFFFFF',
               fontWeight: 700,
               fontSize: '0.88rem',
@@ -189,17 +189,17 @@ export default function NotFound() {
               justifyContent: 'center',
               gap: '0.5rem',
               padding: '0.8rem 1rem',
-              borderRadius: '12px',
-              background: 'var(--bg-tertiary, #F1F5F9)',
-              color: 'var(--text-primary, #0F172A)',
-              border: '1px solid var(--border-color, #E2E8F0)',
+              borderRadius: '8px',
+              background: 'var(--bg-tertiary, #F4F4F5)',
+              color: 'var(--text-primary, #09090B)',
+              border: '1px solid var(--border-color, #E4E4E7)',
               fontWeight: 700,
               fontSize: '0.88rem',
               textDecoration: 'none',
               transition: 'all 0.2s ease'
             }}
           >
-            <Calendar size={16} color="var(--primary, #0071E3)" />
+            <Calendar size={16} color="var(--clinic-primary, #09090B)" />
             <span>دليل العيادات</span>
           </Link>
 

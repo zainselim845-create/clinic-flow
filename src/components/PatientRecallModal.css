@@ -126,10 +126,10 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: var(--primary, #0071E3);
+  background: var(--clinic-primary, #09090B);
   color: #ffffff;
   padding: 0.35rem 0.7rem;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 0.78rem;
   font-weight: 700;
   text-decoration: none;

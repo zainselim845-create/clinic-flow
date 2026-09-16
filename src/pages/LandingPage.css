@@ -1516,15 +1516,15 @@
 
 
 /* ==========================================================================
-   Apple Keynote Minimalist Hero Styles
+   Architectural Noir Hero Styles (Pure Monochrome Foundation)
    ========================================================================== */
 .apple-hero-focus {
-  color: #0071E3;
+  color: #09090B;
   font-weight: 800;
 }
 
 .hero-headline {
-  color: #0F172A !important;
+  color: #09090B !important;
   font-size: 3.4rem !important;
   font-weight: 700 !important;
   line-height: 1.2 !important;
@@ -1532,39 +1532,40 @@
 }
 
 .hero-badge {
-  background: #F1F5F9 !important;
-  border: 1px solid #E2E8F0 !important;
-  color: #334155 !important;
+  background: #F4F4F5 !important;
+  border: 1px solid #E4E4E7 !important;
+  color: #27272A !important;
   font-weight: 600 !important;
+  border-radius: 6px !important;
 }
 
 .btn-hero-primary {
-  background: #0071E3 !important;
+  background: #09090B !important;
   color: #FFFFFF !important;
-  border-radius: 9999px !important;
+  border-radius: 8px !important;
   padding: 0.85rem 2.25rem !important;
   font-weight: 600 !important;
-  box-shadow: 0 1px 3px rgba(0, 113, 227, 0.3) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
 }
 
 .btn-hero-primary:hover {
-  background: #0077ED !important;
-  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.4) !important;
+  background: #27272A !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
   transform: translateY(-1px) !important;
 }
 
 .btn-hero-secondary {
   background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
-  color: #1E293B !important;
-  border-radius: 9999px !important;
+  border: 1px solid #E4E4E7 !important;
+  color: #09090B !important;
+  border-radius: 8px !important;
   font-weight: 600 !important;
 }
 
 .btn-hero-secondary:hover {
-  background: #F8FAFC !important;
-  border-color: #CBD5E1 !important;
-  color: #0F172A !important;
+  background: #F4F4F5 !important;
+  border-color: #D4D4D8 !important;
+  color: #09090B !important;
 }
 
 /* ==========================================================================
@@ -1658,8 +1659,8 @@
 }
 
 .mobile-nav-links a:hover {
-  background: #F1F5F9;
-  color: #0071E3;
+  background: #F4F4F5;
+  color: #09090B;
 }
 
 .mobile-nav-actions {
@@ -1693,21 +1694,21 @@
 }
 
 .faq-item {
-  border: 1px solid #E2E8F0;
-  border-radius: 14px;
+  border: 1px solid #E4E4E7;
+  border-radius: 12px;
   background: #FFFFFF;
   overflow: hidden;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .faq-item:hover {
-  border-color: #CBD5E1;
+  border-color: #D4D4D8;
   box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
 }
 
 .faq-item.open {
-  border-color: #93C5FD;
-  box-shadow: 0 4px 16px -2px rgba(37, 99, 235, 0.08);
+  border-color: #09090B;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.08);
 }
 
 .faq-question {
@@ -1722,25 +1723,25 @@
   text-align: right;
   font-size: 1.02rem;
   font-weight: 700;
-  color: #1E293B;
+  color: #09090B;
   cursor: pointer;
   user-select: none;
   transition: color 0.15s ease;
 }
 
 .faq-question:hover {
-  color: #0071E3;
+  color: #27272A;
 }
 
 .faq-chevron {
-  color: #64748B;
+  color: #71717A;
   flex-shrink: 0;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .faq-item.open .faq-chevron {
   transform: rotate(180deg);
-  color: #0071E3;
+  color: #09090B;
 }
 
 .faq-answer {

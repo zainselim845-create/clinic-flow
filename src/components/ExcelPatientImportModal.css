@@ -12,9 +12,9 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  background: rgba(0, 113, 227, 0.06);
-  border: 1px solid rgba(0, 113, 227, 0.18);
-  border-radius: 14px;
+  background: var(--bg-tertiary, #F4F4F5);
+  border: 1px solid var(--border-color, #E4E4E7);
+  border-radius: 8px;
   padding: 0.9rem 1.15rem;
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
@@ -38,12 +38,12 @@
   align-items: center;
   gap: 6px;
   padding: 0.5rem 0.85rem;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #FFFFFF;
-  border: 1px solid var(--border-color, #E2E8F0);
+  border: 1px solid var(--border-color, #E4E4E7);
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--primary, #0071E3);
+  color: var(--clinic-primary, #09090B);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -83,15 +83,16 @@
 }
 
 .excel-dropzone:hover {
-  border-color: var(--primary, #0071E3);
-  background: rgba(0, 113, 227, 0.03);
+  border-color: var(--clinic-primary, #09090B);
+  background: var(--bg-tertiary, #F4F4F5);
 }
 
 .dropzone-icon-circle {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(0, 113, 227, 0.1);
+  background: var(--clinic-primary-light, #F4F4F5);
+  color: var(--clinic-primary, #09090B);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -114,11 +115,11 @@
 .dropzone-browse-badge {
   display: inline-block;
   padding: 0.45rem 1.25rem;
-  background: var(--primary, #0071E3);
-  color: #FFFFFF;
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF);
   font-size: 0.82rem;
   font-weight: 700;
-  border-radius: 20px;
+  border-radius: 8px;
 }
 
 .dropzone-loading {
@@ -233,8 +234,9 @@
 }
 
 .gender-pill.male {
-  background: rgba(0, 113, 227, 0.1);
-  color: #0071E3;
+  background: var(--bg-tertiary, #F4F4F5);
+  color: var(--text-primary, #09090B);
+  border: 1px solid var(--border-color, #E4E4E7);
 }
 
 .gender-pill.female {

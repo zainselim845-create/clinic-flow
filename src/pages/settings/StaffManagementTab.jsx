@@ -208,11 +208,11 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
                       style={{ 
                         fontSize: '0.72rem', 
                         fontWeight: 700, 
-                        background: 'rgba(0, 113, 227, 0.08)', 
-                        color: 'var(--primary, #0071E3)', 
+                        background: 'var(--clinic-primary-light, #F4F4F5)', 
+                        color: 'var(--clinic-primary, #09090B)', 
                         padding: '0.2rem 0.5rem', 
                         borderRadius: '4px',
-                        border: '1px solid rgba(0, 113, 227, 0.15)'
+                        border: '1px solid var(--border-color, #E4E4E7)'
                       }}
                     >
                       {permDef ? permDef.name : pId}
@@ -377,8 +377,8 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '0.45rem',
-                          background: isChecked ? 'rgba(0, 113, 227, 0.08)' : 'var(--bg-secondary)',
-                          border: `1.5px solid ${isChecked ? 'var(--primary, #0071E3)' : 'var(--border-color)'}`,
+                          background: isChecked ? 'var(--clinic-primary-light, #F4F4F5)' : 'var(--bg-secondary)',
+                          border: `1.5px solid ${isChecked ? 'var(--clinic-primary, #09090B)' : 'var(--border-color)'}`,
                           padding: '0.5rem 0.75rem',
                           borderRadius: '8px',
                           cursor: 'pointer',

@@ -279,7 +279,7 @@
 
 .login-tab-button.active {
   background: var(--bg-secondary, #ffffff);
-  color: var(--primary, #0071E3);
+  color: var(--clinic-primary, #09090B);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
@@ -508,8 +508,9 @@
 }
 
 .role-tag.doctor-tag {
-  background: rgba(0, 113, 227, 0.1);
-  color: #0071E3;
+  background: var(--clinic-primary-light, #F4F4F5);
+  color: var(--clinic-primary, #09090B);
+  border: 1px solid var(--border-color, #E4E4E7);
 }
 
 .role-tag.staff-tag {
@@ -699,9 +700,9 @@
   font-size: 0.84rem;
   color: var(--text-secondary, #475569);
   line-height: 1.45;
-  background: rgba(0, 113, 227, 0.05);
-  border: 1px solid rgba(0, 113, 227, 0.15);
-  border-radius: 12px;
+  background: var(--bg-tertiary, #F4F4F5);
+  border: 1px solid var(--border-color, #E4E4E7);
+  border-radius: 8px;
   padding: 0.75rem 1rem;
 }
 
@@ -876,7 +877,7 @@
 }
 
 .footer-nav-link:hover {
-  color: var(--primary, #0071E3);
+  color: var(--clinic-primary, #09090B);
   text-decoration: underline;
 }
 
@@ -907,7 +908,7 @@
 
 .btn-text-portal-switch:hover {
   background: var(--bg-tertiary, #f1f5f9);
-  color: var(--primary, #0071E3);
+  color: var(--clinic-primary, #09090B);
   text-decoration: underline;
 }
 

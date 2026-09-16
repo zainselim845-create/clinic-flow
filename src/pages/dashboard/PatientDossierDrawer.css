@@ -56,14 +56,14 @@
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary, #0071E3), #0A84FF);
+  background: var(--clinic-primary, #09090B);
   color: #FFFFFF;
   font-size: 1.5rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   flex-shrink: 0;
 }
 
@@ -236,8 +236,8 @@
 }
 
 .history-item .status-badge.in_progress {
-  background: rgba(0, 113, 227, 0.12);
-  color: #0071E3;
+  background: var(--clinic-primary-light, #F4F4F5);
+  color: var(--clinic-primary, #09090B);
 }
 
 .history-item .status-badge.completed {

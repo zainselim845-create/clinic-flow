@@ -484,7 +484,7 @@ export const AuthProvider = ({ children }) => {
         subscriptionStatus: 'active',
         isOnboardingCompleted: false,
         branding: {
-          primaryColor: '#0071E3',
+          primaryColor: '#09090B',
           accentColor: '#10B981',
           badgeText: 'العيادة الخاصة'
         }
@@ -582,9 +582,11 @@ export const AuthProvider = ({ children }) => {
 
       if (typeof document !== 'undefined' && result.tenant?.branding) {
         const root = document.documentElement;
-        if (result.tenant.branding.primaryColor) {
-          root.style.setProperty('--primary', result.tenant.branding.primaryColor);
-        }
+        const pc = result.tenant.branding.primaryColor;
+        const isMono = !pc || pc === 'monochrome' || pc === '#09090B' || pc === '#000000';
+        const finalPrimary = isMono ? '#09090B' : pc;
+        root.style.setProperty('--primary', finalPrimary);
+        root.style.setProperty('--clinic-primary', finalPrimary);
         if (result.tenant.branding.accentColor) {
           root.style.setProperty('--accent', result.tenant.branding.accentColor);
         }

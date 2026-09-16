@@ -88,7 +88,7 @@ export function EditUserModal({
             <div className="saas-modal-header">
               <Dialog.Title id="edit-user-title" asChild>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Edit size={18} color="#0071e3" />
+                  <Edit size={18} color="var(--clinic-primary, #09090B)" />
                   <h3>تعديل بيانات الحساب (Edit User Account)</h3>
                 </div>
               </Dialog.Title>

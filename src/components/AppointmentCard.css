@@ -160,11 +160,11 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: var(--primary, #0071E3);
-  background: var(--primary-light, rgba(0, 113, 227, 0.1));
-  border: 1px solid var(--primary-subtle, rgba(0, 113, 227, 0.25));
+  color: var(--clinic-primary, #09090B);
+  background: var(--clinic-primary-light, #F4F4F5);
+  border: 1px solid var(--border-color, #E4E4E7);
   padding: 0.35rem 0.65rem;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
@@ -173,8 +173,8 @@
 
 .appt-btn-sms:hover,
 .appt-btn-wa:hover {
-  background: var(--primary, #0071E3);
-  color: #FFFFFF;
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF);
 }
 
 .appt-actions-right {

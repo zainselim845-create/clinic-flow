@@ -66,12 +66,12 @@
 .patient-card-sms-btn,
 .patient-card-wa-btn {
   margin-right: auto;
-  color: var(--primary, #0071E3);
-  background: var(--primary-light, rgba(0, 113, 227, 0.1));
-  border: 1px solid var(--primary-subtle, rgba(0, 113, 227, 0.25));
+  color: var(--clinic-primary, #09090B);
+  background: var(--clinic-primary-light, #F4F4F5);
+  border: 1px solid var(--border-color, #E4E4E7);
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,8 +82,8 @@
 
 .patient-card-sms-btn:hover,
 .patient-card-wa-btn:hover {
-  background: var(--primary, #0071E3);
-  color: #ffffff;
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #ffffff);
   transform: scale(1.05);
 }
 

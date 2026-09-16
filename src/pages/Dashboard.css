@@ -419,23 +419,23 @@
 
 .btn-call-next-patient {
   margin-top: 0.5rem;
-  background: var(--primary);
-  color: #FFFFFF !important;
-  border: none;
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF) !important;
+  border: 1px solid transparent;
   padding: 0.55rem 1rem;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
   transition: all var(--transition-fast);
 }
 
 .btn-call-next-patient:hover {
-  background: var(--primary-hover);
+  background: var(--clinic-primary-hover, #27272A);
   transform: translateY(-1px);
 }
 
@@ -745,14 +745,15 @@
 }
 
 .tab-pill:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--clinic-primary, #09090B);
   outline-offset: 2px;
 }
 
 .tab-pill.active {
   background: var(--surface);
-  color: var(--primary);
+  color: var(--clinic-primary, #09090B);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
 }
 
 .table-responsive {
@@ -832,21 +833,21 @@
 }
 
 .btn-action-primary {
-  background: var(--primary);
-  color: #FFFFFF !important;
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF) !important;
   padding: 0.35rem 0.75rem;
   border-radius: 8px;
   font-size: 0.8rem;
   font-weight: 600;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   transition: all var(--transition-fast);
-  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
   display: inline-flex;
   align-items: center;
 }
 .btn-action-primary:hover {
-  background: var(--primary-hover);
+  background: var(--clinic-primary-hover, #27272A);
 }
 
 .btn-action-success {
@@ -950,20 +951,20 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.65rem 1.4rem;
-  border-radius: 9999px;
-  background: var(--primary, #09090B);
-  color: #FFFFFF;
+  border-radius: 8px;
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF);
   font-weight: 600;
   font-size: 0.88rem;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 .btn-hero-primary-action:hover {
-  background: #0077ED;
+  background: var(--clinic-primary-hover, #27272A);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-hero-icon-action {
@@ -971,19 +972,18 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.55rem 1rem;
-  border-radius: 9999px;
+  border-radius: 8px;
   background: #FFFFFF;
-  color: #334155;
-  border: 1px solid #E2E8F0;
+  color: #09090B;
+  border: 1px solid #E4E4E7;
   font-weight: 500;
   font-size: 0.84rem;
   cursor: pointer;
   transition: all 0.18s ease;
 }
 .btn-hero-icon-action:hover {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
-  color: #0F172A;
+  background: #F4F4F5;
+  border-color: #D4D4D8;
 }
 .btn-hero-icon-action.icon-only {
   padding: 0.55rem;
@@ -1162,8 +1162,8 @@
 
 .af-progress-fill {
   height: 100%;
-  background: #0071E3;
-  border-radius: 9999px;
+  background: var(--clinic-primary, #09090B);
+  border-radius: 4px;
   transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
 }
 

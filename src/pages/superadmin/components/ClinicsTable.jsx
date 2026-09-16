@@ -113,7 +113,7 @@ export function ClinicsTable({
                       <div className="tenant-cell-brand">
                         <div 
                           className="tenant-badge-dot" 
-                          style={{ backgroundColor: isSuspended ? '#ef4444' : isPending ? '#f59e0b' : (t.branding?.primaryColor || '#0071E3') }} 
+                          style={{ backgroundColor: isSuspended ? '#ef4444' : isPending ? '#f59e0b' : (t.branding?.primaryColor || '#09090B') }} 
                         />
                         <div>
                           <strong>{t.name}</strong>

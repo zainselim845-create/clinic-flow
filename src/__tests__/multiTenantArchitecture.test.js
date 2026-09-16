@@ -23,7 +23,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
       expect(dentalClinic.slug).toBe('dr-ahmed');
       expect(dentalClinic.customDomain).toBe('dr-ahmed-dental.com');
       expect(dentalClinic.subscriptionTier).toBe('pro');
-      expect(dentalClinic.branding.primaryColor).toBe('#0071E3');
+      expect(dentalClinic.branding.primaryColor).toBe('#09090B');
       expect(dentalClinic.quotas.monthlySmsQuota).toBe(2000);
       expect(dentalClinic.quotas.maxDoctors).toBe(3);
 

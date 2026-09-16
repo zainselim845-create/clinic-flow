@@ -29,46 +29,25 @@ import './Onboarding.css';
 
 const COLOR_PALETTES = [
   {
-    id: 'medical_blue',
-    name: 'أزرق طبي كلاسيكي',
-    tag: 'الافتراضي والموصى به',
-    primary: '#0071E3',
-    accent: '#10B981'
+    id: 'monochrome',
+    name: 'الأبيض والأسود المعماري النقي',
+    tag: 'الأساس المعماري الافتراضي لكافة التخصصات',
+    primary: '#09090B',
+    accent: '#18181B'
   },
   {
-    id: 'teal_emerald',
-    name: 'تركواز وزمردي هادئ',
-    tag: 'للأسنان ومراكز التجميل',
-    primary: '#0D9488',
-    accent: '#06B6D4'
-  },
-  {
-    id: 'royal_purple',
-    name: 'بنفسجي ملكي فخم',
-    tag: 'للجلدية والتجميل والليزر',
-    primary: '#7C3AED',
-    accent: '#EC4899'
-  },
-  {
-    id: 'navy_blue',
-    name: 'أزرق كحلي احترافي',
-    tag: 'للمراكز والمجمعات الطبية',
-    primary: '#1E3A8A',
+    id: 'royal_blue',
+    name: 'الأزرق السريري الملكي',
+    tag: 'للجراحة العامة والاستشارات التخصصية',
+    primary: '#007AFF',
     accent: '#3B82F6'
   },
   {
-    id: 'burgundy_amber',
-    name: 'عنّابي دافئ وذهبي',
-    tag: 'للجراحة والعيادات المتخصصة',
-    primary: '#991B1B',
-    accent: '#F59E0B'
-  },
-  {
-    id: 'slate_indigo',
-    name: 'رمادي داكن وعصري',
-    tag: 'تصميم فائق النقاء والعصرية',
-    primary: '#334155',
-    accent: '#6366F1'
+    id: 'clinical_emerald',
+    name: 'الزمردي الصحي والتعافي الحيوي',
+    tag: 'لطب الأسنان والمراكز التخصصية',
+    primary: '#10B981',
+    accent: '#059669'
   }
 ];
 
@@ -169,9 +148,9 @@ export default function Onboarding() {
   const [address, setAddress] = useState('شارع الميرغني، مبنى العيادات التخصصية');
 
   // Step 3: Brand Colors
-  const [selectedPaletteId, setSelectedPaletteId] = useState('medical_blue');
-  const [primaryColor, setPrimaryColor] = useState('#0071E3');
-  const [accentColor, setAccentColor] = useState('#10B981');
+  const [selectedPaletteId, setSelectedPaletteId] = useState('monochrome');
+  const [primaryColor, setPrimaryColor] = useState('#09090B');
+  const [accentColor, setAccentColor] = useState('#18181B');
 
   // Step 4: Team Size & Staff Roles
   const [teamSize, setTeamSize] = useState('small');

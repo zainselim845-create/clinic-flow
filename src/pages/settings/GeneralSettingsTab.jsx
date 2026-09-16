@@ -135,10 +135,10 @@ export default function GeneralSettingsTab({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <div style={{
-              background: 'linear-gradient(135deg, #0071E3, #2563EB)',
+              background: 'var(--clinic-primary, #09090B)',
               color: '#FFF',
               padding: '0.5rem',
-              borderRadius: '10px'
+              borderRadius: '8px'
             }}>
               <UserCheck size={20} />
             </div>
@@ -152,10 +152,11 @@ export default function GeneralSettingsTab({
             alignItems: 'center',
             gap: '0.35rem',
             fontSize: '0.78rem',
-            background: 'rgba(37, 99, 235, 0.08)',
-            color: '#2563EB',
+            background: 'var(--bg-tertiary, #F4F4F5)',
+            border: '1px solid var(--border-color, #E4E4E7)',
+            color: 'var(--text-primary, #09090B)',
             padding: '0.25rem 0.65rem',
-            borderRadius: '999px',
+            borderRadius: '6px',
             fontWeight: 700
           }}>
             <ShieldCheck size={13} />
@@ -363,8 +364,8 @@ export default function GeneralSettingsTab({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
-              background: 'rgba(0, 113, 227, 0.1)',
-              color: '#0071E3',
+              background: 'var(--clinic-primary-light, #F4F4F5)',
+              color: 'var(--clinic-primary, #09090B)',
               padding: '0.45rem',
               borderRadius: '8px',
               display: 'flex',
@@ -731,7 +732,7 @@ export default function GeneralSettingsTab({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <CalendarDays size={22} style={{ color: '#0071E3' }} />
+              <CalendarDays size={22} style={{ color: 'var(--clinic-primary, #09090B)' }} />
               <div>
                 <strong style={{ fontSize: '0.9rem', display: 'block' }}>مواعيد العمل وشفتات الجدول</strong>
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>تفعيل الأيام، فترات الراحة، وحظر الإجازات</span>

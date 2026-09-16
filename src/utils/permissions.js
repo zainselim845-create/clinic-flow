@@ -8,7 +8,7 @@ export const SYSTEM_PERMISSIONS = [
     id: 'appointments',
     name: 'المواعيد والتقويم',
     description: 'عرض وحجز وتعديل المواعيد وتسجيل حضور ودخول المرضى',
-    badgeColor: '#0071E3'
+    badgeColor: '#09090B'
   },
   {
     id: 'patients',

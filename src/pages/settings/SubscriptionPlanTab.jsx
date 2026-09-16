@@ -76,9 +76,9 @@ export default function SubscriptionPlanTab() {
 
       {/* SaaS Central Control Plane Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 113, 227, 0.08) 100%)',
-        border: '1px solid rgba(16, 185, 129, 0.3)',
-        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-secondary, #FAFAFA)',
+        border: '1px solid var(--border-color, #E4E4E7)',
+        borderRadius: '8px',
         padding: '1.1rem 1.35rem',
         marginBottom: '1.25rem',
         display: 'flex',

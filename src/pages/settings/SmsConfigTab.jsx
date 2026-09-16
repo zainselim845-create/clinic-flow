@@ -62,9 +62,9 @@ export default function SmsConfigTab() {
 
       {/* Live Sender ID Preview Card */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(0, 113, 227, 0.08), rgba(16, 185, 129, 0.08))',
-        border: '1px solid rgba(0, 113, 227, 0.2)',
-        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-card, #FFFFFF)',
+        border: '1px solid var(--border-color, #E4E4E7)',
+        borderRadius: '8px',
         padding: '1rem 1.25rem',
         marginBottom: '1.25rem',
         display: 'flex',
@@ -74,7 +74,7 @@ export default function SmsConfigTab() {
         gap: '0.75rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ background: '#0071E3', color: '#FFF', padding: '0.5rem', borderRadius: '10px' }}>
+          <div style={{ background: 'var(--clinic-primary, #09090B)', color: '#FFF', padding: '0.5rem', borderRadius: '8px' }}>
             <Smartphone size={20} />
           </div>
           <div>
@@ -84,7 +84,7 @@ export default function SmsConfigTab() {
             </strong>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#059669', background: '#ECFDF5', padding: '0.35rem 0.75rem', borderRadius: '999px', fontWeight: 600 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#059669', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '0.35rem 0.75rem', borderRadius: '6px', fontWeight: 600 }}>
           <ShieldCheck size={14} />
           <span>معتمد ومطابق للوائح تنظيم الاتصالات (NTRA / GSM)</span>
         </div>
@@ -92,9 +92,9 @@ export default function SmsConfigTab() {
 
       {/* SaaS Central SMS Gateway Notice Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(0, 113, 227, 0.08) 100%)',
-        border: '1px solid rgba(16, 185, 129, 0.3)',
-        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-secondary, #FAFAFA)',
+        border: '1px solid var(--border-color, #E4E4E7)',
+        borderRadius: '8px',
         padding: '1rem 1.25rem',
         marginBottom: '1.25rem',
         display: 'flex',

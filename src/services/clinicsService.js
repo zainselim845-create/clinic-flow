@@ -21,7 +21,7 @@ export function fromDbClinic(row) {
     custom_domain: row.custom_domain || null,
     subscriptionTier: row.subscription_tier || 'pro',
     subscriptionStatus: row.subscription_status || 'active',
-    branding: row.branding || { primaryColor: '#0071E3', accentColor: '#10B981' },
+    branding: row.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
     quotas: row.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
     createdAt: row.created_at
   };

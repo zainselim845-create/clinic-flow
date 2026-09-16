@@ -137,7 +137,7 @@ export default function TenantSwitcher({ renderLockedOnDedicated = false }) {
                         className={`tenant-item ${isSelected ? 'active' : ''}`}
                         onClick={() => switchTenant(item.slug)}
                       >
-                        <div className="tenant-item-color-bar" style={{ backgroundColor: item.branding?.primaryColor || '#0071E3' }} />
+                        <div className="tenant-item-color-bar" style={{ backgroundColor: item.branding?.primaryColor || '#09090B' }} />
                         
                         <div className="tenant-item-main">
                           <div className="tenant-item-top">
