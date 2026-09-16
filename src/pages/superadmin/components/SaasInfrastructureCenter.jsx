@@ -1316,6 +1316,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                     .map((tenant) => {
                       const tier = tenant.subscriptionTier || 'pro';
                       const status = tenant.subscriptionStatus || 'active';
+                      const isLifetime = Boolean(tenant.isLifetimeLicense || status === 'lifetime');
                       const isSuspended = status === 'suspended';
                       const isTrial = status === 'trial';
                       const isGrace = status === 'grace_period';

@@ -185,6 +185,8 @@ export function createPrescription({
   };
 }
 
+export const createPrescriptionRecord = createPrescription;
+
 /**
  * Formats a prescription into a clean, legible Arabic WhatsApp message
  */
