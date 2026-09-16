@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { saveSaaSSubscriptionPlan } from '../../../services/saasSubscriptionPlansService';
 
-export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess }) {
+export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess, onSave }) {
   if (!isOpen) return null;
 
   const [formData, setFormData] = useState({
@@ -62,6 +62,7 @@ export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess
     if (success) {
       setSavedSuccess(true);
       if (onSaveSuccess) onSaveSuccess(formData);
+      if (onSave) onSave(formData);
       setTimeout(() => {
         setSavedSuccess(false);
         onClose();

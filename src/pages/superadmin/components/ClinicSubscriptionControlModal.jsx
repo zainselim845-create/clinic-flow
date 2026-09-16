@@ -10,7 +10,8 @@ import {
 } from '../../../services/saasSubscriptionPlansService';
 import { getClinicUsage } from '../../../services/usageMeteringService';
 
-export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant, onUpdateSuccess }) {
+export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant: propTenant, clinic: propClinic, onUpdateSuccess, onSuccess }) {
+  const tenant = propTenant || propClinic;
   if (!isOpen || !tenant) return null;
 
   const plans = getSaaSSubscriptionPlans();
@@ -85,6 +86,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
     if (success) {
       setIsSaved(true);
       if (onUpdateSuccess) onUpdateSuccess(updates);
+      if (onSuccess) onSuccess(updates);
       setTimeout(() => {
         setIsSaved(false);
         onClose();
