@@ -353,19 +353,22 @@ const Dashboard = () => {
     {
       id: 'walkin',
       label: 'تسجيل سريع',
-      icon: <UserPlus className="w-5 h-5" />,
+      icon: <UserPlus size={16} strokeWidth={2.2} />,
+      iconType: 'blue',
       onClick: () => setIsWalkInModalOpen(true)
     },
     {
       id: 'shift',
       label: 'الخزينة والوردية',
-      icon: <Landmark className="w-5 h-5" />,
+      icon: <Landmark size={16} strokeWidth={2.2} />,
+      iconType: 'emerald',
       onClick: () => setIsShiftModalOpen(true)
     },
     {
       id: 'waiting',
       label: 'صالة الانتظار',
-      icon: <Clock className="w-5 h-5" />,
+      icon: <Clock size={16} strokeWidth={2.2} />,
+      iconType: 'amber',
       badge: waitingToday.length > 0 ? waitingToday.length : undefined,
       onClick: () => setActiveFilterTab('waiting'),
       active: activeFilterTab === 'waiting'
@@ -373,7 +376,8 @@ const Dashboard = () => {
     ...(pendingPaymentToday.length > 0 ? [{
       id: 'pending_payment',
       label: 'بانتظار التحصيل',
-      icon: <Wallet className="w-5 h-5" />,
+      icon: <Wallet size={16} strokeWidth={2.2} />,
+      iconType: 'purple',
       badge: pendingPaymentToday.length,
       onClick: () => setActiveFilterTab('pending_payment'),
       active: activeFilterTab === 'pending_payment'
@@ -381,7 +385,8 @@ const Dashboard = () => {
     {
       id: 'recalls',
       label: 'استدعاء دوري',
-      icon: <BellRing className="w-5 h-5" />,
+      icon: <BellRing size={16} strokeWidth={2.2} />,
+      iconType: 'rose',
       onClick: () => setIsRecallModalOpen(true)
     }
   ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab]);
@@ -1008,36 +1013,35 @@ const Dashboard = () => {
         onClose={() => setIsShiftModalOpen(false)}
       />
 
-      {/* 4. Minimalist Monochrome Quick Actions Bar */}
+      {/* 4. Floating Quick Actions Command Dock */}
       <div 
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-3 py-2 rounded-2xl flex items-center gap-1.5 shadow-xl transition-all"
-        style={{
-          background: 'var(--bg-primary, #FFFFFF)',
-          border: '1px solid var(--border-color, #E4E4E7)',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)'
-        }}
+        className="dashboard-floating-dock" 
+        role="toolbar" 
+        aria-label="شريط الوصول السريع للعمليات السريرية"
       >
-        {dockItems.map(item => (
-          <button
-            key={item.id}
-            onClick={item.onClick}
-            type="button"
-            className="relative px-3 py-2 rounded-xl flex items-center gap-2 text-xs font-semibold transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800"
-            style={{
-              color: item.active ? 'var(--primary, #09090B)' : 'var(--text-secondary, #71717A)',
-              backgroundColor: item.active ? 'var(--bg-secondary, #F4F4F5)' : 'transparent'
-            }}
-            title={item.label}
-          >
-            {item.icon}
-            <span className="hidden sm:inline">{item.label}</span>
-            {item.badge !== undefined && (
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-900">
-                {item.badge}
-              </span>
-            )}
-          </button>
-        ))}
+        <div className="dock-actions-group">
+          {dockItems.map((item, idx) => (
+            <React.Fragment key={item.id}>
+              {/* Vertical separator between main action triggers and filtering tabs */}
+              {idx === 2 && <div className="dock-separator" role="separator" aria-orientation="vertical" />}
+              <button
+                type="button"
+                onClick={item.onClick}
+                className={`dock-pill-btn ${item.active ? 'active' : ''}`}
+                title={item.label}
+                aria-pressed={item.active}
+              >
+                <span className={`dock-icon-box ${item.iconType || 'default'}`}>
+                  {item.icon}
+                </span>
+                <span className="dock-label">{item.label}</span>
+                {item.badge !== undefined && (
+                  <span className="dock-badge">{item.badge}</span>
+                )}
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     </div>
   );

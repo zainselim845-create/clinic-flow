@@ -111,4 +111,33 @@ describe('Monochrome Black & White Core & Curated Client Palette', () => {
       expect(fs.existsSync(appleTestPath)).toBe(false);
     });
   });
+
+  describe('6. Redesigned Floating Quick Actions Command Dock', () => {
+    it('verifies Dashboard.jsx contains the semantic floating dock markup', () => {
+      const dashboardPath = path.resolve(__dirname, '../pages/Dashboard.jsx');
+      const dashboardSource = fs.readFileSync(dashboardPath, 'utf8');
+
+      expect(dashboardSource).toContain('dashboard-floating-dock');
+      expect(dashboardSource).toContain('dock-actions-group');
+      expect(dashboardSource).toContain('dock-separator');
+      expect(dashboardSource).toContain('dock-pill-btn');
+      expect(dashboardSource).toContain('dock-icon-box');
+      expect(dashboardSource).toContain('role="toolbar"');
+      expect(dashboardSource).toContain('aria-label="شريط الوصول السريع للعمليات السريرية"');
+    });
+
+    it('verifies Dashboard.css contains glassmorphism, tactile button pills, and responsive layout', () => {
+      const cssPath = path.resolve(__dirname, '../pages/Dashboard.css');
+      const cssSource = fs.readFileSync(cssPath, 'utf8');
+
+      expect(cssSource).toContain('.dashboard-floating-dock');
+      expect(cssSource).toContain('.dock-actions-group');
+      expect(cssSource).toContain('.dock-pill-btn');
+      expect(cssSource).toContain('.dock-icon-box');
+      expect(cssSource).toContain('.dock-separator');
+      expect(cssSource).toContain('backdrop-filter: blur(20px)');
+      expect(cssSource).toContain('calc(50% - 120px)');
+    });
+  });
 });
+

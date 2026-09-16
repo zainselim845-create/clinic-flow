@@ -595,20 +595,20 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.95rem;
-  background: var(--primary);
-  color: #FFFFFF !important;
-  border-radius: 9999px;
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF) !important;
+  border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  transition: transform 150ms ease-out, opacity 150ms ease-out;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: all 150ms ease-out;
   white-space: nowrap;
 }
 
 .btn-queue-start-exam:hover {
-  background: #0071E3;
+  background: var(--clinic-primary-hover, #27272A);
 }
 
 .btn-queue-start-exam:active {
@@ -1292,3 +1292,222 @@
   font-size: 0.76rem;
   color: var(--text-secondary, #5F6368);
 }
+
+/* ==========================================================================
+   Apple/Raycast-Style Floating Quick Actions Island Dock
+   ========================================================================== */
+.dashboard-floating-dock {
+  position: fixed;
+  bottom: 28px;
+  z-index: 990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 992px) {
+  /* Offset dock to center over the main content area (accounting for 240px RTL sidebar) */
+  [dir="rtl"] .dashboard-floating-dock,
+  html[dir="rtl"] .dashboard-floating-dock,
+  body[dir="rtl"] .dashboard-floating-dock {
+    left: calc(50% - 120px);
+  }
+}
+
+.dock-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(228, 228, 231, 0.9);
+  box-shadow: 
+    0 16px 36px -6px rgba(0, 0, 0, 0.14),
+    0 4px 12px -2px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.95) inset;
+  pointer-events: auto;
+  user-select: none;
+}
+
+[data-theme="dark"] .dock-actions-group {
+  background: rgba(24, 24, 27, 0.92);
+  border-color: rgba(63, 63, 70, 0.8);
+  box-shadow: 
+    0 16px 36px -6px rgba(0, 0, 0, 0.55),
+    0 4px 12px -2px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+.dock-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary, #52525B);
+  font-family: var(--font-family);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.dock-pill-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary, #09090B);
+  transform: translateY(-2px);
+}
+
+[data-theme="dark"] .dock-pill-btn {
+  color: #A1A1AA;
+}
+
+[data-theme="dark"] .dock-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF;
+}
+
+.dock-pill-btn.active {
+  background: #09090B;
+  color: #FFFFFF;
+  border-color: #09090B;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .dock-pill-btn.active {
+  background: #FFFFFF;
+  color: #09090B;
+  border-color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+.dock-pill-btn:active {
+  transform: scale(0.96) translateY(0);
+}
+
+.dock-icon-box {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+}
+
+.dock-icon-box.blue {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563EB;
+}
+
+.dock-icon-box.emerald {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.dock-icon-box.amber {
+  background: rgba(245, 158, 11, 0.12);
+  color: #D97706;
+}
+
+.dock-icon-box.purple {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7C3AED;
+}
+
+.dock-icon-box.rose {
+  background: rgba(244, 63, 94, 0.12);
+  color: #E11D48;
+}
+
+.dock-pill-btn.active .dock-icon-box {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .dock-pill-btn.active .dock-icon-box {
+  background: rgba(0, 0, 0, 0.15);
+  color: #09090B;
+}
+
+.dock-label {
+  font-size: 0.82rem;
+  letter-spacing: -0.01em;
+}
+
+.dock-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  background: #EF4444;
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.35);
+}
+
+.dock-pill-btn.active .dock-badge {
+  background: #FFFFFF;
+  color: #09090B;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .dock-pill-btn.active .dock-badge {
+  background: #09090B;
+  color: #FFFFFF;
+}
+
+.dock-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(228, 228, 231, 0.8);
+  margin: 0 4px;
+}
+
+[data-theme="dark"] .dock-separator {
+  background: rgba(63, 63, 70, 0.7);
+}
+
+@media (max-width: 768px) {
+  .dashboard-floating-dock {
+    bottom: 16px;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: auto;
+    max-width: calc(100vw - 24px);
+  }
+
+  .dock-actions-group {
+    padding: 4px 6px;
+    gap: 2px;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .dock-pill-btn {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .dock-label {
+    font-size: 0.76rem;
+  }
+}
+

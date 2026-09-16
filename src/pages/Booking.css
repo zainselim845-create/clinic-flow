@@ -63,11 +63,11 @@
 }
 
 .nebras-nav-btn {
-  background: var(--primary-light);
-  color: var(--primary);
-  border: 1px solid transparent;
+  background: var(--bg-tertiary, #F4F4F5);
+  color: var(--text-primary, #09090B);
+  border: 1px solid var(--border-color, #E4E4E7);
   padding: 0.45rem 1rem;
-  border-radius: var(--radius-full);
+  border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
@@ -76,7 +76,7 @@
 }
 
 .nebras-nav-btn:hover {
-  background: var(--primary);
+  background: var(--clinic-primary, #09090B);
   color: #FFFFFF;
 }
 
@@ -139,9 +139,9 @@
 }
 
 .stepper-step.active .step-num {
-  background: var(--primary);
+  background: var(--clinic-primary, #09090B);
   color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .stepper-step.completed .step-num {
@@ -298,14 +298,14 @@
 
 /* HIGH-CONTRAST PRIMARY ACTION BUTTON */
 .default-custom-btn {
-  background: var(--primary) !important;
-  color: #FFFFFF !important;
+  background: var(--clinic-primary, #09090B) !important;
+  color: var(--clinic-on-primary, #FFFFFF) !important;
   font-size: 1rem !important;
   font-weight: 700 !important;
   padding: 0.85rem 1.5rem !important;
-  border-radius: var(--radius-md) !important;
-  border: none !important;
-  box-shadow: 0 4px 14px rgba(0, 113, 227, 0.3) !important;
+  border-radius: 8px !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -318,8 +318,8 @@
 }
 
 .default-custom-btn:hover:not(:disabled) {
-  background: var(--primary-hover) !important;
-  box-shadow: 0 6px 20px rgba(0, 113, 227, 0.4) !important;
+  background: var(--clinic-primary-hover, #27272A) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
   transform: translateY(-1px) !important;
 }
 

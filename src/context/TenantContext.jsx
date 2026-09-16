@@ -320,7 +320,7 @@ export const TenantProvider = ({ children }) => {
             customDomain: domainClinic.custom_domain || parsed.customDomain,
             subscriptionTier: domainClinic.subscription_tier || 'pro',
             subscriptionStatus: domainClinic.subscription_status || 'active',
-            branding: domainClinic.branding || { primaryColor: '#0071E3', accentColor: '#10B981' },
+            branding: domainClinic.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
             quotas: domainClinic.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
           };
           setActiveTenant(merged);
@@ -345,7 +345,7 @@ export const TenantProvider = ({ children }) => {
           customDomain: data.custom_domain || parsed.customDomain,
           subscriptionTier: data.subscription_tier || 'pro',
           subscriptionStatus: data.subscription_status || 'active',
-          branding: data.branding || { primaryColor: '#0071E3', accentColor: '#10B981' },
+          branding: data.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
           quotas: data.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
         };
         setActiveTenant(merged);
@@ -376,17 +376,18 @@ export const TenantProvider = ({ children }) => {
     const isMonochrome = !primary || primary === 'monochrome' || primary === '#000000' || primary === '#09090B' || primary === '#18181B';
 
     if (isMonochrome) {
-      root.style.removeProperty('--clinic-primary');
-      root.style.removeProperty('--clinic-primary-hover');
-      root.style.removeProperty('--clinic-primary-light');
-      root.style.removeProperty('--clinic-primary-glow');
-      root.style.removeProperty('--clinic-gradient-primary');
-      root.style.removeProperty('--clinic-on-primary');
       const isDark = root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark';
+      root.style.setProperty('--clinic-primary', isDark ? '#FFFFFF' : '#09090B');
+      root.style.setProperty('--clinic-primary-hover', isDark ? '#E4E4E7' : '#27272A');
+      root.style.setProperty('--clinic-primary-light', isDark ? 'rgba(255, 255, 255, 0.12)' : '#F4F4F5');
+      root.style.setProperty('--clinic-primary-glow', isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)');
+      root.style.setProperty('--clinic-gradient-primary', isDark ? '#FFFFFF' : '#09090B');
+      root.style.setProperty('--clinic-on-primary', isDark ? '#09090B' : '#FFFFFF');
       root.style.setProperty('--primary', isDark ? '#FFFFFF' : '#09090B');
       root.style.setProperty('--primary-hover', isDark ? '#E4E4E7' : '#27272A');
       root.style.setProperty('--primary-light', isDark ? 'rgba(255, 255, 255, 0.12)' : '#F4F4F5');
-      root.style.setProperty('--primary-glow', isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.12)');
+      root.style.setProperty('--primary-glow', isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)');
+      root.style.setProperty('--md-sys-color-primary', isDark ? '#FFFFFF' : '#09090B');
       root.style.setProperty('--md-sys-color-on-primary', isDark ? '#09090B' : '#FFFFFF');
     } else {
       root.style.setProperty('--clinic-primary', primary);
@@ -399,6 +400,7 @@ export const TenantProvider = ({ children }) => {
       root.style.setProperty('--primary-hover', primary);
       root.style.setProperty('--primary-light', `${primary}18`);
       root.style.setProperty('--primary-glow', `${primary}33`);
+      root.style.setProperty('--md-sys-color-primary', primary);
       root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
     }
 

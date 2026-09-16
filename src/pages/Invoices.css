@@ -48,7 +48,7 @@
   flex-shrink: 0;
 }
 
-.metric-icon-wrap.blue { background: var(--primary-light); color: var(--primary); }
+.metric-icon-wrap.blue { background: var(--clinic-primary-light, #F4F4F5); color: var(--clinic-primary, #09090B); }
 .metric-icon-wrap.green { background: var(--success-light); color: var(--success); }
 .metric-icon-wrap.red { background: var(--error-light); color: var(--error); }
 .metric-icon-wrap.orange { background: var(--warning-light); color: var(--warning-dark, #B06000); }
@@ -92,14 +92,14 @@
 }
 
 .filter-pill:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--clinic-primary, #09090B);
   outline-offset: 2px;
 }
 
 .filter-pill.active {
-  background: var(--primary);
-  color: #FFFFFF;
-  box-shadow: var(--shadow-sm);
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .invoices-main-table {
