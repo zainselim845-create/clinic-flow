@@ -138,29 +138,54 @@ export const AuthProvider = ({ children }) => {
       supabase.auth.getSession()
         .then(({ data: { session } = {} }) => {
           setSession(session);
-          setUser(session?.user || null);
           if (session?.user) {
+            setUser(session.user);
             fetchClinic(session.user.id);
           } else {
+            const saved = getInitialUser();
+            if (saved) {
+              setUser(saved);
+              setRole(saved.role || 'doctor');
+            }
             setLoading(false);
           }
         })
         .catch((err) => {
           console.error('Failed to get Supabase session:', err);
+          const saved = getInitialUser();
+          if (saved) {
+            setUser(saved);
+            setRole(saved.role || 'doctor');
+          }
           setLoading(false);
         });
+    } else {
+      const saved = getInitialUser();
+      if (saved) {
+        setUser(saved);
+        setRole(saved.role || 'doctor');
+      }
+      setLoading(false);
     }
 
     // Listen for auth changes
     let subscription = null;
     if (supabase?.auth?.onAuthStateChange) {
-      const authListener = supabase.auth.onAuthStateChange((_event, session) => {
+      const authListener = supabase.auth.onAuthStateChange((event, session) => {
         setSession(session);
-        setUser(session?.user || null);
         if (session?.user) {
+          setUser(session.user);
           fetchClinic(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          persistUser(null);
+          setLoading(false);
         } else {
-          setClinic(null);
+          const saved = getInitialUser();
+          if (saved) {
+            setUser(saved);
+            setRole(saved.role || 'doctor');
+          }
           setLoading(false);
         }
       });
