@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  Database, Server, ShieldCheck, Download, CheckCircle2, 
+  Database, Server, ShieldCheck, Download, CheckCircle2, Crown, 
   Smartphone, Sparkles, Send, RefreshCw, Check, Globe, CreditCard,
   Copy, CheckCheck, ExternalLink, Zap, AlertCircle, ArrowUpRight,
   TrendingUp, Users, PauseCircle, PlayCircle, ShieldAlert, Sliders,
   Edit3, Trash2, Plus, Layers, DollarSign, Calendar, Clock, AlertTriangle,
-  RotateCcw, Search, Filter, Lock, Unlock, PhoneCall
+  RotateCcw, Search, Filter, Lock, Unlock, PhoneCall,
+  Eye, EyeOff
 } from 'lucide-react';
 import { getSupabaseConfig, saveSupabaseConfig } from '../../../lib/supabase';
 import { getRegisteredTenants, getAllPlatformUsers } from '../../../services/authService';
@@ -37,6 +38,7 @@ import ClinicSubscriptionControlModal from './ClinicSubscriptionControlModal';
 export function SaasInfrastructureCenter({ allTenants = [] }) {
   const [subTab, setSubTab] = useState('database');
   const { updateTenantDomain, updateTenantInfo } = useTenant();
+  const [showTokens, setShowTokens] = useState({ dbKey: false, smsKey: false, aiKey: false });
 
   // Database State
   const [dbConfig, setDbConfig] = useState(() => getSupabaseConfig());
@@ -426,15 +428,36 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
               <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                 مفتاح الوصول العام (Anon / Public API Key):
               </label>
-              <input
-                type="password"
-                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-                dir="ltr"
-                value={dbConfig.key || ''}
-                onChange={(e) => setDbConfig({ ...dbConfig, key: e.target.value })}
-                className="input-field"
-                style={{ width: '100%', padding: '0.6rem 0.9rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showTokens.dbKey ? 'text' : 'password'}
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                  dir="ltr"
+                  value={dbConfig.key || ''}
+                  onChange={(e) => setDbConfig({ ...dbConfig, key: e.target.value })}
+                  className="input-field"
+                  style={{ width: '100%', padding: '0.6rem 2.5rem 0.6rem 0.9rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowTokens(prev => ({ ...prev, dbKey: !prev.dbKey }))}
+                  style={{
+                    position: 'absolute',
+                    right: '0.6rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0.2rem'
+                  }}
+                  title={showTokens.dbKey ? 'إخفاء المفتاح' : 'إظهار المفتاح'}
+                  aria-label={showTokens.dbKey ? 'إخفاء المفتاح' : 'إظهار المفتاح'}
+                >
+                  {showTokens.dbKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -505,14 +528,36 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
               <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                 مفتاح الربط الرئيسي للمنصة (Master SMS API Key):
               </label>
-              <input
-                type="password"
-                placeholder="sms_live_api_key_xxxxxxxx"
-                dir="ltr"
-                value={smsApiKey}
-                onChange={(e) => setSmsApiKey(e.target.value)}
-                style={{ width: '100%', padding: '0.6rem 0.9rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showTokens.smsKey ? 'text' : 'password'}
+                  placeholder="sms_live_api_key_xxxxxxxx"
+                  dir="ltr"
+                  value={smsApiKey}
+                  onChange={(e) => setSmsApiKey(e.target.value)}
+                  className="input-field"
+                  style={{ width: '100%', padding: '0.6rem 2.5rem 0.6rem 0.9rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowTokens(prev => ({ ...prev, smsKey: !prev.smsKey }))}
+                  style={{
+                    position: 'absolute',
+                    right: '0.6rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0.2rem'
+                  }}
+                  title={showTokens.smsKey ? 'إخفاء المفتاح' : 'إظهار المفتاح'}
+                  aria-label={showTokens.smsKey ? 'إخفاء المفتاح' : 'إظهار المفتاح'}
+                >
+                  {showTokens.smsKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginBottom: '1.25rem' }}>
@@ -585,14 +630,36 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
               <label style={{ display: 'block', fontWeight: 700, fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                 مفتاح OpenRouter API المركزي للمنصة:
               </label>
-              <input
-                type="password"
-                placeholder="sk-or-v1-xxxxxxxx..."
-                dir="ltr"
-                value={aiConfig.apiKey || ''}
-                onChange={(e) => setAiConfig({ ...aiConfig, apiKey: e.target.value })}
-                style={{ width: '100%', padding: '0.6rem 0.9rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-              />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input
+                  type={showTokens.aiKey ? 'text' : 'password'}
+                  placeholder="sk-or-v1-xxxxxxxx..."
+                  dir="ltr"
+                  value={aiConfig.apiKey || ''}
+                  onChange={(e) => setAiConfig({ ...aiConfig, apiKey: e.target.value })}
+                  className="input-field"
+                  style={{ width: '100%', padding: '0.6rem 2.5rem 0.6rem 0.9rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowTokens(prev => ({ ...prev, aiKey: !prev.aiKey }))}
+                  style={{
+                    position: 'absolute',
+                    right: '0.6rem',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0.2rem'
+                  }}
+                  title={showTokens.aiKey ? 'إخفاء المفتاح' : 'إظهار المفتاح'}
+                  aria-label={showTokens.aiKey ? 'إخفاء المفتاح' : 'إظهار المفتاح'}
+                >
+                  {showTokens.aiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -788,6 +855,21 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
             gap: '1rem',
             marginBottom: '1.75rem'
           }}>
+            {/* Lifetime Portals Buyout Card */}
+            <div style={{ background: 'var(--surface)', border: '1px solid #FDE68A', borderRadius: '12px', padding: '1rem', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: 0, right: 0, left: 0, height: '3px', background: 'linear-gradient(90deg, #F59E0B, #D97706)' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.78rem', color: '#B45309', fontWeight: 700 }}>شراء وتراخيص مدى الحياة</span>
+                <Crown size={16} color="#D97706" />
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#B45309' }}>
+                {billingMetrics.lifetimeCount || 0} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>بورتال دائم</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#B45309', fontWeight: 700, marginTop: '0.25rem' }}>
+                {(billingMetrics.totalLifetimeRevenue || 0).toLocaleString()} ج.م إجمالي عوائد الشراء
+              </div>
+            </div>
+
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
                 <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>الدخل الشهري (MRR)</span>
@@ -1194,6 +1276,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                 >
                   <option value="all">كافة الحالات</option>
                   <option value="active">نشط (Active)</option>
+                  <option value="lifetime">👑 ترخيص مدى الحياة (Lifetime)</option>
                   <option value="trial">فترة تجريبية (Trial)</option>
                   <option value="suspended">موقوف ومجمد (Suspended)</option>
                   <option value="grace_period">مهلة سداد (Grace)</option>
@@ -1222,7 +1305,12 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                         (t.doctorName || '').toLowerCase().includes(clinicSubSearch.toLowerCase()) ||
                         (t.slug || '').toLowerCase().includes(clinicSubSearch.toLowerCase());
                       const status = t.subscriptionStatus || 'active';
-                      const matchStatus = clinicSubStatusFilter === 'all' || status === clinicSubStatusFilter;
+                      const isLifetime = Boolean(t.isLifetimeLicense || status === 'lifetime');
+                      const matchStatus = clinicSubStatusFilter === 'all' 
+                        ? true 
+                        : clinicSubStatusFilter === 'lifetime' 
+                          ? isLifetime 
+                          : status === clinicSubStatusFilter;
                       return matchSearch && matchStatus;
                     })
                     .map((tenant) => {
@@ -1245,9 +1333,28 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                                 background: isSuspended ? '#EF4444' : isTrial ? '#F59E0B' : '#10B981'
                               }} />
                               <div>
-                                <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)', display: 'block' }}>
-                                  {tenant.name}
-                                </strong>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                  <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>
+                                    {tenant.name}
+                                  </strong>
+                                  {isLifetime && (
+                                    <span style={{
+                                      fontSize: '0.7rem',
+                                      fontWeight: 800,
+                                      background: '#FEF3C7',
+                                      color: '#B45309',
+                                      border: '1px solid #FCD34D',
+                                      borderRadius: '4px',
+                                      padding: '0.1rem 0.4rem',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.2rem'
+                                    }}>
+                                      <Crown size={10} />
+                                      مدى الحياة
+                                    </span>
+                                  )}
+                                </div>
                                 <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
                                   {tenant.doctorName} • <code style={{ fontSize: '0.74rem' }}>/{tenant.slug}</code>
                                 </span>
@@ -1271,6 +1378,12 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                                 ({currentPlanObj.monthlyPrice} ج.م)
                               </span>
                             </div>
+                            {tenant.customAgreedPrice !== undefined && tenant.customAgreedPrice !== null && tenant.customAgreedPrice !== '' && (
+                              <div style={{ fontSize: '0.73rem', color: '#059669', fontWeight: 700, marginTop: '3px' }}>
+                                اتفاق: {Number(tenant.customAgreedPrice).toLocaleString()} ج.م
+                                {tenant.billingCycle === 'annual' ? ' /سنوي' : tenant.billingCycle === 'quarterly' ? ' /٣ أشهر' : tenant.billingCycle === 'semi_annual' ? ' /٦ أشهر' : tenant.billingCycle === 'custom' ? ' (مرن)' : ' /شهري'}
+                              </div>
+                            )}
                           </td>
 
                           <td>
@@ -1285,7 +1398,12 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                               background: isSuspended ? '#FEE2E2' : isTrial ? '#FEF3C7' : isGrace ? '#FEF08A' : '#ECFDF5',
                               color: isSuspended ? '#DC2626' : isTrial ? '#B45309' : isGrace ? '#A16207' : '#047857'
                             }}>
-                              {isSuspended ? (
+                              {isLifetime ? (
+                                <>
+                                  <Crown size={12} />
+                                  <span>دائم مدى الحياة ∞</span>
+                                </>
+                              ) : isSuspended ? (
                                 <>
                                   <Lock size={12} />
                                   <span>موقوف ومجمد</span>

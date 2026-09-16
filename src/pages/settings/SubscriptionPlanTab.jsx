@@ -145,7 +145,17 @@ export default function SubscriptionPlanTab() {
             </span>
           </div>
           <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
-            تجديد شهري تلقائي • الفاتورة القادمة في <strong>١ أكتوبر ٢٠٢٦</strong>
+            {tenant?.isLifetimeLicense || tenant?.subscriptionStatus === 'lifetime' ? (
+              <strong style={{ color: '#059669', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                <CheckCircle2 size={16} />
+                <span>ترخيص دائم مدى الحياة (Lifetime Enterprise License) • تم شراء البورتال بالكامل ولا توجد أي اشتراكات دورية.</span>
+              </strong>
+            ) : (
+              <span>
+                نظام السداد: <strong>{tenant?.billingCycle === 'annual' ? 'سنوي' : tenant?.billingCycle === 'quarterly' ? 'ربع سنوي (كل ٣ شهور)' : tenant?.billingCycle === 'semi_annual' ? 'نصف سنوي' : 'شهري'}</strong>
+                {tenant?.nextBillingDate && tenant?.nextBillingDate !== 'مدى الحياة' ? ` • الاستحقاق القادم: ${tenant.nextBillingDate}` : ''}
+              </span>
+            )}
           </p>
         </div>
 

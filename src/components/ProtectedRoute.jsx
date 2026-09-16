@@ -30,12 +30,13 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  // 1. Subscription & Account Status Guard (Bypass for Super Admin)
+  // 1. Subscription & Account Status Guard (Bypass for Super Admin and Lifetime License)
   if (!isSuperAdmin && tenant) {
+    const isLifetime = Boolean(tenant.isLifetimeLicense || tenant.subscriptionStatus === 'lifetime');
     const subStatus = tenant.subscriptionStatus || 'active';
 
-    // Account Suspended for Non-Payment
-    if (subStatus === 'suspended') {
+    // Account Suspended for Non-Payment (Bypassed if tenant has lifetime license)
+    if (!isLifetime && subStatus === 'suspended') {
       return (
         <div style={{
           minHeight: '100vh',

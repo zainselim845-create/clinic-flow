@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown } from 'lucide-react';
 import { getClinicUsage } from '../../../services/usageMeteringService';
 import { getClinicSenderId } from '../../../services/smsService';
 
@@ -208,13 +208,34 @@ export function ClinicsTable({
                       <span className={`saas-tier-pill ${t.subscriptionTier || 'pro'}`}>
                         {t.subscriptionTier === 'enterprise' ? 'مؤسسي' : t.subscriptionTier === 'pro' ? 'برو ذكي' : 'أساسي'}
                       </span>
+                      {t.customAgreedPrice !== undefined && t.customAgreedPrice !== null && t.customAgreedPrice !== '' && (
+                        <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 700, marginTop: '2px' }}>
+                          اتفاق: {t.customAgreedPrice} ج.م
+                        </div>
+                      )}
                     </td>
 
                     <td>
-                      {isSuspended ? (
+                      {t.isLifetimeLicense || t.subscriptionStatus === 'lifetime' ? (
+                        <span style={{
+                          background: '#FEF3C7',
+                          color: '#B45309',
+                          border: '1px solid #FCD34D',
+                          borderRadius: '999px',
+                          padding: '0.2rem 0.6rem',
+                          fontSize: '0.76rem',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem'
+                        }}>
+                          <Crown size={12} color="#D97706" />
+                          <span>مدى الحياة ∞</span>
+                        </span>
+                      ) : isSuspended ? (
                         <span className="saas-status-pill suspended">
                           <AlertOctagon size={12} />
-                          <span>موقوف لعدم السداد</span>
+                          <span>موقوف ومجمد</span>
                         </span>
                       ) : isPending ? (
                         <span className="saas-status-pill pending">

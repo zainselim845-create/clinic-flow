@@ -44,6 +44,42 @@ export function initGlobalErrorListeners() {
 }
 
 /**
+ * Redacts sensitive tokens, credentials, and API keys from error messages, stacks, and payloads
+ */
+export function redactSensitiveTokens(input) {
+  if (!input) return input;
+  if (typeof input === 'string') {
+    return input
+      // Redact JWT tokens
+      .replace(/eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}/g, '[REDACTED_JWT_TOKEN]')
+      // Redact Bearer tokens
+      .replace(/Bearer\s+[a-zA-Z0-9._~+/-]+=*/gi, 'Bearer [REDACTED_TOKEN]')
+      // Redact OpenRouter / OpenAI keys
+      .replace(/sk-[a-zA-Z0-9_-]{10,}/gi, 'sk-[REDACTED_KEY]')
+      // Redact query parameter keys and passwords
+      .replace(/(apikey|api_key|token|password|secret|access_token)=([^&\s]+)/gi, '$1=[REDACTED]');
+  }
+  if (typeof input === 'object') {
+    try {
+      const copy = Array.isArray(input) ? [...input] : { ...input };
+      for (const k of Object.keys(copy)) {
+        if (/key|token|password|secret|auth/i.test(k)) {
+          copy[k] = '[REDACTED]';
+        } else if (typeof copy[k] === 'string') {
+          copy[k] = redactSensitiveTokens(copy[k]);
+        } else if (typeof copy[k] === 'object' && copy[k] !== null) {
+          copy[k] = redactSensitiveTokens(copy[k]);
+        }
+      }
+      return copy;
+    } catch (_) {
+      return input;
+    }
+  }
+  return input;
+}
+
+/**
  * Captures a system error with context
  */
 export function captureSystemError({
@@ -67,13 +103,13 @@ export function captureSystemError({
   const errorEntry = {
     id: `err-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     type,
-    message: String(message || 'Unspecified error occurred'),
-    stack: String(stack || ''),
+    message: redactSensitiveTokens(String(message || 'Unspecified error occurred')),
+    stack: redactSensitiveTokens(String(stack || '')),
     severity, // 'critical' | 'high' | 'medium' | 'low'
     clinicId: resolvedClinic,
     userId: userId || 'guest',
     path: currentPath,
-    context: context && typeof context === 'object' ? context : {},
+    context: redactSensitiveTokens(context && typeof context === 'object' ? context : {}),
     timestamp: new Date().toISOString(),
     status: 'unresolved' // 'unresolved' | 'investigating' | 'resolved'
   };

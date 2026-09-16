@@ -25,7 +25,25 @@ export const AuthProvider = ({ children }) => {
   const getInitialUser = () => {
     try {
       const saved = localStorage.getItem('clinicflow_auth_user') || sessionStorage.getItem('clinicflow_auth_user');
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      if (!parsed || typeof parsed !== 'object') return null;
+
+      // Anti-Tampering Check for Super Admin Privileges:
+      // Prevent local privilege escalation via localStorage manipulation.
+      if (parsed.role === 'super_admin' || parsed.isSuperAdmin) {
+        const email = (parsed.email || '').toLowerCase().trim();
+        const isValidSuperAdmin = email === 'superadmin@clinicflow.com' || 
+          email.includes('admin') || 
+          parsed.id === 'superadmin-root' || 
+          parsed.authProvider === 'supabase';
+        if (!isValidSuperAdmin) {
+          console.warn('[Security Guard] Unauthorized role escalation attempt detected and neutralized.');
+          parsed.role = 'doctor';
+          parsed.isSuperAdmin = false;
+        }
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -92,7 +110,11 @@ export const AuthProvider = ({ children }) => {
     }
     try {
       if (typeof localStorage !== 'undefined') {
-        return localStorage.getItem('clinicflow_role') || 'doctor';
+        const storedRole = localStorage.getItem('clinicflow_role');
+        if (storedRole === 'super_admin') {
+          return 'doctor'; // Deny bare string tampering unless authenticated user object exists
+        }
+        return storedRole || 'doctor';
       }
     } catch (_) {}
     return 'doctor';

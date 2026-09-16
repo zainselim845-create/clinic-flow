@@ -114,13 +114,32 @@ export function getSaaSBillingMetrics(tenants = []) {
   let suspendedCount = 0;
   let trialCount = 0;
   let pendingCount = 0;
+  let lifetimeCount = 0;
+  let totalLifetimeRevenue = 0;
 
   tenants.forEach(t => {
     const status = t.subscriptionStatus || 'active';
+    const isLifetime = Boolean(t.isLifetimeLicense || status === 'lifetime');
     const tier = t.subscriptionTier || 'pro';
-    const price = planPriceMap[tier] || 999;
+    const defaultPrice = planPriceMap[tier] || 999;
+    const agreedPrice = (t.customAgreedPrice !== undefined && t.customAgreedPrice !== null && t.customAgreedPrice !== '') 
+      ? Number(t.customAgreedPrice) 
+      : defaultPrice;
 
-    if (status === 'suspended') {
+    if (isLifetime) {
+      lifetimeCount++;
+      // Calculate any lifetime buyout revenue collected
+      if (Array.isArray(t.subscriptionPaymentHistory)) {
+        t.subscriptionPaymentHistory.forEach(p => {
+          if (p.type === 'lifetime_buyout') {
+            totalLifetimeRevenue += Number(p.amount) || 0;
+          }
+        });
+      }
+      if (t.lastPayment && t.lastPayment.type === 'lifetime_buyout' && (!t.subscriptionPaymentHistory || t.subscriptionPaymentHistory.length === 0)) {
+        totalLifetimeRevenue += Number(t.lastPayment.amount) || 0;
+      }
+    } else if (status === 'suspended') {
       suspendedCount++;
     } else if (status === 'trial') {
       trialCount++;
@@ -128,7 +147,16 @@ export function getSaaSBillingMetrics(tenants = []) {
       pendingCount++;
     } else {
       activePayingCount++;
-      mrr += price;
+      const cycle = t.billingCycle || 'monthly';
+      if (cycle === 'quarterly') {
+        mrr += Math.round(agreedPrice / 3);
+      } else if (cycle === 'semi_annual') {
+        mrr += Math.round(agreedPrice / 6);
+      } else if (cycle === 'annual') {
+        mrr += Math.round(agreedPrice / 12);
+      } else {
+        mrr += agreedPrice;
+      }
     }
   });
 
@@ -144,6 +172,8 @@ export function getSaaSBillingMetrics(tenants = []) {
     suspendedCount,
     trialCount,
     pendingCount,
+    lifetimeCount,
+    totalLifetimeRevenue,
     arpu
   };
 }
@@ -157,12 +187,32 @@ export function updateClinicSubscriptionDetails(clinicSlugOrId, updates = {}) {
 
   if (index >= 0) {
     const existing = registered[index];
+    const history = Array.isArray(existing.subscriptionPaymentHistory) ? [...existing.subscriptionPaymentHistory] : [];
+    
+    if (updates.offlinePayment) {
+      history.push({
+        id: `pay_${Date.now()}`,
+        amount: Number(updates.offlinePayment.amount) || 0,
+        method: updates.offlinePayment.method || 'cash',
+        notes: updates.offlinePayment.notes || '',
+        type: updates.offlinePayment.type || 'recurring',
+        date: updates.offlinePayment.date || new Date().toISOString()
+      });
+    }
+
     const updated = {
       ...existing,
       ...updates,
+      subscriptionPaymentHistory: history,
       updatedAt: new Date().toISOString()
     };
-    if (updates.subscriptionStatus) {
+
+    if (updates.isLifetimeLicense) {
+      updated.isLifetimeLicense = true;
+      updated.subscriptionStatus = 'lifetime';
+      updated.billingCycle = 'lifetime';
+      delete updated.suspensionReason;
+    } else if (updates.subscriptionStatus) {
       updated.subscriptionStatus = updates.subscriptionStatus;
       if (updates.subscriptionStatus === 'suspended') {
         updated.suspensionReason = updates.suspensionReason || 'عدم سداد الاشتراك الدوري';
@@ -170,13 +220,15 @@ export function updateClinicSubscriptionDetails(clinicSlugOrId, updates = {}) {
         delete updated.suspensionReason;
       }
     }
+
     registered[index] = updated;
     safeStorage.setItem('clinicflow_registered_tenants', registered);
   }
 
   // 2. Also update status in auth service
-  if (updates.subscriptionStatus) {
-    updateClinicSubscriptionStatus(clinicSlugOrId, updates.subscriptionStatus, updates.suspensionReason);
+  if (updates.subscriptionStatus || updates.isLifetimeLicense) {
+    const nextStatus = updates.isLifetimeLicense ? 'lifetime' : updates.subscriptionStatus;
+    updateClinicSubscriptionStatus(clinicSlugOrId, nextStatus, updates.suspensionReason);
   }
 
   // 3. Update usage limits in metering store

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, Save, ShieldAlert, CheckCircle2, AlertOctagon, Clock, 
   Ban, Check, RefreshCw, Zap, CreditCard, Calendar, PhoneCall,
-  Activity, Layers
+  Activity, Layers, Crown, DollarSign, Sparkles, CheckCheck
 } from 'lucide-react';
 import { 
   getSaaSSubscriptionPlans, 
@@ -16,24 +16,44 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
 
   const plans = getSaaSSubscriptionPlans();
 
-  const [status, setStatus] = useState(tenant.subscriptionStatus || 'active');
+  const isInitialLifetime = Boolean(tenant.isLifetimeLicense || tenant.subscriptionStatus === 'lifetime');
+
+  const [status, setStatus] = useState(isInitialLifetime ? 'lifetime' : (tenant.subscriptionStatus || 'active'));
+  const [isLifetimeLicense, setIsLifetimeLicense] = useState(isInitialLifetime);
   const [tier, setTier] = useState(tenant.subscriptionTier || 'pro');
+  const [customAgreedPrice, setCustomAgreedPrice] = useState(
+    tenant.customAgreedPrice !== undefined && tenant.customAgreedPrice !== null ? tenant.customAgreedPrice : ''
+  );
+  const [billingCycle, setBillingCycle] = useState(
+    isInitialLifetime ? 'lifetime' : (tenant.billingCycle || 'monthly')
+  );
+  const [nextBillingDate, setNextBillingDate] = useState(
+    isInitialLifetime ? 'مدى الحياة' : (tenant.nextBillingDate || '')
+  );
   const [suspensionReason, setSuspensionReason] = useState(
     tenant.suspensionReason || 'عدم سداد الاشتراك الدوري المستحق'
   );
   const [smsQuota, setSmsQuota] = useState(tenant.quotas?.monthlySmsQuota || 1000);
   const [extraSmsCredits, setExtraSmsCredits] = useState(tenant.quotas?.extraSmsCredits || 0);
   const [maxDoctors, setMaxDoctors] = useState(tenant.quotas?.maxDoctors || 3);
+  
+  // Payment recording state
+  const [paymentType, setPaymentType] = useState(isInitialLifetime ? 'lifetime_buyout' : 'recurring');
   const [paymentMethod, setPaymentMethod] = useState('instapay');
-  const [paymentAmount, setPaymentAmount] = useState(999);
+  const [paymentAmount, setPaymentAmount] = useState(isInitialLifetime ? 25000 : 999);
   const [paymentNotes, setPaymentNotes] = useState('');
   const [isSaved, setIsSaved] = useState(false);
 
   const usage = getClinicUsage(tenant.id, tenant.quotas, tier);
 
   useEffect(() => {
-    setStatus(tenant.subscriptionStatus || 'active');
+    const isLife = Boolean(tenant.isLifetimeLicense || tenant.subscriptionStatus === 'lifetime');
+    setStatus(isLife ? 'lifetime' : (tenant.subscriptionStatus || 'active'));
+    setIsLifetimeLicense(isLife);
     setTier(tenant.subscriptionTier || 'pro');
+    setCustomAgreedPrice(tenant.customAgreedPrice !== undefined && tenant.customAgreedPrice !== null ? tenant.customAgreedPrice : '');
+    setBillingCycle(isLife ? 'lifetime' : (tenant.billingCycle || 'monthly'));
+    setNextBillingDate(isLife ? 'مدى الحياة' : (tenant.nextBillingDate || ''));
     setSuspensionReason(tenant.suspensionReason || 'عدم سداد الاشتراك الدوري المستحق');
     setSmsQuota(tenant.quotas?.monthlySmsQuota || 1000);
     setExtraSmsCredits(tenant.quotas?.extraSmsCredits || 0);
@@ -42,29 +62,60 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
 
   // Quick Action Handlers
   const handleImmediateFreeze = () => {
+    setIsLifetimeLicense(false);
     setStatus('suspended');
     setSuspensionReason('تم تعليق حساب العيادة مؤقتاً لعدم سداد الاشتراك الدوري المستحق.');
   };
 
   const handleImmediateActivate = () => {
+    setIsLifetimeLicense(false);
     setStatus('active');
     setSuspensionReason('');
   };
 
   const handleSetTrial = () => {
+    setIsLifetimeLicense(false);
     setStatus('trial');
   };
 
   const handleSetGracePeriod = () => {
+    setIsLifetimeLicense(false);
     setStatus('grace_period');
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    setNextBillingDate(d.toISOString().slice(0, 10));
+  };
+
+  const handleSetLifetime = () => {
+    setIsLifetimeLicense(true);
+    setStatus('lifetime');
+    setBillingCycle('lifetime');
+    setNextBillingDate('مدى الحياة');
+    setSuspensionReason('');
+    setPaymentType('lifetime_buyout');
+    if (!customAgreedPrice) {
+      setCustomAgreedPrice(25000);
+      setPaymentAmount(25000);
+    }
+    setPaymentNotes('شراء وترخيص البورتال مدى الحياة (Lifetime Portal Buyout)');
+  };
+
+  const handleQuickAddDays = (days) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    setNextBillingDate(d.toISOString().slice(0, 10));
   };
 
   const handleSave = (e) => {
     e.preventDefault();
     const updates = {
-      subscriptionStatus: status,
+      subscriptionStatus: isLifetimeLicense ? 'lifetime' : status,
       subscriptionTier: tier,
-      suspensionReason: status === 'suspended' ? suspensionReason : undefined,
+      isLifetimeLicense: Boolean(isLifetimeLicense),
+      billingCycle: isLifetimeLicense ? 'lifetime' : billingCycle,
+      customAgreedPrice: customAgreedPrice !== '' ? Number(customAgreedPrice) : undefined,
+      nextBillingDate: isLifetimeLicense ? 'مدى الحياة' : nextBillingDate,
+      suspensionReason: (!isLifetimeLicense && status === 'suspended') ? suspensionReason : undefined,
       quotas: {
         ...(tenant.quotas || {}),
         monthlySmsQuota: Number(smsQuota) || 1000,
@@ -74,12 +125,14 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
     };
 
     if (paymentAmount > 0 && paymentNotes) {
-      updates.lastPayment = {
-        amount: paymentAmount,
+      updates.offlinePayment = {
+        amount: Number(paymentAmount),
         method: paymentMethod,
         notes: paymentNotes,
+        type: paymentType,
         date: new Date().toISOString()
       };
+      updates.lastPayment = updates.offlinePayment;
     }
 
     const success = updateClinicSubscriptionDetails(tenant.slug || tenant.id, updates);
@@ -105,8 +158,8 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
         border: '1px solid var(--border-color, #E4E4E7)',
         borderRadius: '16px',
         width: '100%',
-        maxWidth: '720px',
-        maxHeight: '90vh',
+        maxWidth: '740px',
+        maxHeight: '92vh',
         overflowY: 'auto',
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
         display: 'flex',
@@ -119,23 +172,24 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: status === 'suspended' ? '#FEF2F2' : 'var(--surface)'
+          background: isLifetimeLicense ? '#FFFBEB' : status === 'suspended' ? '#FEF2F2' : 'var(--surface)'
         }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: status === 'suspended' ? '#991B1B' : 'var(--text-primary)' }}>
-                التحكم والرقابة على اشتراك: {tenant.name}
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: isLifetimeLicense ? '#92400E' : status === 'suspended' ? '#991B1B' : 'var(--text-primary)' }}>
+                التحكم الشامل في اشتراك وترخيص: {tenant.name}
               </h3>
               <span style={{
-                fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '999px',
-                background: status === 'suspended' ? '#FEE2E2' : status === 'trial' ? '#FEF3C7' : '#ECFDF5',
-                color: status === 'suspended' ? '#DC2626' : status === 'trial' ? '#D97706' : '#059669'
+                fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '999px',
+                background: isLifetimeLicense ? '#FEF3C7' : status === 'suspended' ? '#FEE2E2' : status === 'trial' ? '#FEF3C7' : '#ECFDF5',
+                color: isLifetimeLicense ? '#B45309' : status === 'suspended' ? '#DC2626' : status === 'trial' ? '#D97706' : '#059669'
               }}>
-                {status === 'suspended' ? 'موقوف لعدم السداد' : status === 'trial' ? 'فترة تجريبية' : 'نشط وساري'}
+                {isLifetimeLicense ? '👑 مدى الحياة (Lifetime Portal)' : status === 'suspended' ? 'موقوف ومجمد' : status === 'trial' ? 'فترة تجريبية' : 'نشط وساري'}
               </span>
             </div>
             <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              الطبيب: {tenant.doctorName || 'طبيب العيادة'} | المسار: /{tenant.slug} | الباقة الحالية: {tier.toUpperCase()}
+              الطبيب: {tenant.doctorName || 'طبيب العيادة'} | المسار: /{tenant.slug} | الباقة: {tier.toUpperCase()}
+              {customAgreedPrice !== '' && ` | السعر المتفق عليه: ${customAgreedPrice} ج.م`}
             </p>
           </div>
           <button
@@ -150,7 +204,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
         {/* Body */}
         <form onSubmit={handleSave} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
-          {/* Quick Action Bar for Freezing/Activation */}
+          {/* Quick Action Bar */}
           <div style={{
             background: 'var(--bg-secondary, #FAFAFA)',
             border: '1px solid var(--border-color, #E4E4E7)',
@@ -162,22 +216,23 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
           }}>
             <strong style={{ fontSize: '0.86rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Activity size={16} />
-              إجراءات الإيقاف الفوري والتفعيل السريع (One-Click Actions)
+              إجراءات الإيقاف الفوري، التفعيل، وترخيص مدى الحياة:
             </strong>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {/* Lifetime Portal Buyout Button */}
               <button
                 type="button"
-                onClick={handleImmediateFreeze}
+                onClick={handleSetLifetime}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                  padding: '0.5rem 0.85rem', borderRadius: '8px', border: '1px solid #FCA5A5',
-                  background: status === 'suspended' ? '#EF4444' : '#FEE2E2',
-                  color: status === 'suspended' ? '#FFF' : '#B91C1C',
+                  padding: '0.5rem 0.85rem', borderRadius: '8px', border: '1px solid #FCD34D',
+                  background: isLifetimeLicense ? '#D97706' : '#FEF3C7',
+                  color: isLifetimeLicense ? '#FFF' : '#92400E',
                   fontSize: '0.82rem', fontWeight: 800, cursor: 'pointer'
                 }}
               >
-                <Ban size={15} />
-                <span>إيقاف وتجميد العيادة فوراً (Suspend)</span>
+                <Crown size={15} />
+                <span>👑 ترخيص دائم مدى الحياة (شراء البورتال)</span>
               </button>
 
               <button
@@ -186,28 +241,28 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
                   padding: '0.5rem 0.85rem', borderRadius: '8px', border: '1px solid #6EE7B7',
-                  background: status === 'active' ? '#10B981' : '#ECFDF5',
-                  color: status === 'active' ? '#FFF' : '#047857',
+                  background: (!isLifetimeLicense && status === 'active') ? '#10B981' : '#ECFDF5',
+                  color: (!isLifetimeLicense && status === 'active') ? '#FFF' : '#047857',
                   fontSize: '0.82rem', fontWeight: 800, cursor: 'pointer'
                 }}
               >
                 <CheckCircle2 size={15} />
-                <span>تفعيل وتنشيط العيادة (Activate)</span>
+                <span>تفعيل ونظام دوري (Active)</span>
               </button>
 
               <button
                 type="button"
-                onClick={handleSetTrial}
+                onClick={handleImmediateFreeze}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                  padding: '0.5rem 0.85rem', borderRadius: '8px', border: '1px solid #FCD34D',
-                  background: status === 'trial' ? '#F59E0B' : '#FEF3C7',
-                  color: status === 'trial' ? '#FFF' : '#92400E',
-                  fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer'
+                  padding: '0.5rem 0.85rem', borderRadius: '8px', border: '1px solid #FCA5A5',
+                  background: (!isLifetimeLicense && status === 'suspended') ? '#EF4444' : '#FEE2E2',
+                  color: (!isLifetimeLicense && status === 'suspended') ? '#FFF' : '#B91C1C',
+                  fontSize: '0.82rem', fontWeight: 800, cursor: 'pointer'
                 }}
               >
-                <Clock size={15} />
-                <span>فترة تجريبية (Trial)</span>
+                <Ban size={15} />
+                <span>إيقاف وتجميد العيادة فوراً (Suspend)</span>
               </button>
 
               <button
@@ -226,8 +281,8 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
               </button>
             </div>
 
-            {/* Suspension Reason (Only visible or editable when suspended or about to suspend) */}
-            {status === 'suspended' && (
+            {/* Suspension Reason */}
+            {status === 'suspended' && !isLifetimeLicense && (
               <div style={{ marginTop: '0.5rem', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', padding: '0.75rem' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#991B1B', marginBottom: '0.35rem' }}>
                   سبب الإيقاف والتجميد (يظهر للطبيب في شاشة القفل الحمراء بالعيادة):
@@ -236,7 +291,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                   type="text"
                   value={suspensionReason}
                   onChange={(e) => setSuspensionReason(e.target.value)}
-                  placeholder="مثال: عدم سداد الاشتراك الشهري لشهر سبتمبر ٢٠٢٦"
+                  placeholder="مثال: تأخر سداد الاشتراك الشهري لشهر سبتمبر ٢٠٢٦"
                   style={{
                     width: '100%', padding: '0.55rem 0.75rem', borderRadius: '6px',
                     border: '1px solid #FCA5A5', fontSize: '0.85rem', color: '#7F1D1D'
@@ -244,12 +299,97 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                 />
               </div>
             )}
+
+            {/* Lifetime Notice Banner */}
+            {isLifetimeLicense && (
+              <div style={{ marginTop: '0.5rem', background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: '8px', padding: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Crown size={20} color="#B45309" />
+                <div style={{ fontSize: '0.82rem', color: '#92400E' }}>
+                  <strong>وضع شراء البورتال مدى الحياة مفعّل:</strong> العيادة لن يتم إيقافها أبداً، والوصول مفتوح دائماً بدون تاريخ انتهاء أو تجديد إجباري.
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Section: Custom Pricing & Flexible Billing Schedule */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.25rem' }}>
+            <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <DollarSign size={17} color="#10B981" />
+              تحديد السعر بمزاجك ونظام السداد المخصص (Custom Pricing & Schedule)
+            </h4>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  السعر المتفق عليه لهذا الطبيب (ج.م)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  placeholder="سعر الباقة الافتراضي تلقائياً"
+                  value={customAgreedPrice}
+                  onChange={(e) => setCustomAgreedPrice(e.target.value)}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.88rem', fontWeight: 700 }}
+                />
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.2rem', display: 'block' }}>
+                  السعر الذي يدفعه لك بمزاجك واتفاقكما.
+                </span>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  دورة وتكرار السداد (Billing Cycle)
+                </label>
+                <select
+                  value={billingCycle}
+                  onChange={(e) => {
+                    setBillingCycle(e.target.value);
+                    if (e.target.value === 'lifetime') {
+                      setIsLifetimeLicense(true);
+                      setStatus('lifetime');
+                      setNextBillingDate('مدى الحياة');
+                    } else if (isLifetimeLicense) {
+                      setIsLifetimeLicense(false);
+                      setStatus('active');
+                    }
+                  }}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                >
+                  <option value="monthly">شهري (Monthly)</option>
+                  <option value="quarterly">ربع سنوي (كل ٣ شهور)</option>
+                  <option value="semi_annual">نصف سنوي (كل ٦ شهور)</option>
+                  <option value="annual">سنوي (كل سنة)</option>
+                  <option value="lifetime">👑 شراء دائم مدى الحياة (One-time Buyout)</option>
+                  <option value="custom">اتفاق مرن مخصص (Custom Agreement)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  تاريخ استحقاق السداد القادم
+                </label>
+                <input
+                  type="text"
+                  placeholder="مثال: 2026-10-01 أو مدى الحياة"
+                  value={nextBillingDate}
+                  onChange={(e) => setNextBillingDate(e.target.value)}
+                  style={{ width: '100%', padding: '0.55rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                />
+                <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={() => handleQuickAddDays(30)} style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: '#FFF', cursor: 'pointer' }}>+ شهر</button>
+                  <button type="button" onClick={() => handleQuickAddDays(90)} style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: '#FFF', cursor: 'pointer' }}>+ ٣ شهور</button>
+                  <button type="button" onClick={() => handleQuickAddDays(180)} style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: '#FFF', cursor: 'pointer' }}>+ ٦ شهور</button>
+                  <button type="button" onClick={() => handleQuickAddDays(365)} style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', borderRadius: '4px', border: '1px solid var(--border-color)', background: '#FFF', cursor: 'pointer' }}>+ سنة</button>
+                  <button type="button" onClick={() => setNextBillingDate('مدى الحياة')} style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', borderRadius: '4px', border: '1px solid #FCD34D', background: '#FEF3C7', color: '#92400E', cursor: 'pointer', fontWeight: 700 }}>مدى الحياة ∞</button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Tier Plan Selection */}
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
             <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              تعيين باقة الاشتراك للعيادة
+              تعيين مواصفات وميزات الباقة الممنوحة
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
               {plans.map(p => (
@@ -287,7 +427,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
           {/* Custom Quotas Overrides */}
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
             <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              تخصيص الحصص وتزويد الرصيد لهذه العيادة
+              تخصيص الحصص المباشرة للعيادة
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
               <div>
@@ -335,11 +475,24 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
           <div style={{ background: 'var(--bg-secondary, #FAFAFA)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
             <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <CreditCard size={16} />
-              تسجيل عملية تحصيل / سداد اشتراك جديدة
+              تسجيل عملية تحصيل / سداد اشتراك أو شراء بورتال
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, marginBottom: '0.25rem' }}>طريقة الدفع</label>
+                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, marginBottom: '0.25rem' }}>نوع التحصيل</label>
+                <select
+                  value={paymentType}
+                  onChange={(e) => setPaymentType(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                >
+                  <option value="recurring">سداد اشتراك دوري متفق عليه</option>
+                  <option value="lifetime_buyout">👑 شراء وترخيص بورتال مدى الحياة (Buyout)</option>
+                  <option value="topup">شحن رصيد رسائل SMS إضافي</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, marginBottom: '0.25rem' }}>طريقة التحصيل</label>
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
@@ -348,8 +501,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                   <option value="instapay">Instapay (إنستاباي)</option>
                   <option value="vodafone_cash">فودافون كاش / محفظة إلكترونية</option>
                   <option value="bank_transfer">تحويل بنكي رسمي</option>
-                  <option value="cash">سداد نقدي مباشر</option>
-                  <option value="credit_card">بطاقة ائتمان / دفع إلكتروني</option>
+                  <option value="cash">نقدي (كاش باليد)</option>
                 </select>
               </div>
 
@@ -357,17 +509,20 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                 <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, marginBottom: '0.25rem' }}>المبلغ المحصل (ج.م)</label>
                 <input
                   type="number"
+                  min={0}
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(Number(e.target.value) || 0)}
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontWeight: 700 }}
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, marginBottom: '0.25rem' }}>ملاحظات ورقم العملية</label>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                  رقم العملية / مرجع التحويل والملاحظات
+                </label>
                 <input
                   type="text"
-                  placeholder="رقم التحويل / مرجع الفاتورة"
+                  placeholder="مثال: تحويل إنستاباي رقم TRX-982103 - تم شراء البورتال بالكامل"
                   value={paymentNotes}
                   onChange={(e) => setPaymentNotes(e.target.value)}
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
@@ -376,37 +531,26 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
             </div>
           </div>
 
-          {isSaved && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.65rem 1rem', borderRadius: '8px',
-              background: '#ECFDF5', color: '#047857', fontSize: '0.85rem', fontWeight: 700
-            }}>
-              <CheckCircle2 size={18} />
-              <span>تم تطبيق تحديثات الرقابة والاشتراك على العيادة بنجاح!</span>
-            </div>
-          )}
-
           {/* Footer Actions */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-            gap: '0.75rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)'
-          }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
             <button
               type="button"
               onClick={onClose}
               className="btn btn-secondary"
-              style={{ padding: '0.6rem 1.25rem' }}
+              style={{ padding: '0.6rem 1.2rem', borderRadius: '8px' }}
             >
               إلغاء
             </button>
             <button
               type="submit"
               className="btn btn-primary"
-              style={{ padding: '0.6rem 1.5rem', background: 'var(--clinic-primary, #09090B)', color: '#FFF' }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.6rem 1.5rem', borderRadius: '8px', fontWeight: 700
+              }}
             >
-              <Save size={16} />
-              <span>حفظ وتطبيق التغييرات</span>
+              {isSaved ? <CheckCheck size={16} /> : <Save size={16} />}
+              <span>{isSaved ? 'تم حفظ التعديلات بنجاح!' : 'حفظ وتطبيق التعديلات'}</span>
             </button>
           </div>
         </form>
