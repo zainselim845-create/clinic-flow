@@ -22,6 +22,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
   const { tenant } = useTenant();
   
   const activeClinic = tenant || state.clinicInfo || clinic;
+  const currentClinic = activeClinic;
   const currentSlug = tenant?.slug || state.currentTenantSlug || state.clinicInfo?.slug || user?.clinicSlug || 'default';
   const chatStorageKey = `clinicflow_chat_${currentSlug}`;
 

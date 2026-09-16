@@ -39,6 +39,7 @@ const DoctorAssistant = () => {
   const scopedPatients = useMemo(() => {
     return (state.patients || []).filter(p => !p.clinicId || p.clinicId === activeClinicId);
   }, [state.patients, activeClinicId]);
+  const patients = scopedPatients;
 
   const scopedAppointments = useMemo(() => {
     return (state.appointments || []).filter(a => !a.clinicId || a.clinicId === activeClinicId);
@@ -475,7 +476,7 @@ const DoctorAssistant = () => {
               </div>
               <div className="hero-stats-pill">
                 <Users size={16} />
-                <span>إجمالي المرضى بالسجل: <strong>{patients.length}</strong></span>
+                <span>إجمالي المرضى بالسجل: <strong>{scopedPatients?.length || 0}</strong></span>
               </div>
             </div>
           </div>

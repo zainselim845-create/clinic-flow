@@ -100,4 +100,44 @@ describe('Doctor AI Agent & Follow-up Engine', () => {
       expect(rendered).not.toContain('{اسم_العيادة}');
     });
   });
+
+  describe('DoctorAssistant Component Mounting & Scope Safety', () => {
+    it('renders DoctorAssistant component cleanly without ReferenceError or runtime crashes', async () => {
+      const React = await import('react');
+      const { renderToString } = await import('react-dom/server');
+      const { MemoryRouter } = await import('react-router-dom');
+      const { AppProvider } = await import('../../context/AppContext');
+      const { AuthProvider } = await import('../../context/AuthContext');
+      const { TenantProvider } = await import('../../context/TenantContext');
+      const { default: DoctorAssistant } = await import('../DoctorAssistant');
+
+      expect(DoctorAssistant).toBeDefined();
+
+      const html = renderToString(
+        React.createElement(
+          MemoryRouter,
+          null,
+          React.createElement(
+            AuthProvider,
+            null,
+            React.createElement(
+              TenantProvider,
+              null,
+              React.createElement(
+                AppProvider,
+                null,
+                React.createElement(DoctorAssistant, null)
+              )
+            )
+          )
+        )
+      );
+
+      expect(html).toBeDefined();
+      expect(typeof html).toBe('string');
+      // Verify segmented control and CRM or Assistant rendered cleanly
+      expect(html).toContain('مركز التسويق ونمو العيادة');
+      expect(html).toContain('المساعد السريري الذكي');
+    });
+  });
 });
