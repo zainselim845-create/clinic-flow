@@ -21,7 +21,7 @@ import { Tabs } from '../components/ui/tabs';
 import './Settings.css';
 
 const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain'];
-const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff'];
+const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'subscription', 'customDomain'];
 
 const Settings = () => {
   const { state, dispatch } = useApp();
@@ -190,36 +190,33 @@ const Settings = () => {
             <span>طاقم العمل</span>
           </Tabs.Trigger>
 
-          {/* Platform Infrastructure Tabs - Strictly Isolated to Platform SuperAdmin */}
+          <Tabs.Trigger 
+            value="subscription"
+            className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`}
+            title="متابعة باقة الاشتراك، الرصيد، والترخيص"
+          >
+            <CreditCard size={18} />
+            <span>الاشتراك والباقة</span>
+          </Tabs.Trigger>
+
+          <Tabs.Trigger 
+            value="customDomain"
+            className={`tab-btn ${activeTab === 'customDomain' ? 'active' : ''}`}
+            title="إدارة الدومين الخاص والـ SSL"
+          >
+            <Globe size={18} />
+            <span>الدومين الخاص</span>
+          </Tabs.Trigger>
+
           {isSuperAdmin && (
-            <>
-              <Tabs.Trigger 
-                value="sms"
-                className={`tab-btn admin-badge-tab ${activeTab === 'sms' ? 'active' : ''}`}
-                title="إعدادات بوابات الرسائل واسم المرسل (إدارة الساس فقط)"
-              >
-                <Smartphone size={18} />
-                <span>رسائل الـ SMS واسم المرسل</span>
-              </Tabs.Trigger>
-
-              <Tabs.Trigger 
-                value="subscription"
-                className={`tab-btn admin-badge-tab ${activeTab === 'subscription' ? 'active' : ''}`}
-                title="إدارة الباقة والترخيص والحصص (إدارة الساس فقط)"
-              >
-                <CreditCard size={18} />
-                <span>الاشتراك والباقة</span>
-              </Tabs.Trigger>
-
-              <Tabs.Trigger 
-                value="customDomain"
-                className={`tab-btn admin-badge-tab ${activeTab === 'customDomain' ? 'active' : ''}`}
-                title="إدارة الدومين الخاص والـ SSL (إدارة الساس فقط)"
-              >
-                <Globe size={18} />
-                <span>الدومين الخاص</span>
-              </Tabs.Trigger>
-            </>
+            <Tabs.Trigger 
+              value="sms"
+              className={`tab-btn admin-badge-tab ${activeTab === 'sms' ? 'active' : ''}`}
+              title="إعدادات بوابات الرسائل واسم المرسل (إدارة الساس فقط)"
+            >
+              <Smartphone size={18} />
+              <span>رسائل الـ SMS (Gateways)</span>
+            </Tabs.Trigger>
           )}
         </Tabs.List>
 
@@ -283,20 +280,18 @@ const Settings = () => {
             />
           </Tabs.Content>
 
+          <Tabs.Content value="subscription">
+            <SubscriptionPlanTab />
+          </Tabs.Content>
+
+          <Tabs.Content value="customDomain">
+            <CustomDomainTab />
+          </Tabs.Content>
+
           {isSuperAdmin && (
-            <>
-              <Tabs.Content value="sms">
-                <SmsConfigTab />
-              </Tabs.Content>
-
-              <Tabs.Content value="subscription">
-                <SubscriptionPlanTab />
-              </Tabs.Content>
-
-              <Tabs.Content value="customDomain">
-                <CustomDomainTab />
-              </Tabs.Content>
-            </>
+            <Tabs.Content value="sms">
+              <SmsConfigTab />
+            </Tabs.Content>
           )}
         </div>
       </Tabs.Root>
