@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   CreditCard, Sparkles, Smartphone, Users, ShieldCheck, 
-  ArrowUpRight, Database, Zap, AlertTriangle, History
+  ArrowUpRight, Database, Zap, AlertTriangle, History, Crown, CheckCircle2
 } from 'lucide-react';
 import { useTenant } from '../../context/TenantContext';
 import { useApp } from '../../context/AppContext';
@@ -40,7 +40,23 @@ export default function SubscriptionPlanTab() {
           <p>متابعة رصيد رسائل SMS، حصص الذكاء الاصطناعي، ومميزات باقتك النشطة</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          {usage.isSmsDepleted ? (
+          {tenant?.isLifetimeLicense || tenant?.subscriptionStatus === 'lifetime' ? (
+            <span style={{
+              background: '#FEF3C7',
+              color: '#B45309',
+              border: '1px solid #FCD34D',
+              padding: '0.35rem 0.85rem',
+              borderRadius: '999px',
+              fontWeight: 800,
+              fontSize: '0.82rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem'
+            }}>
+              <Crown size={14} color="#D97706" />
+              <span>ترخيص دائم مدى الحياة ∞</span>
+            </span>
+          ) : usage.isSmsDepleted ? (
             <span style={{
               background: '#FEE2E2',
               color: '#DC2626',
