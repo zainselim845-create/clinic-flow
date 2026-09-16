@@ -19,7 +19,7 @@ const initialClinics = fallbackDemoClinics || [
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     branding: {
-      primaryColor: '#0071E3',
+      primaryColor: '#09090B',
       accentColor: '#10B981',
       badgeText: 'العيادة التخصصية'
     },

@@ -1,15 +1,28 @@
 import React, { useState } from 'react';
 import { 
   Database, Server, ShieldCheck, Download, CheckCircle2, 
-  Smartphone, Sparkles, Send, RefreshCw, Check
+  Smartphone, Sparkles, Send, RefreshCw, Check, Globe, CreditCard,
+  Copy, CheckCheck, ExternalLink, Zap, AlertCircle, ArrowUpRight
 } from 'lucide-react';
 import { getSupabaseConfig, saveSupabaseConfig } from '../../../lib/supabase';
 import { getRegisteredTenants, getAllPlatformUsers } from '../../../services/authService';
 import { getGlobalSmsProvider, saveGlobalSmsProvider, testSmsConnection } from '../../../services/smsService';
 import { getOpenRouterConfig, saveOpenRouterConfig, testOpenRouterConnection } from '../../../services/aiAssistantService';
+import { useTenant } from '../../../context/TenantContext';
+import { 
+  DOMAIN_STATUS, 
+  verifyDomainDnsAndSsl, 
+  getRequiredDnsRecords, 
+  saveClinicDomainSettings, 
+  getClinicDomainSettings, 
+  sanitizeDomain, 
+  isValidDomain 
+} from '../../../services/customDomainService';
+import { getDefaultTierQuotas, getClinicUsage } from '../../../services/usageMeteringService';
 
 export function SaasInfrastructureCenter({ allTenants = [] }) {
   const [subTab, setSubTab] = useState('database');
+  const { updateTenantDomain, updateTenantInfo } = useTenant();
 
   // Database State
   const [dbConfig, setDbConfig] = useState(() => getSupabaseConfig());
@@ -28,6 +41,71 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
   const [aiConfig, setAiConfig] = useState(() => getOpenRouterConfig());
   const [aiTesting, setAiTesting] = useState(false);
   const [aiTestResult, setAiTestResult] = useState(null);
+
+  // Custom Domains State
+  const [domainInputs, setDomainInputs] = useState(() => {
+    const map = {};
+    allTenants.forEach(t => {
+      map[t.id] = t.customDomain || t.custom_domain || '';
+    });
+    return map;
+  });
+  const [domainVerifying, setDomainVerifying] = useState({});
+  const [domainResults, setDomainResults] = useState({});
+  const [domainSaved, setDomainSaved] = useState({});
+  const [copiedKey, setCopiedKey] = useState(null);
+
+  const handleCopyText = (key, text) => {
+    navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 2000);
+  };
+
+  const handleSaveDomain = (clinicId, domain) => {
+    const cleaned = sanitizeDomain(domain);
+    updateTenantDomain(clinicId, cleaned);
+    saveClinicDomainSettings(clinicId, {
+      domain: cleaned,
+      sslStatus: cleaned ? DOMAIN_STATUS.PENDING_DNS : DOMAIN_STATUS.UNCONFIGURED,
+      verifiedAt: null
+    });
+    setDomainSaved(prev => ({ ...prev, [clinicId]: true }));
+    setTimeout(() => setDomainSaved(prev => ({ ...prev, [clinicId]: false })), 2500);
+  };
+
+  const handleVerifyDomain = async (clinicId, domain) => {
+    const cleaned = sanitizeDomain(domain);
+    if (!cleaned) return;
+    setDomainVerifying(prev => ({ ...prev, [clinicId]: true }));
+    try {
+      const res = await verifyDomainDnsAndSsl(cleaned, clinicId);
+      setDomainResults(prev => ({ ...prev, [clinicId]: res }));
+      if (res.isValid && res.sslActive) {
+        saveClinicDomainSettings(clinicId, {
+          domain: cleaned,
+          sslStatus: DOMAIN_STATUS.ACTIVE_SSL,
+          verifiedAt: new Date().toISOString()
+        });
+      }
+    } catch (err) {
+      setDomainResults(prev => ({ ...prev, [clinicId]: { isValid: false, message: err.message } }));
+    } finally {
+      setDomainVerifying(prev => ({ ...prev, [clinicId]: false }));
+    }
+  };
+
+  const handleUpgradeTier = (clinicId, newTier) => {
+    const quotas = {
+      starter: { maxDoctors: 1, monthlySmsQuota: 1000, smsUsed: 0 },
+      pro: { maxDoctors: 3, monthlySmsQuota: 2000, smsUsed: 0 },
+      enterprise: { maxDoctors: 10, monthlySmsQuota: 5000, smsUsed: 0 }
+    };
+    updateTenantInfo({
+      id: clinicId,
+      subscriptionTier: newTier,
+      quotas: quotas[newTier] || quotas.pro
+    });
+  };
 
   const handleExportPlatformBackup = () => {
     try {
@@ -161,6 +239,24 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
         >
           <Sparkles size={16} />
           <span>محرك الذكاء الاصطناعي المركزي (AI Core)</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSubTab('domains')}
+          className={`btn ${subTab === 'domains' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ borderRadius: '10px' }}
+        >
+          <Globe size={16} />
+          <span>الدومينات الخاصة والـ SSL (Custom Domains)</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setSubTab('subscriptions')}
+          className={`btn ${subTab === 'subscriptions' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ borderRadius: '10px' }}
+        >
+          <CreditCard size={16} />
+          <span>باقات الاشتراكات والترخيص (Subscription Plans)</span>
         </button>
       </div>
 
@@ -395,6 +491,289 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
               )}
             </div>
           </form>
+        </div>
+      )}
+
+      {subTab === 'domains' && (
+        <div className="infra-content-pane">
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ margin: '0 0 0.4rem', fontSize: '1.15rem' }}>إدارة الدومينات الخاصة والـ SSL المركزية (Platform Custom Domains)</h3>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+              تهيئة وربط الدومينات المخصصة لعيادات المنصة، وفحص سجلات DNS وتوليد شهادات الحماية SSL مباشرة من إدارة الساس.
+            </p>
+          </div>
+
+          {/* DNS Configuration Guide Card */}
+          <div style={{
+            background: 'var(--surface-container, #F8FAFC)',
+            border: '1px solid var(--border-color, #E2E8F0)',
+            borderRadius: '12px',
+            padding: '1.25rem',
+            marginBottom: '1.5rem'
+          }}>
+            <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+              سجلات الـ DNS المطلوبة لتوجيه الدومين إلى خوادم كلينيك فلو:
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem' }}>
+              <div style={{ background: 'var(--surface, #FFF)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#2563EB', background: '#EFF6FF', padding: '0.15rem 0.45rem', borderRadius: '4px' }}>CNAME</span>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '0.3rem' }}>cname.clinicflow.app</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyText('cname', 'cname.clinicflow.app')}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
+                >
+                  {copiedKey === 'cname' ? <CheckCheck size={14} color="#10B981" /> : <Copy size={14} />}
+                  <span>{copiedKey === 'cname' ? 'تم النسخ' : 'نسخ'}</span>
+                </button>
+              </div>
+
+              <div style={{ background: 'var(--surface, #FFF)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#10B981', background: '#ECFDF5', padding: '0.15rem 0.45rem', borderRadius: '4px' }}>A Record</span>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '0.3rem' }}>76.76.21.21</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopyText('a_record', '76.76.21.21')}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
+                >
+                  {copiedKey === 'a_record' ? <CheckCheck size={14} color="#10B981" /> : <Copy size={14} />}
+                  <span>{copiedKey === 'a_record' ? 'تم النسخ' : 'نسخ'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Clinics Domain List Table */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden' }}>
+            <table className="saas-table" style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  <th>العيادة والمستأجر</th>
+                  <th>الدومين المخصص (Custom Domain)</th>
+                  <th>حالة الـ SSL والاتصال</th>
+                  <th>إجراءات الربط والفحص</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allTenants.map((tenant) => {
+                  const currentDomain = domainInputs[tenant.id] ?? (tenant.customDomain || tenant.custom_domain || '');
+                  const isVerifying = domainVerifying[tenant.id];
+                  const result = domainResults[tenant.id];
+                  const isSaved = domainSaved[tenant.id];
+                  const hasDomain = Boolean(tenant.customDomain || tenant.custom_domain);
+
+                  return (
+                    <tr key={tenant.id}>
+                      <td>
+                        <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{tenant.name}</strong>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>/{tenant.slug}</div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', maxWidth: '320px' }}>
+                          <input
+                            type="text"
+                            dir="ltr"
+                            placeholder="مثال: drsara-clinic.com"
+                            value={currentDomain}
+                            onChange={(e) => setDomainInputs(prev => ({ ...prev, [tenant.id]: e.target.value }))}
+                            className="input-field"
+                            style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', borderRadius: '6px', border: '1px solid var(--border-color)', flex: 1 }}
+                          />
+                        </div>
+                      </td>
+                      <td>
+                        {hasDomain ? (
+                          <span style={{
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            padding: '0.25rem 0.65rem',
+                            borderRadius: '999px',
+                            background: '#ECFDF5',
+                            color: '#047857',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem'
+                          }}>
+                            <CheckCircle2 size={12} />
+                            دومين نشط وموجّه ✓
+                          </span>
+                        ) : (
+                          <span style={{
+                            fontSize: '0.78rem',
+                            fontWeight: 600,
+                            padding: '0.25rem 0.65rem',
+                            borderRadius: '999px',
+                            background: 'var(--bg-tertiary)',
+                            color: 'var(--text-secondary)'
+                          }}>
+                            غير مهيأ
+                          </span>
+                        )}
+                        {result && (
+                          <div style={{ marginTop: '0.35rem', fontSize: '0.75rem', fontWeight: 700, color: result.isValid ? '#059669' : '#DC2626' }}>
+                            {result.message || (result.isValid ? 'DNS & SSL سليم ومفعل!' : 'DNS لم يوجه بعد')}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleSaveDomain(tenant.id, currentDomain)}
+                            className="btn btn-primary"
+                            style={{ padding: '0.4rem 0.75rem', fontSize: '0.78rem', borderRadius: '6px' }}
+                          >
+                            {isSaved ? <Check size={14} /> : <CheckCircle2 size={14} />}
+                            <span>{isSaved ? 'تم الحفظ!' : 'حفظ'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleVerifyDomain(tenant.id, currentDomain)}
+                            disabled={isVerifying || !currentDomain}
+                            className="btn btn-secondary"
+                            style={{ padding: '0.4rem 0.75rem', fontSize: '0.78rem', borderRadius: '6px' }}
+                          >
+                            <RefreshCw size={13} className={isVerifying ? 'animate-spin' : ''} />
+                            <span>{isVerifying ? 'جاري الفحص...' : 'فحص DNS'}</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {subTab === 'subscriptions' && (
+        <div className="infra-content-pane">
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h3 style={{ margin: '0 0 0.4rem', fontSize: '1.15rem' }}>إدارة باقات المنصة والخطط السعرية (Platform Subscription Tiers & Quotas)</h3>
+            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+              التحكم في تسعير الباقات، الحصص الشهرية للرسائل والذكاء الاصطناعي، وتعيين باقات العيادات المشتركة.
+            </p>
+          </div>
+
+          {/* Plan Tiers Overview Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
+            {/* Starter Plan */}
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>باقة Starter (الأساسية)</strong>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px', background: '#F4F4F5', color: '#52525B' }}>STARTER</span>
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>499 ج.م <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/ شهرياً</span></div>
+              <ul style={{ margin: '0.75rem 0 0', paddingRight: '1.2rem', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+                <li>طبيب واحد معتمد</li>
+                <li>1000 رسالة SMS / شهر</li>
+                <li>جدول المواعيد وسجلات المرضى</li>
+              </ul>
+            </div>
+
+            {/* Pro Plan */}
+            <div style={{ background: 'var(--surface)', border: '2px solid #2563EB', borderRadius: '12px', padding: '1.25rem', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '-10px', left: '16px', background: '#2563EB', color: '#FFF', fontSize: '0.7rem', fontWeight: 800, padding: '0.15rem 0.6rem', borderRadius: '999px' }}>الأكثر طلباً</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>باقة Pro (العيادة الذكية)</strong>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px', background: '#EFF6FF', color: '#2563EB' }}>PRO</span>
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>999 ج.م <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/ شهرياً</span></div>
+              <ul style={{ margin: '0.75rem 0 0', paddingRight: '1.2rem', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+                <li>حتى 3 أطباء معتمدين</li>
+                <li>2000 رسالة SMS / شهر</li>
+                <li>مساعد الذكاء الاصطناعي السريري</li>
+                <li>الفواتير والمخزون وحسابات الأطباء</li>
+              </ul>
+            </div>
+
+            {/* Enterprise Plan */}
+            <div style={{ background: 'var(--surface)', border: '1px solid #7C3AED', borderRadius: '12px', padding: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>باقة Enterprise (المراكز الكبرى)</strong>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px', background: '#F5F3FF', color: '#7C3AED' }}>ENTERPRISE</span>
+              </div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>1,999 ج.م <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/ شهرياً</span></div>
+              <ul style={{ margin: '0.75rem 0 0', paddingRight: '1.2rem', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+                <li>حتى 10 أطباء وموظفين</li>
+                <li>5000 رسالة SMS / شهر</li>
+                <li>دومين خاص وشهادة SSL مجاناً</li>
+                <li>سجلات الأمان والرقابة (Audit Logs)</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Clinics Subscriptions Table */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden' }}>
+            <table className="saas-table" style={{ width: '100%' }}>
+              <thead>
+                <tr>
+                  <th>العيادة والمستأجر</th>
+                  <th>الباقة الحالية</th>
+                  <th>استهلاك الـ SMS</th>
+                  <th>تعديل وترقية الباقة</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allTenants.map((tenant) => {
+                  const tier = tenant.subscriptionTier || 'pro';
+                  const usage = getClinicUsage(tenant.id, tenant.quotas, tier);
+
+                  return (
+                    <tr key={tenant.id}>
+                      <td>
+                        <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{tenant.name}</strong>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{tenant.doctorName}</div>
+                      </td>
+                      <td>
+                        <span style={{
+                          fontSize: '0.8rem',
+                          fontWeight: 800,
+                          padding: '0.25rem 0.65rem',
+                          borderRadius: '6px',
+                          background: tier === 'enterprise' ? '#F5F3FF' : tier === 'pro' ? '#EFF6FF' : '#F4F4F5',
+                          color: tier === 'enterprise' ? '#7C3AED' : tier === 'pro' ? '#2563EB' : '#52525B'
+                        }}>
+                          {tier.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>
+                          {usage.smsUsed || 0} / {usage.totalSmsAllowed || 1000}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          المتبقي: {usage.remainingSms} رسالة
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                          {['starter', 'pro', 'enterprise'].map((planKey) => (
+                            <button
+                              key={planKey}
+                              type="button"
+                              onClick={() => handleUpgradeTier(tenant.id, planKey)}
+                              disabled={tier === planKey}
+                              className={`btn ${tier === planKey ? 'btn-primary' : 'btn-secondary'}`}
+                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', borderRadius: '6px' }}
+                            >
+                              {planKey.toUpperCase()}
+                            </button>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

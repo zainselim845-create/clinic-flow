@@ -21,22 +21,33 @@ import { Tabs } from '../components/ui/tabs';
 import './Settings.css';
 
 const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain'];
+const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff'];
 
 const Settings = () => {
   const { state, dispatch } = useApp();
-  const { updateClinicInfo } = useAuth();
+  const { user, updateClinicInfo } = useAuth();
   const { tenant, tenantSlug, updateTenantInfo } = useTenant();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState(
-    VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'clinic'
-  );
+  
+  const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true;
+  const allowedTabs = isSuperAdmin ? VALID_TABS : CLIENT_TABS;
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (tabFromUrl && allowedTabs.includes(tabFromUrl)) return tabFromUrl;
+    return 'clinic';
+  });
 
   useEffect(() => {
-    if (tabFromUrl && VALID_TABS.includes(tabFromUrl)) {
-      setActiveTab((prev) => (prev !== tabFromUrl ? tabFromUrl : prev));
+    if (tabFromUrl) {
+      if (allowedTabs.includes(tabFromUrl)) {
+        setActiveTab((prev) => (prev !== tabFromUrl ? tabFromUrl : prev));
+      } else {
+        setActiveTab('clinic');
+        setSearchParams({ tab: 'clinic' }, { replace: true });
+      }
     }
-  }, [tabFromUrl]);
+  }, [tabFromUrl, isSuperAdmin, allowedTabs]);
 
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
@@ -112,11 +123,33 @@ const Settings = () => {
 
   return (
     <div className="settings-page">
-      <div className="page-header">
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1>مركز إعدادات العيادة والنظام </h1>
-          <p>إدارة هوية العيادة، مواعيد العمل والإجازات، طاقم الاستقبال، رسائل التذكير، والاشتراك</p>
+          <p>إدارة هوية العيادة، مواعيد العمل والورديات، أنواع الزيارات والأسعار، وطاقم العمل</p>
         </div>
+        {isSuperAdmin && (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            padding: '0.45rem 0.9rem',
+            borderRadius: '8px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            color: '#047857',
+            fontSize: '0.82rem',
+            fontWeight: 700
+          }}>
+            <span>⚙️ وضع مدير الساس (Super Admin)</span>
+            <a 
+              href="/super-admin"
+              style={{ color: '#047857', textDecoration: 'underline', fontWeight: 800 }}
+            >
+              الذهاب إلى لوحة إدارة الساس ↗
+            </a>
+          </div>
+        )}
       </div>
 
       <Tabs.Root
@@ -157,29 +190,37 @@ const Settings = () => {
             <span>طاقم العمل</span>
           </Tabs.Trigger>
 
-          <Tabs.Trigger 
-            value="sms"
-            className={`tab-btn ${activeTab === 'sms' ? 'active' : ''}`}
-          >
-            <Smartphone size={18} />
-            <span>رسائل الـ SMS واسم المرسل</span>
-          </Tabs.Trigger>
+          {/* Platform Infrastructure Tabs - Strictly Isolated to Platform SuperAdmin */}
+          {isSuperAdmin && (
+            <>
+              <Tabs.Trigger 
+                value="sms"
+                className={`tab-btn admin-badge-tab ${activeTab === 'sms' ? 'active' : ''}`}
+                title="إعدادات بوابات الرسائل واسم المرسل (إدارة الساس فقط)"
+              >
+                <Smartphone size={18} />
+                <span>رسائل الـ SMS واسم المرسل</span>
+              </Tabs.Trigger>
 
-          <Tabs.Trigger 
-            value="subscription"
-            className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`}
-          >
-            <CreditCard size={18} />
-            <span>الاشتراك والباقة</span>
-          </Tabs.Trigger>
+              <Tabs.Trigger 
+                value="subscription"
+                className={`tab-btn admin-badge-tab ${activeTab === 'subscription' ? 'active' : ''}`}
+                title="إدارة الباقة والترخيص والحصص (إدارة الساس فقط)"
+              >
+                <CreditCard size={18} />
+                <span>الاشتراك والباقة</span>
+              </Tabs.Trigger>
 
-          <Tabs.Trigger 
-            value="customDomain"
-            className={`tab-btn ${activeTab === 'customDomain' ? 'active' : ''}`}
-          >
-            <Globe size={18} />
-            <span>الدومين الخاص</span>
-          </Tabs.Trigger>
+              <Tabs.Trigger 
+                value="customDomain"
+                className={`tab-btn admin-badge-tab ${activeTab === 'customDomain' ? 'active' : ''}`}
+                title="إدارة الدومين الخاص والـ SSL (إدارة الساس فقط)"
+              >
+                <Globe size={18} />
+                <span>الدومين الخاص</span>
+              </Tabs.Trigger>
+            </>
+          )}
         </Tabs.List>
 
         <div className="settings-content-wrapper">
@@ -242,17 +283,21 @@ const Settings = () => {
             />
           </Tabs.Content>
 
-          <Tabs.Content value="sms">
-            <SmsConfigTab />
-          </Tabs.Content>
+          {isSuperAdmin && (
+            <>
+              <Tabs.Content value="sms">
+                <SmsConfigTab />
+              </Tabs.Content>
 
-          <Tabs.Content value="subscription">
-            <SubscriptionPlanTab />
-          </Tabs.Content>
+              <Tabs.Content value="subscription">
+                <SubscriptionPlanTab />
+              </Tabs.Content>
 
-          <Tabs.Content value="customDomain">
-            <CustomDomainTab />
-          </Tabs.Content>
+              <Tabs.Content value="customDomain">
+                <CustomDomainTab />
+              </Tabs.Content>
+            </>
+          )}
         </div>
       </Tabs.Root>
     </div>

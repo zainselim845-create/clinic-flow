@@ -129,4 +129,25 @@ describe('Doctor Settings, Professional Profile & Schedule Persistence', () => {
     expect(tenantCode).toContain('updateTenantInfo');
     expect(tenantCode).toContain('applyBranding');
   });
+
+  it('verifies Settings.jsx isolates client operational tabs (CLIENT_TABS) and gates admin tabs to SuperAdmin', () => {
+    const settingsFilePath = path.join(__dirname, '../pages/Settings.jsx');
+    const settingsCode = fs.readFileSync(settingsFilePath, 'utf8');
+
+    expect(settingsCode).toContain('CLIENT_TABS');
+    expect(settingsCode).toContain("const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff']");
+    expect(settingsCode).toContain('isSuperAdmin');
+  });
+
+  it('verifies SaasInfrastructureCenter provides centralized Custom Domains and Subscriptions management', () => {
+    const infraPath = path.join(__dirname, '../pages/superadmin/components/SaasInfrastructureCenter.jsx');
+    const infraCode = fs.readFileSync(infraPath, 'utf8');
+
+    expect(infraCode).toContain("setSubTab('domains')");
+    expect(infraCode).toContain("setSubTab('subscriptions')");
+    expect(infraCode).toContain('verifyDomainDnsAndSsl');
+    expect(infraCode).toContain('updateTenantDomain');
+    expect(infraCode).toContain('handleUpgradeTier');
+  });
 });
+

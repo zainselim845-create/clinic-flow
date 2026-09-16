@@ -30,9 +30,9 @@ export const recallPresets = [
 ];
 
 export const visitTypes = [
-  { name: 'كشف عادي', value: 3, color: '#0071E3' },
+  { name: 'كشف عادي', value: 3, color: '#09090B' },
   { name: 'متابعة', value: 2, color: '#10B981' },
-  { name: 'استشارة', value: 2, color: '#8B5CF6' }
+  { name: 'استشارة', value: 2, color: '#09090B' }
 ];
 
 export const availableSlots = [
@@ -73,7 +73,7 @@ export const demoClinics = [
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     branding: {
-      primaryColor: '#0071E3',
+      primaryColor: '#09090B',
       accentColor: '#10B981',
       badgeText: 'مركز الأسنان والابتسامة',
       brandTitle: 'كلينيك فلو دنتال'
@@ -146,7 +146,7 @@ export const demoClinics = [
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     branding: {
-      primaryColor: '#0071E3',
+      primaryColor: '#09090B',
       accentColor: '#10B981',
       badgeText: 'العيادة التخصصية',
       brandTitle: 'كلينيك فلو'
