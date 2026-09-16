@@ -29,9 +29,10 @@
 .logo-icon-wrap {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
-  background: var(--primary-container, #C2E7FF);
-  color: var(--on-primary-container, #001D35);
+  border-radius: 10px;
+  background: var(--bg-tertiary, #F4F4F5);
+  color: var(--text-primary, #09090B);
+  border: 1px solid var(--border-color, #E4E4E7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -65,7 +66,7 @@
   padding: 0.58rem 0.85rem;
   color: var(--text-secondary);
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: 8px;
   transition: all var(--transition-fast);
   font-weight: 500;
   font-size: 0.86rem;
@@ -74,8 +75,8 @@
 }
 
 .nav-item:hover {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text-primary);
+  background: var(--bg-tertiary, #F4F4F5);
+  color: var(--text-primary, #09090B);
 }
 
 [data-theme="dark"] .nav-item:hover {
@@ -87,18 +88,20 @@
 }
 
 .nav-item.active {
-  background: rgba(2, 132, 199, 0.09) !important;
-  color: var(--primary) !important;
-  font-weight: 600;
+  background: var(--bg-tertiary, #F4F4F5) !important;
+  color: var(--clinic-primary, #09090B) !important;
+  font-weight: 700;
+  border-inline-start: 3px solid var(--clinic-primary, #09090B);
 }
 
 [data-theme="dark"] .nav-item.active {
-  background: rgba(56, 189, 248, 0.12) !important;
-  color: var(--primary) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--clinic-primary, #FFFFFF) !important;
+  border-inline-start: 3px solid var(--clinic-primary, #FFFFFF);
 }
 
 .nav-item.active svg {
-  color: var(--primary) !important;
+  color: var(--clinic-primary, #09090B) !important;
 }
 
 /* Scoped sidebar badge — prevents global .badge override */

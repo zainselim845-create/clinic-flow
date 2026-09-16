@@ -133,6 +133,14 @@ h1, h2, h3, h4, h5, h6 {
   --primary-glow: rgba(26, 115, 232, 0.25);
   --gradient-primary: linear-gradient(135deg, #1A73E8 0%, #4285F4 100%);
   --clinic-on-primary: #FFFFFF;
+
+  /* Architectural Monochrome Noir & Curated Palette Foundation (Linear / Stripe Standard) */
+  --clinic-primary: #09090B;
+  --clinic-primary-hover: #27272A;
+  --clinic-primary-light: #F4F4F5;
+  --clinic-primary-glow: rgba(9, 9, 11, 0.08);
+  --clinic-gradient-primary: #09090B;
+  --clinic-on-primary: #FFFFFF;
   
   --accent: #1B6EF3;
   --accent-hover: #0B57D0;
@@ -152,26 +160,26 @@ h1, h2, h3, h4, h5, h6 {
   --info-light: #E8F0FE;
 
   /* Material You Color Roles */
-  --md-sys-color-primary: var(--primary);
+  --md-sys-color-primary: var(--clinic-primary, #09090B);
   --md-sys-color-on-primary: var(--clinic-on-primary, #FFFFFF);
-  --md-sys-color-primary-container: var(--primary-light);
-  --md-sys-color-on-primary-container: #041E49;
+  --md-sys-color-primary-container: var(--clinic-primary-light, #F4F4F5);
+  --md-sys-color-on-primary-container: #09090B;
 
   /* Material 3 Container Colors */
-  --primary-container: #C2E7FF;
-  --on-primary-container: #001D35;
-  --secondary-container: #DDE3EA;
-  --on-secondary-container: #151C23;
+  --primary-container: var(--clinic-primary-light, #F4F4F5);
+  --on-primary-container: var(--clinic-primary, #09090B);
+  --secondary-container: #F4F4F5;
+  --on-secondary-container: #09090B;
   --error-container: #FCE8E6;
   --on-error-container: #410E0B;
   --success-container: #CEEAD6;
   --on-success-container: #0D3B1C;
 
   /* Cross-System Compatibility Aliases */
-  --primary-color: var(--primary);
-  --color-primary: var(--primary);
-  --color-primary-light: var(--primary-light);
-  --primary-subtle: var(--primary-light);
+  --primary-color: var(--clinic-primary, #09090B);
+  --color-primary: var(--clinic-primary, #09090B);
+  --color-primary-light: var(--clinic-primary-light, #F4F4F5);
+  --primary-subtle: var(--clinic-primary-light, #F4F4F5);
   --danger-color: var(--error);
   --color-error: var(--error);
   --warning-color: var(--warning);
@@ -185,19 +193,26 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Light Theme (Clean Minimalist Workspace Canvas) */
 [data-theme="light"], :root {
+  --primary: var(--clinic-primary, #09090B);
+  --primary-hover: var(--clinic-primary-hover, #27272A);
+  --primary-light: var(--clinic-primary-light, #F4F4F5);
+  --primary-glow: var(--clinic-primary-glow, rgba(9, 9, 11, 0.08));
+  --gradient-primary: var(--clinic-gradient-primary, #09090B);
+  --clinic-on-primary: #FFFFFF;
+
   --bg-primary: #F8FAFC;       /* Clean Minimalist Canvas (Slate 50) */
   --bg-secondary: #FFFFFF;     /* Pure White Card */
-  --bg-tertiary: #F1F5F9;      /* Soft Pill Button / Input fill */
+  --bg-tertiary: #F4F4F5;      /* Soft Pill Button / Input fill */
   --surface: #FFFFFF;
   --card-bg: #FFFFFF;
-  --surface-container: #F1F5F9;
-  --surface-container-high: #E2E8F0;
+  --surface-container: #F8FAFC;
+  --surface-container-high: #F4F4F5;
   
-  --text-primary: #0F172A;     /* Slate 900 - High Contrast & Clean */
-  --text-secondary: #475569;   /* Slate 600 - Medium Emphasis */
-  --text-tertiary: #64748B;    /* Slate 500 - Accessible contrast (4.54:1 on white - WCAG 2.2 AA) */
+  --text-primary: #09090B;     /* Deep Noir - High Contrast & Clean */
+  --text-secondary: #71717A;   /* Slate/Zinc 500 - Medium Emphasis */
+  --text-tertiary: #A1A1AA;    /* Slate/Zinc 400 */
   
-  --border-color: #E2E8F0;     /* Slate 200 - Minimal Hairline Divider */
+  --border-color: #E4E4E7;     /* Slate/Zinc 200 - Minimal Hairline Divider */
   --border-subtle: #F1F5F9;    /* Slate 100 - Extra Subtle Border */
   
   /* Featherweight Minimalist Shadows (Linear / Stripe style) */
@@ -309,7 +324,7 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-card-hover);
 }
 
-/* 5. Google Material 3 Buttons (Pill & Tonal) */
+/* 5. Minimalist Architecture Buttons (Linear / Stripe Standard) */
 .btn,
 .btn-primary,
 .btn-secondary,
@@ -320,10 +335,10 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.65rem 1.35rem;
+  padding: 0.6rem 1.25rem;
   font-size: 0.88rem;
   font-weight: 600;
-  border-radius: var(--radius-full);
+  border-radius: 8px;
   border: 1px solid transparent;
   transition: all var(--transition-fast);
   text-decoration: none;
@@ -341,41 +356,41 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: #FFFFFF !important;
-  box-shadow: var(--shadow-sm);
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 .btn-primary:hover {
-  background: var(--primary-hover);
-  box-shadow: var(--shadow-md);
+  background: var(--clinic-primary-hover, #27272A);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .btn-secondary {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border-color: var(--border-color);
+  background: #FFFFFF;
+  color: var(--text-primary, #09090B);
+  border-color: var(--border-color, #E4E4E7);
 }
 .btn-secondary:hover {
-  background: var(--border-subtle);
-  color: var(--text-primary);
+  background: var(--bg-tertiary, #F4F4F5);
+  color: var(--text-primary, #09090B);
 }
 
 .btn-tonal {
-  background: var(--primary-light);
-  color: var(--primary-dark);
+  background: var(--clinic-primary-light, #F4F4F5);
+  color: var(--clinic-primary, #09090B);
 }
 .btn-tonal:hover {
-  background: #D3E3FD;
+  background: var(--border-color, #E4E4E7);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--primary);
-  border-color: var(--border-color);
+  color: var(--text-primary, #09090B);
+  border-color: var(--border-color, #E4E4E7);
 }
 .btn-outline:hover {
-  background: var(--primary-light);
-  border-color: var(--primary);
+  background: var(--bg-tertiary, #F4F4F5);
+  border-color: var(--clinic-primary, #09090B);
 }
 
 .btn-danger {
@@ -798,3 +813,181 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(2px);
   z-index: 99;
 }
+
+/* ==========================================================================
+   Tactile Micro-Interactions & Button Hover States (Item 4)
+   ========================================================================== */
+button:not(:disabled),
+.btn:not(:disabled),
+.btn-primary:not(:disabled),
+.btn-secondary:not(:disabled),
+.btn-hero-primary:not(:disabled),
+.btn-hero-secondary:not(:disabled),
+.filter-pill:not(:disabled),
+.cta-btn:not(:disabled) {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+button:hover:not(:disabled),
+.btn:hover:not(:disabled),
+.btn-primary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled),
+.btn-hero-primary:hover:not(:disabled),
+.btn-hero-secondary:hover:not(:disabled),
+.filter-pill:hover:not(:disabled),
+.cta-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+button:active:not(:disabled),
+.btn:active:not(:disabled),
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled),
+.btn-hero-primary:active:not(:disabled),
+.btn-hero-secondary:active:not(:disabled),
+.filter-pill:active:not(:disabled),
+.cta-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* ==========================================================================
+   Accessibility: Skip to Content Link (Item 9)
+   ========================================================================== */
+.skip-to-content {
+  position: fixed;
+  top: -100px;
+  right: 16px;
+  z-index: 999999;
+  background: #09090B;
+  color: #FFFFFF !important;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: top 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  direction: rtl;
+}
+
+.skip-to-content:focus {
+  top: 16px;
+  outline: 3px solid #2563EB;
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Universal Loading Animations & Shimmer Skeletons (Item 7)
+   ========================================================================== */
+@keyframes shimmerPulse {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(228, 228, 231, 0.5) 25%, rgba(244, 244, 245, 0.9) 50%, rgba(228, 228, 231, 0.5) 75%);
+  background-size: 200% 100%;
+  animation: shimmerPulse 1.8s infinite;
+  border-radius: 8px;
+}
+
+[data-theme='dark'] .skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(39, 39, 42, 0.6) 25%, rgba(63, 63, 70, 0.9) 50%, rgba(39, 39, 42, 0.6) 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner-pulse {
+  animation: spinSlow 0.9s linear infinite;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Comprehensive Print Stylesheet (Item 17)
+   ========================================================================== */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  /* Hide interactive non-printable chrome */
+  header,
+  nav,
+  aside,
+  .sidebar,
+  .mobile-menu-btn,
+  .theme-header-btn,
+  .btn-nav-dashboard,
+  .guest-nav-group,
+  .scroll-to-top-btn,
+  .floating-contact-container,
+  .saas-admin-floating-banner,
+  .cookie-banner,
+  .skip-to-content,
+  .filters-bar,
+  .search-box,
+  .status-filter-pills,
+  .chat-widget,
+  .doctor-ai-floating-widget,
+  .landing-mobile-menu-overlay,
+  .landing-mobile-menu-drawer {
+    display: none !important;
+  }
+
+  /* Expand full width for printable content */
+  .app-wrapper,
+  .main-content,
+  .invoices-page,
+  .dashboard-page,
+  .table-responsive-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #FFFFFF !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    border: 1px solid #D4D4D8 !important;
+    padding: 8px 12px !important;
+    color: #000000 !important;
+  }
+
+  th {
+    background-color: #F4F4F5 !important;
+    font-weight: bold !important;
+  }
+
+  tr, .inv-metric-card, .invoice-modal-card {
+    page-break-inside: avoid !important;
+  }
+
+  a[href]::after {
+    content: "" !important;
+  }
+}
+

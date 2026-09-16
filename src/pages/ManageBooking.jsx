@@ -14,6 +14,7 @@ import { checkActionRateLimit } from '../utils/rateLimiter';
 import * as appointmentsService from '../services/appointmentsService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import Breadcrumbs from '../components/Breadcrumbs';
+import ConfirmationModal from '../components/ConfirmationModal';
 import './ManageBooking.css';
 
 const ManageBooking = () => {
@@ -22,6 +23,7 @@ const ManageBooking = () => {
   const { state, dispatch } = useApp();
   const { tenant, allTenants, switchTenant } = useTenant();
   const useSupabase = isSupabaseConfigured();
+  const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (clinicSlug && tenant?.slug !== clinicSlug) {
@@ -210,7 +212,7 @@ const ManageBooking = () => {
     }
   };
 
-  const handleCancelAppointment = async () => {
+  const handleCancelAppointment = () => {
     if (!selectedAppointment) return;
 
     if (selectedAppointment.clinicId && clinicInfo?.id && selectedAppointment.clinicId !== clinicInfo.id) {
@@ -218,21 +220,25 @@ const ManageBooking = () => {
       return;
     }
 
-    if (window.confirm('هل أنت متأكد من رغبتك في إلغاء هذا الموعد؟')) {
-      if (useSupabase) {
-        try {
-          await appointmentsService.updateAppointmentStatus(selectedAppointment.id, 'cancelled');
-        } catch (err) {
-          console.error('Failed to cancel appointment in Supabase:', err);
-        }
+    setIsCancelConfirmOpen(true);
+  };
+
+  const executeCancelAppointment = async () => {
+    if (!selectedAppointment) return;
+    if (useSupabase) {
+      try {
+        await appointmentsService.updateAppointmentStatus(selectedAppointment.id, 'cancelled');
+      } catch (err) {
+        console.error('Failed to cancel appointment in Supabase:', err);
       }
-      dispatch({
-        type: 'UPDATE_APPOINTMENT_STATUS',
-        payload: { id: selectedAppointment.id, status: 'cancelled' }
-      });
-      setSelectedAppointment(prev => ({ ...prev, status: 'cancelled' }));
-      setStatusMessage({ type: 'success', text: 'تم إلغاء الموعد بنجاح.' });
     }
+    dispatch({
+      type: 'UPDATE_APPOINTMENT_STATUS',
+      payload: { id: selectedAppointment.id, status: 'cancelled' }
+    });
+    setSelectedAppointment(prev => ({ ...prev, status: 'cancelled' }));
+    setStatusMessage({ type: 'success', text: 'تم إلغاء الموعد بنجاح.' });
+    setIsCancelConfirmOpen(false);
   };
 
   const handleConfirmReschedule = async (e) => {
@@ -640,6 +646,18 @@ const ManageBooking = () => {
             </form>
           </div>
         )}
+
+        {/* Confirmation Modal for Patient Cancellation (Item 15) */}
+        <ConfirmationModal
+          isOpen={isCancelConfirmOpen}
+          onClose={() => setIsCancelConfirmOpen(false)}
+          onConfirm={executeCancelAppointment}
+          title="تأكيد إلغاء الموعد"
+          message={`هل أنت متأكد من رغبتك في إلغاء حجزك ليوم ${selectedAppointment?.date || ''} الساعة ${selectedAppointment?.time || ''}؟ يمكنك حجز موعد جديد في أي وقت.`}
+          confirmText="نعم، إلغاء الموعد"
+          cancelText="تراجع"
+          isDestructive={true}
+        />
 
       </div>
     </div>

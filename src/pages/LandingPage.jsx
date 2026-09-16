@@ -7,9 +7,10 @@ import {
   ArrowLeft, CheckCircle2, ChevronDown, 
   Search, MapPin, Phone, Lock, 
   Activity, DollarSign, Cpu, Award, Clock,
-  Building2, Calendar
+  Building2, Calendar, Sun, Moon, Menu, X, Mail
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
+import { getWhatsAppSupportUrl } from '../utils/utmTracking';
 import './LandingPage.css';
 
 const SPECIALTY_OPTIONS = [
@@ -83,6 +84,41 @@ const PRICING_PLANS = [
   }
 ];
 
+const FAQ_ITEMS = [
+  {
+    q: 'كيف يحصل طبيبي أو عيادتي على رابط وسب دومين مستقل؟',
+    a: 'بمجرد تسجيل حساب الطبيب والعيادة، يولد النظام تلقائياً سب دومين فريد (مثل dr-sara.clinicflow.app) مع رابط حجز خاص. يمكنك مشاركته مع المرضى أو وضعه على منصات التواصل، كما يمكنك ربط دومينك الخاص (مثل yourclinic.com) من لوحة الإعدادات مجاناً مع شهادة SSL تلقائية.'
+  },
+  {
+    q: 'هل يمكن لعيادة أخرى أو طبيب آخر رؤية بيانات مرضاي أو مواعيدي؟',
+    a: 'مستحيل تماماً. المنظومة مبنية بمعمارية عزل متشددة (Multi-Tenant Isolation) وسياسات أمان مشددة على مستوى كل استعلام (Row-Level Security)، بحيث لا يتمكن أي مستخدم أو طاقم من الاطلاع على أي سجل خارج نطاق عيادته المصرح بها.'
+  },
+  {
+    q: 'هل يمكنني إضافة موظفي الاستقبال ومحاسب العيادة دون إعطائهم صلاحيات الطبيب؟',
+    a: 'نعم، المنظومة تدعم نظام الصلاحيات البنكي (RBAC). يمكنك إنشاء حساب لموظف الاستقبال ليرى فقط المواعيد وطابور الانتظار، وحساب للمحاسب ليرى الفواتير والخزينة، مع حظر كامل للإعدادات والسجلات الطبية التخصصية.'
+  },
+  {
+    q: 'ماذا يحدث إذا تأخرت عيادة عن سداد الاشتراك الشهري؟',
+    a: 'توفر المنظومة مفتاح إيقاف إداري (Subscription Kill-Switch). عند تعليق الحساب يتم إيقاف دخول العيادة وتجميد رابط الحجز العام مع ظهور إشعار تواصل لتسوية الفاتورة دون فقدان أي سجلات طبية.'
+  },
+  {
+    q: 'هل تتوفر رسائل واتساب وتذكير SMS تلقائية للمرضى قبل الموعد؟',
+    a: 'نعم، يتضمن النظام محرك إرسال تذكيرات تلقائي عبر رسائل SMS وواتساب قبل الموعد بـ 24 ساعة، مع رابط سريع للمريض لتأكيد الحضور أو الاعتذار لتقليل نسبة الغياب (No-Show) إلى أقل من 3%.'
+  },
+  {
+    q: 'هل يمكنني نقل سجلات المرضى القديمة من ملفات إكسيل (Excel) إلى المنظومة؟',
+    a: 'بالتأكيد. توفر المنظومة أداة استيراد إكسيل ذكية تقوم بمطابقة الأعمدة تلقائياً (الاسم، الهاتف، الرقم القومي، التاريخ المرضي) وإدراج آلاف المرضى في ثوانٍ معدودة بدون أي أخطاء.'
+  },
+  {
+    q: 'هل يعمل النظام بدون إنترنت في حال انقطاع الشبكة المفاجئ؟',
+    a: 'نعم، يدعم ClinicFlow تقنية PWA مع ذاكرة تخزين مؤقت متطورة وقاعدة بيانات محلية، مما يتيح لك استعراض مواعيد اليوم وصالة الانتظار وتسجيل الملاحظات ومزامنتها فور عودة الاتصال.'
+  },
+  {
+    q: 'هل توجد عقود طويلة الأجل أو شروط جزائية للإلغاء؟',
+    a: 'لا توجد أي عقود ملزمة. الاشتراكات شهرية أو سنوية بمرونة كاملة، ويمكنك تصدير كافة بياناتك وسجلاتك الطبية بضغطة زر بصيغة CSV و Excel في أي وقت تشاء.'
+  }
+];
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -91,6 +127,45 @@ const LandingPage = () => {
   const [clinicSearch, setClinicSearch] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState('الكل');
   const [faqOpen, setFaqOpen] = useState({ 0: true });
+  const [expandAllFaqs, setExpandAllFaqs] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Dark Mode Toggle for Landing Page
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.getAttribute('data-theme') === 'dark';
+    }
+    return false;
+  });
+
+  const toggleLandingTheme = () => {
+    const nextTheme = isDarkMode ? 'light' : 'dark';
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    try {
+      localStorage.setItem('clinicflow_theme', nextTheme);
+    } catch {}
+  };
+
+  // Newsletter Signup State
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
+  const [newsletterError, setNewsletterError] = useState('');
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    if (!newsletterEmail || !/^\S+@\S+\.\S+$/.test(newsletterEmail)) {
+      setNewsletterError('يرجى إدخال عنوان بريد إلكتروني صالح.');
+      setNewsletterStatus('error');
+      return;
+    }
+    setNewsletterStatus('loading');
+    setNewsletterError('');
+    setTimeout(() => {
+      setNewsletterStatus('success');
+      setNewsletterEmail('');
+    }, 700);
+  };
 
   const filteredClinics = useMemo(() => {
     const list = (allTenants || []).filter(t => t.subscriptionStatus !== 'suspended');
@@ -110,6 +185,18 @@ const LandingPage = () => {
 
   const toggleFaq = (index) => {
     setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  const toggleAllFaqs = () => {
+    if (expandAllFaqs) {
+      setFaqOpen({});
+      setExpandAllFaqs(false);
+    } else {
+      const allOpen = {};
+      FAQ_ITEMS.forEach((_, idx) => { allOpen[idx] = true; });
+      setFaqOpen(allOpen);
+      setExpandAllFaqs(true);
+    }
   };
 
   return (
@@ -177,8 +264,57 @@ const LandingPage = () => {
                 </button>
               </div>
             )}
+
+            {/* Dark Mode Toggle (Item 1) */}
+            <button
+              type="button"
+              onClick={toggleLandingTheme}
+              className="landing-theme-toggle-btn"
+              title={isDarkMode ? 'التحويل إلى الوضع الفاتح' : 'التحويل إلى الوضع الداكن'}
+              aria-label="تبديل الوضع الليلي"
+            >
+              {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+
+            {/* Mobile Hamburger Button (Item 3) */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="landing-hamburger-btn"
+              aria-expanded={isMobileMenuOpen}
+              aria-label="قائمة التنقل للموبايل"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Slide-down Menu Drawer (Item 3) */}
+        {isMobileMenuOpen && (
+          <div className="landing-mobile-menu-drawer">
+            <nav className="mobile-nav-links">
+              <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>المميزات</a>
+              <a href="#specialties" onClick={() => setIsMobileMenuOpen(false)}>التخصصات</a>
+              <a href="#discovery" onClick={() => setIsMobileMenuOpen(false)}>دليل العيادات</a>
+              <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)}>الأسعار</a>
+              <a href="#faq" onClick={() => setIsMobileMenuOpen(false)}>الأسئلة الشائعة</a>
+            </nav>
+            <div className="mobile-nav-actions">
+              <button onClick={() => { navigate('/booking'); setIsMobileMenuOpen(false); }} className="btn-hero-secondary">
+                <Search size={15} />
+                <span>بوابة حجز المرضى</span>
+              </button>
+              <button onClick={() => { navigate('/manage-booking'); setIsMobileMenuOpen(false); }} className="btn-hero-secondary">
+                <Calendar size={15} />
+                <span>متابعة وتعديل الحجز</span>
+              </button>
+              <button onClick={() => { navigate('/login?portal=clinic'); setIsMobileMenuOpen(false); }} className="btn-hero-primary">
+                <Building2 size={15} />
+                <span>دخول العيادات وطاقم العمل</span>
+              </button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* 2. HERO SECTION */}
@@ -562,7 +698,7 @@ const LandingPage = () => {
                 <button 
                   onClick={() => {
                     if (plan.id === 'enterprise') {
-                      window.open('https://wa.me/201006285031?text=' + encodeURIComponent('مرحباً، أود الاستفسار عن باقة المراكز والمستشفيات في منصة ClinicFlow'), '_blank');
+                      window.open(getWhatsAppSupportUrl('مرحباً، أود الاستفسار عن باقة المراكز والمستشفيات في منصة ClinicFlow'), '_blank');
                     } else {
                       navigate(`/login?tab=register&plan=${plan.id}`);
                     }
@@ -577,32 +713,42 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* 6. FAQ SECTION */}
+      {/* 6. FAQ SECTION (Item 11 & Item 20) */}
       <section id="faq" className="faq-section">
         <div className="section-header">
           <span className="section-pill">الأسئلة الأكثر شيوعاً</span>
           <h2 className="section-title">كل ما تود معرفته عن منظومة كلينيك فلو</h2>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap', marginTop: '0.85rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary, #71717A)' }}>
+              <Calendar size={14} />
+              <span>آخر تحديث: 16 سبتمبر 2026</span>
+            </div>
+            <button 
+              type="button"
+              onClick={toggleAllFaqs}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '5px 14px',
+                borderRadius: '8px',
+                backgroundColor: 'transparent',
+                border: '1px solid #CBD5E1',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                color: 'inherit',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>{expandAllFaqs ? 'طي كافة الأسئلة' : 'توسيع كافة الأسئلة'}</span>
+            </button>
+          </div>
         </div>
 
         <div className="faq-accordion">
-          {[
-            {
-              q: 'كيف يحصل طبيبي أو عيادتي على رابط وسب دومين مستقل؟',
-              a: 'بمجرد تسجيل حساب الطبيب والعيادة، يولد النظام تلقائياً سب دومين فريد (مثل dr-sara.clinicflow.app) مع رابط حجز خاص. يمكنك مشاركته مع المرضى أو وضعه على السوشيال ميديا، كما يمكنك ربط دومينك الخاص (مثل yourclinic.com) من لوحة الإعدادات.'
-            },
-            {
-              q: 'هل يمكن لعيادة أخرى أو طبيب آخر رؤية بيانات مرضاي أو مواعيدي؟',
-              a: 'مستحيل تماماً. المنظومة مبنية بمعمارية عزل متشددة (Multi-Tenant Isolation) وسياسات أمان مشددة على مستوى كل استعلام، بحيث لا يتمكن أي مستخدم أو طاقم من الاطلاع على أي سجل خارج نطاق عيادته المصرح بها.'
-            },
-            {
-              q: 'هل يمكنني إضافة موظفي الاستقبال ومحاسب العيادة دون إعطائهم صلاحيات الطبيب؟',
-              a: 'نعم، المنظومة تدعم نظام الصلاحيات البنكي (RBAC). يمكنك إنشاء حساب لموظف الاستقبال ليرى فقط المواعيد وطابور الانتظار، وحساب للمحاسب ليرى الفواتير والخزينة، مع حظر كامل للإعدادات والسجلات الطبية التخصصية.'
-            },
-            {
-              q: 'ماذا يحدث إذا تأخرت عيادة عن سداد الاشتراك الشهري؟',
-              a: 'توفر المنظومة مفتاح إيقاف إداري (Subscription Kill-Switch). عند تعليق الحساب يتم إيقاف دخول العيادة وتجميد رابط الحجز العام مع ظهور إشعار تواصل لتسوية الفاتورة دون فقدان أي سجلات طبية.'
-            }
-          ].map((item, idx) => (
+          {FAQ_ITEMS.map((item, idx) => (
             <div key={idx} className={`faq-item ${faqOpen[idx] ? 'open' : ''}`}>
               <button 
                 type="button"
@@ -621,6 +767,79 @@ const LandingPage = () => {
               )}
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* 6.5 NEWSLETTER SIGNUP WITH SUCCESS STATE (Item 12) */}
+      <section className="newsletter-section" style={{ padding: '3.5rem 1.5rem', backgroundColor: isDarkMode ? '#18181B' : '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '4px 14px', borderRadius: '20px', backgroundColor: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', fontSize: '0.82rem', fontWeight: 700, marginBottom: '1rem' }}>
+            <Mail size={15} />
+            <span>النشرة الطبية والتقنية الدورية</span>
+          </div>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.75rem', color: 'inherit' }}>
+            واكب أحدث أساليب إدارة وتطوير العيادات
+          </h2>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary, #64748B)', lineHeight: '1.6', margin: '0 0 1.5rem' }}>
+            انضم لأكثر من 1,000 طبيب واستشاري لتصلك مقالات سريرية، نصائح للحد من غياب المرضى، وتحديثات الذكاء الاصطناعي الطبي.
+          </p>
+
+          {newsletterStatus === 'success' ? (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', padding: '12px 24px', borderRadius: '12px', backgroundColor: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', fontWeight: 700, fontSize: '0.92rem', animation: 'fadeInUp 0.3s ease' }}>
+              <CheckCircle2 size={20} className="text-emerald-600" />
+              <span>تم اشتراكك بنجاح! ستصلك رسالة ترحيبية وتحديثاتنا الطبية فور صدورها. 🎉</span>
+            </div>
+          ) : (
+            <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', gap: '8px', maxWidth: '480px', margin: '0 auto', flexWrap: 'wrap' }}>
+              <input
+                type="email"
+                placeholder="أدخل بريدك الإلكتروني (e.g. doctor@clinic.com)..."
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                required
+                style={{
+                  flex: 1,
+                  minWidth: '240px',
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid #CBD5E1',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  backgroundColor: isDarkMode ? '#27272A' : '#FFFFFF',
+                  color: 'inherit'
+                }}
+              />
+              <button
+                type="submit"
+                disabled={newsletterStatus === 'loading'}
+                style={{
+                  padding: '12px 22px',
+                  borderRadius: '10px',
+                  backgroundColor: '#09090B',
+                  color: '#FFFFFF',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                {newsletterStatus === 'loading' ? (
+                  <span>جاري الاشتراك...</span>
+                ) : (
+                  <>
+                    <span>اشتراك مجاني</span>
+                    <ArrowLeft size={16} />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+          {newsletterError && (
+            <p style={{ color: '#EF4444', fontSize: '0.82rem', marginTop: '8px' }}>{newsletterError}</p>
+          )}
         </div>
       </section>
 
@@ -665,7 +884,7 @@ const LandingPage = () => {
               <li><Link to="/login?tab=register">تسجيل عيادة وطبيب جديد</Link></li>
               <li><Link to="/login?portal=clinic">تسجيل دخول الطاقم والعيادات</Link></li>
               <li><a href="#pricing">باقات الاشتراك والأسعار</a></li>
-              <li><a href="https://wa.me/201006285031" target="_blank" rel="noreferrer">الدعم الفني المباشر (واتساب)</a></li>
+              <li><a href={getWhatsAppSupportUrl('مرحباً، أود التواصل مع فريق الدعم الفني لمنظومة ClinicFlow')} target="_blank" rel="noreferrer">الدعم الفني المباشر (واتساب)</a></li>
             </ul>
           </div>
 

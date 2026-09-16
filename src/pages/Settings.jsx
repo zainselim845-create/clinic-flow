@@ -51,14 +51,26 @@ const Settings = () => {
   const [clinicForm, setClinicForm] = useState(initialClinicInfo);
   const [clinicSaveSuccess, setClinicSaveSuccess] = useState(false);
 
-  // Sync clinicForm whenever active tenant or state.clinicInfo updates
+  // Sync clinicForm when active tenant identity changes (switch clinic or initial load)
   useEffect(() => {
-    if (state.clinicInfo) {
-      setClinicForm(state.clinicInfo);
-    } else if (tenant) {
-      setClinicForm(tenant);
+    const source = tenant || state.clinicInfo;
+    if (source) {
+      setClinicForm(prev => {
+        // Only initialize or preserve local user edits
+        if (!prev || prev.id !== source.id || prev.slug !== source.slug) {
+          return source;
+        }
+        return {
+          ...source,
+          ...prev,
+          branding: {
+            ...(source.branding || {}),
+            ...(prev.branding || {})
+          }
+        };
+      });
     }
-  }, [state.clinicInfo, tenant]);
+  }, [state.clinicInfo?.id, tenant?.id, tenant?.slug]);
 
   const handleSaveClinic = async (e) => {
     if (e && e.preventDefault) e.preventDefault();

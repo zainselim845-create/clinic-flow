@@ -53,8 +53,9 @@ const Sidebar = () => {
         <div 
           className="logo-icon-wrap"
           style={{ 
-            backgroundColor: tenant?.branding?.primaryColor ? `${tenant.branding.primaryColor}1A` : undefined,
-            color: tenant?.branding?.primaryColor || 'var(--primary)',
+            backgroundColor: (tenant?.branding?.primaryColor && tenant.branding.primaryColor !== 'monochrome' && tenant.branding.primaryColor !== '#09090B') ? `${tenant.branding.primaryColor}1A` : 'var(--bg-tertiary, #F4F4F5)',
+            color: (tenant?.branding?.primaryColor && tenant.branding.primaryColor !== 'monochrome' && tenant.branding.primaryColor !== '#09090B') ? tenant.branding.primaryColor : 'var(--clinic-primary, #09090B)',
+            border: '1px solid var(--border-color, #E4E4E7)',
             overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',

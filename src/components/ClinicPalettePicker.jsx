@@ -62,12 +62,18 @@ export function applyPaletteToDom(hexColor) {
   const isMonochrome = !hexColor || hexColor === '#000000' || hexColor === '#09090B' || hexColor === 'monochrome' || hexColor === '#18181B';
 
   if (isMonochrome) {
-    root.style.removeProperty('--clinic-primary');
-    root.style.removeProperty('--clinic-primary-hover');
-    root.style.removeProperty('--clinic-primary-light');
-    root.style.removeProperty('--clinic-primary-glow');
-    root.style.removeProperty('--clinic-gradient-primary');
-    root.style.removeProperty('--clinic-on-primary');
+    root.style.setProperty('--clinic-primary', '#09090B');
+    root.style.setProperty('--clinic-primary-hover', '#27272A');
+    root.style.setProperty('--clinic-primary-light', '#F4F4F5');
+    root.style.setProperty('--clinic-primary-glow', 'rgba(9, 9, 11, 0.08)');
+    root.style.setProperty('--clinic-gradient-primary', '#09090B');
+    root.style.setProperty('--clinic-on-primary', '#FFFFFF');
+    root.style.setProperty('--primary', '#09090B');
+    root.style.setProperty('--primary-hover', '#27272A');
+    root.style.setProperty('--primary-light', '#F4F4F5');
+    root.style.setProperty('--primary-glow', 'rgba(9, 9, 11, 0.08)');
+    root.style.setProperty('--md-sys-color-primary', '#09090B');
+    root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
   } else {
     root.style.setProperty('--clinic-primary', hexColor);
     root.style.setProperty('--clinic-primary-hover', hexColor);
@@ -75,6 +81,12 @@ export function applyPaletteToDom(hexColor) {
     root.style.setProperty('--clinic-primary-glow', `${hexColor}33`);
     root.style.setProperty('--clinic-gradient-primary', `linear-gradient(135deg, ${hexColor} 0%, ${hexColor}E6 100%)`);
     root.style.setProperty('--clinic-on-primary', '#FFFFFF');
+    root.style.setProperty('--primary', hexColor);
+    root.style.setProperty('--primary-hover', hexColor);
+    root.style.setProperty('--primary-light', `${hexColor}18`);
+    root.style.setProperty('--primary-glow', `${hexColor}33`);
+    root.style.setProperty('--md-sys-color-primary', hexColor);
+    root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
   }
 }
 

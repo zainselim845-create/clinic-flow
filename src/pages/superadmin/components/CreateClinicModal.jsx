@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog } from '../../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import { slugifyClinic } from '../../../services/authService';
 
 export function CreateClinicModal({
@@ -11,6 +11,7 @@ export function CreateClinicModal({
   setNewClinic,
   onSubmit
 }) {
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <Dialog.Root open={isOpen} onOpenChange={(details) => !details.open && onClose()} lazyMount unmountOnExit>
       <Portal>
@@ -93,18 +94,42 @@ export function CreateClinicModal({
               />
             </div>
 
-            <div className="form-group">
+            <div className="form-group relative">
               <label htmlFor="clinic-password-input">كلمة المرور لحساب الطبيب *</label>
-              <input 
-                id="clinic-password-input"
-                type="password" 
-                placeholder="••••••••" 
-                dir="ltr"
-                value={newClinic.doctorPassword || ''}
-                onChange={(e) => setNewClinic(prev => ({ ...prev, doctorPassword: e.target.value }))}
-                required
-                minLength={6}
-              />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  id="clinic-password-input"
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="••••••••" 
+                  dir="ltr"
+                  style={{ width: '100%', paddingLeft: '38px' }}
+                  value={newClinic.doctorPassword || ''}
+                  onChange={(e) => setNewClinic(prev => ({ ...prev, doctorPassword: e.target.value }))}
+                  required
+                  minLength={6}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    left: '8px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#64748B',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '4px'
+                  }}
+                  aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
           </div>
 

@@ -483,7 +483,7 @@ const Dashboard = () => {
             title="تصفية الخزينة وتسليم وردية الاستقبال"
           >
             <Landmark size={13} />
-            <span>الخزينة والوردية</span>
+            <span>تسليم وردية الاستقبال</span>
           </button>
 
           {(currentClinic?.slug === 'dr-ahmed' || currentClinic?.slug === 'dr-sara') && (

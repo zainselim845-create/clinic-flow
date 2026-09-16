@@ -22,6 +22,7 @@ import {
 } from '../../services/customDomainService';
 import { useApp } from '../../context/AppContext';
 import { useTenant } from '../../context/TenantContext';
+import CodeSnippet from '../../components/CodeSnippet';
 import './CustomDomainTab.css';
 
 export default function CustomDomainTab() {
@@ -498,6 +499,23 @@ export default function CustomDomainTab() {
           <li>بعد حفظ السجلات، انقر على زر "فحص الـ DNS والـ SSL". سيقوم محرك ClinicFlow بفحص انتشار السجلات عالمياً عبر خوادم Cloudflare الآمنة.</li>
           <li>بمجرد اكتمال الفحص بنجاح، يتم تفعيل شهادة SSL مجانية وتوجيه جميع الزوار إلى الاتصال المشفر HTTPS تلقائياً وبوابة حجز العيادة الحصرية مباشرة.</li>
         </ol>
+
+        {/* Code Snippets with Copy Button (Item 19) */}
+        <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
+          <h5 style={{ fontSize: '0.88rem', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text-primary)' }}>
+            أوامر الفحص السريع عبر الطرفية (CLI DNS & SSL Check):
+          </h5>
+          <CodeSnippet
+            label="فحص سجل الـ A عبر Terminal"
+            language="bash"
+            code={`dig +short A ${cleanDomain || 'clinic-domain.com'}`}
+          />
+          <CodeSnippet
+            label="فحص الاتصال المشفر وشهادة الـ SSL"
+            language="bash"
+            code={`curl -Iv https://${cleanDomain || 'clinic-domain.com'}`}
+          />
+        </div>
       </div>
     </div>
   );

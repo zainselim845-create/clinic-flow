@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { X, Smartphone, Send, CheckCircle2, AlertCircle, Key, Link as LinkIcon, Radio, Info, Building2 } from 'lucide-react';
+import { X, Smartphone, Send, CheckCircle2, AlertCircle, Key, Link as LinkIcon, Radio, Info, Building2, Eye, EyeOff } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { getSmsConfig, saveSmsConfig, sendSMS } from '../services/smsService';
 import './SmsSettingsModal.css';
 
 const SmsSettingsModal = ({ isOpen, onClose }) => {
+  const [showKey, setShowKey] = useState(false);
   const [config, setConfig] = useState({
     provider: 'cequens',
     cequensApiKey: '',
@@ -148,15 +149,26 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                   <label htmlFor="cequens-api-key" className="form-label">
                     <Key size={16} /> Cequens API Bearer Token:
                   </label>
-                  <input
-                    id="cequens-api-key"
-                    type="password"
-                    className="input-field"
-                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                    value={config.cequensApiKey}
-                    onChange={(e) => setConfig({ ...config, cequensApiKey: e.target.value })}
-                    dir="ltr"
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      id="cequens-api-key"
+                      type={showKey ? "text" : "password"}
+                      className="input-field"
+                      placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                      value={config.cequensApiKey}
+                      onChange={(e) => setConfig({ ...config, cequensApiKey: e.target.value })}
+                      dir="ltr"
+                      style={{ width: '100%', paddingLeft: '38px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowKey(!showKey)}
+                      style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center', padding: '4px' }}
+                      aria-label={showKey ? "إخفاء الرمز" : "إظهار الرمز"}
+                    >
+                      {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                   <small className="help-text">تحصل عليه من Cequens Console &gt; Developer Hub &gt; API Keys.</small>
                 </div>
 
@@ -198,15 +210,26 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                   <label htmlFor="textbee-api-key" className="form-label">
                     <Key size={16} /> TextBee API Key:
                   </label>
-                  <input
-                    id="textbee-api-key"
-                    type="password"
-                    className="input-field"
-                    placeholder="e.g. tb_live_xxxxxxxxxxxxxxxx"
-                    value={config.apiKey}
-                    onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
-                    dir="ltr"
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      id="textbee-api-key"
+                      type={showKey ? "text" : "password"}
+                      className="input-field"
+                      placeholder="e.g. tb_live_xxxxxxxxxxxxxxxx"
+                      value={config.apiKey}
+                      onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
+                      dir="ltr"
+                      style={{ width: '100%', paddingLeft: '38px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowKey(!showKey)}
+                      style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center', padding: '4px' }}
+                      aria-label={showKey ? "إخفاء الرمز" : "إظهار الرمز"}
+                    >
+                      {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                   <small className="help-text">تحصل عليه من لوحة تحكم تطبيق TextBee بعد ربط هاتفك.</small>
                 </div>
 
@@ -264,15 +287,26 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                   <label htmlFor="android-gw-token" className="form-label">
                     <Key size={16} /> Token / كلمة المرور (اختياري):
                   </label>
-                  <input
-                    id="android-gw-token"
-                    type="password"
-                    className="input-field"
-                    placeholder="إذا كنت قد فعلت كلمة مرور في التطبيق"
-                    value={config.apiKey}
-                    onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
-                    dir="ltr"
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      id="android-gw-token"
+                      type={showKey ? "text" : "password"}
+                      className="input-field"
+                      placeholder="إذا كنت قد فعلت كلمة مرور في التطبيق"
+                      value={config.apiKey}
+                      onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
+                      dir="ltr"
+                      style={{ width: '100%', paddingLeft: '38px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowKey(!showKey)}
+                      style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', alignItems: 'center', padding: '4px' }}
+                      aria-label={showKey ? "إخفاء الرمز" : "إظهار الرمز"}
+                    >
+                      {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

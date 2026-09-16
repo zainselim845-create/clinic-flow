@@ -7,6 +7,7 @@ import { useTenant } from '../context/TenantContext';
 import GlobalSearchModal from './GlobalSearchModal';
 import TenantSwitcher from './TenantSwitcher';
 import ReportIssueModal from './ReportIssueModal';
+import ConfirmationModal from './ConfirmationModal';
 import { isSupabaseConfigured } from '../lib/supabase';
 import './Header.css';
 
@@ -17,6 +18,7 @@ const Header = ({ title, onOpenAiCopilot }) => {
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
   const isCloudConnected = isSupabaseConfigured();
 
@@ -49,11 +51,13 @@ const Header = ({ title, onOpenAiCopilot }) => {
   const initial = displayName.replace(/^د\.?\s*/, '').trim().charAt(0) || displayName.charAt(0) || (isDoctor ? 'د' : 'س');
 
 
-  const handleLogout = async () => {
-    if (window.confirm('هل تريد تسجيل الخروج من النظام؟')) {
-      await signOut();
-      navigate('/login');
-    }
+  const handleLogout = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const confirmLogout = async () => {
+    await signOut();
+    navigate('/login');
   };
 
   return (
@@ -163,6 +167,18 @@ const Header = ({ title, onOpenAiCopilot }) => {
       <ReportIssueModal 
         isOpen={isReportModalOpen} 
         onClose={() => setIsReportModalOpen(false)} 
+      />
+
+      {/* Logout Confirmation Modal (Item 15) */}
+      <ConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={confirmLogout}
+        title="تأكيد تسجيل الخروج"
+        message="هل أنت متأكد من رغبتك في تسجيل الخروج من نظام كلينيك فلو؟"
+        confirmText="تسجيل الخروج"
+        cancelText="البقاء في النظام"
+        isDestructive={false}
       />
     </>
   );

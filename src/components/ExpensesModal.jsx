@@ -8,12 +8,14 @@ import { Portal } from '@ark-ui/react/portal';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { expenseCategories } from '../data/demoData';
+import ConfirmationModal from './ConfirmationModal';
 import './ExpensesModal.css';
 
 export const ExpensesModal = ({ isOpen, onClose }) => {
   const { state, dispatch } = useApp();
   const today = getTodayDateStr();
 
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState(expenseCategories[0]);
@@ -68,9 +70,7 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
   };
 
   const handleDeleteExpense = (id) => {
-    if (window.confirm('هل أنت متأكد من حذف هذا المصروف؟')) {
-      dispatch({ type: 'DELETE_EXPENSE', payload: id });
-    }
+    setDeleteTargetId(id);
   };
 
   const allExpenses = clinicExpenses;
@@ -298,6 +298,22 @@ export const ExpensesModal = ({ isOpen, onClose }) => {
             </button>
           </Dialog.CloseTrigger>
         </div>
+
+        <ConfirmationModal
+          isOpen={Boolean(deleteTargetId)}
+          onClose={() => setDeleteTargetId(null)}
+          onConfirm={() => {
+            if (deleteTargetId) {
+              dispatch({ type: 'DELETE_EXPENSE', payload: deleteTargetId });
+              setDeleteTargetId(null);
+            }
+          }}
+          title="حذف بند المصروف"
+          message="هل أنت متأكد من حذف هذا المصروف نهائياً من سجلات العيادة والخزينة؟"
+          confirmText="نعم، حذف المصروف"
+          cancelText="إلغاء"
+          isDestructive={true}
+        />
 
           </Dialog.Content>
         </Dialog.Positioner>

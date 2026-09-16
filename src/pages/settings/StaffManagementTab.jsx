@@ -5,9 +5,11 @@ import { provisionStaffAccount, deleteRegisteredUser, updateStaffAccountStatus }
 import { SYSTEM_PERMISSIONS } from '../../utils/permissions';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { useTenant } from '../../context/TenantContext';
+import ConfirmationModal from '../../components/ConfirmationModal';
 
 export default function StaffManagementTab({ staffMembers, dispatch }) {
   const { tenant } = useTenant();
+  const [deleteTargetStaff, setDeleteTargetStaff] = useState(null);
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [showStaffPass, setShowStaffPass] = useState(false);
@@ -127,23 +129,10 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     setEditingStaff(null);
   };
 
-  const handleDeleteStaff = async (id) => {
+  const handleDeleteStaff = (id) => {
     const member = staffMembers.find(s => s.id === id);
-    const staffClinicId = tenant?.id || 'dr-ahmed';
-    if (window.confirm('هل أنت متأكد من حذف حساب هذا الموظف من العيادة؟')) {
-      if (useSupabase) {
-        try {
-          await staffService.deleteStaffMember(id);
-        } catch (err) {
-          console.error('Failed to delete staff in Supabase:', err);
-        }
-      }
-      try {
-        deleteRegisteredUser(id, staffClinicId);
-        if (member?.phone) deleteRegisteredUser(member.phone, staffClinicId);
-        if (member?.email) deleteRegisteredUser(member.email, staffClinicId);
-      } catch (_) {}
-      dispatch({ type: 'DELETE_STAFF', payload: id });
+    if (member) {
+      setDeleteTargetStaff(member);
     }
   };
 
@@ -427,6 +416,35 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={Boolean(deleteTargetStaff)}
+        onClose={() => setDeleteTargetStaff(null)}
+        onConfirm={async () => {
+          if (!deleteTargetStaff) return;
+          const id = deleteTargetStaff.id;
+          const staffClinicId = tenant?.id || 'dr-ahmed';
+          if (isSupabaseConfigured()) {
+            try {
+              await staffService.deleteStaffMember(id);
+            } catch (err) {
+              console.error('Failed to delete staff in Supabase:', err);
+            }
+          }
+          try {
+            deleteRegisteredUser(id, staffClinicId);
+            if (deleteTargetStaff?.phone) deleteRegisteredUser(deleteTargetStaff.phone, staffClinicId);
+            if (deleteTargetStaff?.email) deleteRegisteredUser(deleteTargetStaff.email, staffClinicId);
+          } catch (_) {}
+          dispatch({ type: 'DELETE_STAFF', payload: id });
+          setDeleteTargetStaff(null);
+        }}
+        title="حذف حساب الموظف"
+        message={`هل أنت متأكد من حذف حساب الموظف (${deleteTargetStaff?.name}) نهائياً؟ سيتم إلغاء وصوله وصلاحياته في العيادة.`}
+        confirmText="نعم، حذف الحساب"
+        cancelText="إلغاء"
+        isDestructive={true}
+      />
     </div>
   );
 }

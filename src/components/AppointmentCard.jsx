@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { XCircle, Clock, MessageCircle, Check, Stethoscope, UserPlus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import ConfirmationModal from './ConfirmationModal';
 import './AppointmentCard.css';
 
 const AppointmentCard = ({ appointment, onUpdateStatus }) => {
   const { state, dispatch } = useApp();
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   const getStatusText = (status) => {
     switch (status) {
@@ -29,9 +31,7 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
   };
 
   const handleCancel = () => {
-    if (window.confirm('هل أنت متأكد من إلغاء هذا الموعد؟')) {
-      handleStatusChange('cancelled');
-    }
+    setIsCancelModalOpen(true);
   };
 
   // Generate clean initials for patient avatar
@@ -148,6 +148,17 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={() => handleStatusChange('cancelled')}
+        title="إلغاء الموعد"
+        message={`هل أنت متأكد من إلغاء موعد المريض (${appointment.patientName})؟ سيتم تغيير حالة الحجز وإتاحته لمرضى آخرين.`}
+        confirmText="نعم، إلغاء الموعد"
+        cancelText="تراجع"
+        isDestructive={true}
+      />
     </div>
   );
 };

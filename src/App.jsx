@@ -11,6 +11,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import SeoHeadManager from './components/SeoHeadManager';
 import Breadcrumbs from './components/Breadcrumbs';
+import ScrollProgressBar from './components/ui/ScrollProgressBar';
+import ScrollToTopButton from './components/ui/ScrollToTopButton';
+import CookieBanner from './components/CookieBanner';
+import FloatingContactButton from './components/FloatingContactButton';
 import { initGlobalErrorListeners } from './services/systemErrorService';
 import './App.css';
 
@@ -184,106 +188,113 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <a href="#main-content" className="skip-to-content">الانتقال إلى المحتوى الرئيسي</a>
+      <ScrollProgressBar />
       <SeoHeadManager />
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* 1. Public Pages (Clean Canvas Layout) */}
-          <Route path="/" element={
-            user ? (
-              (user.role === 'super_admin' || user.isSuperAdmin) ? (
-                <Navigate to="/super-admin" replace />
+      <main id="main-content">
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* 1. Public Pages (Clean Canvas Layout) */}
+            <Route path="/" element={
+              user ? (
+                (user.role === 'super_admin' || user.isSuperAdmin) ? (
+                  <Navigate to="/super-admin" replace />
+                ) : (
+                  <ProtectedRoute>
+                    <AdminLayout />
+                  </ProtectedRoute>
+                )
+              ) : isDedicatedDomain ? (
+                <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
               ) : (
-                <ProtectedRoute>
-                  <AdminLayout />
-                </ProtectedRoute>
+                <LandingPage />
               )
-            ) : isDedicatedDomain ? (
+            }>
+              {user && !user.isSuperAdmin && user.role !== 'super_admin' && <Route index element={<Dashboard />} />}
+            </Route>
+
+            <Route path="/login" element={
+              <div className="app-wrapper booking-layout" data-theme={state.theme}><Login /></div>
+            } />
+            <Route path="/onboarding" element={
+              <ProtectedRoute allowedRoles={['doctor']}>
+                <div className="app-wrapper booking-layout" data-theme={state.theme}><Onboarding /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/booking" element={
               <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
-            ) : (
-              <LandingPage />
-            )
-          }>
-            {user && !user.isSuperAdmin && user.role !== 'super_admin' && <Route index element={<Dashboard />} />}
-          </Route>
+            } />
+            <Route path="/manage-booking" element={
+              <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
+            } />
 
-          <Route path="/login" element={
-            <div className="app-wrapper booking-layout" data-theme={state.theme}><Login /></div>
-          } />
-          <Route path="/onboarding" element={
-            <ProtectedRoute allowedRoles={['doctor']}>
-              <div className="app-wrapper booking-layout" data-theme={state.theme}><Onboarding /></div>
-            </ProtectedRoute>
-          } />
-          <Route path="/booking" element={
-            <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
-          } />
-          <Route path="/manage-booking" element={
-            <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
-          } />
+            {/* Multi-Tenant Public Pages & Tenant Slugs */}
+            <Route path="/c/:clinicSlug" element={<Navigate to="booking" replace />} />
+            <Route path="/c/:clinicSlug/booking" element={
+              <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
+            } />
+            <Route path="/c/:clinicSlug/manage-booking" element={
+              <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
+            } />
 
-          {/* Multi-Tenant Public Pages & Tenant Slugs */}
-          <Route path="/c/:clinicSlug" element={<Navigate to="booking" replace />} />
-          <Route path="/c/:clinicSlug/booking" element={
-            <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
-          } />
-          <Route path="/c/:clinicSlug/manage-booking" element={
-            <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
-          } />
+            {/* Super Admin Control Plane & SaaS Admin Aliases */}
+            <Route path="/super-admin" element={
+              <ProtectedRoute allowedRoles={['super_admin']}>
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
+            <Route path="/admin" element={<Navigate to="/super-admin" replace />} />
+            <Route path="/saas-admin" element={<Navigate to="/super-admin" replace />} />
+            <Route path="/saas" element={<Navigate to="/super-admin" replace />} />
+            <Route path="/control-plane" element={<Navigate to="/super-admin" replace />} />
 
-          {/* Super Admin Control Plane & SaaS Admin Aliases */}
-          <Route path="/super-admin" element={
-            <ProtectedRoute allowedRoles={['super_admin']}>
-              <SuperAdminDashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/superadmin" element={<Navigate to="/super-admin" replace />} />
-          <Route path="/admin" element={<Navigate to="/super-admin" replace />} />
-          <Route path="/saas-admin" element={<Navigate to="/super-admin" replace />} />
-          <Route path="/saas" element={<Navigate to="/super-admin" replace />} />
-          <Route path="/control-plane" element={<Navigate to="/super-admin" replace />} />
+            {/* 2. Admin Protected Routes with Sidebar & Header Layout */}
+            <Route element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/appointments" element={
+                <ProtectedRoute requiredPermission="appointments"><Appointments /></ProtectedRoute>
+              } />
+              <Route path="/patients" element={
+                <ProtectedRoute requiredPermission="patients"><Patients /></ProtectedRoute>
+              } />
+              <Route path="/invoices" element={
+                <ProtectedRoute requiredPermission="invoices"><Invoices /></ProtectedRoute>
+              } />
+              <Route path="/inventory" element={
+                <ProtectedRoute requiredPermission="inventory"><Inventory /></ProtectedRoute>
+              } />
+              <Route path="/labs" element={
+                <ProtectedRoute requiredPermission="labs"><Labs /></ProtectedRoute>
+              } />
+              <Route path="/attendance" element={
+                <ProtectedRoute><Attendance /></ProtectedRoute>
+              } />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/doctor-agent" element={
+                <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
+              } />
+              <Route path="/doctor-assistant" element={<Navigate to="/doctor-agent" replace />} />
+              <Route path="/settings" element={
+                <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>
+              } />
+            </Route>
 
-          {/* 2. Admin Protected Routes with Sidebar & Header Layout */}
-          <Route element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/appointments" element={
-              <ProtectedRoute requiredPermission="appointments"><Appointments /></ProtectedRoute>
-            } />
-            <Route path="/patients" element={
-              <ProtectedRoute requiredPermission="patients"><Patients /></ProtectedRoute>
-            } />
-            <Route path="/invoices" element={
-              <ProtectedRoute requiredPermission="invoices"><Invoices /></ProtectedRoute>
-            } />
-            <Route path="/inventory" element={
-              <ProtectedRoute requiredPermission="inventory"><Inventory /></ProtectedRoute>
-            } />
-            <Route path="/labs" element={
-              <ProtectedRoute requiredPermission="labs"><Labs /></ProtectedRoute>
-            } />
-            <Route path="/attendance" element={
-              <ProtectedRoute><Attendance /></ProtectedRoute>
-            } />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/doctor-agent" element={
-              <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
-            } />
-            <Route path="/doctor-assistant" element={<Navigate to="/doctor-agent" replace />} />
-            <Route path="/settings" element={
-              <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>
-            } />
-          </Route>
+            {/* 3. Removed Routes Redirects */}
+            <Route path="/insurance" element={<Navigate to="/" replace />} />
 
-          {/* 3. Removed Routes Redirects */}
-          <Route path="/insurance" element={<Navigate to="/" replace />} />
-
-          {/* 4. Fallback unknown paths */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+            {/* 4. Fallback unknown paths */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </main>
+      <ScrollToTopButton />
+      <FloatingContactButton />
+      <CookieBanner />
     </ErrorBoundary>
   );
 }
