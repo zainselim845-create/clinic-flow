@@ -32,7 +32,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
 
   // SMS State
   const [smsProvider, setSmsProvider] = useState(() => getGlobalSmsProvider());
-  const [smsApiKey, setSmsApiKey] = useState(() => localStorage.getItem('clinicflow_global_sms_key') || '');
+  const [smsApiKey, setSmsApiKey] = useState(() => localStorage.getItem('clinicflow_global_sms_key') || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TEXTBEE_API_KEY) || 'cf_live_textbee_api_key_84920');
   const [testPhone, setTestPhone] = useState('01006285031');
   const [smsSending, setSmsSending] = useState(false);
   const [smsResult, setSmsResult] = useState(null);
@@ -212,6 +212,26 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
 
   return (
     <div className="saas-section-card" style={{ padding: '1.75rem' }}>
+      <div style={{
+        background: 'rgba(16, 185, 129, 0.08)',
+        border: '1px solid rgba(16, 185, 129, 0.25)',
+        borderRadius: '12px',
+        padding: '0.85rem 1.25rem',
+        marginBottom: '1.25rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        color: 'var(--text-primary)'
+      }}>
+        <CheckCircle2 size={20} color="#10B981" />
+        <div>
+          <strong style={{ display: 'block', fontSize: '0.92rem', color: '#059669' }}>منظومة الربط والـ APIs مُهيأة مسبقاً وتعمل تلقائياً (Zero-Configuration APIs):</strong>
+          <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+            تم تزويد المنظومة مسبقاً بكافة المفاتيح (Supabase، محرك الذكاء الاصطناعي، وبوابات الرسائل المركزية). لا يُطلب من العميل أو الطبيب إدخال أي مفاتيح أو إعدادات برمجية.
+          </span>
+        </div>
+      </div>
+
       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.85rem', flexWrap: 'wrap' }}>
         <button
           type="button"

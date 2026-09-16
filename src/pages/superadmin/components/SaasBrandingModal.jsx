@@ -14,7 +14,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { Dialog, Portal } from '../../../components/ui';
-import { CURATED_CLINIC_PALETTES } from '../../../components/ClinicPalettePicker';
+import { CURATED_CLINIC_PALETTES, PALETTE_CATEGORIES } from '../../../components/ClinicPalettePicker';
 import { MEDICAL_PRESET_LOGOS } from '../../../components/ClinicLogoUploader';
 
 export default function SaasBrandingModal({
@@ -26,6 +26,7 @@ export default function SaasBrandingModal({
   const fileInputRef = useRef(null);
 
   const [selectedPaletteId, setSelectedPaletteId] = useState('monochrome');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [logoUrl, setLogoUrl] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -46,6 +47,9 @@ export default function SaasBrandingModal({
   if (!clinic) return null;
 
   const activePalette = CURATED_CLINIC_PALETTES.find(p => p.id === selectedPaletteId) || CURATED_CLINIC_PALETTES[0];
+  const filteredPalettes = selectedCategory === 'all' 
+    ? CURATED_CLINIC_PALETTES 
+    : CURATED_CLINIC_PALETTES.filter(p => p.group === selectedCategory);
 
   const handleFile = (file) => {
     if (!file) return;
@@ -147,25 +151,49 @@ export default function SaasBrandingModal({
 
             <form onSubmit={handleSave} className="space-y-6">
               
-              {/* SECTION 1: 3-COLOR PALETTE SELECTION */}
+              {/* SECTION 1: 10-COLOR IDENTITY PALETTES SELECTION */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
-                    1. اختيار باليتة الألوان المعتمدة (3 خيارات أساسية متوازنة)
+                    1. اختيار باليتة الألوان المعتمدة (10 ثيمات متخصصة بحسب هوية العيادة)
                   </label>
                   <span className="text-[11px] text-zinc-400">
-                    الأساس يظل أبيض وأسود
+                    الأساس يظل أبيض وأسود نقي
                   </span>
+                </div>
+
+                {/* Category Pills Filter */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                  {PALETTE_CATEGORIES.map((cat) => {
+                    const isActive = selectedCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className={`text-[11px] px-2.5 py-1 rounded-full whitespace-nowrap transition-colors ${
+                          isActive 
+                            ? 'bg-zinc-900 text-white font-bold dark:bg-white dark:text-zinc-900' 
+                            : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div 
                   style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-                    gap: '0.75rem' 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))', 
+                    gap: '0.65rem',
+                    maxHeight: '250px',
+                    overflowY: 'auto',
+                    padding: '2px'
                   }}
                 >
-                  {CURATED_CLINIC_PALETTES.map((palette) => {
+                  {filteredPalettes.map((palette) => {
                     const isSelected = selectedPaletteId === palette.id;
                     const isMonochrome = palette.id === 'monochrome';
 
@@ -178,40 +206,55 @@ export default function SaasBrandingModal({
                           display: 'flex',
                           flexDirection: 'column',
                           justifyContent: 'space-between',
-                          padding: '0.85rem',
+                          padding: '0.75rem',
                           borderRadius: '12px',
                           border: isSelected ? (isMonochrome ? '2px solid #09090B' : `2px solid ${palette.hex}`) : '1.5px solid #E4E4E7',
                           backgroundColor: isSelected ? (isMonochrome ? '#09090B' : '#FFFFFF') : '#FAFAFA',
                           color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B',
-                          boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.08)' : 'none',
+                          boxShadow: isSelected ? (isMonochrome ? '0 4px 12px rgba(0,0,0,0.1)' : `0 4px 12px ${palette.hex}25`) : 'none',
                           cursor: 'pointer',
                           textAlign: 'right',
-                          minHeight: '115px',
+                          minHeight: '110px',
                           transition: 'all 0.15s ease'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '0.5rem' }}>
-                          {isMonochrome ? (
-                            <div style={{ width: '22px', height: '22px', borderRadius: '50%', border: '1.5px solid currentColor', overflow: 'hidden', display: 'flex' }}>
-                              <div style={{ width: '50%', height: '100%', backgroundColor: '#FFFFFF' }} />
-                              <div style={{ width: '50%', height: '100%', backgroundColor: '#09090B' }} />
-                            </div>
-                          ) : (
-                            <div 
-                              style={{ width: '22px', height: '22px', borderRadius: '50%', backgroundColor: palette.hex, boxShadow: '0 2px 4px rgba(0,0,0,0.15)' }}
-                            />
-                          )}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '0.35rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                            {isMonochrome ? (
+                              <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '1.5px solid currentColor', overflow: 'hidden', display: 'flex' }}>
+                                <div style={{ width: '50%', height: '100%', backgroundColor: '#FFFFFF' }} />
+                                <div style={{ width: '50%', height: '100%', backgroundColor: '#09090B' }} />
+                              </div>
+                            ) : (
+                              <div 
+                                style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: palette.hex, boxShadow: `0 2px 4px ${palette.hex}40` }}
+                              />
+                            )}
+
+                            <span 
+                              style={{ 
+                                fontSize: '0.65rem', 
+                                fontWeight: 700, 
+                                padding: '0.1rem 0.35rem', 
+                                borderRadius: '4px',
+                                backgroundColor: isSelected && isMonochrome ? 'rgba(255,255,255,0.2)' : `${palette.hex}15`,
+                                color: isSelected && isMonochrome ? '#FFFFFF' : palette.hex
+                              }}
+                            >
+                              {palette.badgeText}
+                            </span>
+                          </div>
 
                           {isSelected && (
-                            <Check size={16} strokeWidth={3} color={isMonochrome ? '#FFFFFF' : '#10B981'} />
+                            <Check size={15} strokeWidth={3} color={isMonochrome ? '#FFFFFF' : palette.hex} />
                           )}
                         </div>
 
                         <div>
-                          <div style={{ fontSize: '0.85rem', fontWeight: 800, lineHeight: 1.3, color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B' }}>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 800, lineHeight: 1.3, color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B' }}>
                             {palette.name}
                           </div>
-                          <div style={{ fontSize: '0.72rem', marginTop: '0.25rem', color: isSelected && isMonochrome ? 'rgba(255,255,255,0.75)' : '#71717A', lineHeight: 1.35 }}>
+                          <div style={{ fontSize: '0.68rem', marginTop: '0.2rem', color: isSelected && isMonochrome ? 'rgba(255,255,255,0.75)' : '#71717A', lineHeight: 1.3 }}>
                             {palette.specialty}
                           </div>
                         </div>

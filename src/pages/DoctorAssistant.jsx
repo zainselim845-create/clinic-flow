@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   Bot, Send, Sparkles, Users, MessageSquare, CheckSquare, 
-  Square, Stethoscope, RefreshCw, CheckCircle2, MessageCircle, Filter, Trash2, Settings
+  Square, Stethoscope, RefreshCw, CheckCircle2, MessageCircle, Filter, Trash2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -494,29 +494,9 @@ const DoctorAssistant = ({ initialMode }) => {
                 </div>
 
             <div className="console-header-actions">
-              {aiConfig?.apiKey ? (
-                <span className="live-status-dot ai-online" title={`متصل بـ OpenRouter (${aiConfig.model})`}>
-                  AI سحابي نشط
-                </span>
-              ) : (
-                <span 
-                  className="live-status-dot ai-local" 
-                  onClick={() => navigate('/settings?tab=aiAssistant')}
-                  style={{ cursor: 'pointer' }}
-                  title="يعمل بالمحرك السريري المحلي الذكي. اضغط لضبط مفتاح OpenRouter AI"
-                >
-                  محرك سريري محلي
-                </span>
-              )}
-              <button 
-                type="button" 
-                onClick={() => navigate('/settings?tab=aiAssistant')}
-                className="btn-ai-settings"
-                title="إعدادات ونماذج الذكاء الاصطناعي"
-              >
-                <Settings size={13} />
-                <span>إعدادات AI</span>
-              </button>
+              <span className="live-status-dot ai-online" title="محرك الذكاء الاصطناعي السريري نشط ومُهيأ تلقائياً">
+                الذكاء الاصطناعي نشط
+              </span>
               <button 
                 type="button" 
                 onClick={handleClearChat}

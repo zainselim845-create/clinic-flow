@@ -12,10 +12,30 @@ describe('Monochrome Black & White Core & Curated Client Palette', () => {
       expect(defaultPalette.hex).toBe('#09090B');
     });
 
-    it('contains exactly 3 curated options (monochrome base + royal-blue + clinical-emerald)', () => {
-      expect(CURATED_CLINIC_PALETTES.length).toBe(3);
+    it('contains 10 curated options tailored to clinical specialties and identities', () => {
+      expect(CURATED_CLINIC_PALETTES.length).toBe(10);
       const ids = CURATED_CLINIC_PALETTES.map(p => p.id);
-      expect(ids).toEqual(['monochrome', 'royal-blue', 'clinical-emerald']);
+      expect(ids).toEqual([
+        'monochrome',
+        'royal-blue',
+        'clinical-emerald',
+        'precision-teal',
+        'rose-radiance',
+        'deep-amethyst',
+        'amber-vitality',
+        'warm-coral',
+        'slate-indigo',
+        'obsidian-gold'
+      ]);
+
+      // Every palette must have valid hex, specialty, category, and badgeText
+      CURATED_CLINIC_PALETTES.forEach(palette => {
+        expect(palette.hex).toMatch(/^#[0-9A-Fa-f]{6}$/);
+        expect(palette.name).toBeTruthy();
+        expect(palette.specialty).toBeTruthy();
+        expect(palette.badgeText).toBeTruthy();
+        expect(palette.group).toBeTruthy();
+      });
     });
   });
 
