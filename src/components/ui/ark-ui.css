@@ -17,8 +17,7 @@
 .feedback-modal-overlay,
 .modal-backdrop-shift,
 .wallet-modal-overlay,
-.saas-modal-backdrop,
-.google-picker-backdrop {
+.saas-modal-backdrop {
   position: fixed !important;
   inset: 0 !important;
   z-index: 1050 !important;
@@ -26,8 +25,7 @@
 }
 
 [data-scope="dialog"][data-part="positioner"],
-.ark-dialog-positioner,
-.google-picker-positioner {
+.ark-dialog-positioner {
   position: fixed !important;
   inset: 0 !important;
   display: flex !important;
@@ -49,8 +47,7 @@
 .invoice-modal-card,
 .global-search-card,
 .inventory-modal-card,
-.feedback-modal-card,
-.google-picker-card {
+.feedback-modal-card {
   position: relative !important;
   z-index: 1056 !important;
   pointer-events: auto !important;

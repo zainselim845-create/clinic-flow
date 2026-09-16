@@ -27,8 +27,10 @@ import {
   EditUserModal,
   TopUpCreditsModal,
   SaasInfrastructureCenter,
-  SaasBrandingModal
+  SaasBrandingModal,
+  ClinicSubscriptionControlModal
 } from './components';
+import { getSaaSBillingMetrics } from '../../services/saasSubscriptionPlansService';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import { 
   saveRegisteredTenant, 
@@ -59,6 +61,8 @@ export default function SuperAdminDashboard() {
   const [selectedTopUpClinic, setSelectedTopUpClinic] = useState(null);
   const [isBrandingModalOpen, setIsBrandingModalOpen] = useState(false);
   const [selectedBrandingClinic, setSelectedBrandingClinic] = useState(null);
+  const [isSubscriptionControlModalOpen, setIsSubscriptionControlModalOpen] = useState(false);
+  const [selectedClinicForControl, setSelectedClinicForControl] = useState(null);
 
   // User accounts management state
   const [allUsers, setAllUsers] = useState(() => getAllPlatformUsers());
@@ -95,13 +99,8 @@ export default function SuperAdminDashboard() {
     const usage = getClinicUsage(t.id, t.quotas, t.subscriptionTier);
     return sum + (usage.totalSmsAllowed || usage.monthlySmsQuota || 1000);
   }, 0);
-  const estimatedMRR = allTenants.reduce((sum, t) => {
-    if (t.subscriptionStatus === 'suspended') return sum; // Exclude suspended from MRR
-    const tier = t.subscriptionTier || 'pro';
-    if (tier === 'enterprise') return sum + 3500;
-    if (tier === 'pro') return sum + 1800;
-    return sum + 850;
-  }, 0);
+  const billingMetrics = getSaaSBillingMetrics(allTenants);
+  const estimatedMRR = billingMetrics.mrr;
 
   // Filtered tenants with safe nil handling
   const cleanSearch = (searchTerm || '').trim().toLowerCase();
@@ -476,6 +475,10 @@ export default function SuperAdminDashboard() {
               setSelectedBrandingClinic(clinic);
               setIsBrandingModalOpen(true);
             }}
+            onManageSubscription={(clinic) => {
+              setSelectedClinicForControl(clinic);
+              setIsSubscriptionControlModalOpen(true);
+            }}
             onDeleteClinic={handleDeleteClinic}
           />
         ) : activeTab === 'users' ? (
@@ -602,6 +605,19 @@ export default function SuperAdminDashboard() {
             }
             return t;
           }));
+        }}
+      />
+
+      {/* Modal: Clinic Lifecycle & Subscription Control */}
+      <ClinicSubscriptionControlModal
+        isOpen={isSubscriptionControlModalOpen}
+        onClose={() => {
+          setIsSubscriptionControlModalOpen(false);
+          setSelectedClinicForControl(null);
+        }}
+        clinic={selectedClinicForControl}
+        onSuccess={() => {
+          setAllTenants(getRegisteredTenants());
         }}
       />
     </div>

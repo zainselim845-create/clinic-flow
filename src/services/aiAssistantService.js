@@ -6,7 +6,7 @@
 import { circuitBreaker } from '../utils/circuitBreaker';
 import { canClinicUseAi, deductAiTokens } from './usageMeteringService';
 
-export const DEFAULT_OPENROUTER_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OPENROUTER_API_KEY) || 'sk-or-v1-clinicflow-enterprise-production-key-auto';
+export const DEFAULT_OPENROUTER_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OPENROUTER_API_KEY) || '';
 export const DEFAULT_AI_MODEL = 'nvidia/nemotron-3-super-120b-a12b:free';
 export const FALLBACK_AI_MODEL = 'openrouter/auto';
 
@@ -134,7 +134,7 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${key.trim()}`,
+          'Authorization': `Bearer ${(key || '').trim()}`,
           'HTTP-Referer': (typeof window !== 'undefined' && window.location?.origin) || 'https://clinicflow.app',
           'X-Title': 'ClinicFlow Doctor AI Assistant'
         },

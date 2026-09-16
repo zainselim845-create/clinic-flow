@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, AlertTriangle, KeyRound, Building2, ShieldCheck, Globe, Copy, Check, ExternalLink, Sparkles, LogIn, User, Info, CheckCircle2, Mail, Users } from 'lucide-react';
+import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, AlertTriangle, KeyRound, Building2, ShieldCheck, Globe, Check, User, Info, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Tabs } from '../components/ui/tabs';
-import { Dialog } from '../components/ui/dialog';
 import { Collapsible } from '../components/ui/collapsible';
 import { 
   triggerGoogleOAuthPopup 
@@ -32,10 +31,6 @@ const Login = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
-  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
-  const [customRealEmail, setCustomRealEmail] = useState('');
-  const [customRealName, setCustomRealName] = useState('');
-  const [googleModalTab, setGoogleModalTab] = useState('personas'); // 'personas' | 'direct_email'
 
   // New Clinic Onboarding Form State
   const [regForm, setRegForm] = useState({
@@ -187,7 +182,8 @@ const Login = () => {
     }
   };
 
-  const handleRealGoogleLoginFlow = async () => {
+  const handleGoogleSignInClick = async () => {
+    if (lockoutTimer > 0) return;
     setIsLoading(true);
     setError('');
     setSuccessMessage('');
@@ -196,8 +192,7 @@ const Login = () => {
       const res = await loginWithGoogleProfile(profile, portalScope === 'saas' ? 'super_admin' : 'doctor');
       if (res?.error) throw res.error;
       const loggedUser = res?.data?.user;
-      setIsGoogleModalOpen(false);
-      setSuccessMessage(`أهلاً بك يا ${profile.name}! تم التحقق وتسجيل الدخول بحساب Google بنجاح.`);
+      setSuccessMessage(`أهلاً بك يا ${profile.name}! تم تسجيل الدخول بنجاح.`);
       setTimeout(() => {
         if (portalScope === 'saas') {
           navigate('/super-admin', { replace: true });
@@ -208,78 +203,8 @@ const Login = () => {
         }
       }, 500);
     } catch (err) {
-      console.warn('Google OAuth popup fell back to account picker:', err?.message || err);
-      // Clean fallback: open Google accounts chooser modal
-      setGoogleModalTab('personas');
-      setIsGoogleModalOpen(true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGoogleSignInClick = async () => {
-    if (lockoutTimer > 0) return;
-    await handleRealGoogleLoginFlow();
-  };
-
-  const handleCustomRealEmailLogin = async (e) => {
-    e?.preventDefault();
-    if (!customRealEmail.trim() || !customRealEmail.includes('@')) {
-      setError('يرجى كتابة بريد إلكتروني صحيح (@gmail.com).');
-      return;
-    }
-    setIsLoading(true);
-    setError('');
-    try {
-      const cleanEmail = customRealEmail.trim().toLowerCase();
-      const rawName = customRealName.trim() || cleanEmail.split('@')[0];
-      const displayName = rawName.startsWith('د.') ? rawName : `د. ${rawName}`;
-      const realProfile = {
-        id: `google-${Date.now()}`,
-        email: cleanEmail,
-        name: displayName,
-        picture: null,
-        email_verified: true
-      };
-      const res = await loginWithGoogleProfile(realProfile, portalScope === 'saas' ? 'super_admin' : 'doctor');
-      if (res?.error) throw res.error;
-      const loggedUser = res?.data?.user;
-      setIsGoogleModalOpen(false);
-      setSuccessMessage(`أهلاً بك يا ${displayName}! تم تسجيل الدخول بنجاح.`);
-      setTimeout(() => {
-        if (portalScope === 'saas') {
-          navigate('/super-admin', { replace: true });
-        } else if (res?.needsOnboarding || loggedUser?.needsOnboarding) {
-          navigate('/onboarding', { replace: true });
-        } else {
-          navigate('/dashboard', { replace: true });
-        }
-      }, 500);
-    } catch (err) {
-      setError(err.message || 'فشل تسجيل الدخول.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSelectGoogleAccount = async (personaRole) => {
-    setIsGoogleModalOpen(false);
-    setIsLoading(true);
-    setError('');
-    setSuccessMessage('');
-    try {
-      const { error: gError } = await signInWithGoogle(personaRole);
-      if (gError) throw gError;
-      setSuccessMessage('تم التحقق والتسجيل عبر حساب Google بنجاح! جاري توجيهك...');
-      setTimeout(() => {
-        if (personaRole === 'superadmin') {
-          navigate('/super-admin', { replace: true });
-        } else {
-          navigate('/dashboard', { replace: true });
-        }
-      }, 500);
-    } catch (err) {
-      setError(err.message || 'تعذر تسجيل الدخول عبر Google. يرجى المحاولة لاحقاً.');
+      console.warn('Google OAuth login notice:', err?.message || err);
+      setError(err?.message || 'تعذر تسجيل الدخول عبر Google. يرجى استخدام البريد الإلكتروني أو الهاتف.');
     } finally {
       setIsLoading(false);
     }
@@ -670,148 +595,7 @@ const Login = () => {
           <span>تسجيل الدخول باستخدام Google</span>
         </button>
 
-        {/* Ark UI Real Google OAuth & Account Connect Modal */}
-        <Dialog.Root open={isGoogleModalOpen} onOpenChange={(details) => setIsGoogleModalOpen(details.open)} lazyMount unmountOnExit>
-          <Dialog.Backdrop className="google-picker-backdrop ark-dialog-backdrop" />
-          <Dialog.Positioner className="google-picker-positioner ark-dialog-positioner">
-            <Dialog.Content className="google-picker-card google-oauth-modal">
-              <div className="google-picker-header">
-                <svg className="google-icon" width="30" height="30" viewBox="0 0 18 18" aria-hidden="true">
-                  <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-                  <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-                  <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
-                  <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
-                </svg>
-                <Dialog.Title asChild>
-                  <h3>تسجيل الدخول بحساب Google</h3>
-                </Dialog.Title>
-                <Dialog.Description asChild>
-                  <p>اختر حساباً للمتابعة أو سجّل دخولك بحساب Gmail للبدء الفوري</p>
-                </Dialog.Description>
-              </div>
 
-              {/* Clean Doctor-Centric Tabs (Only 2 Tabs) */}
-              <div className="google-modal-tab-bar" role="tablist" aria-label="خيارات تسجيل الدخول عبر Google">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={googleModalTab === 'personas'}
-                  className={`google-tab-btn ${googleModalTab === 'personas' ? 'active' : ''}`}
-                  onClick={() => setGoogleModalTab('personas')}
-                >
-                  <Users size={14} />
-                  <span>الحسابات الجاهزة</span>
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={googleModalTab === 'direct_email'}
-                  className={`google-tab-btn ${googleModalTab === 'direct_email' ? 'active' : ''}`}
-                  onClick={() => setGoogleModalTab('direct_email')}
-                >
-                  <Sparkles size={14} className="text-primary" />
-                  <span>دخول بحساب Gmail مخصص</span>
-                </button>
-              </div>
-
-              {/* Tab 1: Fast Ready Personas */}
-              {googleModalTab === 'personas' && (
-                <div className="google-accounts-list">
-                  <div 
-                    className="google-account-item" 
-                    onClick={() => handleSelectGoogleAccount('doctor')}
-                  >
-                    <div className="google-avatar-circle" style={{ background: '#0B57D0', color: '#FFF' }}>أ</div>
-                    <div className="account-details">
-                      <strong>د. أحمد الشريف (طبيب عيادة)</strong>
-                      <small>dr.ahmed.google@gmail.com</small>
-                      <span className="role-tag doctor-tag">صلاحيات سريرية ومالية كاملة</span>
-                    </div>
-                  </div>
-
-                  <div 
-                    className="google-account-item" 
-                    onClick={() => handleSelectGoogleAccount('staff')}
-                  >
-                    <div className="google-avatar-circle" style={{ background: '#0284C7', color: '#FFF' }}>س</div>
-                    <div className="account-details">
-                      <strong>سارة كمال (استقبال وسكرتارية)</strong>
-                      <small>sara.kamal.reception@gmail.com</small>
-                      <span className="role-tag staff-tag">صلاحيات تنظيم المواعيد والصالة فقط</span>
-                    </div>
-                  </div>
-
-                  <div 
-                    className="google-account-item" 
-                    onClick={() => handleSelectGoogleAccount('superadmin')}
-                  >
-                    <div className="google-avatar-circle" style={{ background: '#DC2626', color: '#FFF' }}>م</div>
-                    <div className="account-details">
-                      <strong>مدير المنصة العام (Super Admin)</strong>
-                      <small>admin.google@clinicflow.com</small>
-                      <span className="role-tag admin-tag">لوحة التحكم السحابية الشاملة</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Tab 2: Direct Real Personal Email Entry */}
-              {googleModalTab === 'direct_email' && (
-                <div className="google-tab-body">
-                  <form onSubmit={handleCustomRealEmailLogin} className="google-direct-form">
-                    <div className="form-group">
-                      <label className="google-form-label" htmlFor="real-google-email">
-                        <Mail size={13} className="text-primary" />
-                        <span>بريدك الإلكتروني (Google / Gmail):</span>
-                      </label>
-                      <input
-                        id="real-google-email"
-                        type="email"
-                        dir="ltr"
-                        required
-                        autoFocus
-                        className="input-field"
-                        placeholder="doctor@gmail.com"
-                        value={customRealEmail}
-                        onChange={(e) => setCustomRealEmail(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="google-form-label" htmlFor="real-google-name">
-                        <User size={13} className="text-primary" />
-                        <span>اسم الطبيب / اللقب الكامل:</span>
-                      </label>
-                      <input
-                        id="real-google-name"
-                        type="text"
-                        required
-                        className="input-field"
-                        placeholder="د. محمد أحمد"
-                        value={customRealName}
-                        onChange={(e) => setCustomRealName(e.target.value)}
-                      />
-                    </div>
-
-                    <button type="submit" className="btn btn-primary btn-save-google" disabled={isLoading}>
-                      {isLoading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
-                      <span>الدخول الفوري ومتابعة إعداد العيادة 🚀</span>
-                    </button>
-                  </form>
-                </div>
-              )}
-
-              <Dialog.CloseTrigger asChild>
-                <button 
-                  type="button" 
-                  className="btn-close-google-picker"
-                >
-                  إغلاق
-                </button>
-              </Dialog.CloseTrigger>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Dialog.Root>
 
         {/* Ark UI Collapsible Fast Role Testing Helpers */}
         <Collapsible.Root defaultOpen={false} className="demo-sandbox-helper" style={{ marginTop: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '0.85rem 1.15rem', background: 'var(--surface-container, #F0F4F9)' }}>

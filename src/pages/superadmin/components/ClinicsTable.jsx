@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert } from 'lucide-react';
 import { getClinicUsage } from '../../../services/usageMeteringService';
 import { getClinicSenderId } from '../../../services/smsService';
 
@@ -22,6 +22,7 @@ export function ClinicsTable({
   onSwitchAndVisit,
   onTopUpClinic,
   onCustomizeBrand,
+  onManageSubscription,
   onDeleteClinic
 }) {
   return (
@@ -302,6 +303,30 @@ export function ClinicsTable({
                         >
                           <Palette size={13} color="#09090B" />
                           <span>الهوية والشعار</span>
+                        </button>
+
+                        {/* Direct Subscription & Freeze/Suspend Control */}
+                        <button
+                          type="button"
+                          onClick={() => onManageSubscription && onManageSubscription(t)}
+                          className="btn-manage-subscription"
+                          title="التحكم الكامل في الباقة والوقف والتجديد والحصص"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.25rem',
+                            background: '#EEF2FF',
+                            border: '1px solid #C7D2FE',
+                            borderRadius: '6px',
+                            padding: '0.32rem 0.6rem',
+                            fontSize: '0.78rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            color: '#3730A3'
+                          }}
+                        >
+                          <ShieldAlert size={13} color="#4F46E5" />
+                          <span>الباقة والوقف</span>
                         </button>
 
                         {isPending && (

@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { 
   Database, Server, ShieldCheck, Download, CheckCircle2, 
   Smartphone, Sparkles, Send, RefreshCw, Check, Globe, CreditCard,
-  Copy, CheckCheck, ExternalLink, Zap, AlertCircle, ArrowUpRight
+  Copy, CheckCheck, ExternalLink, Zap, AlertCircle, ArrowUpRight,
+  TrendingUp, Users, PauseCircle, PlayCircle, ShieldAlert, Sliders,
+  Edit3, Trash2, Plus, Layers, DollarSign, Calendar, Clock, AlertTriangle,
+  RotateCcw, Search, Filter, Lock, Unlock, PhoneCall
 } from 'lucide-react';
 import { getSupabaseConfig, saveSupabaseConfig } from '../../../lib/supabase';
 import { getRegisteredTenants, getAllPlatformUsers } from '../../../services/authService';
@@ -20,6 +23,16 @@ import {
 } from '../../../services/customDomainService';
 import { getDefaultTierQuotas, getClinicUsage } from '../../../services/usageMeteringService';
 import { getGoogleClientId, saveGoogleClientId, getGoogleOAuthSetupInfo } from '../../../services/googleAuthService';
+import {
+  getSaaSSubscriptionPlans,
+  saveSaaSSubscriptionPlan,
+  deleteSaaSSubscriptionPlan,
+  resetSaaSSubscriptionPlansToDefaults,
+  getSaaSBillingMetrics,
+  updateClinicSubscriptionDetails
+} from '../../../services/saasSubscriptionPlansService';
+import EditPlanTierModal from './EditPlanTierModal';
+import ClinicSubscriptionControlModal from './ClinicSubscriptionControlModal';
 
 export function SaasInfrastructureCenter({ allTenants = [] }) {
   const [subTab, setSubTab] = useState('database');
@@ -33,7 +46,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
 
   // SMS State
   const [smsProvider, setSmsProvider] = useState(() => getGlobalSmsProvider());
-  const [smsApiKey, setSmsApiKey] = useState(() => localStorage.getItem('clinicflow_global_sms_key') || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TEXTBEE_API_KEY) || 'cf_live_textbee_api_key_84920');
+  const [smsApiKey, setSmsApiKey] = useState(() => localStorage.getItem('clinicflow_global_sms_key') || (typeof import.meta !== 'undefined' && import.meta.env?.VITE_TEXTBEE_API_KEY) || '');
   const [testPhone, setTestPhone] = useState('01006285031');
   const [smsSending, setSmsSending] = useState(false);
   const [smsResult, setSmsResult] = useState(null);
@@ -58,6 +71,15 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
   const [googleClientId, setGoogleClientIdState] = useState(() => getGoogleClientId());
   const [googleSaveSuccess, setGoogleSaveSuccess] = useState(false);
   const setupInfo = getGoogleOAuthSetupInfo();
+
+  // SaaS Subscription Plans & Clinics Control State
+  const [plans, setPlans] = useState(() => getSaaSSubscriptionPlans());
+  const [isEditPlanModalOpen, setIsEditPlanModalOpen] = useState(false);
+  const [selectedPlanToEdit, setSelectedPlanToEdit] = useState(null);
+  const [isControlModalOpen, setIsControlModalOpen] = useState(false);
+  const [selectedTenantToControl, setSelectedTenantToControl] = useState(null);
+  const [clinicSubSearch, setClinicSubSearch] = useState('');
+  const [clinicSubStatusFilter, setClinicSubStatusFilter] = useState('all');
 
   const handleSaveGoogleOAuth = (e) => {
     e.preventDefault();
@@ -105,17 +127,81 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
     }
   };
 
+  const billingMetrics = getSaaSBillingMetrics(allTenants);
+
+  const handleOpenEditPlan = (plan) => {
+    setSelectedPlanToEdit(plan);
+    setIsEditPlanModalOpen(true);
+  };
+
+  const handleCreateNewPlan = () => {
+    setSelectedPlanToEdit(null);
+    setIsEditPlanModalOpen(true);
+  };
+
+  const handleSavePlan = (planData) => {
+    saveSaaSSubscriptionPlan(planData);
+    setPlans(getSaaSSubscriptionPlans());
+    setIsEditPlanModalOpen(false);
+    setSelectedPlanToEdit(null);
+  };
+
+  const handleDeletePlan = (planId) => {
+    if (window.confirm('هل أنت متأكد من رغبتك في حذف هذه الباقة المخصصة نهائياً؟')) {
+      deleteSaaSSubscriptionPlan(planId);
+      setPlans(getSaaSSubscriptionPlans());
+    }
+  };
+
+  const handleResetPlans = () => {
+    if (window.confirm('هل أنت متأكد من استعادة الباقات المصنعية الافتراضية (Starter, Pro, Enterprise)؟')) {
+      const reset = resetSaaSSubscriptionPlansToDefaults();
+      setPlans(reset);
+    }
+  };
+
+  const handleOpenControlClinic = (tenant) => {
+    setSelectedTenantToControl(tenant);
+    setIsControlModalOpen(true);
+  };
+
   const handleUpgradeTier = (clinicId, newTier) => {
-    const quotas = {
+    const selectedPlan = plans.find(p => p.id === newTier);
+    const quotas = selectedPlan ? {
+      maxDoctors: selectedPlan.maxDoctors,
+      monthlySmsQuota: selectedPlan.monthlySmsQuota,
+      smsUsed: 0
+    } : {
       starter: { maxDoctors: 1, monthlySmsQuota: 1000, smsUsed: 0 },
       pro: { maxDoctors: 3, monthlySmsQuota: 2000, smsUsed: 0 },
       enterprise: { maxDoctors: 10, monthlySmsQuota: 5000, smsUsed: 0 }
-    };
+    }[newTier] || { maxDoctors: 3, monthlySmsQuota: 2000, smsUsed: 0 };
+
     updateTenantInfo({
       id: clinicId,
       subscriptionTier: newTier,
-      quotas: quotas[newTier] || quotas.pro
+      quotas
     });
+  };
+
+  const handleQuickToggleSuspend = (tenant) => {
+    const isSuspended = tenant.subscriptionStatus === 'suspended';
+    if (isSuspended) {
+      updateClinicSubscriptionDetails(tenant.id, {
+        subscriptionStatus: 'active'
+      });
+      alert(`تم فك تجميد وتفعيل عيادة (${tenant.name}) بنجاح!`);
+    } else {
+      const reason = window.prompt('سبب تجميد وإيقاف العيادة:', 'عدم سداد الاشتراك الدوري المستحق');
+      if (reason !== null) {
+        updateClinicSubscriptionDetails(tenant.id, {
+          subscriptionStatus: 'suspended',
+          suspensionReason: reason.trim() || 'عدم سداد الاشتراك الدوري المستحق'
+        });
+        alert(`تم تجميد عيادة (${tenant.name}) وسيظهر سبب الإيقاف للطبيب فوراً على شاشة الدخول.`);
+      }
+    }
+    setPlans(getSaaSSubscriptionPlans());
   };
 
   const handleExportPlatformBackup = () => {
@@ -695,124 +781,626 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
 
       {subTab === 'subscriptions' && (
         <div className="infra-content-pane">
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: '0 0 0.4rem', fontSize: '1.15rem' }}>إدارة باقات المنصة والخطط السعرية (Platform Subscription Tiers & Quotas)</h3>
-            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-              التحكم في تسعير الباقات، الحصص الشهرية للرسائل والذكاء الاصطناعي، وتعيين باقات العيادات المشتركة.
-            </p>
+          {/* SaaS Billing & Financial Health KPI Banner */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: '1rem',
+            marginBottom: '1.75rem'
+          }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>الدخل الشهري (MRR)</span>
+                <TrendingUp size={16} color="#10B981" />
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {billingMetrics.mrr.toLocaleString()} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>ج.م/شهر</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 700, marginTop: '0.25rem' }}>
+                مبني على الاشتراكات النشطة
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>الدخل السنوي المتوقع (ARR)</span>
+                <DollarSign size={16} color="#3B82F6" />
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {billingMetrics.arr.toLocaleString()} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>ج.م/سنة</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                إجمالي الإيراد السنوي المستهدف
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>العيادات النشطة والمدفوعة</span>
+                <CheckCircle2 size={16} color="#10B981" />
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#059669' }}>
+                {billingMetrics.activePayingCount} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>عيادة</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                سارية ومفعلة بالكامل
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>الموقوفة والمجمدة (Suspended)</span>
+                <ShieldAlert size={16} color="#EF4444" />
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: billingMetrics.suspendedCount > 0 ? '#DC2626' : 'var(--text-primary)' }}>
+                {billingMetrics.suspendedCount} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>عيادة</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: billingMetrics.suspendedCount > 0 ? '#DC2626' : 'var(--text-secondary)', fontWeight: 600, marginTop: '0.25rem' }}>
+                {billingMetrics.suspendedCount > 0 ? 'معطلة لعدم السداد / بانتظار التحصيل' : 'لا توجد عيادات موقوفة'}
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>فترة تجريبية (Trial)</span>
+                <Clock size={16} color="#F59E0B" />
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#D97706' }}>
+                {billingMetrics.trialCount} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>عيادة</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                تجربة مجانية قبل التعاقد
+              </div>
+            </div>
+
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>متوسط الإيراد (ARPU)</span>
+                <Layers size={16} color="#8B5CF6" />
+              </div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {billingMetrics.arpu.toLocaleString()} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>ج.م</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                لكل عيادة مشتركة شهرياً
+              </div>
+            </div>
           </div>
 
-          {/* Plan Tiers Overview Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
-            {/* Starter Plan */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>باقة Starter (الأساسية)</strong>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px', background: '#F4F4F5', color: '#52525B' }}>STARTER</span>
+          {/* Section 1: SaaS Plans & Tiering Studio */}
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            marginBottom: '2rem'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              gap: '1rem',
+              flexWrap: 'wrap',
+              marginBottom: '1.5rem',
+              borderBottom: '1px solid var(--border-color)',
+              paddingBottom: '1rem'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                  <Sliders size={20} color="#007AFF" />
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800 }}>
+                    استوديو هندسة وتعديل باقات الساس (SaaS Pricing & Tiering Studio)
+                  </h3>
+                </div>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  أنت المتحكم الكامل في المنصة: اضبط أسعار الباقات، عدّل حصص رسائل الـ SMS، حدد عدد الأطباء المسموح، وفعل/عطل الميزات لكل خطة.
+                </p>
               </div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>499 ج.م <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/ شهرياً</span></div>
-              <ul style={{ margin: '0.75rem 0 0', paddingRight: '1.2rem', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-                <li>طبيب واحد معتمد</li>
-                <li>1000 رسالة SMS / شهر</li>
-                <li>جدول المواعيد وسجلات المرضى</li>
-              </ul>
+
+              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleCreateNewPlan}
+                  className="btn btn-primary"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    borderRadius: '8px',
+                    padding: '0.5rem 0.9rem',
+                    fontSize: '0.82rem',
+                    fontWeight: 700
+                  }}
+                >
+                  <Plus size={15} />
+                  <span>+ إنشاء باقة مخصصة جديدة (Custom Plan)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetPlans}
+                  className="btn btn-secondary"
+                  title="استعادة الباقات والأسعار الأصلية المعتمدة"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.45rem',
+                    borderRadius: '8px',
+                    padding: '0.5rem 0.85rem',
+                    fontSize: '0.82rem'
+                  }}
+                >
+                  <RotateCcw size={14} />
+                  <span>إعادة ضبط للافتراضي</span>
+                </button>
+              </div>
             </div>
 
-            {/* Pro Plan */}
-            <div style={{ background: 'var(--surface)', border: '2px solid #2563EB', borderRadius: '12px', padding: '1.25rem', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '-10px', left: '16px', background: '#2563EB', color: '#FFF', fontSize: '0.7rem', fontWeight: 800, padding: '0.15rem 0.6rem', borderRadius: '999px' }}>الأكثر طلباً</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>باقة Pro (العيادة الذكية)</strong>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px', background: '#EFF6FF', color: '#2563EB' }}>PRO</span>
-              </div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>999 ج.م <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/ شهرياً</span></div>
-              <ul style={{ margin: '0.75rem 0 0', paddingRight: '1.2rem', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-                <li>حتى 3 أطباء معتمدين</li>
-                <li>2000 رسالة SMS / شهر</li>
-                <li>مساعد الذكاء الاصطناعي السريري</li>
-                <li>الفواتير والمخزون وحسابات الأطباء</li>
-              </ul>
-            </div>
+            {/* Dynamic Plan Cards Grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+              gap: '1.25rem'
+            }}>
+              {plans.map((plan) => {
+                const isPro = plan.id === 'pro';
+                const isEnterprise = plan.id === 'enterprise';
+                const isCustom = !['starter', 'pro', 'enterprise'].includes(plan.id);
+                const activeClinicsCount = allTenants.filter(t => (t.subscriptionTier || 'pro') === plan.id).length;
 
-            {/* Enterprise Plan */}
-            <div style={{ background: 'var(--surface)', border: '1px solid #7C3AED', borderRadius: '12px', padding: '1.25rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>باقة Enterprise (المراكز الكبرى)</strong>
-                <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.5rem', borderRadius: '4px', background: '#F5F3FF', color: '#7C3AED' }}>ENTERPRISE</span>
-              </div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>1,999 ج.م <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>/ شهرياً</span></div>
-              <ul style={{ margin: '0.75rem 0 0', paddingRight: '1.2rem', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
-                <li>حتى 10 أطباء وموظفين</li>
-                <li>5000 رسالة SMS / شهر</li>
-                <li>دومين خاص وشهادة SSL مجاناً</li>
-                <li>سجلات الأمان والرقابة (Audit Logs)</li>
-              </ul>
-            </div>
-          </div>
+                return (
+                  <div
+                    key={plan.id}
+                    style={{
+                      background: 'var(--bg-secondary, #F9FAFB)',
+                      border: isPro ? '2px solid #2563EB' : isEnterprise ? '2px solid #7C3AED' : '1px solid var(--border-color)',
+                      borderRadius: '14px',
+                      padding: '1.35rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      position: 'relative',
+                      boxShadow: isPro ? '0 10px 25px -5px rgba(37, 99, 235, 0.1)' : 'none'
+                    }}
+                  >
+                    {plan.badge && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '-11px',
+                        left: '16px',
+                        background: isPro ? '#2563EB' : isEnterprise ? '#7C3AED' : '#52525B',
+                        color: '#FFFFFF',
+                        fontSize: '0.7rem',
+                        fontWeight: 800,
+                        padding: '0.15rem 0.65rem',
+                        borderRadius: '999px',
+                        letterSpacing: '0.3px'
+                      }}>
+                        {plan.badge}
+                      </div>
+                    )}
 
-          {/* Clinics Subscriptions Table */}
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', overflow: 'hidden' }}>
-            <table className="saas-table" style={{ width: '100%' }}>
-              <thead>
-                <tr>
-                  <th>العيادة والمستأجر</th>
-                  <th>الباقة الحالية</th>
-                  <th>استهلاك الـ SMS</th>
-                  <th>تعديل وترقية الباقة</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allTenants.map((tenant) => {
-                  const tier = tenant.subscriptionTier || 'pro';
-                  const usage = getClinicUsage(tenant.id, tenant.quotas, tier);
-
-                  return (
-                    <tr key={tenant.id}>
-                      <td>
-                        <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)' }}>{tenant.name}</strong>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{tenant.doctorName}</div>
-                      </td>
-                      <td>
+                    <div>
+                      {/* Plan Header */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                        <div>
+                          <strong style={{ fontSize: '1.15rem', color: 'var(--text-primary)', display: 'block' }}>
+                            {plan.name}
+                          </strong>
+                          <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                            ID: {plan.id} ({plan.nameEn})
+                          </span>
+                        </div>
                         <span style={{
-                          fontSize: '0.8rem',
-                          fontWeight: 800,
-                          padding: '0.25rem 0.65rem',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '0.2rem 0.55rem',
                           borderRadius: '6px',
-                          background: tier === 'enterprise' ? '#F5F3FF' : tier === 'pro' ? '#EFF6FF' : '#F4F4F5',
-                          color: tier === 'enterprise' ? '#7C3AED' : tier === 'pro' ? '#2563EB' : '#52525B'
+                          background: 'rgba(59, 130, 246, 0.1)',
+                          color: '#2563EB',
+                          whiteSpace: 'nowrap'
                         }}>
-                          {tier.toUpperCase()}
+                          {activeClinicsCount} عيادة مشتركة
                         </span>
-                      </td>
-                      <td>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>
-                          {usage.smsUsed || 0} / {usage.totalSmsAllowed || 1000}
+                      </div>
+
+                      {/* Pricing Display */}
+                      <div style={{
+                        background: 'var(--surface)',
+                        padding: '0.75rem 0.9rem',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border-color)',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'baseline'
+                      }}>
+                        <div>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                            {Number(plan.monthlyPrice || 0).toLocaleString()} ج.م
+                          </span>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginRight: '4px' }}>
+                            / شهرياً
+                          </span>
                         </div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                          المتبقي: {usage.remainingSms} رسالة
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                          سنوي: <strong style={{ color: 'var(--text-primary)' }}>{Number(plan.annualPrice || (plan.monthlyPrice * 10)).toLocaleString()} ج.م</strong>
                         </div>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                          {['starter', 'pro', 'enterprise'].map((planKey) => (
-                            <button
-                              key={planKey}
-                              type="button"
-                              onClick={() => handleUpgradeTier(tenant.id, planKey)}
-                              disabled={tier === planKey}
-                              className={`btn ${tier === planKey ? 'btn-primary' : 'btn-secondary'}`}
-                              style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem', borderRadius: '6px' }}
-                            >
-                              {planKey.toUpperCase()}
-                            </button>
-                          ))}
+                      </div>
+
+                      {/* Limits & Quotas */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: '0.5rem',
+                        fontSize: '0.8rem',
+                        marginBottom: '1rem'
+                      }}>
+                        <div style={{ background: 'var(--surface)', padding: '0.45rem 0.65rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.7rem' }}>الأطباء المعتمدين:</span>
+                          <strong style={{ color: 'var(--text-primary)' }}>{plan.maxDoctors} طبيب</strong>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <div style={{ background: 'var(--surface)', padding: '0.45rem 0.65rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.7rem' }}>رصيد SMS شهري:</span>
+                          <strong style={{ color: '#059669' }}>{Number(plan.monthlySmsQuota || 1000).toLocaleString()} رسالة</strong>
+                        </div>
+                        <div style={{ background: 'var(--surface)', padding: '0.45rem 0.65rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.7rem' }}>أقصى مواعيد / شهر:</span>
+                          <strong style={{ color: 'var(--text-primary)' }}>{Number(plan.maxAppointmentsPerMonth || 1000).toLocaleString()}</strong>
+                        </div>
+                        <div style={{ background: 'var(--surface)', padding: '0.45rem 0.65rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                          <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.7rem' }}>سجلات المرضى:</span>
+                          <strong style={{ color: 'var(--text-primary)' }}>{Number(plan.maxPatients || 5000).toLocaleString()}</strong>
+                        </div>
+                      </div>
+
+                      {/* Feature Checklist */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
+                          {plan.aiAssistant ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          <span style={{ color: plan.aiAssistant ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                            مساعد الذكاء الاصطناعي الطبي
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
+                          {plan.customDomain ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          <span style={{ color: plan.customDomain ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                            دومين خاص وشهادة SSL مخصصة
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
+                          {plan.whatsappBot ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          <span style={{ color: plan.whatsappBot ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                            تكامل واتساب وتأكيد الحجز الفوري
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
+                          {plan.labModule ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          <span style={{ color: plan.labModule ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                            إدارة المعامل والتركيبات والتكلفة
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
+                          {plan.inventoryModule ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          <span style={{ color: plan.inventoryModule ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                            المخزون وحسابات الأطباء والأرباح
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card Actions */}
+                    <div style={{ display: 'flex', gap: '0.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.85rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditPlan(plan)}
+                        className="btn btn-primary"
+                        style={{
+                          flex: 1,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.4rem',
+                          padding: '0.45rem 0.75rem',
+                          fontSize: '0.82rem',
+                          borderRadius: '8px'
+                        }}
+                      >
+                        <Edit3 size={14} />
+                        <span>تعديل تفاصيل وحصص الباقة</span>
+                      </button>
+
+                      {isCustom && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePlan(plan.id)}
+                          className="btn btn-secondary"
+                          title="حذف هذه الباقة المخصصة"
+                          style={{
+                            padding: '0.45rem 0.65rem',
+                            borderRadius: '8px',
+                            borderColor: '#FCA5A5',
+                            color: '#DC2626'
+                          }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section 2: Clinics Subscriptions & Freeze/Suspend Control Table */}
+          <div style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              marginBottom: '1.25rem'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ShieldCheck size={18} color="#10B981" />
+                  <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>
+                    جدول اشتراكات العيادات والتحكم الفوري (Clinic Lifecycle & Suspension Hub)
+                  </h3>
+                </div>
+                <p style={{ margin: '0.25rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+                  تجميد العيادة فورياً عند تأخر السداد، تمديد الاشتراك، رفع الحصص، أو تغيير الباقة بنقرة واحدة.
+                </p>
+              </div>
+
+              {/* Search & Filter Toolbar */}
+              <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative' }}>
+                  <Search size={14} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                  <input
+                    type="text"
+                    placeholder="بحث باسم العيادة أو الطبيب..."
+                    value={clinicSubSearch}
+                    onChange={(e) => setClinicSubSearch(e.target.value)}
+                    className="input-field"
+                    style={{
+                      padding: '0.4rem 2rem 0.4rem 0.75rem',
+                      fontSize: '0.82rem',
+                      borderRadius: '8px',
+                      border: '1px solid var(--border-color)',
+                      width: '210px'
+                    }}
+                  />
+                </div>
+
+                <select
+                  value={clinicSubStatusFilter}
+                  onChange={(e) => setClinicSubStatusFilter(e.target.value)}
+                  className="input-field"
+                  style={{
+                    padding: '0.4rem 0.75rem',
+                    fontSize: '0.82rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)'
+                  }}
+                >
+                  <option value="all">كافة الحالات</option>
+                  <option value="active">نشط (Active)</option>
+                  <option value="trial">فترة تجريبية (Trial)</option>
+                  <option value="suspended">موقوف ومجمد (Suspended)</option>
+                  <option value="grace_period">مهلة سداد (Grace)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Subscriptions Table */}
+            <div style={{ overflowX: 'auto' }}>
+              <table className="saas-table" style={{ width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th>العيادة والمستأجر</th>
+                    <th>الباقة الحالية</th>
+                    <th>حالة الاشتراك</th>
+                    <th>استهلاك الـ SMS والحصة</th>
+                    <th>سبب الوقف / الملاحظات</th>
+                    <th>إجراءات التحكم والوقف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allTenants
+                    .filter((t) => {
+                      const matchSearch = !clinicSubSearch ||
+                        (t.name || '').toLowerCase().includes(clinicSubSearch.toLowerCase()) ||
+                        (t.doctorName || '').toLowerCase().includes(clinicSubSearch.toLowerCase()) ||
+                        (t.slug || '').toLowerCase().includes(clinicSubSearch.toLowerCase());
+                      const status = t.subscriptionStatus || 'active';
+                      const matchStatus = clinicSubStatusFilter === 'all' || status === clinicSubStatusFilter;
+                      return matchSearch && matchStatus;
+                    })
+                    .map((tenant) => {
+                      const tier = tenant.subscriptionTier || 'pro';
+                      const status = tenant.subscriptionStatus || 'active';
+                      const isSuspended = status === 'suspended';
+                      const isTrial = status === 'trial';
+                      const isGrace = status === 'grace_period';
+                      const usage = getClinicUsage(tenant.id, tenant.quotas, tier);
+                      const currentPlanObj = plans.find(p => p.id === tier) || { name: tier.toUpperCase(), monthlyPrice: 999 };
+
+                      return (
+                        <tr key={tenant.id} style={{ background: isSuspended ? 'rgba(239, 68, 68, 0.03)' : undefined }}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                              <div style={{
+                                width: 9,
+                                height: 9,
+                                borderRadius: '50%',
+                                background: isSuspended ? '#EF4444' : isTrial ? '#F59E0B' : '#10B981'
+                              }} />
+                              <div>
+                                <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)', display: 'block' }}>
+                                  {tenant.name}
+                                </strong>
+                                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                                  {tenant.doctorName} • <code style={{ fontSize: '0.74rem' }}>/{tenant.slug}</code>
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <span style={{
+                                fontSize: '0.78rem',
+                                fontWeight: 800,
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: '6px',
+                                background: tier === 'enterprise' ? '#F5F3FF' : tier === 'pro' ? '#EFF6FF' : '#F4F4F5',
+                                color: tier === 'enterprise' ? '#7C3AED' : tier === 'pro' ? '#2563EB' : '#52525B'
+                              }}>
+                                {tier.toUpperCase()}
+                              </span>
+                              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                                ({currentPlanObj.monthlyPrice} ج.م)
+                              </span>
+                            </div>
+                          </td>
+
+                          <td>
+                            <span style={{
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              padding: '0.22rem 0.65rem',
+                              borderRadius: '999px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                              background: isSuspended ? '#FEE2E2' : isTrial ? '#FEF3C7' : isGrace ? '#FEF08A' : '#ECFDF5',
+                              color: isSuspended ? '#DC2626' : isTrial ? '#B45309' : isGrace ? '#A16207' : '#047857'
+                            }}>
+                              {isSuspended ? (
+                                <>
+                                  <Lock size={12} />
+                                  <span>موقوف ومجمد</span>
+                                </>
+                              ) : isTrial ? (
+                                <>
+                                  <Clock size={12} />
+                                  <span>فترة تجريبية</span>
+                                </>
+                              ) : isGrace ? (
+                                <>
+                                  <AlertTriangle size={12} />
+                                  <span>مهلة سداد</span>
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 size={12} />
+                                  <span>نشط ومعتمد</span>
+                                </>
+                              )}
+                            </span>
+                          </td>
+
+                          <td>
+                            <div style={{ minWidth: '130px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '2px' }}>
+                                <span style={{ fontWeight: 700 }}>{usage.smsUsed || 0} / {usage.totalSmsAllowed || 1000}</span>
+                                <span style={{ color: 'var(--text-secondary)' }}>{usage.remainingSms} متبقي</span>
+                              </div>
+                              <div style={{ height: '5px', background: 'var(--border-color)', borderRadius: '999px', overflow: 'hidden' }}>
+                                <div style={{
+                                  height: '100%',
+                                  width: `${Math.min(100, Math.round(((usage.smsUsed || 0) / (usage.totalSmsAllowed || 1000)) * 100))}%`,
+                                  background: usage.isSmsDepleted ? '#EF4444' : '#10B981'
+                                }} />
+                              </div>
+                            </div>
+                          </td>
+
+                          <td>
+                            {isSuspended ? (
+                              <div style={{
+                                fontSize: '0.75rem',
+                                color: '#DC2626',
+                                fontWeight: 700,
+                                background: '#FEF2F2',
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '6px',
+                                border: '1px solid #FCA5A5',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.3rem'
+                              }}>
+                                <AlertTriangle size={12} />
+                                <span>{tenant.suspensionReason || 'عدم سداد الاشتراك الدوري'}</span>
+                              </div>
+                            ) : tenant.subscriptionPaymentHistory && tenant.subscriptionPaymentHistory.length > 0 ? (
+                              <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 600 }}>
+                                تم سداد {tenant.subscriptionPaymentHistory[tenant.subscriptionPaymentHistory.length - 1].amount} ج.م ({tenant.subscriptionPaymentHistory[tenant.subscriptionPaymentHistory.length - 1].method})
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                اشتراك منتظم
+                              </span>
+                            )}
+                          </td>
+
+                          <td>
+                            <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                              {/* Open Full Lifecycle & Suspension Modal */}
+                              <button
+                                type="button"
+                                onClick={() => handleOpenControlClinic(tenant)}
+                                className="btn btn-primary"
+                                title="التحكم الكامل في الباقة وتجميد العيادة وتمديد الاشتراك"
+                                style={{
+                                  padding: '0.35rem 0.75rem',
+                                  fontSize: '0.78rem',
+                                  borderRadius: '6px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.35rem',
+                                  background: '#4F46E5',
+                                  borderColor: '#4338CA'
+                                }}
+                              >
+                                <ShieldAlert size={13} />
+                                <span>التحكم في الباقة والوقف</span>
+                              </button>
+
+                              {/* Quick Freeze/Unfreeze Toggle */}
+                              <button
+                                type="button"
+                                onClick={() => handleQuickToggleSuspend(tenant)}
+                                className="btn btn-secondary"
+                                title={isSuspended ? 'إلغاء التجميد وإعادة التفعيل فوراً' : 'تجميد فوري للعيادة مع سبب الإيقاف'}
+                                style={{
+                                  padding: '0.35rem 0.65rem',
+                                  fontSize: '0.78rem',
+                                  borderRadius: '6px',
+                                  color: isSuspended ? '#059669' : '#DC2626',
+                                  borderColor: isSuspended ? '#A7F3D0' : '#FECACA'
+                                }}
+                              >
+                                {isSuspended ? <PlayCircle size={13} /> : <PauseCircle size={13} />}
+                                <span>{isSuspended ? 'فك التجميد' : 'تجميد'}</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -883,6 +1471,30 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           </div>
         </div>
       )}
-    </div>
+    
+      {/* SaaS Plan Tier Studio Modal */}
+      <EditPlanTierModal
+        isOpen={isEditPlanModalOpen}
+        onClose={() => {
+          setIsEditPlanModalOpen(false);
+          setSelectedPlanToEdit(null);
+        }}
+        plan={selectedPlanToEdit}
+        onSave={handleSavePlan}
+      />
+
+      {/* Clinic Subscription & Lifecycle Control Modal */}
+      <ClinicSubscriptionControlModal
+        isOpen={isControlModalOpen}
+        onClose={() => {
+          setIsControlModalOpen(false);
+          setSelectedTenantToControl(null);
+        }}
+        clinic={selectedTenantToControl}
+        onSuccess={() => {
+          setPlans(getSaaSSubscriptionPlans());
+        }}
+      />
+</div>
   );
 }
