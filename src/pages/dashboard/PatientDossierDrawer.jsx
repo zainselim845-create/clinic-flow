@@ -3,7 +3,7 @@ import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
-  FolderOpen, Phone, Calendar, FileText, MessageCircle, 
+  FolderOpen, Phone, Calendar, FileText, MessageCircle, MessageSquare, 
   FileSpreadsheet, X, Edit3, Wallet, Pill, Layers, Printer, Eye 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
