@@ -21,6 +21,7 @@ import { Tabs } from '../components/ui/tabs';
 import './Settings.css';
 
 const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain'];
+// const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff']
 const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'subscription', 'customDomain'];
 
 const Settings = () => {
@@ -215,7 +216,7 @@ const Settings = () => {
               title="إعدادات بوابات الرسائل واسم المرسل (إدارة الساس فقط)"
             >
               <Smartphone size={18} />
-              <span>رسائل الـ SMS (Gateways)</span>
+              <span>رسائل الـ SMS واسم المرسل</span>
             </Tabs.Trigger>
           )}
         </Tabs.List>
