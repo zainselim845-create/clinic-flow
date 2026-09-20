@@ -13,11 +13,10 @@ import * as expensesService from '../services/expensesService';
 import * as recallsService from '../services/recallsService';
 import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
-import { getTodayDateStr } from '../utils/timeSlots';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
 import { localDb } from '../db/localDatabase';
 
-export const DATA_SCHEMA_VERSION = 'v4_google_material_3';
+export const DATA_SCHEMA_VERSION = 'v5_clean_zero_state';
 
 const AppContext = createContext(null);
 
@@ -132,12 +131,10 @@ export function AppProvider({ children }) {
 
       const isDemoTenant = currentSlug === 'dr-ahmed' || currentSlug === 'dr-sara';
       const seedData = getInitialDataForTenant(activeTenant || currentSlug);
-      const today = getTodayDateStr();
 
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
-          const hasTodayAppts = Array.isArray(parsed.appointments) && parsed.appointments.some(a => a.date === today);
           const isUpToDate = parsed._version === DATA_SCHEMA_VERSION;
 
           let finalAppointments = Array.isArray(parsed.appointments) ? parsed.appointments : [];
@@ -145,33 +142,23 @@ export function AppProvider({ children }) {
           let finalExpenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
           let finalRecalls = Array.isArray(parsed.recalls) ? parsed.recalls : [];
 
-          // Auto-heal / migrate: ONLY for demo clinics (dr-ahmed / dr-sara).
-          // For custom or real doctor clinics, NEVER inject seed appointments or demo data!
-          if (isDemoTenant && (!hasTodayAppts || !isUpToDate)) {
-            const nonTodayAppointments = finalAppointments.filter(a => a.date !== today);
-            finalAppointments = [...seedData.appointments, ...nonTodayAppointments];
-
-            const existingPatIds = new Set(finalPatients.map(p => p.id));
-            const missingSeedPatients = seedData.patients.filter(p => !existingPatIds.has(p.id));
-            finalPatients = [...missingSeedPatients, ...finalPatients];
-
-            if (finalExpenses.length === 0 && seedData.expenses) {
-              finalExpenses = seedData.expenses;
-            }
-            if (finalRecalls.length === 0 && seedData.recalls) {
-              finalRecalls = seedData.recalls;
-            }
+          // Clean production slate: invalidate and clear legacy demo data
+          if (!isUpToDate) {
+            finalAppointments = [];
+            finalPatients = [];
+            finalExpenses = [];
+            finalRecalls = [];
           }
 
           dispatch({ 
             type: 'INIT_DATA', 
             payload: { 
-              patients: isDemoTenant ? (finalPatients.length > 0 ? finalPatients : seedData.patients) : finalPatients,
-              appointments: isDemoTenant ? (finalAppointments.length > 0 ? finalAppointments : seedData.appointments) : finalAppointments,
-              notifications: (parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : (isDemoTenant ? seedData.notifications : []),
-              blockedSlots: parsed.blockedSlots || (isDemoTenant ? seedData.blockedSlots : []),
-              expenses: isDemoTenant ? (finalExpenses.length > 0 ? finalExpenses : seedData.expenses) : finalExpenses,
-              recalls: isDemoTenant ? (finalRecalls.length > 0 ? finalRecalls : seedData.recalls) : finalRecalls,
+              patients: finalPatients,
+              appointments: finalAppointments,
+              notifications: (isUpToDate && parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : [],
+              blockedSlots: (isUpToDate && parsed.blockedSlots) ? parsed.blockedSlots : [],
+              expenses: finalExpenses,
+              recalls: finalRecalls,
               staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : (isDemoTenant ? seedData.staffMembers : []),
               clinicInfo: activeTenant || parsed.clinicInfo || (isDemoTenant ? seedData.clinicInfo : { slug: currentSlug, name: currentSlug }),
               useSupabase: false,

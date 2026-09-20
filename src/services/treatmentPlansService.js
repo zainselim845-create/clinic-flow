@@ -35,41 +35,12 @@ export function toDbTreatmentPlan(data) {
   };
 }
 
-const DEFAULT_PLANS = [
-  {
-    id: 'tp-1',
-    patientId: 'patient_1',
-    patientName: 'أحمد محمود العوضي',
-    patientPhone: '01012345678',
-    title: 'خطة علاج ضرس العصب والتركيبة',
-    status: 'in_progress',
-    items: [
-      { id: 'tpi-1', procedureName: 'تنظيف وتجهيز القنوات', status: 'completed' },
-      { id: 'tpi-2', procedureName: 'حشو عصب نهائي (ضرس 16)', status: 'completed' },
-      { id: 'tpi-3', procedureName: 'بناء الضرس وحشو دعامة (Core)', status: 'pending' },
-      { id: 'tpi-4', procedureName: 'تاج زركونيا تجميلي (Crown)', status: 'pending' }
-    ],
-    createdAt: '2026-08-10'
-  },
-  {
-    id: 'tp-2',
-    patientId: 'patient_2',
-    patientName: 'مريم السيد البدوي',
-    patientPhone: '01223456789',
-    title: 'خطة تجميل وتبييض الأسنان',
-    status: 'in_progress',
-    items: [
-      { id: 'tpi-5', procedureName: 'جلسة تنظيف وتلميع الجير', status: 'completed' },
-      { id: 'tpi-6', procedureName: 'جلسة تبييض ليزر زووم', status: 'pending' }
-    ],
-    createdAt: '2026-08-15'
-  }
-];
+const DEFAULT_PLANS = [];
 
 export function getLocalTreatmentPlans(clinicId) {
   const key = clinicId ? `${PLANS_STORAGE_KEY}_${clinicId}` : PLANS_STORAGE_KEY;
-  const stored = safeStorage.getItem(key, clinicId ? [] : DEFAULT_PLANS);
-  return Array.isArray(stored) ? stored : (clinicId ? [] : DEFAULT_PLANS);
+  const stored = safeStorage.getItem(key, []);
+  return Array.isArray(stored) ? stored : [];
 }
 
 export function saveLocalTreatmentPlans(plans, clinicId) {
