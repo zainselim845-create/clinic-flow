@@ -1,6 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 import { safeStorage } from '../utils/safeStorage';
 
+if (typeof globalThis !== 'undefined' && typeof globalThis.WebSocket === 'undefined') {
+  globalThis.WebSocket = class DummyWebSocket {
+    constructor() {}
+    addEventListener() {}
+    removeEventListener() {}
+    send() {}
+    close() {}
+  };
+}
+
 export const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
 export const getSupabaseConfig = () => {

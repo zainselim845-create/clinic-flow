@@ -2,7 +2,7 @@ import { safeStorage } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'clinicflow_google_client_id';
 
-export const DEFAULT_GOOGLE_CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_CLIENT_ID) || '';
+export const DEFAULT_GOOGLE_CLIENT_ID = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_CLIENT_ID) || '337379604098-6bp302kv7mmsuccf806ah1tba6grkoio.apps.googleusercontent.com';
 
 /**
  * Retrieves the configured Google OAuth 2.0 Client ID
