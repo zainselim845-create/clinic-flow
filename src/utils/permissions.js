@@ -241,6 +241,7 @@ export function hasCapability(user, capability) {
   if (!user || !capability) return false;
   if (user.role === 'super_admin' || user.isSuperAdmin === true) return true;
   if (capability === CAPABILITIES.PLATFORM_SUPERADMIN) return false;
+  if (isAdminRole(user)) return true;
   if (user.role === 'owner' || user.role === 'multi_clinic_owner') return true;
 
   // Explicit user capabilities array
