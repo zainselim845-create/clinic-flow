@@ -18,6 +18,7 @@ import SmsConfigTab from './settings/SmsConfigTab';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
 import { Tabs } from '../components/ui/tabs';
+import { isAdminRole } from '../utils/permissions';
 import './Settings.css';
 
 const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain'];
@@ -32,6 +33,7 @@ const Settings = () => {
   const tabFromUrl = searchParams.get('tab');
   
   const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true;
+  const isAdmin = isAdminRole(user);
   const allowedTabs = isSuperAdmin ? VALID_TABS : CLIENT_TABS;
 
   const [activeTab, setActiveTab] = useState(() => {
@@ -120,7 +122,58 @@ const Settings = () => {
     setTimeout(() => setClinicSaveSuccess(false), 3500);
   };
 
-
+  if (!isAdmin) {
+    return (
+      <div className="settings-page" style={{ padding: '2rem', textAlign: 'center' }}>
+        <div style={{
+          maxWidth: '500px',
+          margin: '3rem auto',
+          padding: '2.5rem',
+          backgroundColor: '#FFFFFF',
+          borderRadius: '16px',
+          border: '1px solid #E4E4E7',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+        }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            backgroundColor: '#FEF2F2',
+            color: '#DC2626',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 1.25rem'
+          }}>
+            <Building2 size={24} />
+          </div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#09090B', marginBottom: '0.5rem' }}>
+            إعدادات العيادة مخصصة للإدارة فقط
+          </h2>
+          <p style={{ fontSize: '0.88rem', color: '#71717A', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+            حسابك الحالي مسجل بصلاحية سريرية (طبيب). إدارة ملف العيادة، مواعيد العمل، حسابات الموظفين، والاشتراكات مقتصرة على إدارة ومالك العيادة.
+          </p>
+          <a
+            href="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0.6rem 1.5rem',
+              backgroundColor: '#09090B',
+              color: '#FFFFFF',
+              borderRadius: '8px',
+              fontSize: '0.85rem',
+              fontWeight: 700,
+              textDecoration: 'none'
+            }}
+          >
+            العودة إلى لوحة العيادة
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="settings-page">

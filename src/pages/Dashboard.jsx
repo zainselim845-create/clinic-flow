@@ -23,7 +23,7 @@ import * as patientsService from '../services/patientsService';
 import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
 import { savePrescriptionToStorage } from '../services/prescriptionService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
-import { isDoctorRole, hasCapability, CAPABILITIES } from '../utils/permissions';
+import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '../utils/permissions';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -32,6 +32,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   
   const isDoctor = isDoctorRole(user);
+  const isAdmin = isAdminRole(user);
   const canViewRevenue = hasCapability(user, CAPABILITIES.BILLING_REVENUE_VIEW);
   const navigate = useNavigate();
   
@@ -372,13 +373,13 @@ const Dashboard = () => {
       iconType: 'blue',
       onClick: () => setIsWalkInModalOpen(true)
     },
-    {
+    ...((isAdmin || user?.role === 'staff' || user?.role === 'receptionist') ? [{
       id: 'shift',
       label: 'الخزينة والوردية',
       icon: <Landmark size={16} strokeWidth={2.2} />,
       iconType: 'emerald',
       onClick: () => setIsShiftModalOpen(true)
-    },
+    }] : []),
     {
       id: 'waiting',
       label: 'صالة الانتظار',
@@ -404,7 +405,7 @@ const Dashboard = () => {
       iconType: 'rose',
       onClick: () => setIsRecallModalOpen(true)
     }
-  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab]);
+  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab, isAdmin, user?.role]);
 
   // Schedule filtering (Memoized for high performance)
   const filteredAppointments = useMemo(() => {
@@ -483,28 +484,30 @@ const Dashboard = () => {
             <span>{copiedBookingLink ? 'تم النسخ!' : 'رابط الحجز'}</span>
           </button>
 
-          <button 
-            type="button" 
-            onClick={() => setIsShiftModalOpen(true)} 
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.45rem 0.85rem',
-              borderRadius: '8px',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              backgroundColor: 'transparent',
-              border: '1px solid #E4E4E7',
-              color: '#09090B',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease'
-            }}
-            title="تصفية الخزينة وتسليم وردية الاستقبال"
-          >
-            <Landmark size={13} />
-            <span>تسليم وردية الاستقبال</span>
-          </button>
+          {(isAdmin || user?.role === 'staff' || user?.role === 'receptionist') && (
+            <button 
+              type="button" 
+              onClick={() => setIsShiftModalOpen(true)} 
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '8px',
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                backgroundColor: 'transparent',
+                border: '1px solid #E4E4E7',
+                color: '#09090B',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              title="تصفية الخزينة وتسليم وردية الاستقبال"
+            >
+              <Landmark size={13} />
+              <span>تسليم وردية الاستقبال</span>
+            </button>
+          )}
 
           {(currentClinic?.slug === 'dr-ahmed' || currentClinic?.slug === 'dr-sara') && (
             <button 

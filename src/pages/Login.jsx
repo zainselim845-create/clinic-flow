@@ -608,14 +608,28 @@ const Login = () => {
               <button 
                 type="button" 
                 className="preset-btn"
+                onClick={() => handleDirectRoleLogin('admin@clinicflow.com', 'admin')}
+                disabled={isLocked}
+                title="دخول مباشر بصلاحية إدارة العيادة والتشغيل"
+              >
+                <Shield size={16} style={{ color: '#6366F1' }} />
+                <div>
+                  <strong>دخول: إدارة العيادة (Clinic Admin)</strong>
+                  <span>مدير العيادة • الإعدادات، الموظفين، والاشتراكات</span>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                className="preset-btn"
                 onClick={() => handleDirectRoleLogin('doctor@clinicflow.com', 'admin')}
                 disabled={isLocked}
-                title="دخول مباشر بصلاحية طبيب العيادة"
+                title="دخول مباشر بصلاحية طبيب العيادة السريري"
               >
                 <Shield size={16} className="text-primary" />
                 <div>
                   <strong>دخول: طبيب العيادة (Doctor)</strong>
-                  <span>د. أحمد الشريف • صلاحيات سريرية ومالية</span>
+                  <span>د. أحمد الشريف • فحص سريري، روشتات، ومعامل</span>
                 </div>
               </button>
 

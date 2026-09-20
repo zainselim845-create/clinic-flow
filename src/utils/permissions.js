@@ -41,20 +41,34 @@ export const ROUTE_PERMISSION_MAP = {
   '/patients': 'patients',
   '/invoices': 'invoices',
   '/inventory': 'inventory',
+  '/attendance': null,
   '/doctor-agent': 'doctor_only',
-  '/settings': 'doctor_only',
+  '/labs': 'labs',
+  '/sms-integration': 'admin_only',
+  '/settings': 'admin_only',
   '/notifications': null // available to all authenticated users
 };
 
 /**
- * Determines if user holds a clinic management/doctor leadership role
+ * Determines if user holds a clinic management/administrative leadership role
+ * @param {Object} user
+ * @returns {boolean}
+ */
+export function isAdminRole(user) {
+  if (!user) return false;
+  const role = user.role || 'staff';
+  return ['admin', 'clinic_admin', 'owner', 'multi_clinic_owner', 'super_admin'].includes(role) || user.isAdmin === true || user.isSuperAdmin === true;
+}
+
+/**
+ * Determines if user holds a clinical doctor role
  * @param {Object} user
  * @returns {boolean}
  */
 export function isDoctorRole(user) {
   if (!user) return false;
   const role = user.role || 'staff';
-  return ['doctor', 'owner', 'clinic_admin', 'admin', 'super_admin', 'multi_clinic_owner'].includes(role);
+  return ['doctor', 'associate_doctor', 'owner'].includes(role);
 }
 
 /**
@@ -63,7 +77,7 @@ export function isDoctorRole(user) {
  * @returns {boolean}
  */
 export function canManageStaff(user) {
-  return isDoctorRole(user);
+  return isAdminRole(user);
 }
 
 /**
@@ -72,7 +86,7 @@ export function canManageStaff(user) {
  * @returns {boolean}
  */
 export function canAccessFinancials(user) {
-  if (isDoctorRole(user)) return true;
+  if (isAdminRole(user)) return true;
   if (!user) return false;
   if (user.role === 'accountant') return true;
   return hasPermission(user, 'invoices');
@@ -98,14 +112,24 @@ export function canEditMedicalRecords(user) {
 export function hasPermission(user, permissionKey) {
   if (!user) return false;
 
-  // Doctor/Owner/Admin has full system-wide permissions
-  if (isDoctorRole(user)) {
+  // Super admin has full platform permissions
+  if (user.role === 'super_admin' || user.isSuperAdmin === true) {
     return true;
   }
 
-  // Doctor-only administrative features cannot be accessed by staff
+  // Admin-only management features (Settings, SMS gateway, etc.)
+  if (permissionKey === 'admin_only') {
+    return isAdminRole(user);
+  }
+
+  // Doctor-only clinical features (Doctor AI agent, etc.)
   if (permissionKey === 'doctor_only') {
-    return false;
+    return isDoctorRole(user);
+  }
+
+  // Clinic Owner has full access
+  if (user.role === 'owner' || user.role === 'multi_clinic_owner') {
+    return true;
   }
 
   // If no specific permission requested, grant access to authenticated staff
@@ -115,10 +139,14 @@ export function hasPermission(user, permissionKey) {
 
   // Role defaults for specific job titles
   const role = user.role || 'staff';
+  if (role === 'admin' || role === 'clinic_admin') {
+    return true;
+  }
+  if (role === 'doctor' || role === 'associate_doctor') {
+    if (['appointments', 'patients', 'labs', 'sms'].includes(permissionKey)) return true;
+  }
   if (role === 'accountant') {
     if (permissionKey === 'invoices') return true;
-  } else if (role === 'associate_doctor') {
-    if (['appointments', 'patients', 'sms'].includes(permissionKey)) return true;
   }
 
   const permissions = Array.isArray(user.permissions) ? user.permissions : [];
@@ -153,16 +181,24 @@ export const CAPABILITIES = {
 
 export const ROLE_CAPABILITIES = {
   super_admin: ['*'],
-  owner: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*'],
-  doctor: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*'],
-  clinic_admin: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*'],
-  multi_clinic_owner: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*'],
+  owner: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
+  admin: ['billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
+  clinic_admin: ['billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
+  multi_clinic_owner: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
+  doctor: [
+    'clinical.*',
+    'scheduling.appointment.manage',
+    'scheduling.queue.triage',
+    'clinical.records.read',
+    'clinical.records.write',
+    'clinical.consultation.conduct',
+    'clinical.prescribe'
+  ],
   associate_doctor: [
     'clinical.consultation.conduct',
     'clinical.records.write',
     'clinical.records.read',
     'clinical.prescribe',
-    'billing.invoice.create',
     'scheduling.appointment.manage',
     'scheduling.queue.triage'
   ],
@@ -199,7 +235,7 @@ export function hasCapability(user, capability) {
   if (!user || !capability) return false;
   if (user.role === 'super_admin' || user.isSuperAdmin === true) return true;
   if (capability === CAPABILITIES.PLATFORM_SUPERADMIN) return false;
-  if (isDoctorRole(user)) return true;
+  if (user.role === 'owner' || user.role === 'multi_clinic_owner') return true;
 
   // Explicit user capabilities array
   if (Array.isArray(user.capabilities)) {

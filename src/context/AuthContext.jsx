@@ -380,13 +380,42 @@ export const AuthProvider = ({ children }) => {
         return { data: { user: zainDoctorUser }, error: null };
       }
 
-      // Match Dr. Ahmed (Dental Doctor Master Login)
+      // 3. Check Dedicated Clinic Admin / Management Login
+      if (cleanId === 'admin@clinicflow.com' || cleanId === 'admin' || cleanId === 'manager@clinicflow.com' || cleanId === 'manager') {
+        if (cleanPass !== 'admin') {
+          return {
+            data: null,
+            error: new Error('كلمة المرور غير صحيحة لحساب مدير العيادة.')
+          };
+        }
+        const targetClinic = activeTenant || demoClinics[0] || defaultClinicInfo;
+        const adminUser = {
+          id: 'admin-master',
+          name: 'إدارة العيادة (Clinic Admin)',
+          email: 'admin@clinicflow.com',
+          phone: targetClinic.phone || '01006285031',
+          role: 'admin',
+          isAdmin: true,
+          jobTitle: 'مدير إدارة وتشغيل العيادة',
+          clinicSlug: targetClinic.slug || 'dr-ahmed',
+          allowedClinics: [targetClinic.slug || 'dr-ahmed'],
+          authenticatedAt: new Date().toISOString()
+        };
+        persistUser(adminUser);
+        localStorage.setItem('clinicflow_role', 'admin');
+        setUser(adminUser);
+        setRole('admin');
+        switchTenant?.(targetClinic.slug || 'dr-ahmed');
+        isolateTenantStorage(targetClinic.slug || 'dr-ahmed');
+        return { data: { user: adminUser }, error: null };
+      }
+
+      // 4. Match Dr. Ahmed (Dental Doctor Master Login)
       const ahmedClinic = demoClinics.find(c => c.slug === 'dr-ahmed') || currentClinic || defaultClinicInfo;
       const doctorEmail = (ahmedClinic.doctorEmail || 'doctor@clinicflow.com').toLowerCase();
       const doctorPhone = (ahmedClinic.phone || '01006285031').replace(/\D/g, '');
       const isDoctorIdentifier = cleanId === doctorEmail || 
         cleanId === 'doctor' || 
-        cleanId === 'admin' ||
         cleanId === 'dr-ahmed' ||
         (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === doctorPhone);
 
@@ -406,7 +435,7 @@ export const AuthProvider = ({ children }) => {
           email: doctorEmail,
           phone: ahmedClinic.phone,
           role: 'doctor',
-          jobTitle: ahmedClinic.specialty || 'المدير الطبي / استشاري طب وجراحة وتجميل الأسنان',
+          jobTitle: ahmedClinic.specialty || 'استشاري طب وجراحة وتجميل الأسنان',
           clinicSlug: 'dr-ahmed',
           allowedClinics: ['dr-ahmed'],
           authenticatedAt: new Date().toISOString()

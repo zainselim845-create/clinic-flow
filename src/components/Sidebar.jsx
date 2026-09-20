@@ -8,7 +8,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
-import { hasPermission, isDoctorRole } from '../utils/permissions';
+import { hasPermission, isDoctorRole, isAdminRole } from '../utils/permissions';
 import './Sidebar.css';
 
 const Sidebar = () => {
@@ -17,6 +17,7 @@ const Sidebar = () => {
   const { tenant } = useTenant();
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
   const isDoctor = isDoctorRole(user);
+  const isAdmin = isAdminRole(user);
 
   const clinicSpecialty = tenant?.specialty || state.clinicInfo?.specialty || '';
   const isDental = Boolean(clinicSpecialty && (clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('فم') || clinicSpecialty.toLowerCase().includes('dental')));
@@ -92,6 +93,22 @@ const Sidebar = () => {
             <span>سجلات المرضى</span>
           </NavLink>
         )}
+
+        {/* Clinical Suite: Dedicated to Doctors & Clinical staff */}
+        {isDoctor && (
+          <>
+            <NavLink to="/doctor-agent" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+              <Bot size={19} />
+              <span>مساعد الطبيب الذكي</span>
+            </NavLink>
+            <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+              <Layers size={19} />
+              <span>معمل التركيبات والتحاليل</span>
+            </NavLink>
+          </>
+        )}
+
+        {/* Management & Operations Suite: Dedicated to Admin / Owner / Management */}
         {hasPermission(user, 'invoices') && (
           <NavLink to="/invoices" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Receipt size={19} />
@@ -108,35 +125,27 @@ const Sidebar = () => {
           <UserCheck size={19} />
           <span>الحضور والانصراف</span>
         </NavLink>
-        {isDoctor && (
-          <NavLink to="/doctor-agent" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-            <Bot size={19} />
-            <span>مساعد الطبيب الذكي</span>
-          </NavLink>
-        )}
+
         <NavLink to="/notifications" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
           <Bell size={19} />
           <span>التنبيهات</span>
           {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
         </NavLink>
-        {isDoctor && (
-          <NavLink to="/sms-integration" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-            <Smartphone size={19} />
-            <span>بوابة الرسائل النصية (SMS)</span>
-          </NavLink>
+
+        {/* Strictly Administrative Features (إدارة العيادة فقط) */}
+        {isAdmin && (
+          <>
+            <NavLink to="/sms-integration" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+              <Smartphone size={19} />
+              <span>بوابة الرسائل النصية (SMS)</span>
+            </NavLink>
+            <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+              <Settings size={19} />
+              <span>إدارة وإعدادات العيادة</span>
+            </NavLink>
+          </>
         )}
-        {isDoctor && (
-          <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-            <Layers size={19} />
-            <span>معمل التركيبات والتحاليل</span>
-          </NavLink>
-        )}
-        {isDoctor && (
-          <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-            <Settings size={19} />
-            <span>إدارة وإعدادات العيادة</span>
-          </NavLink>
-        )}
+
         {(user?.role === 'super_admin' || user?.isSuperAdmin) && (
           <NavLink 
             to="/super-admin" 
