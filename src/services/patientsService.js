@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/supabase';
-
+import { apiCache } from './apiCacheService';
 
 /**
  * Format DB snake_case record to client camelCase model
@@ -57,7 +57,7 @@ export function toDbPatient(data) {
 }
 
 /**
- * Get all patients for a clinic
+ * Get all patients for a clinic (with in-memory TTL caching)
  */
 export async function getPatients(clinicId, options = {}) {
   if (!isSupabaseConfigured()) {
@@ -68,19 +68,22 @@ export async function getPatients(clinicId, options = {}) {
     return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
   }
 
+  const cacheKey = apiCache.createKey('patients', clinicId, options);
   try {
-    let query = supabase
-      .from('patients')
-      .select('*')
-      .eq('clinic_id', clinicId)
-      .order('created_at', { ascending: false });
+    return await apiCache.wrap(cacheKey, async () => {
+      let query = supabase
+        .from('patients')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .order('created_at', { ascending: false });
 
-    const limit = options?.limit || 300;
-    query = query.limit(limit);
+      const limit = options?.limit || 300;
+      query = query.limit(limit);
 
-    const { data, error } = await query;
-    if (error) throw error;
-    return { data: (data || []).map(fromDbPatient), error: null };
+      const { data, error } = await query;
+      if (error) throw error;
+      return { data: (data || []).map(fromDbPatient), error: null };
+    }, 20000); // 20s TTL
   } catch (error) {
     console.error('Error fetching patients:', error);
     return { data: null, error };
@@ -108,6 +111,7 @@ export async function addPatient(patient) {
       .single();
 
     if (error) throw error;
+    apiCache.invalidateResource('patients', patient.clinicId || patient.clinic_id);
     return { data: fromDbPatient(data), error: null };
   } catch (error) {
     console.error('Error adding patient:', error);
@@ -133,6 +137,7 @@ export async function addPatientsBulk(patientsList) {
       .select();
 
     if (error) throw error;
+    apiCache.invalidateResource('patients', patientsList[0]?.clinicId || patientsList[0]?.clinic_id);
     return { data: (data || []).map(fromDbPatient), error: null };
   } catch (error) {
     console.error('Error adding patients bulk:', error);
@@ -159,6 +164,7 @@ export async function updatePatient(id, updateData) {
       .single();
 
     if (error) throw error;
+    apiCache.invalidateResource('patients', updateData.clinicId || updateData.clinic_id);
     return { data: fromDbPatient(data), error: null };
   } catch (error) {
     console.error('Error updating patient:', error);
@@ -180,8 +186,8 @@ export async function deletePatient(id) {
       .delete()
       .eq('id', id);
 
-
     if (error) throw error;
+    apiCache.invalidatePrefix('patients:');
     return { data: null, error: null };
   } catch (error) {
     console.error('Error deleting patient:', error);

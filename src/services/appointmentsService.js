@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { apiCache } from './apiCacheService';
 
 const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
@@ -56,7 +57,7 @@ export function toDbAppointment(data) {
 }
 
 /**
- * Get appointments with optional filters
+ * Get appointments with optional filters (with in-memory TTL caching)
  */
 export async function getAppointments(clinicId, filters = {}) {
   if (!isSupabaseConfigured()) {
@@ -67,26 +68,29 @@ export async function getAppointments(clinicId, filters = {}) {
     return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
   }
 
+  const cacheKey = apiCache.createKey('appointments', clinicId, filters);
   try {
-    let query = supabase
-      .from('appointments')
-      .select('*')
-      .eq('clinic_id', clinicId);
-    if (filters.status) {
-      query = query.eq('status', filters.status);
-    }
-    if (filters.date) {
-      query = query.eq('date', filters.date);
-    }
+    return await apiCache.wrap(cacheKey, async () => {
+      let query = supabase
+        .from('appointments')
+        .select('*')
+        .eq('clinic_id', clinicId);
+      if (filters.status) {
+        query = query.eq('status', filters.status);
+      }
+      if (filters.date) {
+        query = query.eq('date', filters.date);
+      }
 
-    const limit = filters.limit || 300;
-    const { data, error } = await query
-      .order('date', { ascending: true })
-      .order('time', { ascending: true })
-      .limit(limit);
+      const limit = filters.limit || 300;
+      const { data, error } = await query
+        .order('date', { ascending: true })
+        .order('time', { ascending: true })
+        .limit(limit);
 
-    if (error) throw error;
-    return { data: (data || []).map(fromDbAppointment), error: null };
+      if (error) throw error;
+      return { data: (data || []).map(fromDbAppointment), error: null };
+    }, 15000); // 15s TTL
   } catch (error) {
     console.error('Error fetching appointments:', error);
     return { data: null, error };
@@ -183,6 +187,7 @@ export async function addAppointment(appointment) {
       .single();
 
     if (error) throw error;
+    apiCache.invalidateResource('appointments', clinicId);
     return { data: fromDbAppointment(data), error: null };
   } catch (error) {
     console.error('Error adding appointment:', error);
@@ -208,6 +213,7 @@ export async function updateAppointmentStatus(id, status, extraFields = {}) {
       .single();
 
     if (error) throw error;
+    apiCache.invalidatePrefix('appointments:');
     return { data: fromDbAppointment(data), error: null };
   } catch (error) {
     console.error('Error updating appointment status:', error);
@@ -233,6 +239,7 @@ export async function updateAppointment(id, updateData) {
       .single();
 
     if (error) throw error;
+    apiCache.invalidateResource('appointments', updateData?.clinicId || updateData?.clinic_id);
     return { data: fromDbAppointment(data), error: null };
   } catch (error) {
     console.error('Error updating appointment:', error);
@@ -255,6 +262,7 @@ export async function deleteAppointment(id) {
       .eq('id', id);
 
     if (error) throw error;
+    apiCache.invalidatePrefix('appointments:');
     return { data, error: null };
   } catch (error) {
     console.error('Error deleting appointment:', error);
