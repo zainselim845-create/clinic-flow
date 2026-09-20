@@ -51,13 +51,14 @@ export const ROUTE_PERMISSION_MAP = {
 
 /**
  * Determines if user holds a clinic management/administrative leadership role
+ * In private clinic practice, the Doctor is the clinic owner & administrator with full access.
  * @param {Object} user
  * @returns {boolean}
  */
 export function isAdminRole(user) {
   if (!user) return false;
   const role = user.role || 'staff';
-  return ['admin', 'clinic_admin', 'owner', 'multi_clinic_owner', 'super_admin'].includes(role) || user.isAdmin === true || user.isSuperAdmin === true;
+  return ['doctor', 'admin', 'clinic_admin', 'owner', 'multi_clinic_owner', 'super_admin'].includes(role) || user.isAdmin === true || user.isSuperAdmin === true;
 }
 
 /**
@@ -68,7 +69,7 @@ export function isAdminRole(user) {
 export function isDoctorRole(user) {
   if (!user) return false;
   const role = user.role || 'staff';
-  return ['doctor', 'associate_doctor', 'owner'].includes(role);
+  return ['doctor', 'associate_doctor', 'owner', 'clinic_admin', 'admin'].includes(role);
 }
 
 /**
@@ -117,6 +118,11 @@ export function hasPermission(user, permissionKey) {
     return true;
   }
 
+  // Doctor/Owner/Admin has full system-wide permissions across all features
+  if (isAdminRole(user)) {
+    return true;
+  }
+
   // Admin-only management features (Settings, SMS gateway, etc.)
   if (permissionKey === 'admin_only') {
     return isAdminRole(user);
@@ -143,7 +149,7 @@ export function hasPermission(user, permissionKey) {
     return true;
   }
   if (role === 'doctor' || role === 'associate_doctor') {
-    if (['appointments', 'patients', 'labs', 'sms'].includes(permissionKey)) return true;
+    return true;
   }
   if (role === 'accountant') {
     if (permissionKey === 'invoices') return true;
@@ -182,17 +188,17 @@ export const CAPABILITIES = {
 export const ROLE_CAPABILITIES = {
   super_admin: ['*'],
   owner: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
-  admin: ['billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
-  clinic_admin: ['billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
+  admin: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
+  clinic_admin: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
   multi_clinic_owner: ['clinical.*', 'billing.*', 'scheduling.*', 'settings.*', 'team.*', 'sms.*', 'inventory.*'],
   doctor: [
     'clinical.*',
-    'scheduling.appointment.manage',
-    'scheduling.queue.triage',
-    'clinical.records.read',
-    'clinical.records.write',
-    'clinical.consultation.conduct',
-    'clinical.prescribe'
+    'billing.*',
+    'scheduling.*',
+    'settings.*',
+    'team.*',
+    'sms.*',
+    'inventory.*'
   ],
   associate_doctor: [
     'clinical.consultation.conduct',
