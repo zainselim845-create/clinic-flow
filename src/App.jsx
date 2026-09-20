@@ -172,7 +172,9 @@ const AdminLayout = () => {
         />
         <main className="page-content">
           <Breadcrumbs />
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
