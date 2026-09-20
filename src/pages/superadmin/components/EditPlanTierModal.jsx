@@ -6,8 +6,6 @@ import {
 import { saveSaaSSubscriptionPlan } from '../../../services/saasSubscriptionPlansService';
 
 export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess, onSave }) {
-  if (!isOpen) return null;
-
   const [formData, setFormData] = useState({
     id: plan?.id || 'custom_' + Date.now(),
     name: plan?.name || 'باقة جديدة',
@@ -69,6 +67,8 @@ export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess
       }, 1200);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="saas-modal-backdrop" style={{

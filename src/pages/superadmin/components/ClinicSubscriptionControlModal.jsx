@@ -11,8 +11,7 @@ import {
 import { getClinicUsage } from '../../../services/usageMeteringService';
 
 export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant: propTenant, clinic: propClinic, onUpdateSuccess, onSuccess }) {
-  const tenant = propTenant || propClinic;
-  if (!isOpen || !tenant) return null;
+  const tenant = propTenant || propClinic || {};
 
   const plans = getSaaSSubscriptionPlans();
 
@@ -146,6 +145,8 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
       }, 1200);
     }
   };
+
+  if (!isOpen || (!propTenant && !propClinic)) return null;
 
   return (
     <div className="saas-modal-backdrop" style={{
