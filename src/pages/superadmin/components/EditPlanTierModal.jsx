@@ -156,7 +156,7 @@ export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess
               </label>
               <input
                 type="text"
-                placeholder="مثال: الأكثر طلباً ⭐ أو VIP"
+                placeholder="مثال: الأكثر طلباً أو VIP"
                 className="form-control"
                 value={formData.badge}
                 onChange={(e) => setFormData({ ...formData, badge: e.target.value })}

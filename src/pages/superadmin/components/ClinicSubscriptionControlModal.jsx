@@ -197,7 +197,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                 background: isLifetimeLicense ? '#FEF3C7' : status === 'suspended' ? '#FEE2E2' : status === 'grace_period' ? '#FEF08A' : '#ECFDF5',
                 color: isLifetimeLicense ? '#B45309' : status === 'suspended' ? '#DC2626' : status === 'grace_period' ? '#A16207' : '#059669'
               }}>
-                {isLifetimeLicense ? '👑 مدى الحياة (Lifetime Portal)' : status === 'suspended' ? 'موقوف ومجمد' : status === 'grace_period' ? 'مهلة سداد' : 'نشط وساري'}
+                {isLifetimeLicense ? 'ترخيص مدى الحياة (Lifetime Portal)' : status === 'suspended' ? 'موقوف ومجمد' : status === 'grace_period' ? 'مهلة سداد' : 'نشط وساري'}
               </span>
             </div>
             <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
@@ -245,7 +245,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                 }}
               >
                 <Crown size={15} />
-                <span>👑 ترخيص دائم مدى الحياة (شراء البورتال)</span>
+                <span>ترخيص دائم مدى الحياة (شراء البورتال)</span>
               </button>
 
               <button
@@ -372,7 +372,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                   <option value="quarterly">ربع سنوي (كل ٣ شهور)</option>
                   <option value="semi_annual">نصف سنوي (كل ٦ شهور)</option>
                   <option value="annual">سنوي (كل سنة)</option>
-                  <option value="lifetime">👑 شراء دائم مدى الحياة (One-time Buyout)</option>
+                  <option value="lifetime">شراء دائم مدى الحياة (One-time Buyout)</option>
                   <option value="custom">اتفاق مرن مخصص (Custom Agreement)</option>
                 </select>
               </div>
@@ -562,7 +562,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                   style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
                 >
                   <option value="recurring">سداد اشتراك دوري متفق عليه</option>
-                  <option value="lifetime_buyout">👑 شراء وترخيص بورتال مدى الحياة (Buyout)</option>
+                  <option value="lifetime_buyout">شراء وترخيص بورتال مدى الحياة (Buyout)</option>
                   <option value="topup">شحن رصيد رسائل SMS إضافي</option>
                 </select>
               </div>

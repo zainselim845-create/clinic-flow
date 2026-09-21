@@ -6,7 +6,7 @@ import {
   TrendingUp, Users, PauseCircle, PlayCircle, ShieldAlert, Sliders,
   Edit3, Trash2, Plus, Layers, DollarSign, Calendar, Clock, AlertTriangle,
   RotateCcw, Search, Filter, Lock, Unlock, PhoneCall,
-  Eye, EyeOff
+  Eye, EyeOff, X
 } from 'lucide-react';
 import { getSupabaseConfig, saveSupabaseConfig } from '../../../lib/supabase';
 import { getRegisteredTenants, getAllPlatformUsers } from '../../../services/authService';
@@ -794,7 +794,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                             gap: '0.35rem'
                           }}>
                             <CheckCircle2 size={12} />
-                            دومين نشط وموجّه ✓
+                            دومين نشط وموجّه
                           </span>
                         ) : (
                           <span style={{
@@ -1139,31 +1139,31 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                       {/* Feature Checklist */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '1.25rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
-                          {plan.aiAssistant ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          {plan.aiAssistant ? <Check size={14} color="#10B981" /> : <X size={14} color="#9CA3AF" />}
                           <span style={{ color: plan.aiAssistant ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                             مساعد الذكاء الاصطناعي الطبي
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
-                          {plan.customDomain ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          {plan.customDomain ? <Check size={14} color="#10B981" /> : <X size={14} color="#9CA3AF" />}
                           <span style={{ color: plan.customDomain ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                             دومين خاص وشهادة SSL مخصصة
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
-                          {plan.whatsappBot ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          {plan.whatsappBot ? <Check size={14} color="#10B981" /> : <X size={14} color="#9CA3AF" />}
                           <span style={{ color: plan.whatsappBot ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                             تكامل واتساب وتأكيد الحجز الفوري
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
-                          {plan.labModule ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          {plan.labModule ? <Check size={14} color="#10B981" /> : <X size={14} color="#9CA3AF" />}
                           <span style={{ color: plan.labModule ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                             إدارة المعامل والتركيبات والتكلفة
                           </span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
-                          {plan.inventoryModule ? <Check size={14} color="#10B981" /> : <span style={{ color: '#9CA3AF', width: 14 }}>✕</span>}
+                          {plan.inventoryModule ? <Check size={14} color="#10B981" /> : <X size={14} color="#9CA3AF" />}
                           <span style={{ color: plan.inventoryModule ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                             المخزون وحسابات الأطباء والأرباح
                           </span>
@@ -1276,7 +1276,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                 >
                   <option value="all">كافة الحالات</option>
                   <option value="active">نشط (Active)</option>
-                  <option value="lifetime">👑 ترخيص مدى الحياة (Lifetime)</option>
+                  <option value="lifetime">ترخيص مدى الحياة (Lifetime)</option>
                   <option value="suspended">موقوف ومجمد (Suspended)</option>
                   <option value="grace_period">مهلة سداد (Grace)</option>
                 </select>

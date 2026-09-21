@@ -189,7 +189,7 @@ export function TopUpCreditsModal({
                     disabled={isSubmitting || (smsCredits <= 0 && aiTokens <= 0)}
                     style={{ flex: 1 }}
                   >
-                    {isSubmitting ? 'جاري التنفيذ...' : 'اعتماد شحن الرصيد فوراً ⚡'}
+                    {isSubmitting ? 'جاري التنفيذ...' : 'اعتماد شحن الرصيد فوراً'}
                   </button>
                   <button 
                     type="button" 

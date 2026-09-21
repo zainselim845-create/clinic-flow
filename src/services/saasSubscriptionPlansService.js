@@ -40,7 +40,7 @@ export const DEFAULT_SAAS_PLANS = [
     labModule: true,
     inventoryModule: true,
     dentalChart: true,
-    badge: 'الأكثر طلباً ⭐',
+    badge: 'الأكثر طلباً',
     accentColor: '#007AFF',
     description: 'الحل الشامل للعيادات التخصصية التي تبحث عن أتمتة كاملة، ومساعد طبيب ذكي، وإدارة فواتير ومخزون.'
   },
