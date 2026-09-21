@@ -1526,3 +1526,271 @@
   }
 }
 
+/* ==========================================================================
+   Booking Funnel & Abandoned Lead Recovery Cockpit Card Styles
+   ========================================================================== */
+
+.dashboard-funnel-card {
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border-color, #E4E4E7);
+  border-radius: var(--radius-lg, 12px);
+  padding: 1rem 1.15rem;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: border-color var(--transition-fast);
+}
+
+.dashboard-funnel-card:hover {
+  border-color: var(--clinic-surface-border, #D4D4D8);
+}
+
+.funnel-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.funnel-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.funnel-header-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--clinic-primary-light, #F4F4F5);
+  color: var(--clinic-primary, #09090B);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.funnel-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.funnel-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  display: block;
+}
+
+.funnel-badge-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--clinic-accent-light, #EFF6FF);
+  color: var(--clinic-accent, #2563EB);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  white-space: nowrap;
+}
+
+/* Funnel Steps Bar */
+.funnel-steps-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-tertiary, #F4F4F5);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.5rem 0.75rem;
+  gap: 0.35rem;
+}
+
+.funnel-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.funnel-step-item .step-val {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.funnel-step-item .step-lbl {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.funnel-step-item.completed .step-val {
+  color: var(--success, #059669);
+}
+
+.funnel-step-arrow {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* Leads Section */
+.funnel-leads-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.funnel-leads-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+}
+
+.leads-header-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.btn-link-crm {
+  background: none;
+  border: none;
+  color: var(--clinic-accent, #2563EB);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.btn-link-crm:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+.funnel-empty-state {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--bg-tertiary, #F4F4F5);
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.funnel-empty-state .empty-check-icon {
+  color: var(--success, #059669);
+  flex-shrink: 0;
+}
+
+/* Leads List */
+.funnel-leads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.funnel-lead-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg-primary, #F8FAFC);
+  border: 1px solid var(--border-color, #E4E4E7);
+  border-radius: var(--radius-md, 8px);
+  gap: 0.65rem;
+  transition: all var(--transition-fast);
+}
+
+.funnel-lead-row:hover {
+  border-color: var(--clinic-accent, #2563EB);
+  background: var(--surface, #FFFFFF);
+}
+
+.lead-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.lead-row-top {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.lead-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lead-phone {
+  font-size: 0.72rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-secondary);
+}
+
+.lead-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.lead-step-badge {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-xs, 4px);
+  background: #FEF3C7;
+  color: #92400E;
+  font-weight: 600;
+}
+
+.lead-service-badge {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-xs, 4px);
+  background: var(--clinic-primary-light, #F4F4F5);
+  color: var(--text-secondary);
+}
+
+.btn-recover-lead {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-md, 8px);
+  background: #059669;
+  color: #FFFFFF !important;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(5, 150, 105, 0.2);
+  transition: all var(--transition-fast);
+}
+
+.btn-recover-lead:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
