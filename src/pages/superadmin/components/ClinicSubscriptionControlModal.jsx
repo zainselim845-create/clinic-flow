@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Save, ShieldAlert, CheckCircle2, AlertOctagon, Clock, 
-  Ban, Check, RefreshCw, Zap, CreditCard, Calendar, PhoneCall,
-  Activity, Layers, Crown, DollarSign, Sparkles, CheckCheck
+  X, Save, CheckCircle2, AlertOctagon, Clock, 
+  Ban, CreditCard, Activity, Layers, Crown, DollarSign
 } from 'lucide-react';
 import { 
   getSaaSSubscriptionPlans, 
   updateClinicSubscriptionDetails 
 } from '../../../services/saasSubscriptionPlansService';
-import { getClinicUsage } from '../../../services/usageMeteringService';
 
 export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant: propTenant, clinic: propClinic, onUpdateSuccess, onSuccess }) {
   const tenant = propTenant || propClinic || {};
@@ -48,8 +46,6 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
   const [paymentAmount, setPaymentAmount] = useState(isInitialLifetime ? 25000 : 999);
   const [paymentNotes, setPaymentNotes] = useState('');
   const [isSaved, setIsSaved] = useState(false);
-
-  const usage = getClinicUsage(tenant.id, tenant.quotas, tier);
 
   useEffect(() => {
     const isLife = Boolean(tenant.isLifetimeLicense || tenant.subscriptionStatus === 'lifetime');
@@ -300,6 +296,21 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
               >
                 <AlertOctagon size={15} />
                 <span>مهلة سداد ٧ أيام</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSetTrial}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.5rem 0.85rem', borderRadius: '8px', border: '1px solid #FDE68A',
+                  background: (!isLifetimeLicense && status === 'trial') ? '#F59E0B' : '#FFFBEB',
+                  color: (!isLifetimeLicense && status === 'trial') ? '#FFF' : '#B45309',
+                  fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                <Clock size={15} />
+                <span>فترة تجريبية (Trial)</span>
               </button>
             </div>
 
