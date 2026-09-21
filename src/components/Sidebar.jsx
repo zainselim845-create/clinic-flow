@@ -23,6 +23,10 @@ const Sidebar = () => {
   const isDental = Boolean(clinicSpecialty && (clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('فم') || clinicSpecialty.toLowerCase().includes('dental')));
   const isDerma = Boolean(clinicSpecialty && !isDental && (clinicSpecialty.includes('جلدية') || clinicSpecialty.includes('تجميل') || clinicSpecialty.includes('ليزر') || clinicSpecialty.toLowerCase().includes('derma')));
 
+  const clinicModules = tenant?.modules || state.clinicInfo?.modules || {};
+  const enableLabs = Boolean(tenant?.enableLabs ?? state.clinicInfo?.enableLabs ?? clinicModules.labs);
+  const enableInventory = Boolean(tenant?.enableInventory ?? state.clinicInfo?.enableInventory ?? clinicModules.inventory);
+
   let brandTitle = tenant?.branding?.brandTitle || tenant?.name || 'كلينك فلو';
   if (!tenant?.branding?.brandTitle && !tenant?.name) {
     if (isDental) {
@@ -101,10 +105,12 @@ const Sidebar = () => {
               <Bot size={19} />
               <span>مساعد الطبيب الذكي</span>
             </NavLink>
-            <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-              <Layers size={19} />
-              <span>معمل التركيبات والتحاليل</span>
-            </NavLink>
+            {enableLabs && (
+              <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                <Layers size={19} />
+                <span>معمل التركيبات والتحاليل</span>
+              </NavLink>
+            )}
           </>
         )}
 
@@ -115,7 +121,7 @@ const Sidebar = () => {
             <span>الفوترة والتحصيل</span>
           </NavLink>
         )}
-        {hasPermission(user, 'inventory') && (
+        {hasPermission(user, 'inventory') && enableInventory && (
           <NavLink to="/inventory" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Package size={19} />
             <span>المخزون والمستلزمات</span>

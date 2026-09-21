@@ -170,44 +170,7 @@ export const demoClinics = [
   }
 ];
 
-export const staffMembers = [
-  {
-    id: 'staff-1',
-    name: 'سارة كمال (سكرتير أول)',
-    email: 'sara@clinic.com',
-    phone: '01012345678',
-    password: '123',
-    role: 'سكرتير أول',
-    shift: 'مسائي (04:00 م - 10:00 م)',
-    status: 'active',
-    permissions: ['appointments', 'patients', 'invoices', 'inventory', 'sms', 'labs'],
-    createdAt: '2026-01-10'
-  },
-  {
-    id: 'staff-2',
-    name: 'مريم حسني (سكرتير مساعد)',
-    email: 'mariam@clinic.com',
-    phone: '01123456789',
-    password: '123',
-    role: 'سكرتير مساعد',
-    shift: 'صباحي (09:00 ص - 03:00 م)',
-    status: 'active',
-    permissions: ['appointments', 'patients', 'sms'],
-    createdAt: '2026-02-01'
-  },
-  {
-    id: 'staff-3',
-    name: 'محمود طارق (مشرف استقبال ومخزون)',
-    email: 'mahmoud@clinic.com',
-    phone: '01234567890',
-    password: '123',
-    role: 'مدير إداري',
-    shift: 'كامل (09:00 ص - 10:00 م)',
-    status: 'active',
-    permissions: ['appointments', 'invoices', 'inventory'],
-    createdAt: '2026-02-15'
-  }
-];
+export const staffMembers = [];
 
 // Clean zero-state seed templates (Zero Demo Contamination)
 export const getSeedPatientsAhmed = () => [];
@@ -236,23 +199,7 @@ export const drSaraRecalls = [];
 export const drSaraNotifications = [];
 export const drSaraBlockedSlots = [];
 
-export const drSaraStaffMembers = [
-  {
-    id: 'staff-sara-1',
-    clinicId: '550e8400-e29b-41d4-a716-446655440099',
-    clinicSlug: 'dr-sara',
-    allowedClinics: ['dr-sara'],
-    name: 'مريم سمير (منسقة عيادة الجلدية)',
-    email: 'mariam@sara-clinic.com',
-    phone: '01198765432',
-    password: '123',
-    role: 'منسقة عيادة التجميل',
-    shift: 'صباحي/مسائي (01:00 م - 08:00 م)',
-    status: 'active',
-    permissions: ['appointments', 'patients', 'invoices', 'inventory', 'sms'],
-    createdAt: '2026-02-01'
-  }
-];
+export const drSaraStaffMembers = [];
 
 export const getInitialDataForTenant = (tenantOrSlug) => {
   const slug = typeof tenantOrSlug === 'string'
@@ -276,7 +223,7 @@ export const getInitialDataForTenant = (tenantOrSlug) => {
     recalls: [],
     notifications: [],
     blockedSlots: [],
-    staffMembers: slug === 'dr-sara' ? drSaraStaffMembers : staffMembers,
+    staffMembers: [],
     clinicInfo: matchedClinic
   };
 };

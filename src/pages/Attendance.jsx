@@ -15,31 +15,11 @@ const Attendance = () => {
   const staffList = state.staffMembers || [];
 
   const currentSlug = state.clinicInfo?.slug || 'dr-ahmed';
-  const isDemoClinic = currentSlug === 'dr-ahmed';
 
   const loadScopedAttendance = () => {
     const parsed = safeGetJSON(`clinicflow_attendance_${currentSlug}`, null);
     if (Array.isArray(parsed)) return parsed;
-    return isDemoClinic ? [
-      {
-        id: 'att-1',
-        staffName: 'سارة كمال (سكرتارية أولى)',
-        staffRole: 'سكرتير أول',
-        checkIn: new Date(Date.now() - 4 * 3600000).toISOString(),
-        checkOut: null,
-        totalHours: 4.0,
-        status: 'active'
-      },
-      {
-        id: 'att-2',
-        staffName: 'مينا سمير (مساعد طبيب أسنان)',
-        staffRole: 'مساعد طبيب',
-        checkIn: new Date(Date.now() - 6 * 3600000).toISOString(),
-        checkOut: new Date(Date.now() - 1 * 3600000).toISOString(),
-        totalHours: 5.0,
-        status: 'completed'
-      }
-    ] : [];
+    return [];
   };
 
   const [attendanceRecords, setAttendanceRecords] = useState(loadScopedAttendance);

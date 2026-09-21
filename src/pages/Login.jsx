@@ -1,21 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Stethoscope, Eye, EyeOff, Loader2, UserCheck, Shield, AlertTriangle, KeyRound, Building2, ShieldCheck, Globe, Check, User, Info, CheckCircle2 } from 'lucide-react';
+import { 
+  Stethoscope, Eye, EyeOff, Loader2, Shield, AlertTriangle, 
+  Building2, ShieldCheck, Globe, Check, User, Lock, Mail, Phone, 
+  Sparkles, CheckCircle2, ArrowLeft
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Tabs } from '../components/ui/tabs';
-import { Collapsible } from '../components/ui/collapsible';
-import { 
-  triggerGoogleOAuthPopup 
-} from '../services/googleAuthService';
+import { triggerGoogleOAuthPopup } from '../services/googleAuthService';
+import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/safeStorage';
 import './Login.css';
 
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_SECONDS = 30;
+const REMEMBERED_USER_KEY = 'clinicflow_remembered_identifier';
 
-const Login = () => {
+const CLINIC_SPECIALTIES_LIST = [
+  'طب وجراحة الفم والأسنان',
+  'الأمراض الجلدية والتجميل والليزر',
+  'طب الأطفال وحديثي الولادة',
+  'طب وجراحة العيون',
+  'أمراض الباطنة والقلب والسكر',
+  'جراحة العظام والمفاصل والعمود الفقري',
+  'النساء والتوليد وعلاج العقم',
+  'الأنف والأذن والحنجرة',
+  'العلاج الطبيعي والتأهيل الحركي',
+  'المخ والأعصاب والطب النفسي',
+  'الجراحة العامة والمناظير',
+  'مركز طبي متعدد التخصصات'
+];
+
+export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUpDoctorAndClinic, signInWithGoogle, loginWithGoogleProfile, user } = useAuth();
+  const { signIn, signUpDoctorAndClinic, loginWithGoogleProfile, user } = useAuth();
 
   const searchParams = new URLSearchParams(location.search);
   const initialPortal = searchParams.get('portal') === 'admin' || searchParams.get('portal') === 'saas' ? 'saas' : 'clinic';
@@ -23,8 +41,14 @@ const Login = () => {
 
   const [portalScope, setPortalScope] = useState(initialPortal); // 'clinic' | 'saas'
   const [activeTab, setActiveTab] = useState(initialTab); // 'login' | 'register'
-  const [identifier, setIdentifier] = useState(initialPortal === 'saas' ? 'superadmin@clinicflow.com' : '');
+  
+  // Login Form State
+  const [identifier, setIdentifier] = useState(() => {
+    if (initialPortal === 'saas') return 'superadmin@clinicflow.com';
+    return safeGetItem(REMEMBERED_USER_KEY, '') || '';
+  });
   const [password, setPassword] = useState(initialPortal === 'saas' ? 'admin' : '');
+  const [rememberMe, setRememberMe] = useState(() => Boolean(safeGetItem(REMEMBERED_USER_KEY, '')));
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -40,10 +64,22 @@ const Login = () => {
     password: '',
     clinicName: '',
     specialty: 'طب وجراحة الفم والأسنان',
-    address: 'القاهرة، مصر'
+    address: 'القاهرة، مصر',
+    agreeTerms: true
   });
   
   const from = location.state?.from?.pathname || (portalScope === 'saas' ? '/super-admin' : '/dashboard');
+
+  // Calculate Password Strength (0: none, 1: weak, 2: medium, 3: strong)
+  const passwordStrength = useMemo(() => {
+    const pwd = regForm.password || '';
+    if (!pwd) return 0;
+    let score = 0;
+    if (pwd.length >= 6) score += 1;
+    if (pwd.length >= 8 && /[a-zA-Z]/.test(pwd) && /[0-9]/.test(pwd)) score += 1;
+    if (pwd.length >= 10 && /[^a-zA-Z0-9]/.test(pwd)) score += 1;
+    return Math.min(score, 3);
+  }, [regForm.password]);
 
   // Handle portal scope switch
   const handleScopeChange = (scope) => {
@@ -55,7 +91,8 @@ const Login = () => {
       setIdentifier('superadmin@clinicflow.com');
       setPassword('admin');
     } else {
-      setIdentifier('');
+      const saved = safeGetItem(REMEMBERED_USER_KEY, '');
+      setIdentifier(saved || '');
       setPassword('');
     }
   };
@@ -94,9 +131,9 @@ const Login = () => {
     setFailedAttempts(nextFailed);
     if (nextFailed >= MAX_FAILED_ATTEMPTS) {
       setLockoutTimer(LOCKOUT_SECONDS);
-      setError(`تم تجاوز الحد الأقصى للمحاولات الخاطئة. تم قفل تسجيل الدخول لمدة ${LOCKOUT_SECONDS} ثانية لحماية الحساب.`);
+      setError(`تم تجاوز الحد الأقصى للمحاولات الخاطئة. تم قفل تسجيل الدخول مؤقتاً لمدة ${LOCKOUT_SECONDS} ثانية لحماية أمان الحساب.`);
     } else {
-      setError(`${msg || 'بيانات الدخول غير صحيحة.'} (المحاولة ${nextFailed} من ${MAX_FAILED_ATTEMPTS})`);
+      setError(`${msg || 'بيانات الدخول غير صحيحة. يرجى التحقق وإعادة المحاولة.'} (المحاولة ${nextFailed} من ${MAX_FAILED_ATTEMPTS})`);
     }
   };
 
@@ -104,8 +141,8 @@ const Login = () => {
     e.preventDefault();
     if (lockoutTimer > 0) return;
 
-    if (!identifier || !password) {
-      setError('يرجى إدخال اسم المستخدم وكلمة المرور.');
+    if (!identifier.trim() || !password) {
+      setError('يرجى إدخال اسم المستخدم / البريد الإلكتروني وكلمة المرور.');
       return;
     }
 
@@ -113,9 +150,16 @@ const Login = () => {
     setError('');
 
     try {
-      const { data, error: signInError } = await signIn(identifier, password);
+      const { data, error: signInError } = await signIn(identifier.trim(), password);
       if (signInError) throw signInError;
       
+      // Remember me logic
+      if (rememberMe && portalScope === 'clinic') {
+        safeSetItem(REMEMBERED_USER_KEY, identifier.trim());
+      } else if (!rememberMe) {
+        safeRemoveItem(REMEMBERED_USER_KEY);
+      }
+
       const loggedUser = data?.user;
       if (loggedUser?.role === 'super_admin' || loggedUser?.isSuperAdmin || portalScope === 'saas') {
         navigate('/super-admin', { replace: true });
@@ -133,50 +177,44 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    if (regForm.password && regForm.password.length < 6) {
-      setError('كلمة المرور يجب أن لا تقل عن 6 أحرف لحماية بيانات المرضى.');
+    if (!regForm.doctorName.trim() || !regForm.clinicName.trim() || !regForm.email.trim() || !regForm.phone.trim() || !regForm.password) {
+      setError('يرجى ملء كافة الحقول الإلزامية لتدشين حساب العيادة.');
       return;
     }
 
-    if (!regForm.doctorName || !regForm.clinicName || !regForm.email || !regForm.phone || !regForm.password) {
-      setError('يرجى ملء جميع الحقول الإلزامية لتسجيل العيادة.');
+    if (regForm.password.length < 6) {
+      setError('كلمة المرور يجب أن لا تقل عن 6 خانات لضمان أمان السجلات الطبية.');
+      return;
+    }
+
+    const cleanPhone = regForm.phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+      setError('يرجى إدخال رقم هاتف صحيح مكوّن من 11 رقماً.');
       return;
     }
 
     setIsLoading(true);
     try {
-      const { error: signUpError } = await signUpDoctorAndClinic(regForm);
+      const formattedDocName = regForm.doctorName.trim().startsWith('د.') 
+        ? regForm.doctorName.trim() 
+        : `د. ${regForm.doctorName.trim()}`;
+
+      const payload = {
+        ...regForm,
+        doctorName: formattedDocName,
+        email: regForm.email.trim().toLowerCase(),
+        phone: cleanPhone
+      };
+
+      const { error: signUpError } = await signUpDoctorAndClinic(payload);
       if (signUpError) throw signUpError;
 
-      setSuccessMessage('تم تأسيس حساب العيادة بنجاح! جاري تحويلك لمنظومة العيادة...');
+      setSuccessMessage('تم تأسيس وتدشين حساب عيادتك بنجاح! جاري توجيهك إلى منظومة العيادة...');
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
-      }, 1000);
+      }, 900);
     } catch (err) {
-      setError(err.message || 'فشل تسجيل العيادة، يرجى المحاولة لاحقاً.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDirectRoleLogin = async (presetId, presetPass) => {
-    if (lockoutTimer > 0) return;
-    setActiveTab('login');
-    setIdentifier(presetId);
-    setPassword(presetPass);
-    setError('');
-    setIsLoading(true);
-    try {
-      const { data, error: signInError } = await signIn(presetId, presetPass);
-      if (signInError) throw signInError;
-      const loggedUser = data?.user;
-      if (loggedUser?.role === 'super_admin' || loggedUser?.isSuperAdmin || presetId.includes('superadmin')) {
-        navigate('/super-admin', { replace: true });
-      } else {
-        navigate(from, { replace: true });
-      }
-    } catch (err) {
-      recordFailedAttempt(err.message);
+      setError(err.message || 'فشل تأسيس العيادة، يرجى المحاولة لاحقاً.');
     } finally {
       setIsLoading(false);
     }
@@ -213,524 +251,553 @@ const Login = () => {
   const isLocked = lockoutTimer > 0;
 
   return (
-    <div className="login-container">
-      <div className="login-card glass-card">
+    <div className="login-page-wrapper">
+      <div className="login-card-container">
         
-        {/* Portal Scope Switcher (Clinics Clients vs SaaS Platform Admin) */}
-        <div className="portal-scope-selector" role="tablist" aria-label="بوابات المنظومة">
+        {/* Top Scope Pill Switcher */}
+        <div className="portal-scope-nav" role="tablist" aria-label="بوابات المنظومة">
           <button 
             type="button" 
             role="tab"
             aria-selected={portalScope === 'clinic'}
-            className={`scope-pill-btn ${portalScope === 'clinic' ? 'active' : ''}`}
+            className={`scope-nav-btn ${portalScope === 'clinic' ? 'active' : ''}`}
             onClick={() => handleScopeChange('clinic')}
           >
-            <Building2 size={15} />
-            <span>بوابة العيادات والأطباء (العملاء)</span>
+            <Building2 size={16} />
+            <span>بوابة الأطباء والعيادات (Clinic Portal)</span>
           </button>
           <button 
             type="button" 
             role="tab"
             aria-selected={portalScope === 'saas'}
-            className={`scope-pill-btn ${portalScope === 'saas' ? 'active saas-active' : ''}`}
+            className={`scope-nav-btn ${portalScope === 'saas' ? 'active saas-active' : ''}`}
             onClick={() => handleScopeChange('saas')}
           >
-            <ShieldCheck size={15} />
-            <span>إدارة المنصة (SaaS Admin)</span>
+            <ShieldCheck size={16} />
+            <span>إدارة المنصة المركزية (SaaS Admin)</span>
           </button>
         </div>
 
-        <div className="login-header">
-          <div className={`login-logo ${portalScope === 'saas' ? 'saas-logo' : ''}`}>
+        <div className="login-dual-card glass-panel">
+          
+          {/* Left Column: Brand Hero & Value Proposition */}
+          <div className="login-hero-pane">
+            <div className="hero-brand-top">
+              <div className="brand-logo-badge">
+                <Stethoscope size={28} className="brand-logo-icon" />
+              </div>
+              <div className="brand-titles">
+                <span className="brand-name">Clinic<span>Flow</span></span>
+                <span className="brand-tagline">السحابة الطبية لإدارة العيادات</span>
+              </div>
+            </div>
+
+            <div className="hero-headline-block">
+              <h2>المنظومة السحابية المعتمدة لإدارة عيادتك الطبية بكل احترافية</h2>
+              <p>بيئة عمل سريرية وإدارية متكاملة تضمن أعلى درجات الخصوصية والكفاءة في متابعة المرضى والعمليات اليومية.</p>
+            </div>
+
+            <div className="hero-features-list">
+              <div className="hero-feature-item">
+                <div className="feature-check-icon">
+                  <Check size={16} strokeWidth={3} />
+                </div>
+                <div className="feature-text">
+                  <strong>سجلات طبية سريرية مشفرة</strong>
+                  <span>عزل تام ومستقل لبيانات كل مريض وعيادة بأعلى معايير الأمان.</span>
+                </div>
+              </div>
+
+              <div className="hero-feature-item">
+                <div className="feature-check-icon">
+                  <Check size={16} strokeWidth={3} />
+                </div>
+                <div className="feature-text">
+                  <strong>إدارة المواعيد وطوابير الانتظار</strong>
+                  <span>تنظيم سلس للكشوفات مع تذكيرات تلقائية عبر الرسائل القصيرة.</span>
+                </div>
+              </div>
+
+              <div className="hero-feature-item">
+                <div className="feature-check-icon">
+                  <Check size={16} strokeWidth={3} />
+                </div>
+                <div className="feature-text">
+                  <strong>فواتير إلكترونية وتقارير فورية</strong>
+                  <span>إصدار سندات القبض، متابعة الخزينة، وإحصائيات الإيرادات الدقيقة.</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="hero-footer-trust">
+              <Sparkles size={16} className="text-emerald" />
+              <span>معتمد وموثوق لأكثر من 1,000 عيادة ومركز طبي متخصص</span>
+            </div>
+          </div>
+
+          {/* Right Column: Authentication Forms */}
+          <div className="login-forms-pane">
+            
+            <div className="forms-header">
+              <h1 className="form-main-title">
+                {portalScope === 'saas' 
+                  ? 'تسجيل الدخول — إدارة المنصة (Control Plane)' 
+                  : (activeTab === 'login' ? 'مرحباً بك مجدداً دكتور' : 'تأسيس وتدشين حساب عيادة جديدة')}
+              </h1>
+              <p className="form-subtitle">
+                {portalScope === 'saas' 
+                  ? 'مركز الرقابة السحابي لإدارة الاشتراكات والتراخيص' 
+                  : (activeTab === 'login' ? 'أدخل بيانات حسابك للمتابعة إلى لوحة التحكم' : 'ابدأ استخدام المنظومة بدقائق وبدون تعقيد')}
+              </p>
+            </div>
+
+            {/* Global Error & Lockout Alert */}
+            {error && (
+              <div 
+                role="alert" 
+                aria-live="assertive"
+                className={`login-alert-box error ${isLocked ? 'locked-shake' : 'shake'}`}
+              >
+                <AlertTriangle size={18} className="alert-icon" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Global Success Alert */}
+            {successMessage && (
+              <div 
+                role="status" 
+                aria-live="polite"
+                className="login-alert-box success"
+              >
+                <CheckCircle2 size={18} className="alert-icon" />
+                <span>{successMessage}</span>
+              </div>
+            )}
+
             {portalScope === 'saas' ? (
-              <ShieldCheck size={44} className="logo-icon saas-icon" />
-            ) : (
-              <Stethoscope size={44} className="logo-icon" />
-            )}
-          </div>
-          <h1 className="login-title">
-            {portalScope === 'saas' 
-              ? 'إدارة منصة ClinicFlow (SaaS Control Plane)' 
-              : 'منظومة ClinicFlow الطبية'}
-          </h1>
-          <p className="login-subtitle">
-            {portalScope === 'saas' 
-              ? 'مركز الرقابة السحابي لإدارة اشتراكات العيادات، التراخيص، والأنظمة' 
-              : 'نظام إدارة العيادات، المواعيد، والسجلات السريرية المعتمد'}
-          </p>
-          {portalScope === 'saas' && (
-            <div className="saas-portal-badge-notice">
-              <Shield size={14} />
-              <span>منطقة إدارة سحابية محمية • مخصصة للمدير العام ومسؤولي المنصة السحابية</span>
-            </div>
-          )}
-        </div>
-
-        {/* Global Error & Success Alerts */}
-        {error && (
-          <div 
-            role="alert" 
-            aria-live="assertive"
-            className={`error-message ${isLocked ? 'lockout-alert' : 'shake'}`} 
-            style={isLocked ? { background: '#fef2f2', border: '1px solid #fecaca', color: '#dc2626', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' } : { marginBottom: '1rem' }}
-          >
-            {isLocked && <AlertTriangle size={18} />}
-            <span>{error}</span>
-          </div>
-        )}
-
-        {successMessage && (
-          <div 
-            role="status" 
-            aria-live="polite"
-            style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', color: '#065f46', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontWeight: 600, textAlign: 'center' }}
-          >
-            {successMessage}
-          </div>
-        )}
-
-        {portalScope === 'saas' ? (
-          <div className="saas-login-wrapper">
-            <form onSubmit={handleSubmit} className="login-form">
-              <div className="form-group">
-                <label className="form-label" htmlFor="saasIdentifier">البريد الإلكتروني لمدير المنصة</label>
-                <input
-                  id="saasIdentifier"
-                  name="identifier"
-                  aria-label="البريد الإلكتروني لمدير المنصة"
-                  type="text"
-                  className="form-control"
-                  placeholder="superadmin@clinicflow.com"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  disabled={isLocked || isLoading}
-                  required
-                  dir="ltr"
-                  autoComplete="username"
-                />
-              </div>
-
-              <div className="form-group relative">
-                <label className="form-label" htmlFor="saasPassword">كلمة المرور الرئيسية</label>
-                <div className="password-input-wrapper">
-                  <input
-                    id="saasPassword"
-                    name="password"
-                    aria-label="كلمة المرور الرئيسية"
-                    type={showPassword ? "text" : "password"}
-                    className="form-control"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLocked || isLoading}
-                    required
-                    dir="ltr"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+              /* SaaS Control Plane Sign In */
+              <form onSubmit={handleSubmit} className="auth-form">
+                <div className="form-field-group">
+                  <label className="field-label" htmlFor="saasIdentifier">البريد الإلكتروني لمدير المنصة</label>
+                  <div className="field-input-wrapper">
+                    <Mail className="input-icon" size={18} />
+                    <input
+                      id="saasIdentifier"
+                      name="identifier"
+                      type="text"
+                      className="field-input has-icon"
+                      placeholder="superadmin@clinicflow.com"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      disabled={isLocked || isLoading}
+                      required
+                      dir="ltr"
+                      autoComplete="username"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <button 
-                type="submit" 
-                className="btn btn-primary btn-lg login-btn saas-submit-btn"
-                disabled={isLoading || isLocked || !identifier || !password}
-              >
-                {isLoading ? (
-                  <Loader2 className="spinner" size={22} />
-                ) : isLocked ? (
-                  `يرجى الانتظار (${lockoutTimer} ثانية)... `
-                ) : (
-                  'تسجيل الدخول إلى لوحة تحكم الساس'
-                )}
-              </button>
-            </form>
-          </div>
-        ) : (
-          <Tabs.Root 
-            value={activeTab} 
-            onValueChange={(details) => { setActiveTab(details.value); setError(''); setSuccessMessage(''); }}
-            className="login-tabs-root"
-          >
-            <Tabs.List className="login-tabs-container">
-              <Tabs.Trigger 
-                value="login"
-                className={`login-tab-button ${activeTab === 'login' ? 'active' : ''}`}
-              >
-                تسجيل الدخول الآمن
-              </Tabs.Trigger>
-              <Tabs.Trigger 
-                value="register"
-                className={`login-tab-button ${activeTab === 'register' ? 'active' : ''}`}
-              >
-                تسجيل طبيب وعيادة جديدة ✨
-              </Tabs.Trigger>
-            </Tabs.List>
-
-          {/* 1. SIGN IN FORM */}
-          <Tabs.Content value="login">
-            <form onSubmit={handleSubmit} className="login-form">
-              <div className="form-group">
-                <label className="form-label" htmlFor="identifier">البريد الإلكتروني أو رقم الهاتف</label>
-                <input
-                  id="identifier"
-                  name="identifier"
-                  aria-label="البريد الإلكتروني أو رقم الهاتف"
-                  type="text"
-                  className="form-control"
-                  placeholder="name@clinic.com / 010XXXXXXXX"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  disabled={isLocked || isLoading}
-                  required
-                  dir="ltr"
-                  autoComplete="username"
-                />
-              </div>
-
-              <div className="form-group relative">
-                <label className="form-label" htmlFor="password">كلمة المرور</label>
-                <div className="password-input-wrapper">
-                  <input
-                    id="password"
-                    name="password"
-                    aria-label="كلمة المرور"
-                    type={showPassword ? "text" : "password"}
-                    className="form-control"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLocked || isLoading}
-                    required
-                    dir="ltr"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
+                <div className="form-field-group">
+                  <label className="field-label" htmlFor="saasPassword">كلمة المرور الرئيسية</label>
+                  <div className="field-input-wrapper">
+                    <Lock className="input-icon" size={18} />
+                    <input
+                      id="saasPassword"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      className="field-input has-icon has-toggle"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isLocked || isLoading}
+                      required
+                      dir="ltr"
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      className="btn-toggle-eye"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <button 
-                type="submit" 
-                className="btn btn-primary btn-lg login-btn"
-                disabled={isLoading || isLocked || !identifier || !password}
-              >
-                {isLoading ? (
-                  <Loader2 className="spinner" size={22} />
-                ) : isLocked ? (
-                  `يرجى الانتظار (${lockoutTimer} ثانية)... `
-                ) : (
-                  'تسجيل الدخول إلى العيادة'
-                )}
-              </button>
-            </form>
-          </Tabs.Content>
-
-          {/* 2. CLINIC ONBOARDING REGISTRATION FORM */}
-          <Tabs.Content value="register">
-            <form onSubmit={handleRegisterSubmit} className="login-form">
-              <div className="form-group">
-                <label className="form-label" htmlFor="regDoctorName">اسم الطبيب الكامل *</label>
-                <input 
-                  id="regDoctorName"
-                  name="doctorName"
-                  aria-label="اسم الطبيب الكامل"
-                  type="text" 
-                  className="form-control" 
-                  placeholder="د. محمد عبد الرحمن"
-                  value={regForm.doctorName}
-                  onChange={(e) => setRegForm({ ...regForm, doctorName: e.target.value })}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="regClinicName">اسم العيادة أو المركز الطبي *</label>
-                <input 
-                  id="regClinicName"
-                  name="clinicName"
-                  aria-label="اسم العيادة أو المركز الطبي"
-                  type="text" 
-                  className="form-control" 
-                  placeholder="عيادة الشروق لطب الأسنان"
-                  value={regForm.clinicName}
-                  onChange={(e) => setRegForm({ ...regForm, clinicName: e.target.value })}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="regSpecialty">التخصص السريري للعيادة *</label>
-                <select
-                  id="regSpecialty"
-                  name="specialty"
-                  aria-label="التخصص السريري للعيادة"
-                  className="form-control"
-                  value={regForm.specialty}
-                  onChange={(e) => setRegForm({ ...regForm, specialty: e.target.value })}
-                  disabled={isLoading}
+                <button 
+                  type="submit" 
+                  className="btn-auth-primary saas-btn"
+                  disabled={isLoading || isLocked || !identifier || !password}
                 >
-                  <option value="طب وجراحة الفم والأسنان">طب وجراحة الفم والأسنان</option>
-                  <option value="الأمراض الجلدية والتجميل والليزر">الأمراض الجلدية والتجميل والليزر</option>
-                  <option value="طب الأطفال وحديثي الولادة">طب الأطفال وحديثي الولادة</option>
-                  <option value="طب وجراحة العيون">طب وجراحة العيون</option>
-                  <option value="أمراض الباطنة والقلب والسكر">أمراض الباطنة والقلب والسكر</option>
-                  <option value="جراحة العظام والمفاصل والعمود الفقري">جراحة العظام والمفاصل والعمود الفقري</option>
-                  <option value="النساء والتوليد وعلاج العقم">النساء والتوليد وعلاج العقم</option>
-                  <option value="الأنف والأذن والحنجرة">الأنف والأذن والحنجرة</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="regPhone">رقم الهاتف المحمول (مصر) *</label>
-                <input 
-                  id="regPhone"
-                  name="phone"
-                  aria-label="رقم الهاتف المحمول للمسؤول"
-                  type="tel" 
-                  className="form-control" 
-                  placeholder="010XXXXXXXX"
-                  dir="ltr"
-                  value={regForm.phone}
-                  onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="regEmail">البريد الإلكتروني المهني *</label>
-                <input 
-                  id="regEmail"
-                  name="email"
-                  aria-label="البريد الإلكتروني المهني"
-                  type="email" 
-                  className="form-control" 
-                  placeholder="doctor@myclinic.com"
-                  dir="ltr"
-                  value={regForm.email}
-                  onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="form-group relative">
-                <label className="form-label" htmlFor="regPassword">كلمة المرور للحساب *</label>
-                <div className="password-input-wrapper">
-                  <input 
-                    id="regPassword"
-                    name="password"
-                    aria-label="كلمة المرور للحساب"
-                    type={showPassword ? "text" : "password"} 
-                    className="form-control" 
-                    placeholder="لا تقل عن 6 أحرف"
-                    minLength={6}
-                    autoComplete="new-password"
-                    dir="ltr"
-                    value={regForm.password}
-                    onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
-                    required
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                className="btn btn-primary btn-lg login-btn"
-                disabled={isLoading || !regForm.doctorName || !regForm.clinicName || !regForm.phone || !regForm.password}
-              >
-                {isLoading ? (
-                  <Loader2 className="spinner" size={22} />
-                ) : (
-                  'إنشاء وتدشين العيادة فوراً'
-                )}
-              </button>
-            </form>
-          </Tabs.Content>
-        </Tabs.Root>
-      )}
-
-        {/* Google OAuth Single Sign-On */}
-        <div className="login-divider">
-          <span>أو الدخول المباشر السحابي</span>
-        </div>
-
-        <button 
-          type="button" 
-          onClick={handleGoogleSignInClick}
-          className="btn btn-google-login"
-          disabled={isLoading || isLocked}
-          aria-label="تسجيل الدخول باستخدام حساب Google"
-        >
-          <svg className="google-icon" width="19" height="19" viewBox="0 0 18 18" aria-hidden="true">
-            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-            <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
-            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
-          </svg>
-          <span>تسجيل الدخول باستخدام Google</span>
-        </button>
-
-
-
-        {/* Ark UI Collapsible Fast Role Testing Helpers */}
-        <Collapsible.Root defaultOpen={false} className="demo-sandbox-helper" style={{ marginTop: '1.5rem', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '0.85rem 1.15rem', background: 'var(--surface-container, #F0F4F9)' }}>
-          <Collapsible.Trigger style={{ cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.45rem', userSelect: 'none', width: '100%', background: 'transparent', border: 'none', textAlign: 'right' }}>
-            <KeyRound size={15} className="text-primary" />
-            <span>تجربة الأدوار والصلاحيات مباشرة (الدخول الفوري بنقرة واحدة)</span>
-          </Collapsible.Trigger>
-          <Collapsible.Content>
-            <div className="presets-buttons-grid" style={{ marginTop: '0.85rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.65rem' }}>
-              <button 
-                type="button" 
-                className="preset-btn"
-                onClick={() => handleDirectRoleLogin('admin@clinicflow.com', 'admin')}
-                disabled={isLocked}
-                title="دخول مباشر بصلاحية إدارة العيادة والتشغيل"
-              >
-                <Shield size={16} style={{ color: '#6366F1' }} />
-                <div>
-                  <strong>دخول: إدارة العيادة (Clinic Admin)</strong>
-                  <span>مدير العيادة • الإعدادات، الموظفين، والاشتراكات</span>
-                </div>
-              </button>
-
-              <button 
-                type="button" 
-                className="preset-btn"
-                onClick={() => handleDirectRoleLogin('doctor@clinicflow.com', 'admin')}
-                disabled={isLocked}
-                title="دخول مباشر بصلاحية طبيب العيادة السريري"
-              >
-                <Shield size={16} className="text-primary" />
-                <div>
-                  <strong>دخول: طبيب العيادة (Doctor)</strong>
-                  <span>د. أحمد الشريف • فحص سريري، روشتات، ومعامل</span>
-                </div>
-              </button>
-
-              <button 
-                type="button" 
-                className="preset-btn"
-                onClick={() => handleDirectRoleLogin('zainselim845@gmail.com', 'admin')}
-                disabled={isLocked}
-                title="دخول مباشر لعيادة د. زين سليم"
-              >
-                <Shield size={16} style={{ color: '#10B981' }} />
-                <div>
-                  <strong>دخول: د. زين سليم (Dr. Zain)</strong>
-                  <span>عيادة د. zain selim • dr-zainselim845</span>
-                </div>
-              </button>
-
-              <button 
-                type="button" 
-                className="preset-btn"
-                onClick={() => handleDirectRoleLogin('reception@clinicflow.com', '123')}
-                disabled={isLocked}
-                title="دخول مباشر بصلاحية موظف استقبال وسكرتارية"
-              >
-                <UserCheck size={16} style={{ color: '#0284C7' }} />
-                <div>
-                  <strong>دخول: سكرتارية واستقبال (Staff)</strong>
-                  <span>سارة كمال • مواعيد وصالة انتظار فقط</span>
-                </div>
-              </button>
-
-              <button 
-                type="button" 
-                className="preset-btn"
-                onClick={() => handleDirectRoleLogin('owner@clinicflow.com', 'admin')}
-                disabled={isLocked}
-                title="دخول مباشر بصلاحية مالك مجمع العيادات"
-              >
-                <Shield size={16} style={{ color: '#F59E0B' }} />
-                <div>
-                  <strong>دخول: مالك مجمع عيادات (Owner)</strong>
-                  <span>د. شريف العوضي • تبديل بين الفروع</span>
-                </div>
-              </button>
-
-              <button 
-                type="button" 
-                className="preset-btn"
-                onClick={() => handleDirectRoleLogin('superadmin@clinicflow.com', 'admin')}
-                disabled={isLocked}
-                title="دخول مباشر بصلاحية مدير المنصة العام"
-              >
-                <Shield size={16} style={{ color: '#EF4444' }} />
-                <div>
-                  <strong>دخول: مدير عام المنصة (Super Admin)</strong>
-                  <span>تحكم كامل وسحابي في كافة العيادات</span>
-                </div>
-              </button>
-            </div>
-          </Collapsible.Content>
-        </Collapsible.Root>
-
-        <div className="login-footer-links">
-          <div className="footer-links-row">
-            <a href="/booking" className="footer-nav-link" target="_blank" rel="noreferrer">
-              <Building2 size={14} />
-              <span>بوابة حجز واستعلام المرضى</span>
-            </a>
-            <span className="footer-dot">•</span>
-            <a href="/" className="footer-nav-link">
-              <Globe size={14} />
-              <span>الصفحة العامة لمنصة ClinicFlow</span>
-            </a>
-          </div>
-
-          <div className="footer-portal-switch-prompt">
-            {portalScope === 'clinic' ? (
-              <button 
-                type="button"
-                className="btn-text-portal-switch" 
-                onClick={() => handleScopeChange('saas')}
-              >
-                <ShieldCheck size={14} />
-                <span>هل أنت مدير عام للمنصة؟ اضغط هنا لدخول إدارة الساس (SaaS Admin)</span>
-              </button>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="btn-spinner" size={20} />
+                      <span>جاري التحقق والدخول...</span>
+                    </>
+                  ) : isLocked ? (
+                    <span>يرجى الانتظار ({lockoutTimer} ثانية)...</span>
+                  ) : (
+                    <span>تسجيل الدخول إلى لوحة الساس</span>
+                  )}
+                </button>
+              </form>
             ) : (
-              <button 
-                type="button"
-                className="btn-text-portal-switch" 
-                onClick={() => handleScopeChange('clinic')}
+              /* Client Clinics: Tabs between Login and Register */
+              <Tabs.Root 
+                value={activeTab} 
+                onValueChange={(details) => { 
+                  setActiveTab(details.value); 
+                  setError(''); 
+                  setSuccessMessage(''); 
+                }}
+                className="auth-tabs-root"
               >
-                <Building2 size={14} />
-                <span>العودة إلى بوابة أطباء وعيادات العملاء (Client Clinics Portal)</span>
-              </button>
+                <Tabs.List className="auth-tabs-header">
+                  <Tabs.Trigger 
+                    value="login"
+                    className={`auth-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
+                  >
+                    <span>تسجيل الدخول</span>
+                  </Tabs.Trigger>
+                  <Tabs.Trigger 
+                    value="register"
+                    className={`auth-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
+                  >
+                    <span>إنشاء حساب عيادة جديدة ✨</span>
+                  </Tabs.Trigger>
+                </Tabs.List>
+
+                {/* 1. DOCTOR / STAFF LOGIN TAB */}
+                <Tabs.Content value="login">
+                  <form onSubmit={handleSubmit} className="auth-form">
+                    <div className="form-field-group">
+                      <label className="field-label" htmlFor="identifier">
+                        <span>البريد الإلكتروني أو رقم الهاتف</span>
+                      </label>
+                      <div className="field-input-wrapper">
+                        <User className="input-icon" size={18} />
+                        <input
+                          id="identifier"
+                          name="identifier"
+                          type="text"
+                          className="field-input has-icon"
+                          placeholder="doctor@clinic.com أو 010XXXXXXXX"
+                          value={identifier}
+                          onChange={(e) => setIdentifier(e.target.value)}
+                          disabled={isLocked || isLoading}
+                          required
+                          dir="ltr"
+                          autoComplete="username"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-field-group">
+                      <div className="field-label-row">
+                        <label className="field-label" htmlFor="password">كلمة المرور</label>
+                        <span className="field-hint-action" title="تواصل مع إدارة العيادة لإعادة تعيين كلمة المرور">
+                          نسيت كلمة المرور؟
+                        </span>
+                      </div>
+                      <div className="field-input-wrapper">
+                        <Lock className="input-icon" size={18} />
+                        <input
+                          id="password"
+                          name="password"
+                          type={showPassword ? "text" : "password"}
+                          className="field-input has-icon has-toggle"
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={isLocked || isLoading}
+                          required
+                          dir="ltr"
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          className="btn-toggle-eye"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="form-options-row">
+                      <label className="checkbox-control">
+                        <input 
+                          type="checkbox" 
+                          checked={rememberMe} 
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          disabled={isLoading}
+                        />
+                        <span className="checkbox-label">تذكر بيانات الدخول على هذا الجهاز</span>
+                      </label>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      className="btn-auth-primary"
+                      disabled={isLoading || isLocked || !identifier.trim() || !password}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="btn-spinner" size={20} />
+                          <span>جاري تسجيل الدخول...</span>
+                        </>
+                      ) : isLocked ? (
+                        <span>يرجى الانتظار ({lockoutTimer} ثانية)...</span>
+                      ) : (
+                        <span>تسجيل الدخول إلى العيادة</span>
+                      )}
+                    </button>
+
+                    {/* Google OAuth Single Sign-On */}
+                    <div className="auth-separator">
+                      <span>أو المتابعة السحابية عبر Google</span>
+                    </div>
+
+                    <button 
+                      type="button" 
+                      onClick={handleGoogleSignInClick}
+                      className="btn-google-sso"
+                      disabled={isLoading || isLocked}
+                      aria-label="تسجيل الدخول باستخدام حساب Google"
+                    >
+                      <svg className="google-svg" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
+                        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+                      </svg>
+                      <span>المتابعة باستخدام حساب Google</span>
+                    </button>
+                  </form>
+                </Tabs.Content>
+
+                {/* 2. CLINIC ONBOARDING REGISTRATION TAB */}
+                <Tabs.Content value="register">
+                  <form onSubmit={handleRegisterSubmit} className="auth-form register-form">
+                    
+                    <div className="form-fields-grid-2">
+                      <div className="form-field-group">
+                        <label className="field-label" htmlFor="regDoctorName">اسم الطبيب الكامل *</label>
+                        <div className="field-input-wrapper">
+                          <User className="input-icon" size={18} />
+                          <input 
+                            id="regDoctorName"
+                            name="doctorName"
+                            type="text" 
+                            className="field-input has-icon" 
+                            placeholder="د. محمد عبد الرحمن"
+                            value={regForm.doctorName}
+                            onChange={(e) => setRegForm({ ...regForm, doctorName: e.target.value })}
+                            required
+                            disabled={isLoading}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-field-group">
+                        <label className="field-label" htmlFor="regClinicName">اسم العيادة أو المركز الطبي *</label>
+                        <div className="field-input-wrapper">
+                          <Building2 className="input-icon" size={18} />
+                          <input 
+                            id="regClinicName"
+                            name="clinicName"
+                            type="text" 
+                            className="field-input has-icon" 
+                            placeholder="عيادة الشروق التخصصية"
+                            value={regForm.clinicName}
+                            onChange={(e) => setRegForm({ ...regForm, clinicName: e.target.value })}
+                            required
+                            disabled={isLoading}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="form-field-group">
+                      <label className="field-label" htmlFor="regSpecialty">التخصص السريري للعيادة *</label>
+                      <select
+                        id="regSpecialty"
+                        name="specialty"
+                        className="field-input field-select"
+                        value={regForm.specialty}
+                        onChange={(e) => setRegForm({ ...regForm, specialty: e.target.value })}
+                        disabled={isLoading}
+                      >
+                        {CLINIC_SPECIALTIES_LIST.map((spec) => (
+                          <option key={spec} value={spec}>{spec}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="form-fields-grid-2">
+                      <div className="form-field-group">
+                        <label className="field-label" htmlFor="regPhone">رقم هاتف الطبيب / العيادة *</label>
+                        <div className="field-input-wrapper">
+                          <Phone className="input-icon" size={18} />
+                          <input 
+                            id="regPhone"
+                            name="phone"
+                            type="tel" 
+                            className="field-input has-icon" 
+                            placeholder="010XXXXXXXX"
+                            dir="ltr"
+                            value={regForm.phone}
+                            onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
+                            required
+                            disabled={isLoading}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="form-field-group">
+                        <label className="field-label" htmlFor="regEmail">البريد الإلكتروني المهني *</label>
+                        <div className="field-input-wrapper">
+                          <Mail className="input-icon" size={18} />
+                          <input 
+                            id="regEmail"
+                            name="email"
+                            type="email" 
+                            className="field-input has-icon" 
+                            placeholder="doctor@myclinic.com"
+                            dir="ltr"
+                            value={regForm.email}
+                            onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
+                            required
+                            disabled={isLoading}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="form-field-group">
+                      <label className="field-label" htmlFor="regPassword">كلمة المرور للحساب *</label>
+                      <div className="field-input-wrapper">
+                        <Lock className="input-icon" size={18} />
+                        <input 
+                          id="regPassword"
+                          name="password"
+                          type={showPassword ? "text" : "password"} 
+                          className="field-input has-icon has-toggle" 
+                          placeholder="لا تقل عن 6 أحرف وأرقام"
+                          minLength={6}
+                          autoComplete="new-password"
+                          dir="ltr"
+                          value={regForm.password}
+                          onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
+                          required
+                          disabled={isLoading}
+                        />
+                        <button
+                          type="button"
+                          className="btn-toggle-eye"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                      </div>
+
+                      {/* Password Strength Indicator */}
+                      {regForm.password && (
+                        <div className="password-meter-wrap">
+                          <div className="meter-bars">
+                            <span className={`meter-segment ${passwordStrength >= 1 ? 'active weak' : ''}`} />
+                            <span className={`meter-segment ${passwordStrength >= 2 ? 'active medium' : ''}`} />
+                            <span className={`meter-segment ${passwordStrength >= 3 ? 'active strong' : ''}`} />
+                          </div>
+                          <span className="meter-label">
+                            {passwordStrength === 1 && 'كلمة مرور مقبولة (يفضل إضافة أرقام)'}
+                            {passwordStrength === 2 && 'كلمة مرور جيدة'}
+                            {passwordStrength >= 3 && 'كلمة مرور قوية ومحمية'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="form-options-row">
+                      <label className="checkbox-control">
+                        <input 
+                          type="checkbox" 
+                          checked={regForm.agreeTerms} 
+                          onChange={(e) => setRegForm({ ...regForm, agreeTerms: e.target.checked })}
+                          required
+                        />
+                        <span className="checkbox-label terms-label">
+                          أوافق على <a href="#terms" onClick={(e) => e.preventDefault()}>شروط الاستخدام</a> و <a href="#privacy" onClick={(e) => e.preventDefault()}>سياسة أمان وخصوصية البيانات الطبية</a>
+                        </span>
+                      </label>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      className="btn-auth-primary btn-register-cta"
+                      disabled={isLoading || !regForm.doctorName || !regForm.clinicName || !regForm.phone || !regForm.password || !regForm.agreeTerms}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="btn-spinner" size={20} />
+                          <span>جاري تدشين وتجهيز عيادتك...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>تدشين حساب العيادة مجاناً</span>
+                          <ArrowLeft size={18} />
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </Tabs.Content>
+              </Tabs.Root>
             )}
+
+            {/* Bottom Footer Navigation */}
+            <div className="auth-footer-nav">
+              <div className="footer-links-group">
+                <a href="/booking" className="footer-link" target="_blank" rel="noreferrer">
+                  <Building2 size={14} />
+                  <span>بوابة حجز واستعلام المرضى</span>
+                </a>
+                <span className="footer-divider">•</span>
+                <a href="/" className="footer-link">
+                  <Globe size={14} />
+                  <span>الصفحة الرئيسية للمنصة</span>
+                </a>
+              </div>
+
+              <div className="footer-admin-prompt">
+                {portalScope === 'clinic' ? (
+                  <button 
+                    type="button"
+                    className="btn-switch-portal" 
+                    onClick={() => handleScopeChange('saas')}
+                  >
+                    <ShieldCheck size={14} />
+                    <span>هل أنت مدير عام للمنصة؟ الدخول إلى لوحة SaaS Admin</span>
+                  </button>
+                ) : (
+                  <button 
+                    type="button"
+                    className="btn-switch-portal" 
+                    onClick={() => handleScopeChange('clinic')}
+                  >
+                    <Building2 size={14} />
+                    <span>العودة إلى بوابة أطباء وعيادات العملاء</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
 
       </div>
     </div>
   );
-};
-
-export default Login;
+}

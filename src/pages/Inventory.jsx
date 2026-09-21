@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
   Package, Plus, Search, 
-  Clock, CheckCircle2, ShieldAlert 
+  Clock, CheckCircle2, ShieldAlert, Settings 
 } from 'lucide-react';
 import InventoryItemModal from '../components/InventoryItemModal';
 import { 
@@ -19,73 +19,14 @@ const Inventory = () => {
   const currentClinicId = tenant?.id || state?.clinicInfo?.id;
 
   const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
-  const isDemoClinic = currentSlug === 'dr-ahmed';
+
+  const clinicModules = tenant?.modules || state.clinicInfo?.modules || {};
+  const isEnabled = Boolean(tenant?.enableInventory ?? state.clinicInfo?.enableInventory ?? clinicModules.inventory);
 
   const loadScopedInventory = () => {
     const parsed = safeGetJSON(`clinicflow_inventory_${currentSlug}`, null);
     if (Array.isArray(parsed)) return parsed;
-    return isDemoClinic ? [
-      {
-        id: 'inv-item-1',
-        clinicId: currentClinicId,
-        name: 'كومبوزيت تجميلي 3M Filtek Z250 (A2)',
-        category: 'composite',
-        unit: 'سرنجة 4g',
-        minQuantity: 3,
-        currentQty: 2, // Low stock!
-        costPerUnit: 350,
-        lotNumber: 'LOT-3M-889',
-        expiryDate: '2027-05-15'
-      },
-      {
-        id: 'inv-item-2',
-        clinicId: currentClinicId,
-        name: 'بنج موضعي ميبافاكيين أحمر (Mepivacaine 2%)',
-        category: 'anesthetics',
-        unit: 'علبة (50 كاربول)',
-        minQuantity: 2,
-        currentQty: 5,
-        costPerUnit: 420,
-        lotNumber: 'LOT-MEP-102',
-        expiryDate: '2026-11-20' // Soon!
-      },
-      {
-        id: 'inv-item-3',
-        clinicId: currentClinicId,
-        name: 'بودرة مقاسات هيدروجوم الجينات (Hydrogum 5)',
-        category: 'impression',
-        unit: 'كيس 453g',
-        minQuantity: 4,
-        currentQty: 8,
-        costPerUnit: 280,
-        lotNumber: 'LOT-ALG-44',
-        expiryDate: '2028-01-10'
-      },
-      {
-        id: 'inv-item-4',
-        clinicId: currentClinicId,
-        name: 'قفازات لاتكس فحص طبي مقاس M (Latex Gloves)',
-        category: 'infection_control',
-        unit: 'علبة (100 قفاز)',
-        minQuantity: 5,
-        currentQty: 1, // Critical!
-        costPerUnit: 180,
-        lotNumber: 'LOT-GLV-09',
-        expiryDate: '2029-08-30'
-      },
-      {
-        id: 'inv-item-5',
-        clinicId: currentClinicId,
-        name: 'سنابل توربين حفر ماسية ألمانية (Diamond Burs Kit)',
-        category: 'burs',
-        unit: 'طقم 10 بيرز',
-        minQuantity: 2,
-        currentQty: 4,
-        costPerUnit: 450,
-        lotNumber: 'LOT-BUR-77',
-        expiryDate: '2030-01-01'
-      }
-    ] : [];
+    return [];
   };
 
   const [items, setItems] = useState(loadScopedInventory);
@@ -147,6 +88,32 @@ const Inventory = () => {
     await addInventoryItem(itemWithClinic);
     setItems(prev => [itemWithClinic, ...prev]);
   };
+
+  if (!isEnabled) {
+    return (
+      <div className="inventory-container" style={{ padding: '2rem', textAlign: 'center' }}>
+        <div className="glass-card" style={{ maxWidth: '540px', margin: '3rem auto', padding: '2.5rem', borderRadius: '20px' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+            <Package size={32} />
+          </div>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.6rem' }}>
+            ميزة إدارة المخزن والمستلزمات غير مفعلة
+          </h2>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.75rem' }}>
+            هذه الميزة مخصصة لتتبع حركات الأدوية والمستهلكات والمخزون وحساب تكلفة الجلسات. يمكنك تفعيلها فوراً من إعدادات العيادة.
+          </p>
+          <a 
+            href="/settings?tab=clinic"
+            className="btn btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.75rem', textDecoration: 'none' }}
+          >
+            <Settings size={18} />
+            <span>الانتقال لإعدادات العيادة لتفعيل الميزة</span>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   // Metrics
   const lowStockCount = items.filter(i => i.currentQty <= i.minQuantity).length;

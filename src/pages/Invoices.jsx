@@ -16,12 +16,9 @@ const Invoices = () => {
   const clinicSlug = currentClinic?.slug || 'dr-ahmed';
   const clinicId = currentClinic?.id || '550e8400-e29b-41d4-a716-446655440000';
 
-  const loadScopedInvoices = (slug, cid) => {
+  const loadScopedInvoices = (slug) => {
     const parsed = safeGetJSON(`clinicflow_invoices_${slug}`, null);
     if (Array.isArray(parsed)) return parsed;
-    if (slug === 'dr-ahmed' || slug === 'dr-sara') {
-      return (defaultInvoices || []).filter(inv => inv.clinicId === cid);
-    }
     return [];
   };
 

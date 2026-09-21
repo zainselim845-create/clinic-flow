@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Layers, Plus, Search, Clock, CheckCircle2, 
-  AlertCircle, ChevronRight, Calendar 
+  AlertCircle, ChevronRight, Calendar, Settings 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
@@ -18,6 +18,9 @@ const Labs = () => {
   const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
   const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
+
+  const clinicModules = tenant?.modules || state.clinicInfo?.modules || {};
+  const isEnabled = Boolean(tenant?.enableLabs ?? state.clinicInfo?.enableLabs ?? clinicModules.labs);
 
   const loadScopedOrders = useCallback(() => {
     const parsed = safeGetJSON(`clinicflow_labs_${currentSlug}`, null);
@@ -84,6 +87,32 @@ const Labs = () => {
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: nextStatus } : o));
     }
   };
+
+  if (!isEnabled) {
+    return (
+      <div className="labs-container" style={{ padding: '2rem', textAlign: 'center' }}>
+        <div className="glass-card" style={{ maxWidth: '540px', margin: '3rem auto', padding: '2.5rem', borderRadius: '20px' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'rgba(99, 102, 241, 0.1)', color: '#6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+            <Layers size={32} />
+          </div>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.6rem' }}>
+            ميزة معمل التركيبات والتحاليل غير مفعلة
+          </h2>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.75rem' }}>
+            هذه الميزة مخصصة للعيادات التي ترسل وتستقبل طلبات من معامل الأسنان والتحاليل الخارجية. يمكنك تفعيلها فوراً من إعدادات العيادة.
+          </p>
+          <a 
+            href="/settings?tab=clinic"
+            className="btn btn-primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.75rem', textDecoration: 'none' }}
+          >
+            <Settings size={18} />
+            <span>الانتقال لإعدادات العيادة لتفعيل الميزة</span>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   // Metrics
   const activeOrdersCount = orders.filter(o => o.status !== 'delivered').length;

@@ -36,6 +36,12 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
   const [extraSmsCredits, setExtraSmsCredits] = useState(tenant.quotas?.extraSmsCredits || 0);
   const [maxDoctors, setMaxDoctors] = useState(tenant.quotas?.maxDoctors || 3);
   
+  // Feature Modules State
+  const [enableLabs, setEnableLabs] = useState(Boolean(tenant.enableLabs ?? tenant.modules?.labs));
+  const [enableInventory, setEnableInventory] = useState(Boolean(tenant.enableInventory ?? tenant.modules?.inventory));
+  const [enableAiAssistant, setEnableAiAssistant] = useState(Boolean(tenant.enableAiAssistant ?? tenant.modules?.aiAssistant ?? true));
+  const [enableSms, setEnableSms] = useState(Boolean(tenant.enableSms ?? tenant.modules?.sms ?? true));
+
   // Payment recording state
   const [paymentType, setPaymentType] = useState(isInitialLifetime ? 'lifetime_buyout' : 'recurring');
   const [paymentMethod, setPaymentMethod] = useState('instapay');
@@ -57,6 +63,10 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
     setSmsQuota(tenant.quotas?.monthlySmsQuota || 1000);
     setExtraSmsCredits(tenant.quotas?.extraSmsCredits || 0);
     setMaxDoctors(tenant.quotas?.maxDoctors || 3);
+    setEnableLabs(Boolean(tenant.enableLabs ?? tenant.modules?.labs));
+    setEnableInventory(Boolean(tenant.enableInventory ?? tenant.modules?.inventory));
+    setEnableAiAssistant(Boolean(tenant.enableAiAssistant ?? tenant.modules?.aiAssistant ?? true));
+    setEnableSms(Boolean(tenant.enableSms ?? tenant.modules?.sms ?? true));
   }, [tenant]);
 
   // Quick Action Handlers
@@ -120,6 +130,17 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
         monthlySmsQuota: Number(smsQuota) || 1000,
         extraSmsCredits: Number(extraSmsCredits) || 0,
         maxDoctors: Number(maxDoctors) || 3
+      },
+      enableLabs: Boolean(enableLabs),
+      enableInventory: Boolean(enableInventory),
+      enableAiAssistant: Boolean(enableAiAssistant),
+      enableSms: Boolean(enableSms),
+      modules: {
+        ...(tenant.modules || {}),
+        labs: Boolean(enableLabs),
+        inventory: Boolean(enableInventory),
+        aiAssistant: Boolean(enableAiAssistant),
+        sms: Boolean(enableSms)
       }
     };
 
@@ -469,6 +490,69 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                   style={{ width: '100%', padding: '0.55rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Section: Feature Modules Toggles (التحكم المركزي في الميزات) */}
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
+            <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Layers size={16} color="#6366F1" />
+              إدارة وتفعيل ميزات العيادة من الإدارة المركزية (Feature Modules Toggles)
+            </h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
+              
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: enableLabs ? 'rgba(99, 102, 241, 0.05)' : 'transparent', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={enableLabs}
+                  onChange={(e) => setEnableLabs(e.target.checked)}
+                  style={{ width: '16px', height: '16px', accentColor: '#6366F1' }}
+                />
+                <div>
+                  <strong style={{ fontSize: '0.84rem', display: 'block' }}>معمل التركيبات (Labs)</strong>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>طلبات وحالات المعامل</span>
+                </div>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: enableInventory ? 'rgba(16, 185, 129, 0.05)' : 'transparent', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={enableInventory}
+                  onChange={(e) => setEnableInventory(e.target.checked)}
+                  style={{ width: '16px', height: '16px', accentColor: '#10B981' }}
+                />
+                <div>
+                  <strong style={{ fontSize: '0.84rem', display: 'block' }}>المخزون (Inventory)</strong>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>المستلزمات وتنبيهات النواقص</span>
+                </div>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: enableAiAssistant ? 'rgba(16, 185, 129, 0.05)' : 'transparent', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={enableAiAssistant}
+                  onChange={(e) => setEnableAiAssistant(e.target.checked)}
+                  style={{ width: '16px', height: '16px', accentColor: '#10B981' }}
+                />
+                <div>
+                  <strong style={{ fontSize: '0.84rem', display: 'block' }}>المساعد الذكي (AI)</strong>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>مساعد الطبيب السريري</span>
+                </div>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: enableSms ? 'rgba(2, 132, 199, 0.05)' : 'transparent', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={enableSms}
+                  onChange={(e) => setEnableSms(e.target.checked)}
+                  style={{ width: '16px', height: '16px', accentColor: '#0284C7' }}
+                />
+                <div>
+                  <strong style={{ fontSize: '0.84rem', display: 'block' }}>بوابة SMS (Messages)</strong>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>تأكيدات وتذكيرات الحجز</span>
+                </div>
+              </label>
+
             </div>
           </div>
 
