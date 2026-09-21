@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "node --max-old-space-size=8192 ./node_modules/vitest/vitest.mjs run --testTimeout=30000",
+    "test": "vitest run --testTimeout=30000",
     "audit": "node scripts/browser-audit/run-audit.cjs",
     "preview": "vite preview"
   },
