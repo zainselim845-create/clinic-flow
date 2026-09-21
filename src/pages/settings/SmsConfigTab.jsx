@@ -188,7 +188,7 @@ export default function SmsConfigTab() {
         {/* Collapsible Advanced BYO Gateway (Optional) */}
         <details style={{ marginTop: '1rem', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', padding: '0.75rem 1rem' }}>
           <summary style={{ cursor: 'pointer', fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-            ⚙️ خيارات متقدمة: ربط بوابة اتصالات خارجية خاصة (BYO Gateway)
+            خيارات متقدمة: ربط بوابة اتصالات خارجية خاصة (BYO Gateway)
           </summary>
           <div style={{ marginTop: '0.85rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.85rem' }}>
             <div className="form-group">

@@ -71,7 +71,7 @@ export function SegmentationTab({
                   </td>
                   <td>
                     <span className="segment-badge badge-VIP">
-                      {p.valueTier === 'vip' ? '⭐ VIP مريض مميز' : p.lifecycle === 'new' ? '✨ جديد' : p.lifecycle === 'dormant' ? '⏳ خامل 6+ أشهر' : '🟢 نشط دائم'}
+                      {p.valueTier === 'vip' ? 'VIP مريض مميز' : p.lifecycle === 'new' ? 'جديد' : p.lifecycle === 'dormant' ? 'خامل 6+ أشهر' : 'نشط دائم'}
                     </span>
                   </td>
                   <td><strong>{p.visitsCount || 0}</strong> زيارة</td>

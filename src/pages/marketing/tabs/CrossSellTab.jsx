@@ -1,12 +1,12 @@
 import React from 'react';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ArrowLeft } from 'lucide-react';
 
 export function CrossSellTab({ crossSellOpportunities }) {
   return (
     <div className="crm-tab-content">
       <div className="cross-sell-intro">
-        <h4>💡 محرك البيع المتقاطع الذكي (Clinical History Cross-Sell)</h4>
-        <p>يحلل التاريخ الطبي للمريض ويقترح الخدمات التكميلية المعتمدة طبياً (تنظيف ⬅️ تبييض | بوتوكس ⬅️ سكن بوستر | ليزر ⬅️ مناطق إضافية).</p>
+        <h4>محرك البيع المتقاطع الذكي (Clinical History Cross-Sell)</h4>
+        <p>يحلل التاريخ الطبي للمريض ويقترح الخدمات التكميلية المعتمدة طبياً (تنظيف إلى تبييض | بوتوكس إلى سكن بوستر | ليزر إلى مناطق إضافية).</p>
       </div>
 
       <div className="cross-sell-grid">
@@ -30,7 +30,7 @@ export function CrossSellTab({ crossSellOpportunities }) {
                   <span className="l-lbl">الخدمة السابقة:</span>
                   <strong className="l-val">{opp.primaryService}</strong>
                 </div>
-                <div className="logic-arrow">⬅️</div>
+                <div className="logic-arrow"><ArrowLeft size={16} /></div>
                 <div className="logic-node highlight">
                   <span className="l-lbl">الخدمة المقترحة:</span>
                   <strong className="l-val text-primary">{opp.suggestedService}</strong>

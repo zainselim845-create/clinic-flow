@@ -208,7 +208,7 @@ const Patients = () => {
     }
 
     dispatch({ type: 'ADD_PATIENTS_BULK', payload: newPatientsList });
-    showToast(`تم استيراد ${newPatientsList.length} مريض بنجاح إلى قاعدة بيانات العيادة! 🎉`, 'success');
+    showToast(`تم استيراد ${newPatientsList.length} مريض بنجاح إلى قاعدة بيانات العيادة.`, 'success');
   };
 
   return (

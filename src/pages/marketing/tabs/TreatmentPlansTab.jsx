@@ -6,7 +6,7 @@ export function TreatmentPlansTab({ unfinishedPlans, currentClinic }) {
   return (
     <div className="crm-tab-content">
       <div className="plans-tracker-intro">
-        <h4>🦷 تتبع ومتابعة الخطط العلاجية غير المكتملة (Treatment Plan Tracker)</h4>
+        <h4>تتبع ومتابعة الخطط العلاجية غير المكتملة (Treatment Plan Tracker)</h4>
         <p>يكتشف المرضى الذين بدأوا خطوات علاجية وتوقفوا (مثل: بدأ حشو العصب ولم يقم بتركيب التاج أو الحشو النهائي)، ويرسل لهم تنبيهاً طبياً للحفاظ على صحة السن.</p>
       </div>
 

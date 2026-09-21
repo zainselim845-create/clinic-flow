@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Clinical Decision Support (CDS) Drug Interaction & Allergy Checker
  * Analyzes prescription texts against patient medical history, allergies, and chronic conditions.
  */
@@ -9,7 +9,7 @@ export const DRUG_SAFETY_RULES = [
     drugKeywords: ['أموكسيسيلين', 'أوجمنتين', 'بنسلين', 'اموكسيل', 'هاي بيوتك', 'كيورام', 'amoxicillin', 'augmentin', 'penicillin', 'curam', 'hibiotic'],
     conditionKeywords: ['بنسلين', 'بنسلينات', 'penicillin', 'amoxicillin', 'حساسية بنسلين'],
     severity: 'danger',
-    title: '⚠️ تحذير حرج: حساسية بنسلين مسجلة للمريض!',
+    title: 'تحذير حرج: حساسية بنسلين مسجلة للمريض!',
     description: 'المريض لديه حساسية مسجلة من مركبات البنسلين ومشتقاتها (قد تسبب صدمة تحسسية Anaphylaxis).',
     recommendation: 'يُوصى باستبداله بماكروليد أو كليندامايسين (مثل: Dalacin C 300mg أو Azithromycin 500mg) بعد تقييم الطبيب.'
   },
@@ -18,7 +18,7 @@ export const DRUG_SAFETY_RULES = [
     drugKeywords: ['بروفين', 'كتافلام', 'فولتارين', 'كيتوفان', 'باي الكوفان', 'ديكلوفيناك', 'ايبوبروفين', 'ibuprofen', 'cataflam', 'voltaren', 'ketofan', 'diclofenac', 'ketoprofen'],
     conditionKeywords: ['قرحة معدة', 'التهاب معدة', 'نزيف هضمي', 'peptic ulcer', 'gastritis', 'قرحة'],
     severity: 'warning',
-    title: '⚠️ تنبيه: مسكن NSAID مع مريض قرحة معدة',
+    title: 'تنبيه: مسكن NSAID مع مريض قرحة معدة',
     description: 'المسكنات غير الستيرويدية (NSAIDs) تزيد من خطر النزيف وتهيج بطانة المعدة.',
     recommendation: 'يُفضل استخدام باراسيتامول آمن (Panadol / Cetal) أو إضافة واقي للمعدة (PPI مثل Omeprazole / Pantoprazole).'
   },
@@ -27,7 +27,7 @@ export const DRUG_SAFETY_RULES = [
     drugKeywords: ['بروفين', 'كتافلام', 'فولتارين', 'كيتوفان', 'باي الكوفان', 'ديكلوفيناك', 'ايبوبروفين', 'ibuprofen', 'cataflam', 'voltaren', 'diclofenac'],
     conditionKeywords: ['قصور كلوي', 'فشل كلوي', 'اعتلال الكلى', 'renal', 'kidney'],
     severity: 'danger',
-    title: '⚠️ تحذير حرج: مسكن NSAID مع قصور كلوي',
+    title: 'تحذير حرج: مسكن NSAID مع قصور كلوي',
     description: 'مضادات الالتهاب غير الستيرويدية تؤدي لتثبيط البروستاجلاندين وتدهور وظائف الكلى.',
     recommendation: 'استخدم الباراسيتامول بجرعات معدلة واستشر أخصائي الكلى.'
   },
@@ -36,7 +36,7 @@ export const DRUG_SAFETY_RULES = [
     drugKeywords: ['سيبروفلوكساسين', 'دوكسيسيكلين', 'ميترونيدازول', 'تتراسيكلين', 'ciprofloxacin', 'doxycycline', 'flagyl', 'فلاجيل'],
     conditionKeywords: ['حامل', 'حمل', 'pregnancy', 'رضاعة', 'مرضع'],
     severity: 'danger',
-    title: '⚠️ تحذير: مضاد حيوي غير آمن في الحمل/الرضاعة',
+    title: 'تحذير: مضاد حيوي غير آمن في الحمل/الرضاعة',
     description: 'بعض المضادات الحيوية (كالكوينولونات والتتراسيكلين) قد تؤثر على تكوين عظام وأسنان الجنين.',
     recommendation: 'البنسلينات والسيفالوسبورينات الفموية تُعد الخيار الأكثر أماناً (Category B) تحت إشراف الطبيب.'
   },
@@ -45,7 +45,7 @@ export const DRUG_SAFETY_RULES = [
     drugKeywords: ['ادرينالين', 'ارتيكايين مع ادرينالين', 'epinephrine', 'adrenaline', 'articaine with epi', 'septanest'],
     conditionKeywords: ['ضغط دم غير منضبط', 'ضغط مرتفع', 'جلطة حديثة', 'ذبحة صدرية', 'uncontrolled hypertension', 'hypertension'],
     severity: 'danger',
-    title: '⚠️ تنبيه سريري: قابض أوعية (Epinephrine) مع ضغط مرتفع غير منضبط',
+    title: 'تنبيه سريري: قابض أوعية (Epinephrine) مع ضغط مرتفع غير منضبط',
     description: 'استخدام المخدر الموضعي المحتوي على مقبضات الأوعية قد يرفع ضغط الدم ويزيد النبض.',
     recommendation: 'يُفضل استخدام مخدر موضعي خالي من الأدرينالين (Plain Mepivacaine 3% Scandonest).'
   },
@@ -54,7 +54,7 @@ export const DRUG_SAFETY_RULES = [
     drugKeywords: ['سلفا', 'سبترين', 'سيبتازول', 'sulfamethoxazole', 'bactrim', 'septrin', 'septazole'],
     conditionKeywords: ['سلفا', 'sulfa'],
     severity: 'danger',
-    title: '⚠️ تحذير حرج: حساسية مركبات السلفا',
+    title: 'تحذير حرج: حساسية مركبات السلفا',
     description: 'المريض مسجل لديه حساسية معروفة لمركبات السلفوناميد.',
     recommendation: 'تجنب أي دواء يحتوي على السلفاميثوكسازول واستبدله بخيار بديل.'
   }

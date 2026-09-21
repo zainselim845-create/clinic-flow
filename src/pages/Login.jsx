@@ -470,7 +470,7 @@ export default function Login() {
                     value="register"
                     className={`auth-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
                   >
-                    <span>إنشاء حساب عيادة جديدة ✨</span>
+                    <span>إنشاء حساب عيادة جديدة</span>
                   </Tabs.Trigger>
                 </Tabs.List>
 

@@ -11,8 +11,8 @@ export function FeedbackTab({
   return (
     <div className="crm-tab-content">
       <div className="feedback-funnel-box">
-        <h4>🌟 محرك السمعة الرقمية وتحويل التقييمات لجوجل (Reputation Funnel)</h4>
-        <p>بعد الزيارة بـ 24 ساعة، يتم إرسال رسالة قياس الرضا: التقييم المرتفع (4-5 نجوم) يُوجّه لتقييم العيادة على خرائط جوجل، والتقييم المنخفض يُوجّه سراً لبريد الإدارة لحل المشكلة فوراً.</p>
+        <h4>محرك السمعة الرقمية وتحويل التقييمات لجوجل (Reputation Funnel)</h4>
+        <p>بعد الزيارة بـ 24 ساعة، يتم إرسال رسالة قياس الرضا: التقييم المرتفع (4-5) يُوجّه لتقييم العيادة على خرائط جوجل، والتقييم المنخفض يُوجّه سراً لبريد الإدارة لحل المشكلة فوراً.</p>
       </div>
 
       <div className="crm-split-grid">
@@ -42,8 +42,8 @@ export function FeedbackTab({
                         <span>إرسال استبيان الرضا عبر SMS</span>
                       </a>
                       <div className="simulate-ratings">
-                        <button onClick={() => handleSimulateFeedbackRating(pv.patientName, 5)} title="محاكاة 5 نجوم (تحويل لجوجل)">⭐ 5</button>
-                        <button onClick={() => handleSimulateFeedbackRating(pv.patientName, 2)} title="محاكاة تقييم منخفض (تحويل للإدارة)">⚠️ 2</button>
+                        <button onClick={() => handleSimulateFeedbackRating(pv.patientName, 5)} title="محاكاة تقييم ممتاز (تحويل لجوجل)">تقييم 5</button>
+                        <button onClick={() => handleSimulateFeedbackRating(pv.patientName, 2)} title="محاكاة تقييم منخفض (تحويل للإدارة)">تقييم 2</button>
                       </div>
                     </div>
                   </div>
@@ -63,14 +63,14 @@ export function FeedbackTab({
               <div key={fb.id} className="ledger-fb-row">
                 <div className="l-top">
                   <strong>{fb.patientName}</strong>
-                  <span className="l-stars">{'⭐'.repeat(fb.rating)}</span>
+                  <span className="l-stars">{fb.rating} من 5</span>
                 </div>
                 <p className="l-comment">"{fb.comment}"</p>
                 <div className="l-routing">
                   {fb.rating >= 4 ? (
-                    <span className="route-tag success">✅ تم التوجيه لـ Google Maps Review</span>
+                    <span className="route-tag success">تم التوجيه لـ Google Maps Review</span>
                   ) : (
-                    <span className="route-tag warning">🛡️ تم توجيه شكوى سرية لمدير العيادة</span>
+                    <span className="route-tag warning">تم توجيه تقرير متابعة لمدير العيادة</span>
                   )}
                 </div>
               </div>

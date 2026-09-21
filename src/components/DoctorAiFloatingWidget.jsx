@@ -44,7 +44,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
     {
       id: `msg-welcome-${slug}`,
       sender: 'agent',
-      text: `أهلاً بك ${doc}! 🩺✨\nأنا مساعدك الطبي الذكي لـ (${clinicTitle}). اسألني عن أي مريض، أو اطلب حجز موعد، أو استعلم عن كشوفات اليوم وصالة الانتظار، أو مديونيات العيادة وسأنفذ طلبك فوراً! 🚀`,
+      text: `أهلاً بك ${doc}.\nأنا مساعدك الطبي الذكي لـ (${clinicTitle}). اسألني عن أي مريض، أو اطلب حجز موعد، أو استعلم عن كشوفات اليوم وصالة الانتظار، أو مديونيات العيادة وسأنفذ طلبك فوراً.`,
       timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
     }
   ];
@@ -191,7 +191,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
       const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, scopedPatients, scopedState);
       let replyText = '';
       if (aiRes.isQuotaExceeded) {
-        replyText = `⚠️ **تنبيه استهلاك الرصيد**: ${aiRes.error}`;
+        replyText = `**تنبيه استهلاك الرصيد**: ${aiRes.error}`;
       } else if (aiRes.success && aiRes.content) {
         replyText = aiRes.content;
       } else {
@@ -226,7 +226,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
         {
           id: 'msg-welcome-' + Date.now(),
           sender: 'agent',
-          text: `مرحباً ${doctorName}! تم بدء جلسة محادثة جديدة لـ (${tenant?.name || activeClinic?.name || 'العيادة'}). أنا رهن إشارتك لكافة ملفات ومهام العيادة. 🩺`,
+          text: `مرحباً ${doctorName}! تم بدء جلسة محادثة جديدة لـ (${tenant?.name || activeClinic?.name || 'العيادة'}). أنا رهن إشارتك لكافة ملفات ومهام العيادة.`,
           timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
         }
       ];
@@ -319,28 +319,28 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
               className="quick-pill" 
               onClick={() => handleSendMessage('مين عنده كشف النهاردة ومين في الانتظار؟')}
             >
-              ⚡ كشوفات اليوم وصالة الانتظار
+              كشوفات اليوم وصالة الانتظار
             </button>
             <button 
               type="button" 
               className="quick-pill" 
               onClick={() => handleSendMessage('عايز احجز موعد جديد لمريض')}
             >
-              📅 حجز موعد
+              حجز موعد
             </button>
             <button 
               type="button" 
               className="quick-pill" 
               onClick={() => handleSendMessage('مين عليه فلوس في العيادة؟')}
             >
-              💳 المديونيات المعلقة
+              المديونيات المعلقة
             </button>
             <button 
               type="button" 
               className="quick-pill" 
               onClick={() => handleSendMessage('ايه الايام والمواعيد المقفولة؟')}
             >
-              🛑 جدول الإجازات
+              جدول الإجازات
             </button>
           </div>
 
@@ -371,8 +371,8 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
                         <strong>{m.action.payload.name}</strong>
                       </div>
                       <div className="action-card-body">
-                        {m.action.payload.phone && <span>📞 {m.action.payload.phone}</span>}
-                        {m.action.payload.balance > 0 && <span className="debt-tag">⚠️ مديونية: {m.action.payload.balance} ج.م</span>}
+                        {m.action.payload.phone && <span>{m.action.payload.phone}</span>}
+                        {m.action.payload.balance > 0 && <span className="debt-tag">مديونية: {m.action.payload.balance} ج.م</span>}
                       </div>
                       <div className="action-card-buttons">
                         <button
@@ -409,9 +409,9 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
                         <strong>تم تسجيل الموعد في السيستم</strong>
                       </div>
                       <div className="action-card-body">
-                        <span>👤 {m.action.payload.patientName}</span>
-                        <span>📅 {m.action.payload.date} الساعة {m.action.payload.time}</span>
-                        <span>🩺 {m.action.payload.type}</span>
+                        <span>المريض: {m.action.payload.patientName}</span>
+                        <span>الموعد: {m.action.payload.date} الساعة {m.action.payload.time}</span>
+                        <span>نوع الكشف: {m.action.payload.type}</span>
                       </div>
                       <div className="action-card-buttons">
                         <button

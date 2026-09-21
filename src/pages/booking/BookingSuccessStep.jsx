@@ -164,7 +164,7 @@ export default function BookingSuccessStep({
                 <MapPin size={16} />
                 <span>{currentClinic?.address}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600, marginRight: 'auto' }}>
-                  (الاتجاهات عبر Google Maps 📍)
+                  (الاتجاهات عبر Google Maps)
                 </span>
               </a>
             </div>

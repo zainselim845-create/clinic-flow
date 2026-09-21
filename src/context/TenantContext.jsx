@@ -201,11 +201,13 @@ export function isDedicatedDomain(
 export function applyTenantBranding(branding) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  const primary = branding?.primaryColor;
+  const primary = branding?.primaryColor || '#09090B';
+  const accent = branding?.accentColor || '#10B981';
   const isMonochrome = !primary || primary === 'monochrome' || primary === '#000000' || primary === '#09090B' || primary === '#18181B';
+  const isDark = root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark';
 
+  // 1. Degree 1: Primary Brand Tone
   if (isMonochrome) {
-    const isDark = root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark';
     root.style.setProperty('--clinic-primary', isDark ? '#FFFFFF' : '#09090B');
     root.style.setProperty('--clinic-primary-hover', isDark ? '#E4E4E7' : '#27272A');
     root.style.setProperty('--clinic-primary-light', isDark ? 'rgba(255, 255, 255, 0.12)' : '#F4F4F5');
@@ -233,9 +235,26 @@ export function applyTenantBranding(branding) {
     root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
   }
 
-  if (branding?.accentColor) {
-    root.style.setProperty('--accent', branding.accentColor);
-  }
+  // 2. Degree 2: Accent / Secondary Tone
+  root.style.setProperty('--clinic-accent', accent);
+  root.style.setProperty('--clinic-accent-hover', accent);
+  root.style.setProperty('--clinic-accent-light', `${accent}18`);
+  root.style.setProperty('--clinic-accent-glow', `${accent}33`);
+  root.style.setProperty('--clinic-on-accent', '#FFFFFF');
+  root.style.setProperty('--accent', accent);
+  root.style.setProperty('--accent-hover', accent);
+  root.style.setProperty('--accent-light', `${accent}18`);
+  root.style.setProperty('--accent-glow', `${accent}33`);
+
+  // 3. Degree 3: Neutral Surface & Harmonic Borders
+  const surface = branding?.surfaceColor || (isDark ? '#18181B' : '#FFFFFF');
+  const bgSubtle = isDark ? '#09090B' : '#F8FAFC';
+  const borderSubtle = isDark ? '#27272A' : '#E2E8F0';
+
+  root.style.setProperty('--clinic-surface', surface);
+  root.style.setProperty('--clinic-bg-subtle', bgSubtle);
+  root.style.setProperty('--clinic-border-subtle', borderSubtle);
+  root.style.setProperty('--clinic-ring', accent);
 }
 
 export const TenantProvider = ({ children }) => {

@@ -93,7 +93,7 @@ export function getPatientCrossSellOpportunities(patient, customRules = []) {
     });
 
     if (hadTriggerService && daysSinceVisit >= rule.minDaysAfter && daysSinceVisit <= rule.maxDaysAfter) {
-      const smsMessage = `مرحباً أ/ ${patient.name} 🌸\nبناءً على زيارتك السابقة لـ (${rule.triggerService})، نوصيك طبياً بـ (${rule.suggestedService}) - ${rule.clinicalRationale} (${rule.discountBadge}).`;
+      const smsMessage = `مرحباً أ/ ${patient.name}، بناءً على زيارتك السابقة لـ (${rule.triggerService})، نوصيك طبياً بـ (${rule.suggestedService}) - ${rule.clinicalRationale} (${rule.discountBadge}).`;
       const cleanPhone = (patient.phone || '').replace(/^0/, '20').replace(/\D/g, '');
       const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(smsMessage)}`;
 

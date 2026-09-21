@@ -46,7 +46,7 @@ const PRICING_PLANS = [
   {
     id: 'pro',
     name: 'باقة الاحتراف (Pro)',
-    badge: 'الأكثر طلباً بين الأطباء والاستشاريين ✨',
+    badge: 'الأكثر طلباً بين الأطباء والاستشاريين',
     price: '1,990',
     currency: 'ج.م / شهرياً',
     description: 'الخيار الأمثل للعيادات المتوسعة ومراكز الأسنان والجلدية التي تبحث عن أقصى كفاءة.',
@@ -443,7 +443,7 @@ const LandingPage = () => {
                     <span className="c-tag">طربوش زيركون</span>
                   </div>
                   <div className="c-exam-footer-note">
-                    <span>🛡️ فحص التعارضات الدوائية: آمن 100%</span>
+                    <span>فحص التعارضات الدوائية: آمن 100%</span>
                   </div>
                 </div>
               </div>
@@ -466,8 +466,8 @@ const LandingPage = () => {
                     <div className="c-stat-progress-fill" style={{ width: '85%' }}></div>
                   </div>
                   <div className="c-meta-notes">
-                    <span>📱 رسائل SMS التأكيد: 18 مرسلة</span>
-                    <span>🔄 استدعاءات المتابعة: 4 مجدولة</span>
+                    <span>رسائل SMS التأكيد: 18 مرسلة</span>
+                    <span>استدعاءات المتابعة: 4 مجدولة</span>
                   </div>
                 </div>
               </div>
@@ -787,7 +787,7 @@ const LandingPage = () => {
           {newsletterStatus === 'success' ? (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', padding: '12px 24px', borderRadius: '12px', backgroundColor: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', fontWeight: 700, fontSize: '0.92rem', animation: 'fadeInUp 0.3s ease' }}>
               <CheckCircle2 size={20} className="text-emerald-600" />
-              <span>تم اشتراكك بنجاح! ستصلك رسالة ترحيبية وتحديثاتنا الطبية فور صدورها. 🎉</span>
+              <span>تم اشتراكك بنجاح! ستصلك رسالة ترحيبية وتحديثاتنا الطبية فور صدورها.</span>
             </div>
           ) : (
             <form onSubmit={handleNewsletterSubmit} style={{ display: 'flex', gap: '8px', maxWidth: '480px', margin: '0 auto', flexWrap: 'wrap' }}>
@@ -861,9 +861,9 @@ const LandingPage = () => {
               معمارية آمنة، عزل تام، وأداء استثنائي لخدمة مليون مستخدم.
             </p>
             <div className="footer-badges">
-              <span className="compliance-tag">🛡️ HIPAA Compliant</span>
-              <span className="compliance-tag">🔒 AES-256 Encryption</span>
-              <span className="compliance-tag">⚡ Sub-millisecond Latency</span>
+              <span className="compliance-tag">HIPAA Compliant</span>
+              <span className="compliance-tag">AES-256 Encryption</span>
+              <span className="compliance-tag">Sub-millisecond Latency</span>
             </div>
           </div>
 

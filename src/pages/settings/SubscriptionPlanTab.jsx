@@ -126,7 +126,7 @@ export default function SubscriptionPlanTab() {
             borderRadius: '999px',
             border: '1px solid rgba(16, 185, 129, 0.3)'
           }}>
-            ربط سحابي موثق ومفعل ✓
+            ربط سحابي موثق ومفعل
           </span>
         </div>
       </div>
@@ -239,7 +239,7 @@ export default function SubscriptionPlanTab() {
           </div>
 
           <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.4 }}>
-            💡 تُستخدم تلقائياً في تذكير المرضى بمواعيدهم قبلها بـ 24 ساعة، وإرسال تأكيدات الحجز الرقمية.
+            تُستخدم تلقائياً في تذكير المرضى بمواعيدهم قبلها بـ 24 ساعة، وإرسال تأكيدات الحجز الرقمية.
           </div>
         </div>
 
@@ -283,7 +283,7 @@ export default function SubscriptionPlanTab() {
           </div>
 
           <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.4 }}>
-            💡 يفحص التداخلات الدوائية لحظياً، ويدعم كتابة التقارير السريرية واقتراح خطط العلاج.
+            يفحص التداخلات الدوائية لحظياً، ويدعم كتابة التقارير السريرية واقتراح خطط العلاج.
           </div>
         </div>
 

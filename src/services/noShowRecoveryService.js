@@ -12,5 +12,5 @@ export function generateNoShowRecoveryMessage(appointment, clinicInfo) {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow.com';
   const rescheduleUrl = `${origin}/booking`;
 
-  return `أهلاً ${patientFirstName} 🌸\nنأسف لعدم تمكنك من حضور موعدك اليوم في ${clinicName} مع ${doctorName}.\n\nصحتك تهمنا دائماً، وإذا كان هناك ظرف طارئ نرجو أن تكون بأفضل حال. يسعدنا مساعدتك في اختيار موعد بديل يناسب جدولك بضغطة زر وبدون انتظار عبر الرابط: \n${rescheduleUrl}\n\nنتمنى لك دوام الصحة والعافية!`;
+  return `أهلاً بك ${patientFirstName}.\nنأسف لعدم تمكنك من حضور موعدك اليوم في ${clinicName} مع ${doctorName}.\n\nصحتك تهمنا دائماً، وإذا كان هناك ظرف طارئ نرجو أن تكون بأفضل حال. يسعدنا مساعدتك في اختيار موعد بديل يناسب جدولك بضغطة زر وبدون انتظار عبر الرابط:\n${rescheduleUrl}\n\nنتمنى لك دوام الصحة والعافية!`;
 }

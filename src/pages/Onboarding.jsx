@@ -426,7 +426,7 @@ export default function Onboarding() {
             </div>
             <div>
               <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-                مبروك يا دكتور! تم تجهيز نظام عيادتك بالكامل 🚀
+                مبروك يا دكتور! تم تجهيز نظام عيادتك بالكامل
               </h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '600px', margin: '0 auto' }}>
                 تم إنشاء وتخصيص بيئة العمل الخاصة بك بنجاح، وربط خدمات التخصص الطبي وتجهيز حسابات الطاقم والهوية البصرية.
@@ -932,7 +932,7 @@ export default function Onboarding() {
                           احجز كشف طبي الآن
                         </button>
                         <span style={{ fontSize: '0.8rem', color: primaryColor, fontWeight: 700 }}>
-                          ✓ تأكيد فوري عبر SMS وواتساب
+                          تأكيد فوري عبر SMS وواتساب
                         </span>
                       </div>
                     </div>
@@ -1096,7 +1096,7 @@ export default function Onboarding() {
                   <div className="inapp-staff-callout">
                     <CheckCircle2 size={24} style={{ flexShrink: 0 }} />
                     <div>
-                      <strong>إدارة الموظفين من داخل النظام:</strong> يمكنك في أي وقت بعد الدخول إضافة المزيد من الموظفين، تعديل بياناتهم وتغيير صلاحياتهم وتعيين الورديات من داخل لوحة التحكم عبر شاشة: <strong>الإعدادات ⚙️ ➔ إدارة فريق العمل والموظفين</strong>.
+                      <strong>إدارة الموظفين من داخل النظام:</strong> يمكنك في أي وقت بعد الدخول إضافة المزيد من الموظفين، تعديل بياناتهم وتغيير صلاحياتهم وتعيين الورديات من داخل لوحة التحكم عبر شاشة: <strong>الإعدادات ➔ إدارة فريق العمل والموظفين</strong>.
                     </div>
                   </div>
                 </div>
@@ -1132,7 +1132,7 @@ export default function Onboarding() {
                       disabled={submitting}
                       style={{ background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)' }}
                     >
-                      <span>{submitting ? 'جاري تهيئة عيادتك...' : 'إتمام الإعداد وبدء استخدام العيادة 🚀'}</span>
+                      <span>{submitting ? 'جاري تهيئة عيادتك...' : 'إتمام الإعداد وبدء استخدام العيادة'}</span>
                       <Sparkles size={16} />
                     </button>
                   )}

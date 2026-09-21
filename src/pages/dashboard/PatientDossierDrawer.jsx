@@ -627,7 +627,7 @@ export default function PatientDossierDrawer({
                           background: lab.status === 'delivered' ? '#ECFDF5' : lab.status === 'received' ? '#EFF6FF' : '#FEF3C7',
                           color: lab.status === 'delivered' ? '#047857' : lab.status === 'received' ? '#1D4ED8' : '#B45309'
                         }}>
-                          {lab.status === 'delivered' ? 'تم التسليم للمريض ✓' : lab.status === 'received' ? 'تم الاستلام بالعيادة' : lab.status === 'first_try' ? 'بروفة أولى' : 'مرسل للمعمل'}
+                          {lab.status === 'delivered' ? 'تم التسليم للمريض' : lab.status === 'received' ? 'تم الاستلام بالعيادة' : lab.status === 'first_try' ? 'بروفة أولى' : 'مرسل للمعمل'}
                         </span>
                       </div>
 
@@ -640,7 +640,7 @@ export default function PatientDossierDrawer({
 
                       {lab.notes && (
                         <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'var(--bg-secondary)', padding: '0.35rem 0.65rem', borderRadius: '6px' }}>
-                          💡 ملاحظات: {lab.notes}
+                          ملاحظات: {lab.notes}
                         </div>
                       )}
                     </div>

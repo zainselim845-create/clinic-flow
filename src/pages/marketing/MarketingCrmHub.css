@@ -763,3 +763,374 @@
 .crm-toast-banner.success { background: var(--success-light); color: var(--success); }
 .crm-toast-banner.warning { background: var(--warning-light); color: var(--warning); }
 .crm-toast-banner.error { background: var(--error-light); color: var(--error); }
+
+/* ==========================================================================
+   Booking Funnel & Abandoned Lead Recovery Hub Styles
+   ========================================================================== */
+.funnel-hero-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 1.5rem;
+}
+
+.funnel-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.funnel-header-title h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.funnel-header-title p {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+.funnel-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.funnel-kpi-box {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.funnel-kpi-box .kpi-label {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.funnel-kpi-box .kpi-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.funnel-kpi-box.primary .kpi-value {
+  color: var(--clinic-primary, #09090B);
+}
+
+.funnel-kpi-box.success .kpi-value {
+  color: var(--success, #16A34A);
+}
+
+.funnel-kpi-box.warning .kpi-value {
+  color: var(--warning, #D97706);
+}
+
+.funnel-kpi-box.accent .kpi-value {
+  color: var(--clinic-accent, #2563EB);
+}
+
+/* Visual Funnel Pipeline */
+.funnel-pipeline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem 0 1rem;
+}
+
+.funnel-stage-card {
+  flex: 1;
+  min-width: 170px;
+  background: var(--bg-primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.funnel-stage-card.completed {
+  border-color: var(--success);
+  background: var(--success-light);
+}
+
+.funnel-stage-num {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.funnel-stage-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.funnel-stage-metrics {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+}
+
+.funnel-stage-count {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.funnel-stage-rate {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.funnel-stage-bar {
+  width: 100%;
+  height: 5px;
+  background: var(--border-color);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.funnel-stage-bar-fill {
+  height: 100%;
+  background: var(--clinic-primary, #09090B);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.funnel-drop-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.25rem;
+  flex-shrink: 0;
+}
+
+.funnel-drop-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--error, #DC2626);
+  background: var(--error-light, #FEE2E2);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Leads Management Section */
+.leads-management-card {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow-card);
+}
+
+.leads-filter-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.leads-filter-tabs {
+  display: flex;
+  gap: 0.35rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.25rem;
+}
+
+.leads-filter-tab {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.leads-filter-tab.active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.leads-search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.75rem;
+  min-width: 240px;
+}
+
+.leads-search-input-wrap input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.leads-table-container {
+  overflow-x: auto;
+}
+
+.leads-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.leads-table th {
+  padding: 0.75rem 1rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  border-bottom: 1.5px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.leads-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.leads-table tr:last-child td {
+  border-bottom: none;
+}
+
+.leads-table tr:hover {
+  background: var(--bg-primary);
+}
+
+.lead-patient-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.lead-patient-phone {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  direction: ltr;
+  display: inline-block;
+  text-align: right;
+}
+
+.lead-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.lead-step-badge.warning {
+  background: var(--warning-light, #FEF3C7);
+  color: var(--warning, #B45309);
+}
+
+.lead-step-badge.recovered {
+  background: var(--success-light, #DCFCE7);
+  color: var(--success, #15803D);
+}
+
+.lead-actions-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.btn-lead-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-lead-wa {
+  background: #25D366;
+  color: #FFFFFF;
+}
+
+.btn-lead-wa:hover {
+  background: #1EBE5D;
+}
+
+.btn-lead-sms {
+  background: var(--clinic-primary, #09090B);
+  color: #FFFFFF;
+}
+
+.btn-lead-sms:hover {
+  opacity: 0.9;
+}
+
+.btn-lead-mark {
+  background: transparent;
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-lead-mark:hover {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.btn-lead-mark.is-recovered {
+  border-color: var(--success);
+  color: var(--success);
+  background: var(--success-light);
+  cursor: default;
+}
+

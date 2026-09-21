@@ -474,12 +474,12 @@ export default function GeneralSettingsTab({
               className="saas-filter-select"
               style={{ height: '42px', width: '100%' }}
             >
-              <optgroup label="🦷 طب وجراحة الفم والأسنان">
+              <optgroup label="طب وجراحة الفم والأسنان">
                 {CLINIC_SPECIALTIES.filter(s => s.category === 'dental').map(s => (
                   <option key={s.id} value={s.name}>{s.name}</option>
                 ))}
               </optgroup>
-              <optgroup label="🩺 الطب البشري والتخصصات الطبية">
+              <optgroup label="الطب البشري والتخصصات الطبية">
                 {CLINIC_SPECIALTIES.filter(s => s.category === 'medical').map(s => (
                   <option key={s.id} value={s.name}>{s.name}</option>
                 ))}
@@ -587,7 +587,7 @@ export default function GeneralSettingsTab({
           gap: '0.5rem'
         }}>
           <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-            💡 هل تريد إعادة تحميل قائمة الخدمات النموذجية لـ ({clinicForm.specialty || 'تخصصك'})؟
+            هل تريد إعادة تحميل قائمة الخدمات النموذجية لـ ({clinicForm.specialty || 'تخصصك'})؟
           </span>
           <button
             type="button"

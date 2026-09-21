@@ -1,206 +1,179 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Check, 
-  Sparkles, 
   Layers, 
   CheckCircle2, 
   Palette, 
   ShieldCheck, 
-  Eye, 
   RotateCcw,
-  Stethoscope,
-  Calendar,
-  UserCheck
+  SlidersHorizontal,
+  Eye,
+  Crosshair
 } from 'lucide-react';
-import { useTenant } from '../context/TenantContext';
+import { useTenant, applyTenantBranding } from '../context/TenantContext';
+
+export const PALETTE_CATEGORIES = [
+  'الأساس المعماري الفاخر',
+  'الطب الباطني والعمليات الجراحية',
+  'طب الأسنان والتأهيل الطبيعي',
+  'العيون والمناظير والتقنيات الدقيقة',
+  'الجلدية والتجميل والليزر',
+  'المخ والأعصاب والطب النفسي',
+  'طب الأطفال وصحة الأسرة',
+  'جراحة العظام والمفاصل والعلاج الطبيعي',
+  'الأورام والتحاليل المتقدمة',
+  'العيادات الخاصة وكبار الشخصيات'
+];
 
 export const CURATED_CLINIC_PALETTES = [
   {
     id: 'monochrome',
-    name: 'الأبيض والأسود المعماري النقي',
-    englishName: 'Architectural Monochrome Noir',
+    name: 'الأسود والزمردي النخبوي',
+    englishName: 'Obsidian Noir & Emerald',
+    primary: '#09090B',
     hex: '#09090B',
-    lightHex: '#09090B',
-    darkHex: '#FFFFFF',
+    accent: '#10B981',
+    surface: '#FFFFFF',
     isDefault: true,
-    group: 'vip',
-    category: 'الأساس المعماري الفاخر للمنظومة',
-    badgeText: 'الأساسي النخبوي (Default Noir)',
-    specialty: 'كافة التخصصات، المراكز الاستشارية، وعشاق الهدوء المعماري النقي',
-    description: 'الهوية الأساسية الفاخرة لـ ClinicFlow — تباين عالٍ وأناقة معمارية مطلقة باللونين الأبيض والأسود النقي (Minimalist Monochrome).'
+    group: 'الأساس النخبوي',
+    category: 'الأساس المعماري الفاخر',
+    badgeText: 'Obsidian Luxury',
+    specialty: 'كافة التخصصات والمراكز الاستشارية',
+    description: 'الأساس النخبوي الأكثر فخامة ورصانة — لون أساسي أسود أوبسيديان مع لمسات زمردية راقية.'
   },
   {
     id: 'royal-blue',
-    name: 'الأزرق السريري الملكي',
-    englishName: 'Royal Medical Blue',
-    hex: '#007AFF',
-    lightHex: '#007AFF',
-    darkHex: '#0A84FF',
-    isDefault: false,
-    group: 'surgery',
+    name: 'الأزرق الملكي والسماوي الاستشاري',
+    englishName: 'Royal Medical Blue & Sky',
+    primary: '#1E3A8A',
+    hex: '#1E3A8A',
+    accent: '#0284C7',
+    surface: '#FFFFFF',
+    group: 'الطب الباطني والجراحة',
     category: 'الطب الباطني والعمليات الجراحية',
     badgeText: 'Royal Medical',
-    specialty: 'الجراحة العامة، أمراض القلب، الباطنة، والاستشارات التخصصية',
-    description: 'لون طبي استشاري عريق، يمنح أعلى درجات المصداقية والوقار والثقة الطبية المتبادلة بين المريض والطبيب.'
+    specialty: 'الجراحة العامة، أمراض القلب، والباطنة',
+    description: 'وقار طبي عريق مع أزرق ملكي داكن ولمسات سماوية مريحة للمريض.'
   },
   {
     id: 'clinical-emerald',
-    name: 'الزمردي الصحي والتعافي الحيوي',
-    englishName: 'Clinical Emerald & Wellness',
-    hex: '#10B981',
-    lightHex: '#10B981',
-    darkHex: '#34D399',
-    isDefault: false,
-    group: 'dental',
-    category: 'طب الأسنان، الطب الوقائي، والتعافي',
+    name: 'الزمردي الحيوي والفيروزي الصحي',
+    englishName: 'Emerald Health & Vitality',
+    primary: '#064E3B',
+    hex: '#064E3B',
+    accent: '#10B981',
+    surface: '#FFFFFF',
+    group: 'طب الأسنان والتأهيل',
+    category: 'طب الأسنان والتأهيل الطبيعي',
     badgeText: 'Health Emerald',
-    specialty: 'طب وجراحة الأسنان، الطب الوقائي، التغذية السريرية، والتعافي الطبيعي',
-    description: 'رمز التعافي والراحة النفسية والحيوية، الخيار المفضل لعيادات ومراكز طب الأسنان والطب الوقائي والحيوي.'
+    specialty: 'طب وجراحة الأسنان، الطب الوقائي، والتغذية',
+    description: 'رمز التعافي والراحة النفسية والحيوية لمراكز طب الأسنان والتعافي السريري.'
   },
   {
     id: 'precision-teal',
-    name: 'الفيروزي الجراحي والتقنيات الدقيقة',
-    englishName: 'Precision Surgical Teal',
-    hex: '#0D9488',
-    lightHex: '#0D9488',
-    darkHex: '#2DD4BF',
-    isDefault: false,
-    group: 'surgery',
-    category: 'العيون، المسالك، والمناظير الدقيقة',
+    name: 'التيلي السريري والنقاء التقني',
+    englishName: 'Clinical Teal & Precision',
+    primary: '#0F766E',
+    hex: '#0F766E',
+    accent: '#14B8A6',
+    surface: '#FFFFFF',
+    group: 'العيون والتقنيات الدقيقة',
+    category: 'العيون والمناظير والتقنيات الدقيقة',
     badgeText: 'Precision Teal',
-    specialty: 'طب وجراحة العيون، جراحة المسالك البولية، المناظير، ومراكز الأشعة والتحاليل',
+    specialty: 'طب وجراحة العيون، المسالك، والمناظير',
     description: 'يعكس الدقة الجراحية المتقدمة والنقاء البصري والتكنولوجيا الطبية الحديثة.'
   },
   {
     id: 'rose-radiance',
-    name: 'الوردي التجميلي والنضارة الراقية',
+    name: 'الوردي الإشعاعي والجمال السريري',
     englishName: 'Rose Radiance & Aesthetics',
-    hex: '#E11D48',
-    lightHex: '#E11D48',
-    darkHex: '#FB7185',
-    isDefault: false,
-    group: 'aesthetics',
-    category: 'الجلدية، الليزر، والطب التجميلي',
-    badgeText: 'Rose Aesthetics',
-    specialty: 'الجلدية والتجميل، الليزر، العناية بالبشرة، وجراحة التجميل والنساء والتوليد',
-    description: 'هوية راقية مفعمة بالأناقة والنضارة والجمال والاهتمام بأدق تفاصيل المظهر السريري والتجميلي.'
+    primary: '#881337',
+    hex: '#881337',
+    accent: '#F43F5E',
+    surface: '#FFFFFF',
+    group: 'الجلدية والتجميل',
+    category: 'الجلدية والتجميل والليزر',
+    badgeText: 'Rose Radiance',
+    specialty: 'الجلدية والتجميل، الليزر، والعناية بالبشرة',
+    description: 'هوية مفعمة بالأناقة والنضارة المتميزة لمراكز التجميل وجراحة الجلد.'
   },
   {
     id: 'deep-amethyst',
-    name: 'البنفسجي العصبي والاتزان النفسي',
-    englishName: 'Deep Amethyst & Neurology',
-    hex: '#7C3AED',
-    lightHex: '#7C3AED',
-    darkHex: '#A78BFA',
-    isDefault: false,
-    group: 'neuro',
-    category: 'المخ والأعصاب، والطب النفسي',
-    badgeText: 'Mind & Neuro',
-    specialty: 'المخ والأعصاب، الطب النفسي، علاج الإدمان، والتأهيل المعرفي والذهني',
-    description: 'يعبر عن العمق المعرفي والسكينة النفسية والاتزان العصبي والاسترخاء التأملي للمرضى.'
+    name: 'الأرجواني الهادئ والاتزان المعرفي',
+    englishName: 'Deep Amethyst & Harmony',
+    primary: '#581C87',
+    hex: '#581C87',
+    accent: '#A855F7',
+    surface: '#FFFFFF',
+    group: 'المخ والأعصاب والطب النفسي',
+    category: 'المخ والأعصاب والطب النفسي',
+    badgeText: 'Mind Harmony',
+    specialty: 'المخ والأعصاب، الطب النفسي، والتأهيل الذهني',
+    description: 'يعبر عن العمق المعرفي والسكينة النفسية والاتزان العصبي والاسترخاء.'
   },
   {
     id: 'amber-vitality',
-    name: 'العنبر الحركي والعظام والتأهيل',
-    englishName: 'Amber Vitality & Orthopedics',
-    hex: '#D97706',
-    lightHex: '#D97706',
-    darkHex: '#FBBF24',
-    isDefault: false,
-    group: 'ortho',
-    category: 'العظام، العلاج الطبيعي، والطب الرياضي',
-    badgeText: 'Motion Vitality',
-    specialty: 'جراحة العظام والكسور، العلاج الطبيعي، التأهيل الحركي، وإصابات الملاعب',
-    description: 'يرمز للطاقة والحركة والحيوية البدنية والتغلب على الألم والعودة للنشاط الكامل.'
+    name: 'العنبري الحيوي والدفء العلاجي',
+    englishName: 'Amber Vitality & Care',
+    primary: '#78350F',
+    hex: '#78350F',
+    accent: '#F59E0B',
+    surface: '#FFFFFF',
+    group: 'طب الأطفال والأسرة',
+    category: 'طب الأطفال وصحة الأسرة',
+    badgeText: 'Amber Vitality',
+    specialty: 'طب الأطفال، طب الأسرة، والطب العام',
+    description: 'طاقة إيجابية ودفء عائلي يبعث الطمأنينة في نفوس الأطفال وذويهم.'
   },
   {
     id: 'warm-coral',
-    name: 'المرجاني الدافئ ورعاية الأطفال',
-    englishName: 'Warm Coral & Pediatrics',
-    hex: '#EA580C',
-    lightHex: '#EA580C',
-    darkHex: '#FB923C',
-    isDefault: false,
-    group: 'pediatric',
-    category: 'طب الأطفال، حديثي الولادة، والأمومة',
-    badgeText: 'Care Pediatrics',
-    specialty: 'طب الأطفال، حديثي الولادة، التطعيمات، وصحة الأسرة ورعاية الأمومة',
-    description: 'يمنح شعوراً بالدفء الإنساني والألفة والاطمئنان للأمهات والأطفال الصغار داخل العيادة.'
+    name: 'المرجاني الدافئ والعظام الحركية',
+    englishName: 'Warm Coral & Ortho',
+    primary: '#9A3412',
+    hex: '#9A3412',
+    accent: '#FB923C',
+    surface: '#FFFFFF',
+    group: 'العظام والمفاصل',
+    category: 'جراحة العظام والمفاصل والعلاج الطبيعي',
+    badgeText: 'Warm Coral',
+    specialty: 'جراحة العظام، الطب الرياضي، والعمود الفقري',
+    description: 'يعبر عن الحيوية الحركية وقوة البناء العضلي وتجدد النشاط البدني.'
   },
   {
     id: 'slate-indigo',
-    name: 'النيلي الأكاديمي والجينات والأبحاث',
-    englishName: 'Slate Indigo & Genomics',
-    hex: '#4F46E5',
-    lightHex: '#4F46E5',
-    darkHex: '#818CF8',
-    isDefault: false,
-    group: 'academic',
-    category: 'الأورام، الجينات، والمختبرات المتقدمة',
-    badgeText: 'Academic Genomics',
-    specialty: 'مراكز الأورام، أبحاث الجينات، التحاليل الطبية الدقيقة، والمجمعات الأكاديمية',
-    description: 'يعكس الرصانة الأكاديمية والأبحاث العلمية المتقدمة والتشخيص المخبري الدقيق.'
+    name: 'النيلي الأكاديمي والتحاليل الدقيقة',
+    englishName: 'Slate Indigo & Lab',
+    primary: '#312E81',
+    hex: '#312E81',
+    accent: '#6366F1',
+    surface: '#FFFFFF',
+    group: 'الأورام والمختبرات',
+    category: 'الأورام والتحاليل المتقدمة',
+    badgeText: 'Academic Lab',
+    specialty: 'مراكز الأورام، المختبرات، والمجمعات الطبية التخصصية',
+    description: 'يعكس الرصانة الأكاديمية والأبحاث العلمية المتقدمة والتشخيص الدقيق.'
   },
   {
     id: 'obsidian-gold',
-    name: 'الذهبي الفاخر والاستشارات العليا VIP',
-    englishName: 'Obsidian Luxury Gold & VIP',
-    hex: '#B45309',
-    lightHex: '#B45309',
-    darkHex: '#F59E0B',
-    isDefault: false,
-    group: 'vip',
-    category: 'المراكز الطبية الفاخرة وعيادات كبار الشخصيات',
-    badgeText: 'Luxury VIP Gold',
-    specialty: 'العيادات الخاصة VIP، الاستشارات الطبية العليا، والمجمعات الطبية الفاخرة',
-    description: 'طابع ملكي متميز يعكس الفخامة الطبية الحصرية وأرقى مستويات الضيافة السريرية.'
+    name: 'الأوبسيديان والذهبي الملكي VIP',
+    englishName: 'Obsidian Gold & VIP',
+    primary: '#18181B',
+    hex: '#18181B',
+    accent: '#D97706',
+    surface: '#FFFFFF',
+    group: 'العيادات الخاصة وكبار الشخصيات',
+    category: 'العيادات الخاصة وكبار الشخصيات',
+    badgeText: 'Luxury VIP',
+    specialty: 'العيادات الخاصة VIP والمجمعات الطبية الفاخرة',
+    description: 'طابع نخبوي استثنائي يعكس الفخامة الطبية الحصرية وأرقى مستويات الضيافة.'
   }
 ];
 
-export const PALETTE_CATEGORIES = [
-  { id: 'all', label: 'جميع الهويات (10)' },
-  { id: 'vip', label: 'الأساس وVIP' },
-  { id: 'surgery', label: 'جراحة واستشارات' },
-  { id: 'dental', label: 'أسنان وتأهيل' },
-  { id: 'aesthetics', label: 'تجميل وليزر' },
-  { id: 'neuro', label: 'أعصاب ونفسي' },
-  { id: 'ortho', label: 'عظام وحركة' },
-  { id: 'pediatric', label: 'أطفال وأمومة' },
-  { id: 'academic', label: 'أبحاث وجينات' }
-];
-
-export function applyPaletteToDom(hexColor) {
-  if (typeof document === 'undefined') return;
-  const root = document.documentElement;
-  const isMonochrome = !hexColor || hexColor === '#000000' || hexColor === '#09090B' || hexColor === 'monochrome' || hexColor === '#18181B';
-
-  if (isMonochrome) {
-    root.style.setProperty('--clinic-primary', '#09090B');
-    root.style.setProperty('--clinic-primary-hover', '#27272A');
-    root.style.setProperty('--clinic-primary-light', '#F4F4F5');
-    root.style.setProperty('--clinic-primary-glow', 'rgba(9, 9, 11, 0.08)');
-    root.style.setProperty('--clinic-gradient-primary', '#09090B');
-    root.style.setProperty('--clinic-on-primary', '#FFFFFF');
-    root.style.setProperty('--primary', '#09090B');
-    root.style.setProperty('--primary-hover', '#27272A');
-    root.style.setProperty('--primary-light', '#F4F4F5');
-    root.style.setProperty('--primary-glow', 'rgba(9, 9, 11, 0.08)');
-    root.style.setProperty('--md-sys-color-primary', '#09090B');
-    root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
-  } else {
-    root.style.setProperty('--clinic-primary', hexColor);
-    root.style.setProperty('--clinic-primary-hover', hexColor);
-    root.style.setProperty('--clinic-primary-light', `${hexColor}18`);
-    root.style.setProperty('--clinic-primary-glow', `${hexColor}33`);
-    root.style.setProperty('--clinic-gradient-primary', `linear-gradient(135deg, ${hexColor} 0%, ${hexColor}E6 100%)`);
-    root.style.setProperty('--clinic-on-primary', '#FFFFFF');
-    root.style.setProperty('--primary', hexColor);
-    root.style.setProperty('--primary-hover', hexColor);
-    root.style.setProperty('--primary-light', `${hexColor}18`);
-    root.style.setProperty('--primary-glow', `${hexColor}33`);
-    root.style.setProperty('--md-sys-color-primary', hexColor);
-    root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
-  }
+export function applyPaletteToDom(primaryColor, accentColor) {
+  applyTenantBranding({
+    primaryColor,
+    accentColor: accentColor || '#10B981'
+  });
 }
 
 export default function ClinicPalettePicker({ 
@@ -210,58 +183,57 @@ export default function ClinicPalettePicker({
 }) {
   const { tenant, updateTenantInfo } = useTenant();
 
-  // Active color initialization
-  const initialColor = value || tenant?.branding?.primaryColor || 'monochrome';
-  const [selectedColor, setSelectedColor] = useState(initialColor);
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const currentPrimary = value || tenant?.branding?.primaryColor || '#09090B';
+  const currentAccent = tenant?.branding?.accentColor || '#10B981';
+
+  const [primaryColor, setPrimaryColor] = useState(currentPrimary);
+  const [accentColor, setAccentColor] = useState(currentAccent);
+  const [isCustomMode, setIsCustomMode] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     if (value) {
-      setSelectedColor(value);
+      setPrimaryColor(value);
     } else if (tenant?.branding?.primaryColor) {
-      setSelectedColor(tenant.branding.primaryColor);
+      setPrimaryColor(tenant.branding.primaryColor);
     }
-  }, [value, tenant?.branding?.primaryColor]);
+    if (tenant?.branding?.accentColor) {
+      setAccentColor(tenant.branding.accentColor);
+    }
+  }, [value, tenant?.branding?.primaryColor, tenant?.branding?.accentColor]);
 
   const activePalette = useMemo(() => {
-    const match = CURATED_CLINIC_PALETTES.find(
-      p => p.id === selectedColor || p.hex.toLowerCase() === selectedColor.toLowerCase()
-    );
-    return match || CURATED_CLINIC_PALETTES[0]; // fallback to Monochrome
-  }, [selectedColor]);
+    return CURATED_CLINIC_PALETTES.find(
+      p => p.primary.toLowerCase() === primaryColor.toLowerCase() && p.accent.toLowerCase() === accentColor.toLowerCase()
+    ) || null;
+  }, [primaryColor, accentColor]);
 
-  const filteredPalettes = useMemo(() => {
-    if (selectedCategory === 'all') return CURATED_CLINIC_PALETTES;
-    return CURATED_CLINIC_PALETTES.filter(p => p.group === selectedCategory);
-  }, [selectedCategory]);
+  const handleApplyPalette = (newPrimary, newAccent, paletteId = null) => {
+    setPrimaryColor(newPrimary);
+    setAccentColor(newAccent);
 
-  const handleSelect = (palette) => {
-    const newColor = palette.id === 'monochrome' ? '#09090B' : palette.hex;
-    setSelectedColor(newColor);
-    
-    // Immediate Live DOM preview
-    applyPaletteToDom(newColor);
+    // Immediate live preview across DOM
+    applyTenantBranding({
+      primaryColor: newPrimary,
+      accentColor: newAccent
+    });
 
     if (onChange) {
-      onChange(newColor, palette);
+      onChange(newPrimary, { primary: newPrimary, accent: newAccent, id: paletteId });
     }
 
     if (onSaveDirectly && updateTenantInfo) {
       updateTenantInfo({
         branding: {
           ...(tenant?.branding || {}),
-          primaryColor: newColor,
-          paletteId: palette.id
+          primaryColor: newPrimary,
+          accentColor: newAccent,
+          paletteId: paletteId || 'custom'
         }
       });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2800);
     }
-  };
-
-  const handleResetToMonochrome = () => {
-    handleSelect(CURATED_CLINIC_PALETTES[0]);
   };
 
   return (
@@ -272,190 +244,271 @@ export default function ClinicPalettePicker({
         backgroundColor: 'var(--bg-primary, #FFFFFF)',
         border: '1px solid var(--border-color, #E4E4E7)',
         borderRadius: '16px',
-        padding: '1.25rem 1.5rem',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+        padding: '1.5rem',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.25rem'
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
-          <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary, #09090B)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Palette size={18} />
-            <span>الهوية اللونية والسمات السريرية (10 ثيمات متخصصة)</span>
+          <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary, #09090B)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Palette size={19} />
+            <span>نظام الألوان ثلاثي الدرجات (3-Degree Brand Palette)</span>
           </h4>
-          <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary, #71717A)' }}>
-            اختر الثيم الذي يناسب تخصص وهوية عيادتك. الأساس المعماري يظل أبيض وأسود نقي، مع إبراز لون الهوية في الإشارات والأزرار النشطة.
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary, #71717A)' }}>
+            تخصيص كامل لحرية الطبيب: الدرجة الأولى (الأساسي)، الدرجة الثانية (التمييز والتفاعل)، والدرجة الثالثة (الأسطح والخلفيات).
           </p>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {saveSuccess && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', fontWeight: 600, color: '#059669', backgroundColor: 'rgba(16, 185, 129, 0.08)', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
-              <CheckCircle2 size={13} />
-              تم تطبيق الهوية
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.78rem', fontWeight: 700, color: '#059669', backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '0.25rem 0.65rem', borderRadius: '6px' }}>
+              <CheckCircle2 size={14} />
+              تم حفظ وتطبيق الهوية
             </span>
           )}
 
-          {activePalette.id !== 'monochrome' && (
-            <button
-              type="button"
-              onClick={handleResetToMonochrome}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#71717A',
-                backgroundColor: 'transparent',
-                border: '1px solid #E4E4E7',
-                borderRadius: '6px',
-                padding: '0.25rem 0.6rem',
-                cursor: 'pointer'
-              }}
-              title="الرجوع للأبيض والأسود النقي"
-            >
-              <RotateCcw size={12} />
-              <span>استعادة الأساسي (Noir)</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setIsCustomMode(!isCustomMode)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              color: isCustomMode ? '#FFFFFF' : 'var(--text-primary)',
+              backgroundColor: isCustomMode ? '#09090B' : 'var(--bg-secondary, #F4F4F5)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              padding: '0.4rem 0.75rem',
+              cursor: 'pointer'
+            }}
+          >
+            <SlidersHorizontal size={13} />
+            <span>{isCustomMode ? 'إغلاق المحرر الحر' : 'تخصيص يدوي حر'}</span>
+          </button>
         </div>
       </div>
 
-      {/* Specialty Category Filter Tabs */}
-      <div 
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '0.4rem', 
-          overflowX: 'auto', 
-          paddingBottom: '0.65rem', 
-          marginBottom: '0.85rem',
-          scrollbarWidth: 'none'
-        }}
-      >
-        {PALETTE_CATEGORIES.map((cat) => {
-          const isActive = selectedCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              type="button"
-              onClick={() => setSelectedCategory(cat.id)}
-              style={{
-                padding: '0.3rem 0.75rem',
-                borderRadius: '9999px',
-                fontSize: '0.72rem',
-                fontWeight: isActive ? 700 : 500,
-                backgroundColor: isActive ? 'var(--clinic-primary, #09090B)' : '#F4F4F5',
-                color: isActive ? '#FFFFFF' : '#71717A',
-                border: 'none',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              {cat.label}
-            </button>
-          );
-        })}
+      {/* Live 3-Degree Interactive Preview Card */}
+      <div style={{
+        background: 'var(--clinic-surface, #FFFFFF)',
+        border: '1px solid var(--clinic-border-subtle, #E4E4E7)',
+        borderRadius: '12px',
+        padding: '1.25rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '1rem',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.35rem' }}>
+            {/* Degree 1 Indicator */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: primaryColor, boxShadow: '0 2px 6px rgba(0,0,0,0.15)', border: '1px solid rgba(0,0,0,0.1)' }} />
+              <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.2rem' }}>أساسي</span>
+            </div>
+            {/* Degree 2 Indicator */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: accentColor, boxShadow: '0 2px 6px rgba(0,0,0,0.15)', border: '1px solid rgba(0,0,0,0.1)' }} />
+              <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.2rem' }}>تمييز</span>
+            </div>
+            {/* Degree 3 Indicator */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#FFFFFF', border: '1px solid #CBD5E1' }} />
+              <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', display: 'block', marginTop: '0.2rem' }}>السطح</span>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: '0.88rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              {activePalette ? activePalette.name : 'هوية مخصصة بحرية الطبيب'}
+            </div>
+            <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>
+              الدرجة 1: <code>{primaryColor}</code> • الدرجة 2: <code>{accentColor}</code> • الدرجة 3: أسطح متناسقة
+            </div>
+          </div>
+        </div>
+
+        {/* Live UI Components Showcase */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <button
+            type="button"
+            style={{
+              background: primaryColor,
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.45rem 0.95rem',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'default'
+            }}
+          >
+            زر رئيسي
+          </button>
+          <span style={{
+            background: `${accentColor}18`,
+            color: accentColor,
+            border: `1px solid ${accentColor}40`,
+            borderRadius: '999px',
+            padding: '0.25rem 0.75rem',
+            fontSize: '0.75rem',
+            fontWeight: 800
+          }}>
+            شارة تمييز
+          </span>
+        </div>
       </div>
 
-      {/* 10 Curated Identity Cards Grid */}
+      {/* Custom Color Pickers (When in Custom Mode) */}
+      {isCustomMode && (
+        <div style={{
+          background: 'var(--bg-secondary, #FAFAFA)',
+          border: '1px dashed var(--border-color)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: '1rem'
+        }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+              الدرجة 1: اللون الأساسي (Primary Hue)
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => handleApplyPalette(e.target.value, accentColor, 'custom')}
+                style={{ width: '40px', height: '36px', borderRadius: '6px', border: '1px solid var(--border-color)', cursor: 'pointer' }}
+              />
+              <input
+                type="text"
+                value={primaryColor}
+                onChange={(e) => handleApplyPalette(e.target.value, accentColor, 'custom')}
+                placeholder="#09090B"
+                style={{ flex: 1, padding: '0.45rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.82rem', fontFamily: 'monospace' }}
+                dir="ltr"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+              الدرجة 2: لون التمييز والتفاعل (Accent Tone)
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <input
+                type="color"
+                value={accentColor}
+                onChange={(e) => handleApplyPalette(primaryColor, e.target.value, 'custom')}
+                style={{ width: '40px', height: '36px', borderRadius: '6px', border: '1px solid var(--border-color)', cursor: 'pointer' }}
+              />
+              <input
+                type="text"
+                value={accentColor}
+                onChange={(e) => handleApplyPalette(primaryColor, e.target.value, 'custom')}
+                placeholder="#10B981"
+                style={{ flex: 1, padding: '0.45rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border-color)', fontSize: '0.82rem', fontFamily: 'monospace' }}
+                dir="ltr"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8 Curated 3-Degree Palettes Grid */}
       <div 
         style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(215px, 1fr))', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
           gap: '0.75rem' 
         }}
       >
-        {filteredPalettes.map((palette) => {
-          const isSelected = activePalette.id === palette.id;
-          const isMonochrome = palette.id === 'monochrome';
+        {CURATED_CLINIC_PALETTES.map((palette) => {
+          const isSelected = activePalette?.id === palette.id;
 
           return (
             <button
               key={palette.id}
               type="button"
-              onClick={() => handleSelect(palette)}
+              onClick={() => handleApplyPalette(palette.primary, palette.accent, palette.id)}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
-                gap: '0.65rem',
-                padding: '0.85rem 1rem',
+                gap: '0.75rem',
+                padding: '0.95rem 1.1rem',
                 borderRadius: '12px',
-                border: isSelected ? (isMonochrome ? '2px solid #09090B' : `2px solid ${palette.hex}`) : '1px solid #E4E4E7',
-                backgroundColor: isSelected ? (isMonochrome ? '#09090B' : '#FFFFFF') : '#FAFAFA',
-                color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B',
+                border: isSelected ? `2px solid ${palette.primary}` : '1px solid var(--border-color, #E4E4E7)',
+                backgroundColor: isSelected ? 'var(--bg-secondary, #F4F4F5)' : 'var(--surface, #FFFFFF)',
                 cursor: 'pointer',
                 textAlign: 'right',
                 transition: 'all 0.15s ease',
-                boxShadow: isSelected ? (isMonochrome ? '0 4px 12px rgba(0,0,0,0.1)' : `0 4px 12px ${palette.hex}25`) : 'none',
-                minHeight: '120px'
+                boxShadow: isSelected ? `0 4px 12px ${palette.primary}20` : 'none',
+                minHeight: '130px'
               }}
             >
-              {/* Card Top: Swatch + Badge + Check */}
+              {/* Card Top: Swatches + Badge + Check */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  {/* Color Swatch Disc */}
-                  {isMonochrome ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  {/* Primary & Accent Swatches */}
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
                     <div 
                       style={{
-                        width: '24px',
-                        height: '24px',
+                        width: '22px',
+                        height: '22px',
                         borderRadius: '50%',
-                        border: '1.5px solid currentColor',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        flexShrink: 0
-                      }}
-                    >
-                      <div style={{ width: '50%', height: '100%', backgroundColor: '#FFFFFF' }} />
-                      <div style={{ width: '50%', height: '100%', backgroundColor: '#09090B' }} />
-                    </div>
-                  ) : (
-                    <div 
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        borderRadius: '50%',
-                        backgroundColor: palette.hex,
-                        boxShadow: `0 2px 5px ${palette.hex}40`,
-                        flexShrink: 0
+                        backgroundColor: palette.primary,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                        zIndex: 2
                       }}
                     />
-                  )}
+                    <div 
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        backgroundColor: palette.accent,
+                        marginLeft: '-6px',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                        zIndex: 1
+                      }}
+                    />
+                  </div>
 
                   <span 
                     style={{ 
-                      fontSize: '0.68rem', 
+                      fontSize: '0.7rem', 
                       fontWeight: 700, 
-                      padding: '0.15rem 0.45rem', 
+                      padding: '0.15rem 0.5rem', 
                       borderRadius: '4px',
-                      backgroundColor: isSelected && isMonochrome ? 'rgba(255,255,255,0.15)' : `${palette.hex}14`,
-                      color: isSelected && isMonochrome ? '#FFFFFF' : palette.hex
+                      backgroundColor: `${palette.accent}18`,
+                      color: palette.primary === '#09090B' ? '#09090B' : palette.primary
                     }}
                   >
                     {palette.badgeText}
                   </span>
                 </div>
 
-                {/* Selection Checkmark */}
-                {isSelected ? (
-                  <div style={{ flexShrink: 0 }}>
-                    <Check size={16} strokeWidth={3} color={isMonochrome ? '#FFFFFF' : palette.hex} />
-                  </div>
-                ) : (
-                  <div style={{ width: '16px' }} />
+                {isSelected && (
+                  <Check size={16} strokeWidth={3} color={palette.primary} />
                 )}
               </div>
 
-              {/* Title & Identity Specialty */}
+              {/* Title & Specialty */}
               <div style={{ width: '100%' }}>
-                <div style={{ fontSize: '0.84rem', fontWeight: 800, color: isSelected && isMonochrome ? '#FFFFFF' : '#09090B', lineHeight: 1.3 }}>
+                <div style={{ fontSize: '0.86rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.3 }}>
                   {palette.name}
                 </div>
-                <div style={{ fontSize: '0.69rem', color: isSelected && isMonochrome ? 'rgba(255,255,255,0.7)' : '#71717A', marginTop: '3px', lineHeight: 1.35 }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.35 }}>
                   {palette.specialty}
                 </div>
               </div>

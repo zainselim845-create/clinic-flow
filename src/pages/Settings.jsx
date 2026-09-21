@@ -193,7 +193,7 @@ const Settings = () => {
             fontSize: '0.82rem',
             fontWeight: 700
           }}>
-            <span>⚙️ وضع مدير الساس (Super Admin)</span>
+            <span>وضع مدير الساس (Super Admin)</span>
             <a 
               href="/super-admin"
               style={{ color: '#047857', textDecoration: 'underline', fontWeight: 800 }}

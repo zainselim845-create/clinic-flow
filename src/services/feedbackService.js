@@ -56,11 +56,11 @@ export function generatePostVisitFeedbackMessage(patient, appointment, clinicInf
   const googleReviewUrl = clinicInfo?.googleReviewUrl || 'https://maps.google.com';
   
   const text = 
-    `مرحباً ${patientFirstName} 🌸\n` +
+    `مرحباً بك ${patientFirstName}.\n` +
     `شكراً لزيارتك لـ ${clinicName} بالأمس. صحتك ورضاك هما أولويتنا دائماً.\n\n` +
     `رأيك يهمنا جداً! كيف تقيم تجربتك معنا اليوم؟\n\n` +
-    `⭐️⭐️⭐️⭐️⭐️ (ممتازة جداً): شاركنا رأيك على جوجل لمساعدتنا في خدمة مرضى آخرين:\n${googleReviewUrl}\n\n` +
-    `📝 إذا كان لديك أي ملاحظة أو استفسار، يسعدنا تواصلك المباشر معنا لنقدم لك الأفضل دائماً!`;
+    `تقييم ممتاز (5 من 5): شاركنا رأيك على جوجل لمساعدتنا في خدمة مرضى آخرين:\n${googleReviewUrl}\n\n` +
+    `إذا كان لديك أي ملاحظة أو استفسار، يسعدنا تواصلك المباشر معنا لنقدم لك الأفضل دائماً.`;
 
   return text;
 }

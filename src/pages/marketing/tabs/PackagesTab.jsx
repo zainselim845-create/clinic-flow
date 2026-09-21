@@ -10,7 +10,7 @@ export function PackagesTab({
     <div className="crm-tab-content">
       <div className="packages-toolbar">
         <div>
-          <h4>📦 متابعة باقات وجلسات الجلدية والليزر</h4>
+          <h4>متابعة باقات وجلسات الجلدية والليزر</h4>
           <p>تتبع عدد الجلسات المنجزة والمتبقية وتنبيه المرضى المتوقفين.</p>
         </div>
         <button className="btn btn-primary" onClick={() => setIsAddPackageModalOpen(true)}>
@@ -48,7 +48,7 @@ export function PackagesTab({
                 <span className="pkg-remaining">المتبقي: <strong>{pkg.totalSessions - pkg.completedSessions} جلسات</strong></span>
                 {isStalled && (
                   <a 
-                    href={`sms:+${(pkg.patientPhone || '').replace(/^0/, '20')}?body=${encodeURIComponent(`مرحباً يا ${pkg.patientName.split(' ')[0]} 🌸\nنود تذكيرك من ${currentClinic?.name || 'العيادة'} بموعد جلستك القادمة في ${pkg.packageName}. متبقي لك (${pkg.totalSessions - pkg.completedSessions}) جلسات.`)}`}
+                    href={`sms:+${(pkg.patientPhone || '').replace(/^0/, '20')}?body=${encodeURIComponent(`مرحباً بك ${pkg.patientName.split(' ')[0]}.\nنود تذكيرك من ${currentClinic?.name || 'العيادة'} بموعد جلستك القادمة في ${pkg.packageName}. متبقي لك (${pkg.totalSessions - pkg.completedSessions}) جلسات.`)}`}
                     className="btn-action-primary"
                   >
                     <MessageCircle size={14} />

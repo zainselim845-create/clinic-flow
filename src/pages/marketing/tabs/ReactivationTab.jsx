@@ -15,13 +15,13 @@ export function ReactivationTab({ crmStats, segmentedPatients, currentClinic }) 
             <strong>رسالة تذكير صحية</strong>
             <p>تذكير دافئ بالفحص الدوري</p>
           </div>
-          <div className="f-arrow">➡️ بعد أسبوع ➡️</div>
+          <div className="f-arrow">بعد أسبوع</div>
           <div className="f-step">
             <span className="step-badge">المرحلة 2</span>
             <strong>متابعة واستفسار</strong>
             <p>الاطمئنان وعرض المساعدة</p>
           </div>
-          <div className="f-arrow">➡️ بعد أسبوع ➡️</div>
+          <div className="f-arrow">بعد أسبوع</div>
           <div className="f-step highlight">
             <span className="step-badge">المرحلة 3</span>
             <strong>عرض وخصم خاص</strong>

@@ -13,7 +13,7 @@ export function ReferralsTab({
   return (
     <div className="crm-tab-content">
       <div className="referral-intro-banner">
-        <h4>🤝 نظام رشّح صديق ومكافآت الإحالة (Referral Viral Engine)</h4>
+        <h4>نظام رشّح صديق ومكافآت الإحالة (Referral Viral Engine)</h4>
         <p>كل مريض لديه كود ورابط إحالة خاص به. عند قدوم مريض جديد من خلاله، يحصل المريض وصديقه على نقاط وخصومات مسجلة في المحفظة.</p>
       </div>
 

@@ -481,7 +481,7 @@ export default function ConsultationModal({
                   <div key={idx} style={{ fontSize: '0.86rem', lineHeight: 1.5, background: '#FFFFFF', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #FECACA' }}>
                     <div style={{ fontWeight: 700, color: '#B91C1C' }}>{warning.title}</div>
                     <div style={{ color: '#4B5563', margin: '0.2rem 0' }}>{warning.description}</div>
-                    <div style={{ color: '#047857', fontWeight: 600, fontSize: '0.82rem' }}>💡 التوصية السريرية: {warning.recommendation}</div>
+                    <div style={{ color: '#047857', fontWeight: 600, fontSize: '0.82rem' }}>التوصية السريرية: {warning.recommendation}</div>
                   </div>
                 ))}
               </div>

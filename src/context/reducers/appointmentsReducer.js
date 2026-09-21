@@ -42,7 +42,7 @@ export function appointmentsReducer(state, action) {
           {
             id: 'notif-' + Date.now(),
             type: 'payment',
-            title: 'في انتظار التحصيل 💰',
+            title: 'في انتظار التحصيل',
             message: `المريض ${targetAppt.patientName || 'مريض'} أنهى الكشف وفي انتظار المحاسبة عند السكرتيرة`,
             timestamp: new Date().toISOString(),
             read: false,

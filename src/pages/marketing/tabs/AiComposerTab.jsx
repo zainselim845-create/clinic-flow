@@ -15,7 +15,7 @@ export function AiComposerTab({
     <div className="crm-tab-content">
       <div className="composer-container">
         <div className="composer-sidebar">
-          <h4>🎯 إعدادات الحملة الموجهة بالذكاء الاصطناعي</h4>
+          <h4>إعدادات الحملة الموجهة بالذكاء الاصطناعي</h4>
           
           <div className="form-group">
             <label>الشريحة المستهدفة:</label>
@@ -47,7 +47,7 @@ export function AiComposerTab({
         </div>
 
         <div className="composer-preview-area">
-          <h4>💬 معاينة النموذج الذكي المولد لكل مريض</h4>
+          <h4>معاينة النموذج الذكي المولد لكل مريض</h4>
           <p className="sub">الرسالة تتغير ديناميكياً لتشمل اسم المريض، آخر خدمة تلقاها، وتاريخ زيارته بدقة.</p>
 
           <div className="generated-templates-list">
@@ -55,13 +55,13 @@ export function AiComposerTab({
               const patientFirst = (p.name || 'مريضنا العزيز').split(' ')[0];
               const service = p.diagnosis || 'كشف الأسنان والفحص الدوري';
               const msg = 
-                `مرحباً يا ${patientFirst} 🌸\n\n` +
+                `مرحباً بك ${patientFirst}.\n\n` +
                 `طاقم ${currentClinic?.name || 'العيادة'} يتمنى لك دوام الصحة والعافية.\n` +
                 `بما أن آخر زيارة لك كانت بخصوص (${service})، أحببنا أن نخصص لك عرضاً حصرياً يناسبك:\n\n` +
-                `✨ ${composerOffer}\n\n` +
+                `${composerOffer}\n\n` +
                 `يسعدنا تشريفك ويمكنك حجز موعدك مباشرة عبر الرابط:\n` +
                 `${typeof window !== 'undefined' ? window.location.origin : ''}/booking\n\n` +
-                `دمت بصحة وابتسامة جميلة! 🦷✨`;
+                `مع أطيب تمنياتنا لك بدوام العافية.`;
 
               const cleanPhone = (p.phone || '').replace(/^0/, '20');
               const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;

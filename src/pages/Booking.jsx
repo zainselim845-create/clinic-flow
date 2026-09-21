@@ -94,12 +94,35 @@ const Booking = () => {
           ...prev,
           phone: match.phone || prev.phone,
           name: match.name || prev.name,
-          type: match.service || prev.type
+          type: match.service || prev.type,
+          date: match.date || prev.date,
+          time: match.slot || prev.time
         }));
         setCurrentStep('appointment_details');
       }
     }
   }, [resumeId, currentClinic?.id]);
+
+  // Live Booking Funnel Telemetry: Automatically sync user progression step-by-step
+  useEffect(() => {
+    if (currentStep === 'appointment_details' && formData.phone) {
+      const clean = cleanEgyptianPhone(formData.phone);
+      if (clean) {
+        let step = 2; // Step 2: Service / identity
+        if (formData.date && formData.time) {
+          step = 3; // Step 3: Date & Slot chosen
+        }
+        saveBookingDraft({
+          phone: clean,
+          name: formData.name,
+          service: formData.type,
+          date: formData.date,
+          slot: formData.time,
+          step
+        }, currentClinic?.id);
+      }
+    }
+  }, [currentStep, formData.phone, formData.name, formData.type, formData.date, formData.time, currentClinic?.id]);
 
   const [phoneError, setPhoneError] = useState('');
   const [bookingError, setBookingError] = useState('');

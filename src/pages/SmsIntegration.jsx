@@ -94,7 +94,7 @@ export default function SmsIntegration() {
   const [config, setConfig] = useState(() => getSmsConfig(clinicId));
   const [selectedProvider, setSelectedProvider] = useState(config.provider || 'clinicflow-gateway');
   const [testPhone, setTestPhone] = useState('');
-  const [testMessage, setTestMessage] = useState('مرحباً! هذه رسالة تجريبية من نظام كلينك فلو 🏥');
+  const [testMessage, setTestMessage] = useState('مرحباً! هذه رسالة تجريبية من نظام كلينك فلو.');
   const [isSending, setIsSending] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);

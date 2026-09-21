@@ -772,7 +772,7 @@ const Dashboard = () => {
                       {tab === 'all' && 'الكل'}
                       {tab === 'waiting' && `انتظار (${waitingToday.length})`}
                       {tab === 'in_progress' && `في الكشف (${inProgressToday.length})`}
-                      {tab === 'pending_payment' && `💰 تحصيل (${pendingPaymentToday.length})`}
+                      {tab === 'pending_payment' && `تحصيل (${pendingPaymentToday.length})`}
                       {tab === 'completed' && `مكتمل (${completedToday.length})`}
                       {tab === 'booked' && `قادم (${bookedToday.length})`}
                     </button>
@@ -845,12 +845,12 @@ const Dashboard = () => {
                         <td><span className="type-chip">{appt.type || 'كشف'}</span></td>
                         <td>
                           <span className={`status-badge ${appt.status}`}>
-                            {appt.status === 'completed' && 'مكتمل ✅'}
-                            {appt.status === 'in_progress' && 'في الكشف 🩺'}
-                            {appt.status === 'waiting' && 'في الانتظار ⏳'}
-                            {appt.status === 'pending_payment' && 'في انتظار التحصيل 💰'}
-                            {(appt.status === 'booked' || appt.status === 'upcoming') && 'محجوز 📋'}
-                            {appt.status === 'cancelled' && 'ملغي ❌'}
+                            {appt.status === 'completed' && 'مكتمل'}
+                            {appt.status === 'in_progress' && 'في الكشف'}
+                            {appt.status === 'waiting' && 'في الانتظار'}
+                            {appt.status === 'pending_payment' && 'في انتظار التحصيل'}
+                            {(appt.status === 'booked' || appt.status === 'upcoming') && 'محجوز'}
+                            {appt.status === 'cancelled' && 'ملغي'}
                           </span>
                         </td>
                         <td>{appt.fee || '300 ج.م'}</td>
@@ -882,7 +882,7 @@ const Dashboard = () => {
                                   className="btn-action-success"
                                   title="تحصيل نقداً"
                                 >
-                                  💵 كاش
+                                  كاش
                                 </button>
                                 <button
                                   type="button"
@@ -891,7 +891,7 @@ const Dashboard = () => {
                                   title="تحصيل بالبطاقة"
                                   style={{ fontSize: '0.75rem' }}
                                 >
-                                  💳 فيزا
+                                  فيزا
                                 </button>
                                 <button
                                   type="button"
@@ -900,7 +900,7 @@ const Dashboard = () => {
                                   title="تحصيل إنستاباي"
                                   style={{ fontSize: '0.75rem' }}
                                 >
-                                  📱 إنستاباي
+                                  إنستاباي
                                 </button>
                               </div>
                             )}
@@ -985,7 +985,7 @@ const Dashboard = () => {
                 >
                   <Wallet size={18} />
                   <div className="btn-text">
-                    <strong>💰 في انتظار التحصيل ({pendingPaymentToday.length} مريض)</strong>
+                    <strong>في انتظار التحصيل ({pendingPaymentToday.length} مريض)</strong>
                     <small>مرضى أنهوا الكشف وينتظرون دفع الرسوم</small>
                   </div>
                 </button>

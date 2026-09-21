@@ -24,16 +24,16 @@ export function generateReactivationMessage(stage, patient, clinicInfo) {
 
   switch (stage) {
     case REACTIVATION_STAGES.STAGE_1_CARE:
-      return `أهلاً ${patientFirstName} ✨\n${doctorName} وفريق ${clinicName} بنطمن عليك وعلى صحتك ونتايج آخر زيارة ليك بالعيادة. يسعدنا دايماً نكون جزء من اهتمامك بصحتك. لو حابب تستفسر عن أي شيء أو تجدول فحصك الدوري احنا في خدمتك: \n${bookingUrl}`;
+      return `أهلاً بك ${patientFirstName}.\n${doctorName} وفريق ${clinicName} يطمئنون على صحتك ونتائج آخر زيارة لك بالعيادة. يسعدنا دائماً تقديم المشورة الطبية وجدولة فحصك الدوري لراحتك:\n${bookingUrl}`;
 
     case REACTIVATION_STAGES.STAGE_2_VALUE:
-      return `مرحباً ${patientFirstName} 💡\nمعلومة طبية سريعة من ${doctorName}: الفحص والمتابعة الدورية كل 6 أشهر بيحميك من 90% من المضاعفات غير المتوقعة ويوفر عليك تكاليف علاجات طويلة. بنفكرك تحجز موعد المتابعة الوقائي بكل سهولة: \n${bookingUrl}`;
+      return `مرحباً بك ${patientFirstName}.\nإرشاد طبي وقائي من ${doctorName}: الفحص والمتابعة الدورية كل 6 أشهر يقي من المضاعفات غير المتوقعة ويوفر تكاليف علاجات طويلة. نذكرك بحجز موعد المتابعة الوقائي بكل سهولة:\n${bookingUrl}`;
 
     case REACTIVATION_STAGES.STAGE_3_OFFER:
-      return `عزيزنا ${patientFirstName} 🎁\nتقديراً لثقتك في ${clinicName} ومرور فترة على آخر زيارة، وفرنالك جلسة كشف واستشارة متابعة مجانية كاملة + خصم خاص 15% على أي إجراء تجميلي أو علاجي خلال هذا الأسبوع.\n\nلحجز موعدك والاستفادة من العرض: \n${bookingUrl}`;
+      return `عزيزنا ${patientFirstName}.\nتقديراً لثقتك في ${clinicName}، يسعدنا تقديم استشارة متابعة مجانية مع خصم خاص 15% على أي إجراء تكميلي خلال هذا الأسبوع.\n\nلحجز موعدك والاستفادة من الميزة:\n${bookingUrl}`;
 
     default:
-      return `مرحباً ${patientFirstName}، نتمنى لك دوام الصحة والعافية في ${clinicName}.\n${bookingUrl}`;
+      return `مرحباً بك ${patientFirstName}، نتمنى لك دوام الصحة والعافية في ${clinicName}.\n${bookingUrl}`;
   }
 }
 

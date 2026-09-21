@@ -212,7 +212,7 @@ const DoctorAssistant = ({ initialMode }) => {
       const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, matched, scopedState);
       let agentReply = '';
       if (aiRes.isQuotaExceeded) {
-        agentReply = `⚠️ **تنبيه استهلاك الرصيد**: ${aiRes.error}`;
+        agentReply = `**تنبيه استهلاك الرصيد**: ${aiRes.error}`;
       } else if (aiRes.success && aiRes.content) {
         agentReply = aiRes.content;
       } else {
@@ -290,7 +290,7 @@ const DoctorAssistant = ({ initialMode }) => {
       const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, matched, scopedState);
       let replyText = '';
       if (aiRes.isQuotaExceeded) {
-        replyText = `⚠️ **تنبيه استهلاك الرصيد**: ${aiRes.error}`;
+        replyText = `**تنبيه استهلاك الرصيد**: ${aiRes.error}`;
       } else if (aiRes.success && aiRes.content) {
         replyText = aiRes.content;
       } else {

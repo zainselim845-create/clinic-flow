@@ -206,42 +206,42 @@ export function formatPrescriptionForWhatsApp(prescription) {
     verificationCode
   } = prescription;
 
-  let msg = `🏥 *${clinicName || 'عيادة كلينيك فلو'}*\n`;
-  if (doctorName) msg += `👨‍⚕️ *الطبيب:* ${doctorName} ${doctorTitle ? `(${doctorTitle})` : ''}\n`;
-  msg += `👤 *المريض:* ${patientName}\n`;
-  msg += `📅 *تاريخ الكشف:* ${date}\n`;
-  msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  let msg = `${clinicName || 'عيادة كلينيك فلو'}\n`;
+  if (doctorName) msg += `الطبيب: ${doctorName} ${doctorTitle ? `(${doctorTitle})` : ''}\n`;
+  msg += `المريض: ${patientName}\n`;
+  msg += `تاريخ الكشف: ${date}\n`;
+  msg += `---------------------\n`;
 
   if (diagnosis) {
-    msg += `🩺 *التشخيص الطبي:*\n${diagnosis}\n\n`;
+    msg += `التشخيص الطبي:\n${diagnosis}\n\n`;
   }
 
-  msg += `💊 *الروشتة الدوائية المقررة (℞):*\n`;
+  msg += `الروشتة الدوائية المقررة:\n`;
 
   if (medications.length === 0) {
     msg += `(لا توجد أدوية مضافة - مراجعة تعليمات الطبيب أدناه)\n`;
   } else {
     medications.forEach((med, i) => {
-      msg += `\n*${i + 1}. ${med.name}*\n`;
-      if (med.dose) msg += `   🔹 الجرعة: ${med.dose}\n`;
-      if (med.frequency) msg += `   🔹 التكرار: ${med.frequency}\n`;
-      if (med.duration) msg += `   🔹 المدة: ${med.duration}\n`;
-      if (med.instructions) msg += `   🔹 ملاحظات: ${med.instructions}\n`;
+      msg += `\n${i + 1}. ${med.name}\n`;
+      if (med.dose) msg += `   الجرعة: ${med.dose}\n`;
+      if (med.frequency) msg += `   التكرار: ${med.frequency}\n`;
+      if (med.duration) msg += `   المدة: ${med.duration}\n`;
+      if (med.instructions) msg += `   ملاحظات: ${med.instructions}\n`;
     });
   }
 
-  msg += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+  msg += `\n---------------------\n`;
 
   if (generalInstructions) {
-    msg += `💡 *نصائح وتعليمات هامة:*\n${generalInstructions}\n\n`;
+    msg += `نصائح وتعليمات هامة:\n${generalInstructions}\n\n`;
   }
 
   if (nextVisit) {
-    msg += `🗓️ *موعد الاستشارة / المتابعة:* ${nextVisit}\n\n`;
+    msg += `موعد الاستشارة / المتابعة: ${nextVisit}\n\n`;
   }
 
-  msg += `🔒 *كود التحقق الرقمي:* ${verificationCode}\n`;
-  msg += `✨ *مع تمنياتنا لكم بالشفاء العاجل ودوام الصحة والعافية!* ✨`;
+  msg += `كود التحقق الرقمي: ${verificationCode}\n`;
+  msg += `مع تمنياتنا لكم بالشفاء العاجل ودوام الصحة والعافية.`;
 
   return msg;
 }

@@ -87,12 +87,12 @@ export function generateTreatmentPlanFollowUpMessage(plan, patient, clinicInfo) 
   const pending = plan?.pendingProcedures || 'المراحل المتبقية في خطتك العلاجية';
 
   return (
-    `مرحباً يا ${patientFirstName} 🦷🌸\n\n` +
+    `مرحباً بك ${patientFirstName}.\n\n` +
     `نود تذكيرك من ${clinicName} بأهمية استكمال خطتك العلاجية: (${plan?.title || 'علاج الأسنان'}).\n\n` +
-    `📊 نسبة إنجازك الحالية: ${plan?.progressPercent || 0}%\n` +
-    `⏳ الإجراءات المتبقية: ${pending}\n\n` +
-    `⚠️ استكمال هذه الخطوة في موعدها يمنع حدوث أي انتكاسة للسن المعالج ويحافظ على دوام النتيجة.\n\n` +
-    `يسعدنا حجز جلستك القادمة في الموعد الأنسب لك!`
+    `نسبة إنجازك الحالية: ${plan?.progressPercent || 0}%\n` +
+    `الإجراءات المتبقية: ${pending}\n\n` +
+    `استكمال هذه الخطوة في موعدها يمنع حدوث أي انتكاسة للسن المعالج ويحافظ على دوام النتيجة.\n\n` +
+    `يسعدنا حجز جلستك القادمة في الموعد الأنسب لك.`
   );
 }
 

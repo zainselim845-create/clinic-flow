@@ -133,7 +133,7 @@ export default function PrescriptionPrintModal({
                         <span><strong>المواعيد:</strong> {med.frequency || 'يومياً'}</span>
                       </div>
                       {med.instructions && (
-                        <div className="rx-med-instruction">💡 {med.instructions}</div>
+                        <div className="rx-med-instruction">{med.instructions}</div>
                       )}
                     </li>
                   ))}

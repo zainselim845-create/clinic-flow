@@ -188,9 +188,9 @@ export const MarketingCrmHub = () => {
     const updated = saveFeedback(newFb, currentClinicId);
     setFeedbacksList(updated);
     if (rating >= 4) {
-      showToast(`تم توجيه تقييم (${rating} نجوم) إلى صفحة Google Reviews بنجاح! ⭐`, 'success');
+      showToast(`تم توجيه تقييم (${rating} من 5) إلى صفحة Google Reviews بنجاح.`, 'success');
     } else {
-      showToast(`تم تحويل تقييم (${rating} نجوم) سراً إلى بريد الإدارة لحل الشكوى! 🛡️`, 'warning');
+      showToast(`تم تحويل تقييم (${rating} من 5) إلى بريد الإدارة للمتابعة الداخلية.`, 'warning');
     }
   };
 

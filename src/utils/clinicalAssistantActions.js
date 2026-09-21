@@ -406,8 +406,7 @@ export function processDoctorIntent(message, state = {}) {
         `• **المريض:** ${patientName} (${patientPhone})\n` +
         `• **التاريخ:** ${resolvedDate}\n` +
         `• **الوقت:** ${resolvedTime}\n` +
-        `• **نوع الكشف:** ${visitType}\n` +
-        `• **الحالة:** مؤكد ومسجل بالجدول 📋\n\n` +
+        `• **الحالة:** مؤكد ومسجل بالجدول\n\n` +
         `تم تحديث جدول المواعيد السريرية فوراً وإرسال إشعار لطاقم الاستقبال.`
     };
   }
@@ -463,29 +462,26 @@ export function processDoctorIntent(message, state = {}) {
       }
     }
 
-    const matchedPatient = findPatientInText(text, patients);
+    const matchedPatient = findPatientInText(text, state.patients || []);
     if (matchedPatient) {
-      const patientAppts = (state.appointments || []).filter(a => 
-        a.patientId === matchedPatient.id || a.patientName === matchedPatient.name
-      );
-      const lastAppt = patientAppts[patientAppts.length - 1];
-      const balanceText = matchedPatient.balance > 0 
-        ? `⚠️ عليه مديونية: ${matchedPatient.balance} ج.م` 
-        : ' الحساب خالص (صفر مديونية)';
+      const patientAppts = (state.appointments || []).filter(a => a.patientId === matchedPatient.id || a.patientPhone === matchedPatient.phone);
+      const lastAppt = patientAppts.length > 0 ? patientAppts[patientAppts.length - 1] : null;
+      const balanceNum = Number(matchedPatient.balance) || 0;
+      const balanceText = balanceNum > 0 ? `مديونية بقيمة ${balanceNum} ج.م` : (balanceNum < 0 ? `رصيد دائن ${Math.abs(balanceNum)} ج.م` : 'خالص ومسدد بالكامل');
 
       return {
         isAction: true,
         actionType: 'SHOW_PATIENT',
         payload: matchedPatient,
-        replyText: ` **الملف الطبي للمريض: ${matchedPatient.name}**\n\n` +
+        replyText: `**الملف الطبي للمريض: ${matchedPatient.name}**\n\n` +
           `• **الهاتف:** ${matchedPatient.phone || 'غير مسجل'}\n` +
           `• **العمر / فصيلة الدم:** ${matchedPatient.age || 'غير محدد'} سنة | ${matchedPatient.bloodType || 'غير مسجل'}\n` +
-          `• **الحساسيات المعروفة:** ⚠️ ${matchedPatient.allergies || 'لا توجد حساسية مسجلة'}\n` +
+          `• **الحساسيات المعروفة:** ${matchedPatient.allergies || 'لا توجد حساسية مسجلة'}\n` +
           `• **الأمراض المزمنة:** ${matchedPatient.chronicDiseases || 'سليم طبياً'}\n` +
           `• **عدد الزيارات:** ${patientAppts.length || matchedPatient.totalVisits || 1} زيارات\n` +
           `• **آخر كشف:** ${lastAppt ? `${lastAppt.date} (${lastAppt.type})` : (matchedPatient.lastVisit || 'لا توجد زيارة سابقة')}\n` +
           `• **الموقف المالي:** ${balanceText}\n\n` +
-          `💡 يمكنك النقر بالأسفل لفتح الملف الطبي الشامل أو التواصل معه عبر واتساب مباشرة.`
+          `يمكنك النقر بالأسفل لفتح الملف الطبي الشامل أو التواصل معه عبر واتساب مباشرة.`
       };
     } else {
       const candidate = extractCandidateName(text);
@@ -544,18 +540,18 @@ export function processDoctorIntent(message, state = {}) {
     }
 
     const statusMap = {
-      'waiting': '⏳ في الانتظار',
-      'in_progress': '🔬 في غرفة الفحص',
-      'completed': '✅ مكتمل',
-      'confirmed': '📌 مؤكد',
-      'pending_payment': '💰 في انتظار المحاسبة'
+      'waiting': 'في الانتظار',
+      'in_progress': 'في غرفة الفحص',
+      'completed': 'مكتمل',
+      'confirmed': 'مؤكد',
+      'pending_payment': 'في انتظار المحاسبة'
     };
 
     const list = filtered.map(a => `• **${a.time}** - ${a.patientName} (${a.type || 'كشف'} | ${statusMap[a.status] || a.status})`).join('\n');
     return {
       isAction: true,
       actionType: 'INFO',
-      replyText: ` **جدول مواعيد العيادة لتاريخ (${targetDate}) - إجمالي ${filtered.length} مريض:**\n\n${list}\n\nهل ترغب في تعديل أو حظر أي من هذه المواعيد؟`
+      replyText: `**جدول مواعيد العيادة لتاريخ (${targetDate}) - إجمالي ${filtered.length} مريض:**\n\n${list}\n\nهل ترغب في تعديل أو حظر أي من هذه المواعيد؟`
     };
   }
 
@@ -582,7 +578,7 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: `📌 (وحدة اختيارية بالعيادة)\nلا توجد أصناف مسجلة في مخزن العيادة حالياً. يمكنك التوجه إلى شاشة المخزن والمستلزمات وإضافة الأصناف إذا رغبت في تفعيل إدارة المخزون.`
+        replyText: `(وحدة اختيارية بالعيادة)\nلا توجد أصناف مسجلة في مخزن العيادة حالياً. يمكنك التوجه إلى شاشة المخزن والمستلزمات وإضافة الأصناف إذا رغبت في تفعيل إدارة المخزون.`
       };
     }
 
@@ -593,11 +589,11 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: `📌 (وحدة اختيارية بالعيادة)\n**بيانات الصنف بالمخزن (${specificItemMatch.name}):**\n\n` +
+        replyText: `(وحدة اختيارية بالعيادة)\n**بيانات الصنف بالمخزن (${specificItemMatch.name}):**\n\n` +
           `• **الكمية المتوفرة:** ${specificItemMatch.quantity} ${specificItemMatch.unit || ''}\n` +
           `• **الحد الأدنى للأمان:** ${specificItemMatch.minQuantity || 5}\n` +
           `• **تاريخ الصلاحية:** ${specificItemMatch.expiryDate || 'ساري'}\n` +
-          `• **الحالة:** ${isLow ? '⚠️ نقص في المخزون (تحت الحد الأدنى!)' : ' متوفر ومستقر'}`
+          `• **الحالة:** ${isLow ? 'نقص في المخزون (تحت الحد الأدنى)' : 'متوفر ومستقر'}`
       };
     }
 
@@ -606,15 +602,15 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: `📌 (وحدة اختيارية بالعيادة)\n**المخزون الطبي في حالة ممتازة!**\nكافة الأدوية والمستلزمات الطبية (${inventory.length} صنف) متوفرة بنسب أعلى من الحد الأدنى للأمان ولا يوجد أي عجز.`
+        replyText: `(وحدة اختيارية بالعيادة)\n**المخزون الطبي في حالة ممتازة:**\nكافة الأدوية والمستلزمات الطبية (${inventory.length} صنف) متوفرة بنسب أعلى من الحد الأدنى للأمان ولا يوجد أي عجز.`
       };
     }
 
-    const list = lowItems.map(i => `• ⚠️ **${i.name}**: متوفر **${i.quantity} ${i.unit || ''}** (الحد الأدنى: ${i.minQuantity})`).join('\n');
+    const list = lowItems.map(i => `• **${i.name}**: متوفر **${i.quantity} ${i.unit || ''}** (الحد الأدنى: ${i.minQuantity})`).join('\n');
     return {
       isAction: true,
       actionType: 'INFO',
-      replyText: `📌 (وحدة اختيارية بالعيادة)\n**تنبيه نواقص المخزن الطبي (${lowItems.length} صنف قارب على النفاد):**\n\n${list}\n\n💡 يُنصح بإصدار أمر شراء عاجل لتفادي انقطاع المستلزمات الطبية.`
+      replyText: `(وحدة اختيارية بالعيادة)\n**تنبيه نواقص المخزن الطبي (${lowItems.length} صنف قارب على النفاد):**\n\n${list}\n\nيُنصح بإصدار أمر شراء عاجل لتفادي انقطاع المستلزمات الطبية.`
     };
   }
 
@@ -646,7 +642,7 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: `📌 (وحدة اختيارية بالعيادة)\n**لا توجد أي تحاليل أو أشعة أو طلبيات تركيبات معلقة حالياً.**\nكافة نتائج المختبر والمعامل مكتملة أو لم يتم تسجيل طلبيات بعد.`
+        replyText: `(وحدة اختيارية بالعيادة)\n**لا توجد أي تحاليل أو أشعة أو طلبيات تركيبات معلقة حالياً.**\nكافة نتائج المختبر والمعامل مكتملة أو لم يتم تسجيل طلبيات بعد.`
       };
     }
 
@@ -661,7 +657,7 @@ export function processDoctorIntent(message, state = {}) {
     return {
       isAction: true,
       actionType: 'INFO',
-      replyText: `📌 (وحدة اختيارية بالعيادة)\n**قائمة المعامل والتحاليل والتركيبات المعلقة (${pendingLabs.length + pendingDental.length}):**\n\n${combined}\n\nيمكنك متابعة حالاتها واستلام التقارير من شاشات المعامل والمختبرات.`
+      replyText: `(وحدة اختيارية بالعيادة)\n**قائمة المعامل والتحاليل والتركيبات المعلقة (${pendingLabs.length + pendingDental.length}):**\n\n${combined}\n\nيمكنك متابعة حالاتها واستلام التقارير من شاشات المعامل والمختبرات.`
     };
   }
 
@@ -691,7 +687,7 @@ export function processDoctorIntent(message, state = {}) {
         return {
           isAction: true,
           actionType: 'INFO',
-          replyText: ` **الحسابات المالية ممتازة!**\nلا توجد أي مديونيات معلقة على المرضى، وكافة الفواتير محصلة بالكامل.`
+          replyText: `**الحسابات المالية ممتازة:**\nلا توجد أي مديونيات معلقة على المرضى، وكافة الفواتير محصلة بالكامل.`
         };
       }
 
@@ -701,11 +697,11 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: ` **تقرير المديونيات المعلقة في العيادة:**\n\n` +
+        replyText: `**تقرير المديونيات المعلقة في العيادة:**\n\n` +
           `• **إجمالي المبالغ المستحقة:** **${totalDebt} ج.م**\n` +
           `• **عدد المرضى المدينين:** ${debtors.length} مريض\n\n` +
           `**قائمة المرضى المستحق عليهم سداد:**\n${list}\n\n` +
-          `💡 يمكنك إرسال رسائل تذكير بالمستحقات عبر واتساب بضغطة زر واحدة.`
+          `يمكنك إرسال رسائل تذكير بالمستحقات عبر واتساب بضغطة زر واحدة.`
       };
     }
 

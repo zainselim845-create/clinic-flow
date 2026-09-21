@@ -91,7 +91,7 @@ export function CrmOverviewTab({
               <div key={idx} className="opp-mini-card">
                 <div className="opp-meta">
                   <strong>{opp.patientName}</strong>
-                  <span>خدمته السابقة: {opp.primaryService} ⬅️ المقترح: <strong className="text-primary">{opp.suggestedService}</strong></span>
+                  <span>خدمته السابقة: {opp.primaryService} | المقترح: <strong className="text-primary">{opp.suggestedService}</strong></span>
                 </div>
                 <a 
                   href={`sms:+${(opp.patientPhone || '').replace(/^0/, '20')}?body=${encodeURIComponent(opp.smsMessage || opp.whatsappMessage)}`}
@@ -114,7 +114,7 @@ export function CrmOverviewTab({
             {(feedbacksList || []).slice(0, 3).map((fb) => (
               <div key={fb.id} className="fb-mini-card">
                 <div className="fb-stars">
-                  {'⭐'.repeat(fb.rating)}
+                  {fb.rating} من 5
                 </div>
                 <div className="fb-meta">
                   <strong>{fb.patientName}</strong>
