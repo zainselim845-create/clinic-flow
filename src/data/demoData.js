@@ -207,6 +207,8 @@ export const staffMembers = [
     permissions: ['appointments', 'invoices', 'inventory'],
     createdAt: '2026-02-15'
   }
+];
+
 // Clean zero-state seed templates (Zero Demo Contamination)
 export const getSeedPatientsAhmed = () => [];
 export const getSeedAppointmentsAhmed = () => [];

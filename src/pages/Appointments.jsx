@@ -374,9 +374,7 @@ const Appointments = () => {
         <MultiChairGrid 
           appointments={filteredAppointments} 
           selectedDate={filterDate || todayStr} 
-          onAppointmentClick={(appt) => {
-            console.log('Selected chair appt:', appt);
-          }}
+          onAppointmentClick={() => {}}
         />
       ) : (
         <>

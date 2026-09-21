@@ -106,11 +106,12 @@ export default function SmsIntegration() {
     return saved;
   });
 
+  const currentSenderForMetrics = formatSenderId(config.senderId || getClinicSenderId(clinicId));
   const [metrics] = useState({
-    totalSent: 1247,
-    deliveryRate: 98.6,
-    balance: 'غير محدود',
-    activeSender: formatSenderId(config.senderId || getClinicSenderId(clinicId))
+    totalSent: 0,
+    deliveryRate: '--',
+    balance: 'حسب باقة العيادة',
+    activeSender: currentSenderForMetrics || ''
   });
 
   useEffect(() => {
@@ -140,7 +141,7 @@ export default function SmsIntegration() {
     const sanitized = {
       ...config,
       provider: selectedProvider,
-      senderId: formatSenderId(config.senderId || getClinicSenderId(clinicId))
+      senderId: config.senderId ? formatSenderId(config.senderId) : ''
     };
     saveSmsConfig(sanitized, clinicId);
     setConfig(sanitized);
@@ -197,10 +198,10 @@ export default function SmsIntegration() {
             <span className="sms-metric-title">رسائل مُرسلة</span>
             <div className="sms-metric-icon"><MessageSquare size={18} /></div>
           </div>
-          <div className="sms-metric-value">{metrics.totalSent.toLocaleString('ar-EG')}</div>
+          <div className="sms-metric-value">{metrics.totalSent === 0 ? '٠' : metrics.totalSent.toLocaleString('ar-EG')}</div>
           <div className="sms-metric-sub">
-            <TrendingUp size={12} style={{ color: '#10B981' }} />
-            <span>+12% عن الشهر السابق</span>
+            <MessageSquare size={12} style={{ color: 'var(--text-tertiary)' }} />
+            <span>{metrics.totalSent === 0 ? 'لم يتم إرسال رسائل بعد' : 'إجمالي الرسائل'}</span>
           </div>
         </div>
         <div className="sms-metric-card">
@@ -208,10 +209,10 @@ export default function SmsIntegration() {
             <span className="sms-metric-title">معدل التوصيل</span>
             <div className="sms-metric-icon"><Zap size={18} /></div>
           </div>
-          <div className="sms-metric-value">{metrics.deliveryRate}%</div>
+          <div className="sms-metric-value">{metrics.deliveryRate === '--' ? '--' : `${metrics.deliveryRate}%`}</div>
           <div className="sms-metric-sub">
-            <CheckCircle2 size={12} style={{ color: '#10B981' }} />
-            <span>أداء ممتاز</span>
+            <Activity size={12} style={{ color: 'var(--text-tertiary)' }} />
+            <span>{metrics.deliveryRate === '--' ? 'بانتظار أول إرسال' : 'أداء ممتاز'}</span>
           </div>
         </div>
         <div className="sms-metric-card">
@@ -227,13 +228,24 @@ export default function SmsIntegration() {
         </div>
         <div className="sms-metric-card">
           <div className="sms-metric-top">
-            <span className="sms-metric-title">اسم المرسل المعتمد</span>
+            <span className="sms-metric-title">اسم المرسل</span>
             <div className="sms-metric-icon"><Smartphone size={18} /></div>
           </div>
-          <div className="sms-metric-value" style={{ fontSize: '1.15rem', direction: 'ltr', textAlign: 'left' }}>{currentSender}</div>
+          <div className="sms-metric-value" style={{ fontSize: '1.15rem', direction: 'ltr', textAlign: 'left' }}>
+            {currentSender || 'لم يتم التحديد بعد'}
+          </div>
           <div className="sms-metric-sub">
-            <ShieldCheck size={12} style={{ color: '#10B981' }} />
-            <span>NTRA / GSM معتمد</span>
+            {currentSender ? (
+              <>
+                <Smartphone size={12} style={{ color: '#10B981' }} />
+                <span>اسم مرسل مخصص للعيادة</span>
+              </>
+            ) : (
+              <>
+                <AlertCircle size={12} style={{ color: '#F59E0B' }} />
+                <span>يُرجى إدخال اسم المرسل في الإعدادات</span>
+              </>
+            )}
           </div>
         </div>
       </div>

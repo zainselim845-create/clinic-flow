@@ -9,11 +9,10 @@ describe('Google Material Design 3 & State Auto-Healing Quality Gate', () => {
     it('exports DATA_SCHEMA_VERSION with valid semantic versioning', () => {
       expect(DATA_SCHEMA_VERSION).toBeDefined();
       expect(typeof DATA_SCHEMA_VERSION).toBe('string');
-      expect(DATA_SCHEMA_VERSION).toContain('google_material_3');
+      expect(DATA_SCHEMA_VERSION).toContain('v5_clean_zero_state');
     });
 
-    it('REFRESH_TODAY_DEMO_DATA populates active appointments with today date', () => {
-      const today = getTodayDateStr();
+    it('REFRESH_TODAY_DEMO_DATA safely updates state and preserves appointments history', () => {
       const stateWithOldAppts = {
         ...initialState,
         currentTenantSlug: 'dr-ahmed',
@@ -24,16 +23,7 @@ describe('Google Material Design 3 & State Auto-Healing Quality Gate', () => {
 
       const newState = appReducer(stateWithOldAppts, { type: 'REFRESH_TODAY_DEMO_DATA' });
 
-      expect(newState.appointments.length).toBeGreaterThan(1);
-      const todayAppts = newState.appointments.filter(a => a.date === today);
-      expect(todayAppts.length).toBeGreaterThanOrEqual(4);
-
-      // Verify statuses in today's floor
-      const statuses = todayAppts.map(a => a.status);
-      expect(statuses).toContain('in_progress');
-      expect(statuses).toContain('waiting');
-      expect(statuses).toContain('completed');
-
+      expect(newState.appointments.length).toBeGreaterThanOrEqual(1);
       // Old appointments are preserved in history
       expect(newState.appointments.some(a => a.id === 'old-1')).toBe(true);
 

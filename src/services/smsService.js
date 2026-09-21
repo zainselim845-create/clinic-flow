@@ -56,17 +56,8 @@ export function getClinicSenderId(clinicId = 'default') {
     if (demoMatch?.senderId) return formatSenderId(demoMatch.senderId);
   }
 
-  // 4. Derive from slug (e.g. 'dr-ahmed' -> 'DrAhmed', 'dr-sara' -> 'DrSara')
-  if (typeof clinicId === 'string') {
-    const parts = clinicId.replace(/^clinic_/, '').split(/[-_]/).filter(Boolean);
-    const camel = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('');
-    const candidate = formatSenderId(camel, '');
-    if (candidate && candidate.length >= 3) {
-      return candidate;
-    }
-  }
-
-  return 'ClinicFlow';
+  // 4. No auto-derivation — sender ID must be explicitly set by the clinic owner
+  return '';
 }
 
 /**

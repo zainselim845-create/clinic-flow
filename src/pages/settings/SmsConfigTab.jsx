@@ -21,7 +21,7 @@ export default function SmsConfigTab() {
     e.preventDefault();
     const sanitized = {
       ...config,
-      senderId: formatSenderId(config.senderId || getClinicSenderId(clinicId))
+      senderId: config.senderId ? formatSenderId(config.senderId) : ''
     };
     saveSmsConfig(sanitized, clinicId);
     setConfig(sanitized);
@@ -49,7 +49,7 @@ export default function SmsConfigTab() {
     }
   };
 
-  const currentSender = formatSenderId(config.senderId || getClinicSenderId(clinicId));
+  const currentSender = config.senderId ? formatSenderId(config.senderId) : '';
 
   return (
     <div className="settings-section sms-tab">
@@ -78,16 +78,23 @@ export default function SmsConfigTab() {
             <Smartphone size={20} />
           </div>
           <div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>اسم المرسل المعتمد لعيادتكم (Sender ID):</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>اسم المرسل لعيادتكم (Sender ID):</div>
             <strong style={{ fontSize: '1.2rem', color: 'var(--text-primary)', letterSpacing: '0.5px' }}>
-              {currentSender}
+              {currentSender || 'لم يتم التحديد بعد'}
             </strong>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#059669', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '0.35rem 0.75rem', borderRadius: '6px', fontWeight: 600 }}>
-          <ShieldCheck size={14} />
-          <span>معتمد ومطابق للوائح تنظيم الاتصالات (NTRA / GSM)</span>
-        </div>
+        {currentSender ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#059669', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '0.35rem 0.75rem', borderRadius: '6px', fontWeight: 600 }}>
+            <Smartphone size={14} />
+            <span>اسم مرسل مخصص للعيادة</span>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#D97706', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '0.35rem 0.75rem', borderRadius: '6px', fontWeight: 600 }}>
+            <AlertCircle size={14} />
+            <span>بانتظار إدخال اسم المرسل</span>
+          </div>
+        )}
       </div>
 
       {/* SaaS Central SMS Gateway Notice Banner */}

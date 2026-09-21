@@ -201,7 +201,48 @@ export function isDedicatedDomain(
   return resolveTenantFromLocation(tenants, locationObj).isDedicatedDomain;
 }
 
+export function applyTenantBranding(branding) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  const primary = branding?.primaryColor;
+  const isMonochrome = !primary || primary === 'monochrome' || primary === '#000000' || primary === '#09090B' || primary === '#18181B';
+
+  if (isMonochrome) {
+    const isDark = root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark';
+    root.style.setProperty('--clinic-primary', isDark ? '#FFFFFF' : '#09090B');
+    root.style.setProperty('--clinic-primary-hover', isDark ? '#E4E4E7' : '#27272A');
+    root.style.setProperty('--clinic-primary-light', isDark ? 'rgba(255, 255, 255, 0.12)' : '#F4F4F5');
+    root.style.setProperty('--clinic-primary-glow', isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)');
+    root.style.setProperty('--clinic-gradient-primary', isDark ? '#FFFFFF' : '#09090B');
+    root.style.setProperty('--clinic-on-primary', isDark ? '#09090B' : '#FFFFFF');
+    root.style.setProperty('--primary', isDark ? '#FFFFFF' : '#09090B');
+    root.style.setProperty('--primary-hover', isDark ? '#E4E4E7' : '#27272A');
+    root.style.setProperty('--primary-light', isDark ? 'rgba(255, 255, 255, 0.12)' : '#F4F4F5');
+    root.style.setProperty('--primary-glow', isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)');
+    root.style.setProperty('--md-sys-color-primary', isDark ? '#FFFFFF' : '#09090B');
+    root.style.setProperty('--md-sys-color-on-primary', isDark ? '#09090B' : '#FFFFFF');
+  } else {
+    root.style.setProperty('--clinic-primary', primary);
+    root.style.setProperty('--clinic-primary-hover', primary);
+    root.style.setProperty('--clinic-primary-light', `${primary}18`);
+    root.style.setProperty('--clinic-primary-glow', `${primary}33`);
+    root.style.setProperty('--clinic-gradient-primary', `linear-gradient(135deg, ${primary} 0%, ${primary}E6 100%)`);
+    root.style.setProperty('--clinic-on-primary', '#FFFFFF');
+    root.style.setProperty('--primary', primary);
+    root.style.setProperty('--primary-hover', primary);
+    root.style.setProperty('--primary-light', `${primary}18`);
+    root.style.setProperty('--primary-glow', `${primary}33`);
+    root.style.setProperty('--md-sys-color-primary', primary);
+    root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
+  }
+
+  if (branding?.accentColor) {
+    root.style.setProperty('--accent', branding.accentColor);
+  }
+}
+
 export const TenantProvider = ({ children }) => {
+  const applyBranding = applyTenantBranding;
   const [allTenants, setAllTenants] = useState(() => getCombinedTenants());
   const initialResolution = useMemo(() => resolveTenantFromLocation(allTenants), [allTenants]);
   const [activeTenant, setActiveTenant] = useState(initialResolution.tenant || allTenants[0]);
@@ -367,47 +408,6 @@ export const TenantProvider = ({ children }) => {
     setIsLoadingTenant(false);
     return fallback;
   }, [allTenants]);
-
-  // 3. Inject Tenant Brand Colors into CSS Variables Dynamically (Monochrome Bedrock + Curated Accent)
-  const applyBranding = (branding) => {
-    if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    const primary = branding?.primaryColor;
-    const isMonochrome = !primary || primary === 'monochrome' || primary === '#000000' || primary === '#09090B' || primary === '#18181B';
-
-    if (isMonochrome) {
-      const isDark = root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark';
-      root.style.setProperty('--clinic-primary', isDark ? '#FFFFFF' : '#09090B');
-      root.style.setProperty('--clinic-primary-hover', isDark ? '#E4E4E7' : '#27272A');
-      root.style.setProperty('--clinic-primary-light', isDark ? 'rgba(255, 255, 255, 0.12)' : '#F4F4F5');
-      root.style.setProperty('--clinic-primary-glow', isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)');
-      root.style.setProperty('--clinic-gradient-primary', isDark ? '#FFFFFF' : '#09090B');
-      root.style.setProperty('--clinic-on-primary', isDark ? '#09090B' : '#FFFFFF');
-      root.style.setProperty('--primary', isDark ? '#FFFFFF' : '#09090B');
-      root.style.setProperty('--primary-hover', isDark ? '#E4E4E7' : '#27272A');
-      root.style.setProperty('--primary-light', isDark ? 'rgba(255, 255, 255, 0.12)' : '#F4F4F5');
-      root.style.setProperty('--primary-glow', isDark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.08)');
-      root.style.setProperty('--md-sys-color-primary', isDark ? '#FFFFFF' : '#09090B');
-      root.style.setProperty('--md-sys-color-on-primary', isDark ? '#09090B' : '#FFFFFF');
-    } else {
-      root.style.setProperty('--clinic-primary', primary);
-      root.style.setProperty('--clinic-primary-hover', primary);
-      root.style.setProperty('--clinic-primary-light', `${primary}18`);
-      root.style.setProperty('--clinic-primary-glow', `${primary}33`);
-      root.style.setProperty('--clinic-gradient-primary', `linear-gradient(135deg, ${primary} 0%, ${primary}E6 100%)`);
-      root.style.setProperty('--clinic-on-primary', '#FFFFFF');
-      root.style.setProperty('--primary', primary);
-      root.style.setProperty('--primary-hover', primary);
-      root.style.setProperty('--primary-light', `${primary}18`);
-      root.style.setProperty('--primary-glow', `${primary}33`);
-      root.style.setProperty('--md-sys-color-primary', primary);
-      root.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
-    }
-
-    if (branding?.accentColor) {
-      root.style.setProperty('--accent', branding.accentColor);
-    }
-  };
 
   useEffect(() => {
     loadTenant();

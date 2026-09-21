@@ -171,17 +171,11 @@ export function CreateClinicModal({
               value={newClinic.slug}
               onChange={(e) => {
                 const s = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-                setNewClinic(prev => {
-                  const derivedSender = !prev.senderIdManual
-                    ? s.split(/[-_]/).filter(Boolean).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('').substring(0, 11)
-                    : prev.senderId;
-                  return {
-                    ...prev,
-                    slug: s,
-                    slugManual: true,
-                    senderId: derivedSender || prev.senderId
-                  };
-                });
+                setNewClinic(prev => ({
+                  ...prev,
+                  slug: s,
+                  slugManual: true
+                }));
               }}
               required
             />
@@ -189,11 +183,11 @@ export function CreateClinicModal({
           </div>
 
           <div className="form-group">
-            <label htmlFor="clinic-sender-id-input">معرّف مرسل الـ SMS الحصري (Telecom Sender ID)</label>
+            <label htmlFor="clinic-sender-id-input">معرّف مرسل الـ SMS الحصري (Telecom Sender ID) - اختياري</label>
             <input 
               id="clinic-sender-id-input"
               type="text" 
-              placeholder="DrAhmed / EliteClinic" 
+              placeholder="مثال: EliteClinic أو DrAhmed" 
               dir="ltr"
               maxLength={11}
               value={newClinic.senderId || ''}
@@ -203,7 +197,7 @@ export function CreateClinicModal({
               }}
             />
             <small className="help-text">
-              معتمد لدى شركات الاتصالات و NTRA (3 إلى 11 حرف/رقم بالإنجليزية دون مسافات). المعرف الفعلي: <strong>{newClinic.senderId || 'تلقائي من الرابط'}</strong>
+              يُحدد من قِبل إدارة العيادة (من 3 إلى 11 حرف/رقم إنجليزي دون مسافات). المعرف الحالي: <strong>{newClinic.senderId || 'لم يُحدد بعد (اختياري)'}</strong>
             </small>
           </div>
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { clinicInfo as defaultClinicInfo, demoClinics, staffMembers as defaultStaffMembers, drSaraStaffMembers } from '../data/demoData';
 import { fromDbClinic } from '../services/clinicsService';
@@ -144,6 +144,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const fetchClinic = useCallback(async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('clinics')
+        .select('*')
+        .eq('owner_id', userId)
+        .single();
+        
+      if (error) throw error;
+      setClinic(fromDbClinic(data));
+    } catch (error) {
+      console.error('Error fetching clinic:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isDemoMode) {
       const saved = getInitialUser();
@@ -215,24 +232,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     return () => subscription?.unsubscribe?.();
-  }, [isDemoMode]);
-
-  const fetchClinic = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('owner_id', userId)
-        .single();
-        
-      if (error) throw error;
-      setClinic(fromDbClinic(data));
-    } catch (error) {
-      console.error('Error fetching clinic:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [isDemoMode, fetchClinic]);
 
   const signIn = async (identifier, password) => {
     const cleanId = (identifier || '').trim().toLowerCase();

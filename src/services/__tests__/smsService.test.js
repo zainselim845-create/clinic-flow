@@ -103,9 +103,9 @@ describe('smsService Unit Tests', () => {
       expect(getClinicSenderId('elite-dental')).toBe('EliteDental');
     });
 
-    it('derives a clean camelCase Sender ID from slug if no custom sender is set', () => {
-      expect(getClinicSenderId('nile-smile-care')).toBe('NileSmileCa'); // 11 chars
-      expect(getClinicSenderId('alpha-clinic')).toBe('AlphaClinic');
+    it('returns empty string when no custom sender ID is set for unknown clinic', () => {
+      expect(getClinicSenderId('nile-smile-care')).toBe('');
+      expect(getClinicSenderId('alpha-clinic')).toBe('');
     });
 
     it('returns platform default for empty or default clinic ID', () => {

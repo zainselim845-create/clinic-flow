@@ -69,7 +69,7 @@ export function isAdminRole(user) {
 export function isDoctorRole(user) {
   if (!user) return false;
   const role = user.role || 'staff';
-  return ['doctor', 'associate_doctor', 'owner', 'clinic_admin', 'admin'].includes(role);
+  return ['doctor', 'owner', 'clinic_admin', 'admin'].includes(role);
 }
 
 /**
