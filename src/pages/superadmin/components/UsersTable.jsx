@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Search, UserPlus, LogIn, Edit, KeyRound, Ban, CheckCircle2, 
-  Trash2, Shield, User, Stethoscope, Building, Phone, Mail, Clock
+  Trash2, Shield, User, Stethoscope, Building, Phone, Mail, Clock, RotateCcw
 } from 'lucide-react';
 
 export function UsersTable({
@@ -20,7 +20,8 @@ export function UsersTable({
   onResetPassword,
   onToggleStatus,
   onDelete,
-  onOpenCreate
+  onOpenCreate,
+  onRefresh
 }) {
   const cleanSearch = (searchTerm || '').trim().toLowerCase();
 
@@ -98,15 +99,29 @@ export function UsersTable({
           <p>عرض تفصيلي لجميع الأطباء، موظفي الاستقبال، وملاك العيادات مع صلاحيات الدخول الفوري والتحكم الشامل</p>
         </div>
 
-        <button
-          type="button"
-          className="btn-create-tenant"
-          onClick={onOpenCreate}
-          style={{ padding: '0.55rem 1.1rem', fontSize: '0.88rem' }}
-        >
-          <UserPlus size={16} />
-          <span>إضافة حساب مستخدم جديد</span>
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          {onRefresh && (
+            <button
+              type="button"
+              className="saas-refresh-btn"
+              onClick={onRefresh}
+              title="تحديث ومزامنة الحسابات الآن"
+              aria-label="تحديث ومزامنة الحسابات"
+            >
+              <RotateCcw size={15} />
+              <span>تحديث</span>
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn-create-tenant"
+            onClick={onOpenCreate}
+            style={{ padding: '0.55rem 1.1rem', fontSize: '0.88rem' }}
+          >
+            <UserPlus size={16} />
+            <span>إضافة حساب مستخدم جديد</span>
+          </button>
+        </div>
       </div>
 
       {/* Mini Stats Summary */}

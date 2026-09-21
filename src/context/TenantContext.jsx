@@ -268,10 +268,15 @@ export const TenantProvider = ({ children }) => {
   // 1. Cross-tab and Broadcast Synchronization (Multi-window & Multi-tab reactivity)
   useEffect(() => {
     const handleStorageChange = (e) => {
-      if (!e || e.key === 'clinicflow_registered_tenants' || e.key === 'clinicflow_active_tenant_slug') {
+      if (!e || e.key === 'clinicflow_registered_tenants' || e.key === 'clinicflow_active_tenant_slug' || e.key === 'clinicflow_registered_users') {
         const fresh = getCombinedTenants();
         setAllTenants(fresh);
       }
+    };
+
+    const handleFocusSync = () => {
+      const fresh = getCombinedTenants();
+      setAllTenants(fresh);
     };
 
     let channel = null;
@@ -289,11 +294,15 @@ export const TenantProvider = ({ children }) => {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('focus', handleFocusSync);
+      document.addEventListener('visibilitychange', handleFocusSync);
     }
 
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('focus', handleFocusSync);
+        document.removeEventListener('visibilitychange', handleFocusSync);
       }
       if (channel) {
         channel.close();
@@ -609,7 +618,12 @@ export const TenantProvider = ({ children }) => {
     }
   }, [activeTenant]);
 
-  const isSuperAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/super-admin');
+  const isSuperAdminRoute = typeof window !== 'undefined' && (
+    window.location.pathname.startsWith('/super-admin') ||
+    window.location.pathname.startsWith('/superadmin') ||
+    window.location.pathname.startsWith('/saas') ||
+    window.location.pathname.startsWith('/admin')
+  );
   const isolatedTenantsCatalog = useMemo(() => {
     if (dedicatedDomainActive && !isSuperAdminRoute) {
       return activeTenant ? [activeTenant] : allTenants.slice(0, 1);

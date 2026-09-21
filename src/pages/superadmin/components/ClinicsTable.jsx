@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw } from 'lucide-react';
 import { getClinicUsage } from '../../../services/usageMeteringService';
 import { getClinicSenderId } from '../../../services/smsService';
 
@@ -23,7 +23,8 @@ export function ClinicsTable({
   onTopUpClinic,
   onCustomizeBrand,
   onManageSubscription,
-  onDeleteClinic
+  onDeleteClinic,
+  onRefresh
 }) {
   return (
     <div className="saas-section-card">
@@ -75,6 +76,19 @@ export function ClinicsTable({
             <option value="pending_approval">قيد المراجعة والموافقة ({pendingClinics})</option>
             <option value="suspended">الموقوفة لعدم السداد ({suspendedClinics})</option>
           </select>
+
+          {onRefresh && (
+            <button 
+              type="button" 
+              onClick={onRefresh} 
+              className="saas-refresh-btn"
+              title="تحديث البيانات ومزامنة المستأجرين الآن"
+              aria-label="تحديث ومزامنة المستأجرين"
+            >
+              <RotateCcw size={15} />
+              <span>تحديث</span>
+            </button>
+          )}
         </div>
       </div>
 

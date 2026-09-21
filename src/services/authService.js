@@ -66,12 +66,13 @@ export function clearAuthCache() {
 /**
  * Retrieves all custom registered clinics from persistent storage
  */
-export function getRegisteredTenants() {
-  if (memoryTenantsCache) return memoryTenantsCache;
-  if (typeof localStorage === 'undefined') return [];
+export function getRegisteredTenants(forceRefresh = false) {
+  if (!forceRefresh && memoryTenantsCache && memoryTenantsCache.length > 0) return memoryTenantsCache;
+  if (typeof localStorage === 'undefined') return memoryTenantsCache || [];
   try {
     const raw = localStorage.getItem(REGISTERED_TENANTS_KEY);
-    memoryTenantsCache = raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    memoryTenantsCache = Array.isArray(parsed) ? parsed : [];
     memoryTenantsCache.forEach(t => {
       if (t.slug) registeredSlugsSet.add(t.slug);
       if (t.doctorEmail) registeredEmailsSet.add(t.doctorEmail.toLowerCase());
@@ -80,7 +81,7 @@ export function getRegisteredTenants() {
     return memoryTenantsCache;
   } catch (err) {
     console.warn('Failed to load registered tenants:', err);
-    return [];
+    return memoryTenantsCache || [];
   }
 }
 
@@ -236,12 +237,13 @@ export function suspendClinic(clinicIdOrSlug, reason = 'عدم سداد الاش
 /**
  * Retrieves all registered users (doctors and staff)
  */
-export function getRegisteredUsers() {
-  if (memoryUsersCache) return memoryUsersCache;
-  if (typeof localStorage === 'undefined') return [];
+export function getRegisteredUsers(forceRefresh = false) {
+  if (!forceRefresh && memoryUsersCache && memoryUsersCache.length > 0) return memoryUsersCache;
+  if (typeof localStorage === 'undefined') return memoryUsersCache || [];
   try {
     const raw = localStorage.getItem(REGISTERED_USERS_KEY);
-    memoryUsersCache = raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    memoryUsersCache = Array.isArray(parsed) ? parsed : [];
     memoryUsersCache.forEach(u => {
       if (u.email) registeredEmailsSet.add(u.email.toLowerCase());
       if (u.phone) registeredPhonesSet.add(u.phone.replace(/\D/g, ''));
@@ -249,7 +251,7 @@ export function getRegisteredUsers() {
     return memoryUsersCache;
   } catch (err) {
     console.warn('Failed to load registered users:', err);
-    return [];
+    return memoryUsersCache || [];
   }
 }
 
@@ -365,8 +367,8 @@ export function updateStaffAccountStatus(staffIdOrPhone, status) {
  * @returns {Array<Object>}
  */
 export function getAllPlatformUsers() {
-  const registered = getRegisteredUsers();
-  const tenants = getRegisteredTenants();
+  const registered = getRegisteredUsers(true);
+  const tenants = getRegisteredTenants(true);
 
   const defaultUsers = [
     {
@@ -871,8 +873,11 @@ export function registerDoctorAndClinic({
     jobTitle: specialty || 'المدير الطبي واستشاري العيادة',
     clinicId: tenantId,
     clinicSlug: uniqueSlug,
+    clinicName: cleanClinicName,
+    status: 'active',
     allowedClinics: [uniqueSlug],
     permissions: ['*'],
+    createdAt: new Date().toISOString(),
     authenticatedAt: new Date().toISOString()
   };
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTenant } from '../../context/TenantContext';
+import { useTenant, getCombinedTenants } from '../../context/TenantContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Building2, Plus, ShieldCheck, 
@@ -143,10 +143,28 @@ export default function SuperAdminDashboard() {
     navigate('/dashboard');
   };
 
-  // Keep platform users reactive to tenant additions/deletions
+  const handleRefreshAll = () => {
+    const freshTenants = getCombinedTenants();
+    setAllTenants(freshTenants);
+    const freshUsers = getAllPlatformUsers();
+    setAllUsers(freshUsers);
+  };
+
+  // Keep platform tenants and users reactive to additions, storage events, and tab focus
   React.useEffect(() => {
-    setAllUsers(getAllPlatformUsers());
-  }, [allTenants, activeTab]);
+    handleRefreshAll();
+    const handleStorageChange = () => {
+      handleRefreshAll();
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleRefreshAll);
+    document.addEventListener('visibilitychange', handleRefreshAll);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleRefreshAll);
+      document.removeEventListener('visibilitychange', handleRefreshAll);
+    };
+  }, [activeTab]);
 
   const handleDeleteClinic = (slugOrId) => {
     const target = allTenants.find(t => t.slug === slugOrId || t.id === slugOrId);
@@ -489,6 +507,7 @@ export default function SuperAdminDashboard() {
               setIsSubscriptionControlModalOpen(true);
             }}
             onDeleteClinic={handleDeleteClinic}
+            onRefresh={handleRefreshAll}
           />
         ) : activeTab === 'users' ? (
           <UsersTable
@@ -508,6 +527,7 @@ export default function SuperAdminDashboard() {
             onToggleStatus={handleToggleUserStatus}
             onDelete={handleDeleteUser}
             onOpenCreate={() => setIsCreateUserModalOpen(true)}
+            onRefresh={handleRefreshAll}
           />
         ) : activeTab === 'telemetry_bugs' ? (
           <TelemetryBugsCenter
