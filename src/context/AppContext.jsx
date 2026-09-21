@@ -335,6 +335,9 @@ export function AppProvider({ children }) {
   // Theme Management
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', state.theme);
+    document.documentElement.classList.toggle('dark', state.theme === 'dark');
+    document.body.setAttribute('data-theme', state.theme);
+    document.body.classList.toggle('dark', state.theme === 'dark');
   }, [state.theme]);
 
   const toggleTheme = useCallback(() => {

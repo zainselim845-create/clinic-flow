@@ -35,6 +35,8 @@ describe('Production Hardening, SEO & AI Discovery Verification', () => {
       expect(content).toContain('Disallow: /appointments');
       expect(content).toContain('Disallow: /patients');
       expect(content).toContain('Disallow: /invoices');
+      expect(content).toContain('Disallow: /labs');
+      expect(content).toContain('Disallow: /sms-integration');
       expect(content).toContain('Disallow: /settings');
       expect(content).toContain('Sitemap: https://clinicflow.app/sitemap.xml');
     });
@@ -88,6 +90,35 @@ describe('Production Hardening, SEO & AI Discovery Verification', () => {
       expect(config).toContain('vendor-recharts');
       expect(config).toContain('vendor-supabase');
       expect(config).toContain('vendor-ark-ui');
+    });
+
+    it('verifies SeoHeadManager contains metadata for all application routes to prevent false 404 titles', () => {
+      const seoHeadPath = path.resolve(process.cwd(), 'src/components/SeoHeadManager.jsx');
+      const content = fs.readFileSync(seoHeadPath, 'utf8');
+
+      const expectedRoutes = [
+        '/',
+        '/dashboard',
+        '/appointments',
+        '/patients',
+        '/invoices',
+        '/inventory',
+        '/attendance',
+        '/doctor-agent',
+        '/notifications',
+        '/sms-integration',
+        '/labs',
+        '/settings',
+        '/super-admin',
+        '/booking',
+        '/manage-booking',
+        '/login',
+        '/onboarding'
+      ];
+
+      for (const route of expectedRoutes) {
+        expect(content).toContain(`'${route}':`);
+      }
     });
   });
 });

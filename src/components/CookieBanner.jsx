@@ -67,7 +67,7 @@ export const CookieBanner = () => {
           style={{
             padding: '8px',
             borderRadius: '10px',
-            backgroundColor: 'rgba(9, 9, 11, 0.05)',
+            backgroundColor: 'var(--surface-container, rgba(9, 9, 11, 0.05))',
             color: 'var(--text-primary, #09090B)',
             flexShrink: 0
           }}
@@ -91,8 +91,8 @@ export const CookieBanner = () => {
           style={{
             padding: '7px 14px',
             borderRadius: '8px',
-            backgroundColor: '#09090B',
-            color: '#FFFFFF',
+            backgroundColor: 'var(--primary, #09090B)',
+            color: 'var(--clinic-on-primary, #FFFFFF)',
             fontSize: '0.78rem',
             fontWeight: 600,
             border: 'none',
@@ -110,8 +110,8 @@ export const CookieBanner = () => {
             padding: '7px',
             borderRadius: '8px',
             backgroundColor: 'transparent',
-            color: '#71717A',
-            border: '1px solid #E4E4E7',
+            color: 'var(--text-secondary, #71717A)',
+            border: '1px solid var(--border-color, #E4E4E7)',
             cursor: 'pointer'
           }}
         >

@@ -210,7 +210,7 @@
 .form-group label {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .form-group input, .form-group select, .form-group textarea {

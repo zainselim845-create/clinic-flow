@@ -253,6 +253,9 @@ h1, h2, h3, h4, h5, h6 {
   --primary-light: rgba(56, 189, 248, 0.12);
   --primary-glow: rgba(56, 189, 248, 0.25);
   --gradient-primary: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
+  --clinic-primary: #F8FAFC;
+  --clinic-primary-hover: #E2E8F0;
+  --clinic-primary-light: rgba(255, 255, 255, 0.1);
   --clinic-on-primary: #09090B;
 
   --text-primary: #F8FAFC;     /* Slate 50 */
@@ -366,18 +369,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-secondary {
-  background: #FFFFFF;
+  background: var(--surface, #FFFFFF);
   color: var(--text-primary, #09090B);
-  border-color: var(--border-color, #E4E4E7);
+  border: 1px solid var(--border-color, #E4E4E7);
 }
 .btn-secondary:hover {
-  background: var(--bg-tertiary, #F4F4F5);
+  background: var(--surface-container-high, var(--bg-tertiary, #F4F4F5));
   color: var(--text-primary, #09090B);
 }
 
 .btn-tonal {
   background: var(--clinic-primary-light, #F4F4F5);
-  color: var(--clinic-primary, #09090B);
+  color: var(--text-primary, #09090B);
 }
 .btn-tonal:hover {
   background: var(--border-color, #E4E4E7);
@@ -386,11 +389,11 @@ h1, h2, h3, h4, h5, h6 {
 .btn-outline {
   background: transparent;
   color: var(--text-primary, #09090B);
-  border-color: var(--border-color, #E4E4E7);
+  border: 1px solid var(--border-color, #E4E4E7);
 }
 .btn-outline:hover {
   background: var(--bg-tertiary, #F4F4F5);
-  border-color: var(--clinic-primary, #09090B);
+  border-color: var(--text-primary, #09090B);
 }
 
 .btn-danger {

@@ -87,7 +87,8 @@
 }
 
 .drawer-calc-card {
-  background: #f1f5f9;
+  background: var(--surface-container, #f1f5f9);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 12px;
   padding: 1.25rem;
   display: flex;
@@ -101,12 +102,12 @@
   justify-content: space-between;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #334155;
+  color: var(--text-primary, #334155);
 }
 
 .calc-row.highlight {
   padding: 0.65rem 0.85rem;
-  background: #e2e8f0;
+  background: var(--surface-container-high, #e2e8f0);
   border-radius: 8px;
 }
 
@@ -114,16 +115,18 @@
   width: 140px;
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  color: var(--text-primary, #0f172a);
   font-weight: 800;
   font-size: 0.95rem;
   text-align: center;
 }
 
 .actual-input {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  color: #1e40af;
+  border-color: var(--primary, #3b82f6);
+  background: var(--surface-container, #eff6ff);
+  color: var(--primary, #1e40af);
 }
 
 .discrepancy-banner {

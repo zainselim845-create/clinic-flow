@@ -68,6 +68,33 @@
 .printable-invoice-sheet {
   padding: 2.25rem;
   background: #FFFFFF;
+  color: #0F172A;
+}
+
+.printable-invoice-sheet label,
+.printable-invoice-sheet .section-title,
+.printable-invoice-sheet .form-label {
+  color: #0F172A !important;
+}
+
+.printable-invoice-sheet .section-title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #012757 !important;
+  margin-bottom: 0.65rem;
+}
+
+.printable-invoice-sheet .table-txt-input,
+.printable-invoice-sheet input,
+.printable-invoice-sheet select {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  border: 1px solid #CBD5E1 !important;
+}
+
+.printable-invoice-sheet input::placeholder {
+  color: #94A3B8 !important;
 }
 
 .invoice-letterhead {

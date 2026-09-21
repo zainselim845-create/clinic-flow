@@ -1,4 +1,4 @@
-﻿# ClinicFlow Robots Configuration
+# ClinicFlow Robots Configuration
 # https://clinicflow.app
 
 User-agent: *
@@ -24,6 +24,7 @@ Disallow: /attendance
 Disallow: /settings
 Disallow: /doctor-agent
 Disallow: /notifications
+Disallow: /sms-integration
 Disallow: /onboarding
 
 # Sitemap Reference

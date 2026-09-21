@@ -185,13 +185,13 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
 
               <div className="calc-row highlight">
                 <span>النقد المطلوب وجوده بالدرج (Expected Cash):</span>
-                <strong style={{ fontSize: '1.1rem', color: '#1e40af' }}>
+                <strong style={{ fontSize: '1.1rem', color: 'var(--primary, #1e40af)' }}>
                   {financialTotals.expectedDrawerCash} ج.م
                 </strong>
               </div>
 
               <div className="calc-row">
-                <label htmlFor="shift-actual-cash" style={{ fontWeight: 800, color: '#0f172a' }}>
+                <label htmlFor="shift-actual-cash" style={{ fontWeight: 800, color: 'var(--text-primary, #0f172a)' }}>
                   النقد الفعلي المعدود بالدرج (Actual Cash Count) *:
                 </label>
                 <input 
