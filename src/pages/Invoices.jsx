@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Receipt, Plus, Search, Download, 
-  Clock, AlertCircle, DollarSign, Eye 
+  Clock, AlertCircle, DollarSign, Eye, RefreshCw 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import InvoiceModal from '../components/InvoiceModal';
+import { Skeleton } from '../components/ui/Skeleton';
 import { getInvoices, addInvoice } from '../services/invoicesService';
 import { invoices as defaultInvoices } from '../data/demoData';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Invoices.css';
 
 const Invoices = () => {
+  const location = useLocation();
   const { state } = useApp();
   const currentClinic = state.clinicInfo || {};
   const clinicSlug = currentClinic?.slug || 'dr-ahmed';
@@ -23,26 +26,47 @@ const Invoices = () => {
   };
 
   const [invoicesList, setInvoicesList] = useState(() => loadScopedInvoices(clinicSlug, clinicId));
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all, unpaid, partial, paid
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Deep-linking from Command Palette (action=new)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('action') === 'new') {
+      setSelectedInvoice(null);
+      setIsModalOpen(true);
+    }
+  }, [location.search]);
+
   useEffect(() => {
     setInvoicesList(loadScopedInvoices(clinicSlug, clinicId));
   }, [clinicSlug, clinicId]);
 
-  useEffect(() => {
-    async function load() {
-      if (clinicId) {
-        const { data } = await getInvoices(clinicId);
-        if (data && data.length > 0) {
-          setInvoicesList(data);
-        }
+  const fetchInvoices = async () => {
+    if (!clinicId) return;
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const { data, error } = await getInvoices(clinicId);
+      if (error) throw error;
+      if (data && data.length > 0) {
+        setInvoicesList(data);
       }
+    } catch (err) {
+      console.error('Failed to load invoices:', err);
+      setLoadError('تعذر تحميل الفواتير من الخادم. يرجى إعادة المحاولة.');
+    } finally {
+      setIsLoading(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    fetchInvoices();
   }, [clinicId]);
 
   // Save to tenant-scoped localStorage when list changes
@@ -239,7 +263,39 @@ const Invoices = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredInvoices.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, idx) => (
+                <tr key={`inv-skel-${idx}`}>
+                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '130px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '90px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '60px', borderRadius: '12px' }} /></td>
+                  <td><Skeleton style={{ height: '28px', width: '85px', borderRadius: '6px' }} /></td>
+                </tr>
+              ))
+            ) : loadError ? (
+              <tr>
+                <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                    <AlertCircle size={36} color="var(--danger, #DC2626)" aria-hidden="true" />
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{loadError}</strong>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                      onClick={fetchInvoices}
+                    >
+                      <RefreshCw size={15} />
+                      <span>إعادة المحاولة الآن</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredInvoices.length === 0 ? (
               <tr>
                 <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>

@@ -135,7 +135,7 @@ const Patients = () => {
         type: 'UPDATE_PATIENT', 
         payload: updatedPayload 
       });
-      showToast('تم تعديل بيانات المريض بنجاح ', 'success');
+      showToast('تم تعديل بيانات المريض بنجاح', 'success');
     } else {
       const newPatient = {
         id: Date.now().toString(),

@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useDeferredValue } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
@@ -15,9 +15,9 @@ import * as blockedSlotsService from '../services/blockedSlotsService';
 import { isDoctorRole } from '../utils/permissions';
 import './Appointments.css';
 
-
 const Appointments = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { state, dispatch, useSupabase } = useApp();
   const { tenant } = useTenant();
   const { user } = useAuth();
@@ -49,6 +49,16 @@ const Appointments = () => {
     fee: defaultFee,
     notes: ''
   });
+
+  // Deep-linking from Command Palette or external actions
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('action') === 'new') {
+      setIsModalOpen(true);
+    } else if (params.get('action') === 'block') {
+      setIsBlockerModalOpen(true);
+    }
+  }, [location.search]);
 
   const [toastMessage, setToastMessage] = useState(null);
   const showToast = (text, type = 'info') => {
@@ -174,7 +184,7 @@ const Appointments = () => {
       }
     }
     dispatch({ type: 'BLOCK_FULL_DAY', payload: { date, reason } });
-    showToast('تم إغلاق اليوم كاملاً وحظر الحجوزات بنجاح ', 'warning');
+    showToast('تم إغلاق اليوم كاملاً وحظر الحجوزات بنجاح', 'warning');
   };
 
   const handleUnblockFullDay = async (date) => {

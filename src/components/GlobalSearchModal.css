@@ -133,9 +133,13 @@
   border: 1px solid transparent;
 }
 
-.result-item:hover {
+.result-item:hover,
+.result-item.is-selected,
+.result-item:focus-visible {
   background: var(--bg-tertiary);
-  border-color: var(--border-color);
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
 .result-avatar {

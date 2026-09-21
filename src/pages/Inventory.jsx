@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
   Package, Plus, Search, 
-  Clock, CheckCircle2, ShieldAlert, Settings 
+  Clock, CheckCircle2, ShieldAlert, Settings,
+  AlertCircle, RefreshCw 
 } from 'lucide-react';
 import InventoryItemModal from '../components/InventoryItemModal';
+import { Skeleton } from '../components/ui/Skeleton';
 import { 
   getInventoryItems, addInventoryItem, adjustItemStock, 
   INVENTORY_CATEGORIES 
@@ -14,6 +17,7 @@ import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Inventory.css';
 
 const Inventory = () => {
+  const location = useLocation();
   const { state } = useApp();
   const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id;
@@ -30,10 +34,20 @@ const Inventory = () => {
   };
 
   const [items, setItems] = useState(loadScopedInventory);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Deep-linking from Command Palette (action=new)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('action') === 'new') {
+      setIsModalOpen(true);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     setItems(loadScopedInventory());
@@ -43,15 +57,26 @@ const Inventory = () => {
     safeSetJSON(`clinicflow_inventory_${currentSlug}`, items);
   }, [items, currentSlug]);
 
-  useEffect(() => {
-    async function load() {
-      if (!currentClinicId) return;
-      const { data } = await getInventoryItems(currentClinicId);
+  const fetchInventory = async () => {
+    if (!currentClinicId) return;
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const { data, error } = await getInventoryItems(currentClinicId);
+      if (error) throw error;
       if (data && data.length > 0) {
         setItems(data);
       }
+    } catch (err) {
+      console.error('Failed to load inventory items:', err);
+      setLoadError('تعذر تحميل بيانات المخزون من الخادم. يرجى إعادة المحاولة.');
+    } finally {
+      setIsLoading(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    fetchInventory();
   }, [currentClinicId]);
 
   const filteredItems = useMemo(() => {
@@ -209,7 +234,38 @@ const Inventory = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredItems.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, idx) => (
+                <tr key={`inv-item-skel-${idx}`}>
+                  <td><Skeleton style={{ height: '18px', width: '140px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '12px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '60px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '90px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '28px', width: '100px', borderRadius: '6px' }} /></td>
+                </tr>
+              ))
+            ) : loadError ? (
+              <tr>
+                <td colSpan="8" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                    <AlertCircle size={36} color="var(--danger, #DC2626)" aria-hidden="true" />
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{loadError}</strong>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                      onClick={fetchInventory}
+                    >
+                      <RefreshCw size={15} />
+                      <span>إعادة المحاولة الآن</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredItems.length === 0 ? (
               <tr>
                 <td colSpan="8" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Layers, Plus, Search, Clock, CheckCircle2, 
-  AlertCircle, ChevronRight, Calendar, Settings 
+  AlertCircle, ChevronRight, Calendar, Settings, RefreshCw 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import LabOrderModal from '../components/LabOrderModal';
+import { Skeleton } from '../components/ui/Skeleton';
 import { 
   getLabOrders, addLabOrder, updateLabOrderStatus, 
   LAB_ORDER_STATUSES 
@@ -14,6 +16,7 @@ import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Labs.css';
 
 const Labs = () => {
+  const location = useLocation();
   const { state } = useApp();
   const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
@@ -29,10 +32,20 @@ const Labs = () => {
   }, [currentSlug]);
 
   const [orders, setOrders] = useState(loadScopedOrders);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Deep-linking from Command Palette (action=new)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('action') === 'new') {
+      setIsModalOpen(true);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     setOrders(loadScopedOrders());
@@ -42,15 +55,26 @@ const Labs = () => {
     safeSetJSON(`clinicflow_labs_${currentSlug}`, orders);
   }, [orders, currentSlug]);
 
-  useEffect(() => {
-    async function load() {
-      if (!currentClinicId) return;
-      const { data } = await getLabOrders(currentClinicId);
+  const fetchOrders = async () => {
+    if (!currentClinicId) return;
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const { data, error } = await getLabOrders(currentClinicId);
+      if (error) throw error;
       if (data && data.length > 0) {
         setOrders(data);
       }
+    } catch (err) {
+      console.error('Failed to load lab orders:', err);
+      setLoadError('تعذر تحميل طلبات المعامل من الخادم. يرجى إعادة المحاولة.');
+    } finally {
+      setIsLoading(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, [currentClinicId]);
 
   const filteredOrders = useMemo(() => {
@@ -227,7 +251,39 @@ const Labs = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredOrders.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, idx) => (
+                <tr key={`lab-order-skel-${idx}`}>
+                  <td><Skeleton style={{ height: '18px', width: '130px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '110px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '90px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '50px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '60px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '4px' }} /></td>
+                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '12px' }} /></td>
+                  <td><Skeleton style={{ height: '28px', width: '90px', borderRadius: '6px' }} /></td>
+                </tr>
+              ))
+            ) : loadError ? (
+              <tr>
+                <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
+                    <AlertCircle size={36} color="var(--danger, #DC2626)" aria-hidden="true" />
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{loadError}</strong>
+                    <button
+                      type="button"
+                      className="btn-advance-status"
+                      style={{ marginTop: '0.5rem', padding: '0.45rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                      onClick={fetchOrders}
+                    >
+                      <RefreshCw size={15} />
+                      <span>إعادة المحاولة الآن</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredOrders.length === 0 ? (
               <tr>
                 <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>

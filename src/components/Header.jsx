@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Bell, Sun, Moon, LogOut, Menu, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
@@ -21,6 +21,18 @@ const Header = ({ title, onOpenAiCopilot }) => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
   const isCloudConnected = isSupabaseConfigured();
+
+  // Global shortcut to toggle Command Palette (Ctrl+K / Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Real Logged-in User Identity (strictly reflects logged-in user or active tenant doctor)
   const effectiveRole = user?.role || role || 'doctor';
