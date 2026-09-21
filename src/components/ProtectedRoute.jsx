@@ -19,6 +19,14 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
   }
 
   if (!user) {
+    if (
+      location.pathname.startsWith('/super-admin') || 
+      location.pathname.startsWith('/superadmin') || 
+      location.pathname.startsWith('/saas-admin') ||
+      location.pathname.startsWith('/control-plane')
+    ) {
+      return <Navigate to="/superadmin/login" state={{ from: location }} replace />;
+    }
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

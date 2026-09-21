@@ -51,6 +51,7 @@ const Invoices = lazyWithRetry(() => import('./pages/Invoices'));
 const Inventory = lazyWithRetry(() => import('./pages/Inventory'));
 const Attendance = lazyWithRetry(() => import('./pages/Attendance'));
 const SuperAdminDashboard = lazyWithRetry(() => import('./pages/superadmin/SuperAdminDashboard'));
+const SuperAdminLogin = lazyWithRetry(() => import('./pages/superadmin/SuperAdminLogin'));
 const Onboarding = lazyWithRetry(() => import('./pages/Onboarding'));
 const LandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
 const SmsIntegration = lazyWithRetry(() => import('./pages/SmsIntegration'));
@@ -234,6 +235,10 @@ function App() {
             } />
 
             {/* Super Admin Control Plane & SaaS Admin Aliases */}
+            <Route path="/superadmin/login" element={<SuperAdminLogin />} />
+            <Route path="/super-admin/login" element={<Navigate to="/superadmin/login" replace />} />
+            <Route path="/admin/login" element={<Navigate to="/superadmin/login" replace />} />
+            <Route path="/saas/login" element={<Navigate to="/superadmin/login" replace />} />
             <Route path="/super-admin" element={
               <ProtectedRoute allowedRoles={['super_admin']}>
                 <SuperAdminDashboard />

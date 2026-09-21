@@ -39,7 +39,7 @@
 }
 
 .landing-nav-inner {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0.75rem 1.5rem;
   display: flex;
@@ -274,7 +274,7 @@
 /* 3. HERO SECTION */
 .landing-hero-section {
   position: relative;
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 5rem 1.5rem 4rem;
   display: flex;
@@ -701,7 +701,7 @@
 
 /* 5. CLINIC DISCOVERY DIRECTORY */
 .discovery-section {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 5rem 1.5rem;
   border-top: 1px solid var(--border-color);
@@ -1004,7 +1004,7 @@
 }
 
 .features-grid {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -1068,7 +1068,7 @@
 
 /* 7. PRICING SECTION */
 .pricing-section {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 5.5rem 1.5rem;
   border-top: 1px solid var(--border-color);
@@ -1298,7 +1298,7 @@
 }
 
 .footer-top {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1.8fr 1fr 1fr 1fr;

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Stethoscope, Eye, EyeOff, Loader2, Shield, AlertTriangle, 
-  Building2, ShieldCheck, Globe, Check, User, Lock, Mail, Phone, 
+  Globe, Check, User, Lock, Mail, Phone, 
   Sparkles, CheckCircle2, ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -36,18 +36,21 @@ export default function Login() {
   const { signIn, signUpDoctorAndClinic, loginWithGoogleProfile, user } = useAuth();
 
   const searchParams = new URLSearchParams(location.search);
-  const initialPortal = searchParams.get('portal') === 'admin' || searchParams.get('portal') === 'saas' ? 'saas' : 'clinic';
   const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
 
-  const [portalScope, setPortalScope] = useState(initialPortal); // 'clinic' | 'saas'
+  // If someone passes portal=admin or portal=saas to /login, securely redirect to dedicated /superadmin/login
+  useEffect(() => {
+    const portal = searchParams.get('portal');
+    if (portal === 'admin' || portal === 'saas') {
+      navigate('/superadmin/login', { replace: true });
+    }
+  }, [searchParams, navigate]);
+
   const [activeTab, setActiveTab] = useState(initialTab); // 'login' | 'register'
   
   // Login Form State
-  const [identifier, setIdentifier] = useState(() => {
-    if (initialPortal === 'saas') return 'superadmin@clinicflow.com';
-    return safeGetItem(REMEMBERED_USER_KEY, '') || '';
-  });
-  const [password, setPassword] = useState(initialPortal === 'saas' ? 'admin' : '');
+  const [identifier, setIdentifier] = useState(() => safeGetItem(REMEMBERED_USER_KEY, '') || '');
+  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(() => Boolean(safeGetItem(REMEMBERED_USER_KEY, '')));
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +71,7 @@ export default function Login() {
     agreeTerms: true
   });
   
-  const from = location.state?.from?.pathname || (portalScope === 'saas' ? '/super-admin' : '/dashboard');
+  const from = location.state?.from?.pathname || '/dashboard';
 
   // Calculate Password Strength (0: none, 1: weak, 2: medium, 3: strong)
   const passwordStrength = useMemo(() => {
@@ -80,22 +83,6 @@ export default function Login() {
     if (pwd.length >= 10 && /[^a-zA-Z0-9]/.test(pwd)) score += 1;
     return Math.min(score, 3);
   }, [regForm.password]);
-
-  // Handle portal scope switch
-  const handleScopeChange = (scope) => {
-    setPortalScope(scope);
-    setError('');
-    setSuccessMessage('');
-    if (scope === 'saas') {
-      setActiveTab('login');
-      setIdentifier('superadmin@clinicflow.com');
-      setPassword('admin');
-    } else {
-      const saved = safeGetItem(REMEMBERED_USER_KEY, '');
-      setIdentifier(saved || '');
-      setPassword('');
-    }
-  };
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -227,14 +214,12 @@ export default function Login() {
     setSuccessMessage('');
     try {
       const profile = await triggerGoogleOAuthPopup();
-      const res = await loginWithGoogleProfile(profile, portalScope === 'saas' ? 'super_admin' : 'doctor');
+      const res = await loginWithGoogleProfile(profile, 'doctor');
       if (res?.error) throw res.error;
       const loggedUser = res?.data?.user;
       setSuccessMessage(`أهلاً بك يا ${profile.name}! تم تسجيل الدخول بنجاح.`);
       setTimeout(() => {
-        if (portalScope === 'saas') {
-          navigate('/super-admin', { replace: true });
-        } else if (res?.needsOnboarding || loggedUser?.needsOnboarding) {
+        if (res?.needsOnboarding || loggedUser?.needsOnboarding) {
           navigate('/onboarding', { replace: true });
         } else {
           navigate('/dashboard', { replace: true });
@@ -253,31 +238,6 @@ export default function Login() {
   return (
     <div className="login-page-wrapper">
       <div className="login-card-container">
-        
-        {/* Top Scope Pill Switcher */}
-        <div className="portal-scope-nav" role="tablist" aria-label="بوابات المنظومة">
-          <button 
-            type="button" 
-            role="tab"
-            aria-selected={portalScope === 'clinic'}
-            className={`scope-nav-btn ${portalScope === 'clinic' ? 'active' : ''}`}
-            onClick={() => handleScopeChange('clinic')}
-          >
-            <Building2 size={16} />
-            <span>بوابة الأطباء والعيادات (Clinic Portal)</span>
-          </button>
-          <button 
-            type="button" 
-            role="tab"
-            aria-selected={portalScope === 'saas'}
-            className={`scope-nav-btn ${portalScope === 'saas' ? 'active saas-active' : ''}`}
-            onClick={() => handleScopeChange('saas')}
-          >
-            <ShieldCheck size={16} />
-            <span>إدارة المنصة المركزية (SaaS Admin)</span>
-          </button>
-        </div>
-
         <div className="login-dual-card glass-panel">
           
           {/* Left Column: Brand Hero & Value Proposition */}
@@ -766,36 +726,14 @@ export default function Login() {
             <div className="auth-footer-nav">
               <div className="footer-links-group">
                 <a href="/booking" className="footer-link" target="_blank" rel="noreferrer">
-                  <Building2 size={14} />
+                  <Globe size={14} />
                   <span>بوابة حجز واستعلام المرضى</span>
                 </a>
                 <span className="footer-divider">•</span>
                 <a href="/" className="footer-link">
-                  <Globe size={14} />
+                  <Stethoscope size={14} />
                   <span>الصفحة الرئيسية للمنصة</span>
                 </a>
-              </div>
-
-              <div className="footer-admin-prompt">
-                {portalScope === 'clinic' ? (
-                  <button 
-                    type="button"
-                    className="btn-switch-portal" 
-                    onClick={() => handleScopeChange('saas')}
-                  >
-                    <ShieldCheck size={14} />
-                    <span>هل أنت مدير عام للمنصة؟ الدخول إلى لوحة SaaS Admin</span>
-                  </button>
-                ) : (
-                  <button 
-                    type="button"
-                    className="btn-switch-portal" 
-                    onClick={() => handleScopeChange('clinic')}
-                  >
-                    <Building2 size={14} />
-                    <span>العودة إلى بوابة أطباء وعيادات العملاء</span>
-                  </button>
-                )}
               </div>
             </div>
 

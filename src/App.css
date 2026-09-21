@@ -38,10 +38,10 @@
 
 .page-content {
   flex: 1;
-  padding: 1rem 1.5rem 6.5rem 1.5rem;
-  animation: fadeIn 0.3s ease;
+  padding: 1.25rem 2rem 2.5rem 2rem;
+  animation: fadeIn 0.25s ease;
   width: 100%;
-  max-width: 1540px;
+  max-width: 1800px;
   margin: 0 auto;
   box-sizing: border-box;
 }
