@@ -86,17 +86,17 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* 2. Google Material 3 Design Tokens */
+/* 2. Executive SaaS Design System Tokens (Linear / Stripe / Apple Medical Tier) */
 :root {
-  --font-family: "Readex Pro", "Google Sans", "Cairo", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family: "Cairo", "Google Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   
-  --font-size-xs: 0.75rem;   /* 12px - Label small */
-  --font-size-sm: 0.84rem;   /* 14px - Body small */
-  --font-size-base: 0.94rem; /* 15px - Body medium */
-  --font-size-lg: 1.06rem;   /* 17px - Title medium */
-  --font-size-xl: 1.25rem;   /* 20px - Title large */
-  --font-size-2xl: 1.5rem;   /* 24px - Headline small */
-  --font-size-3xl: 2rem;     /* 32px - Headline medium */
+  --font-size-xs: 0.75rem;   /* 12px - Label / Caption */
+  --font-size-sm: 0.84rem;   /* 13.5px - Body secondary */
+  --font-size-base: 0.94rem; /* 15px - Body primary */
+  --font-size-lg: 1.06rem;   /* 17px - Subtitle / Section title */
+  --font-size-xl: 1.25rem;   /* 20px - Card title / Modal heading */
+  --font-size-2xl: 1.5rem;   /* 24px - Page title */
+  --font-size-3xl: 2rem;     /* 32px - Executive display */
 
   --font-weight-400: 400;
   --font-weight-500: 500;
@@ -111,71 +111,70 @@ h1, h2, h3, h4, h5, h6 {
   --spacing-xl: 2rem;    /* 32px */
   --spacing-2xl: 3rem;   /* 48px */
 
-  /* Google Material 3 Shapes */
-  --radius-xs: 0.25rem;  /* 4px */
-  --radius-sm: 0.5rem;   /* 8px */
-  --radius-md: 0.75rem;  /* 12px */
-  --radius-lg: 1rem;     /* 16px - Standard M3 Card */
-  --radius-xl: 1.5rem;   /* 24px - Large M3 Card / Dialog */
-  --radius-2xl: 1.75rem; /* 28px - M3 Modal / Container */
-  --radius-full: 9999px; /* Google Pill Buttons / Chips */
+  /* Precision Border Radii Hierarchy */
+  --radius-xs: 0.25rem;  /* 4px - Micro badges */
+  --radius-sm: 0.375rem; /* 6px - Small pills */
+  --radius-md: 0.5rem;   /* 8px - Interactive controls, buttons, inputs */
+  --radius-lg: 0.75rem;  /* 12px - Standard cards, panels, dropdowns */
+  --radius-xl: 1rem;     /* 16px - Dialogs, modals, drawers */
+  --radius-2xl: 1.25rem; /* 20px - Large elevated surfaces */
+  --radius-full: 9999px; /* Status dots, avatar circles */
 
-  /* Google Material Motion Easing */
-  --transition-fast: 0.18s cubic-bezier(0.2, 0, 0, 1);
-  --transition-normal: 0.25s cubic-bezier(0.2, 0, 0, 1);
-  --transition-slow: 0.35s cubic-bezier(0.2, 0, 0, 1);
+  /* Precision Smooth Easing */
+  --transition-fast: 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.36s cubic-bezier(0.16, 1, 0.3, 1);
   
-  /* Google Signature Material Palette */
-  --primary: #1A73E8;          /* Google Blue 600 */
-  --primary-hover: #1557B0;    /* Google Blue 700 */
-  --primary-dark: #174EA6;     /* Google Blue 800 */
-  --primary-light: #E8F0FE;    /* Google Blue 50 / Surface container */
-  --primary-glow: rgba(26, 115, 232, 0.25);
-  --gradient-primary: linear-gradient(135deg, #1A73E8 0%, #4285F4 100%);
-  --clinic-on-primary: #FFFFFF;
+  /* Legacy & Baseline Color Tokens */
+  --primary: #1A73E8;
 
-  /* Architectural Monochrome Noir & Curated Palette Foundation (Linear / Stripe Standard) */
+  /* 3-Degree Dynamic Color System */
+  /* Degree 1: Primary Brand Core */
   --clinic-primary: #09090B;
   --clinic-primary-hover: #27272A;
   --clinic-primary-light: #F4F4F5;
   --clinic-primary-glow: rgba(9, 9, 11, 0.08);
   --clinic-gradient-primary: #09090B;
   --clinic-on-primary: #FFFFFF;
-  
-  --accent: #1B6EF3;
-  --accent-hover: #0B57D0;
-  --accent-light: #D3E3FD;
-  --accent-glow: rgba(27, 110, 243, 0.2);
-  
-  --warning: #F9AB00;          /* Google Yellow 600 */
-  --warning-dark: #B06000;     /* Accessible Amber 700 - WCAG 2.2 AA compliant (>= 4.5:1 contrast) */
-  --warning-light: #FEF7E0;    /* Google Yellow 50 */
-  --error: #D93025;            /* Google Red 600 */
-  --error-dark: #B31412;       /* Google Red 800 */
-  --error-light: #FCE8E6;      /* Google Red 50 */
-  --success: #1E8E3E;          /* Google Green 600 */
-  --success-dark: #137333;     /* Google Green 700 */
-  --success-light: #CEEAD6;    /* Google Green 50 */
-  --info: #1A73E8;
-  --info-light: #E8F0FE;
 
-  /* Material You Color Roles */
-  --md-sys-color-primary: var(--clinic-primary, #09090B);
-  --md-sys-color-on-primary: var(--clinic-on-primary, #FFFFFF);
-  --md-sys-color-primary-container: var(--clinic-primary-light, #F4F4F5);
-  --md-sys-color-on-primary-container: #09090B;
+  --primary: var(--clinic-primary, #09090B);
+  --primary-hover: var(--clinic-primary-hover, #27272A);
+  --primary-light: var(--clinic-primary-light, #F4F4F5);
+  --primary-glow: var(--clinic-primary-glow, rgba(9, 9, 11, 0.08));
+  --gradient-primary: var(--clinic-gradient-primary, #09090B);
 
-  /* Material 3 Container Colors */
-  --primary-container: var(--clinic-primary-light, #F4F4F5);
-  --on-primary-container: var(--clinic-primary, #09090B);
-  --secondary-container: #F4F4F5;
-  --on-secondary-container: #09090B;
-  --error-container: #FCE8E6;
-  --on-error-container: #410E0B;
-  --success-container: #CEEAD6;
-  --on-success-container: #0D3B1C;
+  /* Degree 2: Accent Highlight Core */
+  --clinic-accent: #2563EB;
+  --clinic-accent-hover: #1D4ED8;
+  --clinic-accent-light: #EFF6FF;
+  --clinic-accent-glow: rgba(37, 99, 235, 0.15);
+  --clinic-on-accent: #FFFFFF;
 
-  /* Cross-System Compatibility Aliases */
+  --accent: var(--clinic-accent, #2563EB);
+  --accent-hover: var(--clinic-accent-hover, #1D4ED8);
+  --accent-light: var(--clinic-accent-light, #EFF6FF);
+  --accent-glow: var(--clinic-accent-glow, rgba(37, 99, 235, 0.15));
+
+  /* Degree 3: Neutral Surface & Harmonic Borders */
+  --clinic-surface: #FFFFFF;
+  --clinic-surface-border: #E4E4E7;
+  --clinic-bg-subtle: #F8FAFC;
+  --clinic-ring: var(--clinic-accent, #2563EB);
+
+  /* Semantic Status Tokens */
+  --warning: #D97706;          /* Amber 600 */
+  --warning-dark: #92400E;     /* Amber 800 - WCAG 2.2 AA compliant */
+  --warning-light: #FEF3C7;    /* Amber 100 */
+  --error: #DC2626;            /* Red 600 */
+  --error-dark: #991B1B;       /* Red 800 */
+  --error-light: #FEE2E2;      /* Red 100 */
+  --success: #059669;          /* Emerald 600 */
+  --success-dark: #065F46;     /* Emerald 800 */
+  --success-light: #D1FAE5;    /* Emerald 100 */
+  --info: #0284C7;             /* Sky 600 */
+  --info-light: #E0F2FE;       /* Sky 100 */
+
+  /* Aliases & Compatibility Tokens */
   --primary-color: var(--clinic-primary, #09090B);
   --color-primary: var(--clinic-primary, #09090B);
   --color-primary-light: var(--clinic-primary-light, #F4F4F5);
@@ -188,113 +187,95 @@ h1, h2, h3, h4, h5, h6 {
   --text-main: var(--text-primary);
   --bg-surface: var(--surface);
   --font-mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --gradient-emerald: linear-gradient(135deg, #1E8E3E 0%, #34A853 100%);
 }
 
-/* Light Theme (Clean Minimalist Workspace Canvas) */
+/* Light Theme Canvas */
 [data-theme="light"], :root {
-  --primary: var(--clinic-primary, #09090B);
-  --primary-hover: var(--clinic-primary-hover, #27272A);
-  --primary-light: var(--clinic-primary-light, #F4F4F5);
-  --primary-glow: var(--clinic-primary-glow, rgba(9, 9, 11, 0.08));
-  --gradient-primary: var(--clinic-gradient-primary, #09090B);
-  --clinic-on-primary: #FFFFFF;
-
-  --bg-primary: #F8FAFC;       /* Clean Minimalist Canvas (Slate 50) */
-  --bg-secondary: #FFFFFF;     /* Pure White Card */
-  --bg-tertiary: #F4F4F5;      /* Soft Pill Button / Input fill */
+  --bg-primary: #F8FAFC;       /* Clean Minimalist Slate 50 */
+  --bg-secondary: #FFFFFF;     /* Crisp Pure White Surface */
+  --bg-tertiary: #F4F4F5;      /* Subtle Neutral Fill */
   --surface: #FFFFFF;
   --card-bg: #FFFFFF;
   --surface-container: #F8FAFC;
   --surface-container-high: #F4F4F5;
   
-  --text-primary: #09090B;     /* Deep Noir - High Contrast & Clean */
-  --text-secondary: #71717A;   /* Slate/Zinc 500 - Medium Emphasis */
-  --text-tertiary: #A1A1AA;    /* Slate/Zinc 400 */
+  --text-primary: #09090B;     /* Deep Noir - High Contrast */
+  --text-secondary: #52525B;   /* Zinc 600 - Medium Contrast */
+  --text-tertiary: #A1A1AA;    /* Zinc 400 - Subtle */
   
-  --border-color: #E4E4E7;     /* Slate/Zinc 200 - Minimal Hairline Divider */
-  --border-subtle: #F1F5F9;    /* Slate 100 - Extra Subtle Border */
+  --border-color: #E4E4E7;     /* Zinc 200 - Hairline Divider */
+  --border-subtle: #F4F4F5;    /* Zinc 100 - Extra Subtle Border */
   
-  /* Featherweight Minimalist Shadows (Linear / Stripe style) */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-  --shadow-lg: 0 10px 24px -4px rgba(0, 0, 0, 0.06), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
-  --shadow-xl: 0 20px 36px -6px rgba(0, 0, 0, 0.08);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.12);
+  /* Precision Luxury Elevation Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 24px -4px rgba(0, 0, 0, 0.07), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 20px 32px -8px rgba(0, 0, 0, 0.10);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
   --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
-  --shadow-card-hover: 0 8px 24px -4px rgba(0, 0, 0, 0.07);
+  --shadow-card-hover: 0 6px 18px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
 
-  --glass-bg: rgba(255, 255, 255, 0.88);
-  --glass-border: #E2E8F0;
-  --glass-sidebar: #F8FAFC;
+  --glass-bg: rgba(255, 255, 255, 0.90);
+  --glass-border: #E4E4E7;
+  --glass-sidebar: #FAFAFA;
 
-  --bg-hover: #F1F5F9;
-  --text-muted: #64748B;
+  --bg-hover: #F4F4F5;
+  --text-muted: #71717A;
   --color-bg: #F8FAFC;
   --color-card: #FFFFFF;
   --bg-card: #FFFFFF;
-  --color-border: #E2E8F0;
-  --color-text: #0F172A;
+  --color-border: #E4E4E7;
+  --color-text: #09090B;
 }
 
-/* Dark Theme (Minimalist Deep Slate / Obsidian) */
+/* Dark Theme (Minimalist Obsidian / Slate 950) */
 [data-theme="dark"] {
-  --bg-primary: #0B0F19;       /* Deep Obsidian Canvas */
-  --bg-secondary: #131B2E;     /* Elevated Card Surface */
-  --bg-tertiary: #1E293B;      /* Pill / Field Fill */
-  --surface: #131B2E;
-  --card-bg: #131B2E;
-  --surface-container: #1E293B;
-  --surface-container-high: #27354E;
+  --bg-primary: #09090B;       /* Deep Obsidian Canvas */
+  --bg-secondary: #121215;     /* Elevated Card Surface */
+  --bg-tertiary: #18181B;      /* Pill / Field Fill */
+  --surface: #121215;
+  --card-bg: #121215;
+  --surface-container: #18181B;
+  --surface-container-high: #27272A;
   
-  --primary: #38BDF8;          /* Sky 400 - Calm & Accessible */
-  --primary-hover: #7DD3FC;
-  --primary-dark: #0284C7;
-  --primary-light: rgba(56, 189, 248, 0.12);
-  --primary-glow: rgba(56, 189, 248, 0.25);
-  --gradient-primary: linear-gradient(135deg, #0284C7 0%, #38BDF8 100%);
-  --clinic-primary: #F8FAFC;
-  --clinic-primary-hover: #E2E8F0;
-  --clinic-primary-light: rgba(255, 255, 255, 0.1);
+  --clinic-primary: #FAFAFA;
+  --clinic-primary-hover: #E4E4E7;
+  --clinic-primary-light: rgba(250, 250, 250, 0.1);
   --clinic-on-primary: #09090B;
 
-  --text-primary: #F8FAFC;     /* Slate 50 */
-  --text-secondary: #94A3B8;   /* Slate 400 */
-  --text-tertiary: #64748B;    /* Slate 500 */
-  
-  --border-color: rgba(255, 255, 255, 0.09); /* Hairline subtle divider */
-  --border-subtle: rgba(255, 255, 255, 0.05);
+  --primary: var(--clinic-primary, #FAFAFA);
+  --primary-hover: var(--clinic-primary-hover, #E4E4E7);
+  --primary-light: var(--clinic-primary-light, rgba(250, 250, 250, 0.1));
+  --gradient-primary: var(--clinic-primary, #FAFAFA);
 
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --shadow-card-hover: 0 8px 24px -4px rgba(0, 0, 0, 0.6);
-
-  /* Dark Mode Container Colors */
-  --primary-container: rgba(138, 180, 248, 0.2);
-  --on-primary-container: #C2E7FF;
-  --secondary-container: rgba(196, 199, 197, 0.15);
-  --on-secondary-container: #DEE3E1;
-  --error-container: rgba(242, 184, 181, 0.15);
-  --on-error-container: #F2B8B5;
+  --text-primary: #FAFAFA;     /* High Contrast */
+  --text-secondary: #A1A1AA;   /* Medium Contrast */
+  --text-tertiary: #71717A;    /* Subtle */
   
+  --border-color: #27272A;     /* Hairline subtle divider */
+  --border-subtle: #18181B;
+
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.6);
   --shadow-xl: 0 12px 36px 0 rgba(0, 0, 0, 0.7);
   --shadow-2xl: 0 16px 48px 0 rgba(0, 0, 0, 0.8);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px #3C4043;
-  --shadow-card-hover: 0 4px 16px 0 rgba(0, 0, 0, 0.6), 0 0 0 1px #5F6368;
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px #27272A;
+  --shadow-card-hover: 0 6px 20px 0 rgba(0, 0, 0, 0.65), 0 0 0 1px #3F3F46;
 
-  --glass-bg: rgba(40, 41, 42, 0.94);
-  --glass-border: #3C4043;
-  --glass-sidebar: #1F1F1F;
+  --glass-bg: rgba(18, 18, 21, 0.92);
+  --glass-border: #27272A;
+  --glass-sidebar: #0E0E11;
 
-  --bg-hover: #303134;
-  --text-muted: #9AA0A6;
-  --color-bg: #1F1F1F;
-  --color-card: #28292A;
-  --bg-card: #28292A;
-  --color-border: #3C4043;
-  --color-text: #E8EAED;
+  --bg-hover: #18181B;
+  --text-muted: #A1A1AA;
+  --color-bg: #09090B;
+  --color-card: #121215;
+  --bg-card: #121215;
+  --color-border: #27272A;
+  --color-text: #FAFAFA;
 }
 
 /* 3. Global Scrollbars */
@@ -313,11 +294,11 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--text-tertiary);
 }
 
-/* 4. Google Material 3 Cards */
+/* 4. Luxury Executive Cards */
 .glass-card, .card {
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-card);
   transition: all var(--transition-fast);
   position: relative;
@@ -333,15 +314,17 @@ h1, h2, h3, h4, h5, h6 {
 .btn-secondary,
 .btn-tonal,
 .btn-outline,
-.btn-danger {
+.btn-danger,
+.btn-success {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.6rem 1.25rem;
-  font-size: 0.88rem;
+  padding: 0.55rem 1.15rem;
+  min-height: 40px;
+  font-size: 0.86rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--radius-md, 8px);
   border: 1px solid transparent;
   transition: all var(--transition-fast);
   text-decoration: none;
@@ -354,33 +337,35 @@ h1, h2, h3, h4, h5, h6 {
 .btn-secondary:active,
 .btn-tonal:active,
 .btn-outline:active,
-.btn-danger:active {
+.btn-danger:active,
+.btn-success:active {
   transform: translateY(0);
 }
 
 .btn-primary {
   background: var(--clinic-primary, #09090B);
   color: var(--clinic-on-primary, #FFFFFF) !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-xs);
 }
 .btn-primary:hover {
   background: var(--clinic-primary-hover, #27272A);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-secondary {
   background: var(--surface, #FFFFFF);
   color: var(--text-primary, #09090B);
   border: 1px solid var(--border-color, #E4E4E7);
+  box-shadow: var(--shadow-xs);
 }
 .btn-secondary:hover {
-  background: var(--surface-container-high, var(--bg-tertiary, #F4F4F5));
+  background: var(--bg-tertiary, #F4F4F5);
   color: var(--text-primary, #09090B);
 }
 
 .btn-tonal {
   background: var(--clinic-primary-light, #F4F4F5);
-  color: var(--text-primary, #09090B);
+  color: var(--clinic-primary, #09090B);
 }
 .btn-tonal:hover {
   background: var(--border-color, #E4E4E7);
@@ -393,13 +378,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 .btn-outline:hover {
   background: var(--bg-tertiary, #F4F4F5);
-  border-color: var(--text-primary, #09090B);
+  border-color: var(--clinic-primary, #09090B);
 }
 
 .btn-danger {
   background: var(--error);
   color: #FFFFFF;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-xs);
 }
 .btn-danger:hover {
   background: var(--error-dark);
@@ -408,25 +393,27 @@ h1, h2, h3, h4, h5, h6 {
 .btn-success {
   background: var(--success);
   color: #FFFFFF;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-xs);
 }
 .btn-success:hover {
   background: var(--success-dark);
 }
 
 .btn-sm {
-  padding: 0.4rem 0.95rem;
+  min-height: 32px;
+  padding: 0.35rem 0.75rem;
   font-size: 0.8rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm, 6px);
 }
 
 .btn-lg {
-  padding: 0.85rem 1.85rem;
-  font-size: 1rem;
-  border-radius: var(--radius-full);
+  min-height: 46px;
+  padding: 0.75rem 1.65rem;
+  font-size: 0.96rem;
+  border-radius: var(--radius-md, 8px);
 }
 
-/* 6. Google Material Form Inputs */
+/* 6. Executive Form Controls */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -442,37 +429,38 @@ h1, h2, h3, h4, h5, h6 {
 
 .input-field, .form-control, input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="number"], select, textarea {
   width: 100%;
-  padding: 0.7rem 1rem;
-  font-size: 0.92rem;
+  min-height: 40px;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.9rem;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 8px);
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   transition: all var(--transition-fast);
 }
 
 .input-field:focus, .form-control:focus, input:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
-  outline: 2px solid var(--primary);
-  outline-offset: 1px;
-  box-shadow: 0 1px 3px 0 rgba(26, 115, 232, 0.2);
+  border-color: var(--clinic-accent, #2563EB);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--clinic-accent-glow, rgba(37, 99, 235, 0.15));
 }
 
-/* 7. Google Segmented Control & Filter Chips */
+/* 7. Segmented Controls */
 .segmented-control {
   display: inline-flex;
   align-items: center;
   background: var(--bg-tertiary);
-  padding: 4px;
-  border-radius: var(--radius-full);
-  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-md, 8px);
+  gap: 3px;
 }
 
 .segmented-control-item {
-  padding: 0.45rem 1rem;
+  padding: 0.4rem 0.85rem;
+  min-height: 32px;
   font-size: 0.82rem;
   font-weight: 600;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm, 6px);
   color: var(--text-secondary);
   background: transparent;
   transition: all var(--transition-fast);
@@ -480,25 +468,25 @@ h1, h2, h3, h4, h5, h6 {
 
 .segmented-control-item.active {
   background: var(--bg-secondary);
-  color: var(--primary);
-  box-shadow: var(--shadow-sm);
+  color: var(--clinic-primary, #09090B);
+  box-shadow: var(--shadow-xs);
 }
 
-/* 8. Google Badges & Status Chips */
+/* 8. Status Badges & Chips */
 .badge, .status-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.28rem 0.75rem;
+  padding: 0.22rem 0.65rem;
   border-radius: var(--radius-full);
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.76rem;
+  font-weight: 700;
 }
 
-.badge-primary { background: var(--primary-light); color: var(--primary); }
-.badge-success { background: var(--success-light); color: var(--success); }
-.badge-warning { background: var(--warning-light); color: var(--warning-dark, #B06000); font-weight: 700; }
-.badge-danger { background: var(--error-light); color: var(--error); }
+.badge-primary { background: var(--clinic-primary-light); color: var(--clinic-primary); }
+.badge-success { background: var(--success-light); color: var(--success-dark); }
+.badge-warning { background: var(--warning-light); color: var(--warning-dark); }
+.badge-danger { background: var(--error-light); color: var(--error-dark); }
 .badge-secondary { background: var(--bg-tertiary); color: var(--text-secondary); }
 
 /* Global Accessible Empty State System */
@@ -602,9 +590,9 @@ h1, h2, h3, h4, h5, h6 {
 .filters-bar {
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-lg, 12px);
   padding: 0.65rem 0.95rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-xs);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -616,10 +604,10 @@ h1, h2, h3, h4, h5, h6 {
 .status-filter-pills {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   background: var(--bg-tertiary);
-  padding: 0.3rem;
-  border-radius: var(--radius-lg);
+  padding: 3px;
+  border-radius: var(--radius-md, 8px);
   border: 1px solid var(--border-color);
   overflow-x: auto;
 }
@@ -627,11 +615,11 @@ h1, h2, h3, h4, h5, h6 {
 .filter-pill {
   border: none;
   background: transparent;
-  padding: 0.45rem 0.95rem;
-  min-height: 36px;
-  border-radius: var(--radius-md);
+  padding: 0.4rem 0.85rem;
+  min-height: 32px;
+  border-radius: var(--radius-sm, 6px);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
@@ -639,14 +627,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .filter-pill:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--clinic-accent, #2563EB);
   outline-offset: 2px;
 }
 
 .filter-pill.active {
-  background: var(--primary);
-  color: #FFFFFF;
-  box-shadow: var(--shadow-sm);
+  background: var(--clinic-primary, #09090B);
+  color: var(--clinic-on-primary, #FFFFFF);
+  box-shadow: var(--shadow-xs);
 }
 
 .search-box {
@@ -659,27 +647,26 @@ h1, h2, h3, h4, h5, h6 {
 
 .search-box .search-icon {
   position: absolute;
-  right: 1rem;
+  right: 0.85rem;
   color: var(--text-tertiary);
   pointer-events: none;
 }
 
 .search-box input {
-  padding-right: 2.6rem !important;
-  border-radius: var(--radius-full) !important;
-  background: var(--bg-tertiary) !important;
-  border: 1px solid transparent !important;
+  padding-right: 2.5rem !important;
+  border-radius: var(--radius-md, 8px) !important;
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
   transition: all var(--transition-fast) !important;
 }
 
 .search-box input:focus {
-  background: var(--bg-secondary) !important;
-  border-color: var(--primary) !important;
-  box-shadow: var(--shadow-md) !important;
+  border-color: var(--clinic-accent, #2563EB) !important;
+  box-shadow: 0 0 0 3px var(--clinic-accent-glow, rgba(37, 99, 235, 0.15)) !important;
 }
 
 /* ==========================================================================
-   12. Universal Google Material 3 Modal & Overlay System
+   12. Universal Executive Modal & Overlay System
    ========================================================================== */
 .modal-backdrop,
 .modal-overlay {
@@ -690,7 +677,7 @@ h1, h2, h3, h4, h5, h6 {
   bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  background: rgba(32, 33, 36, 0.6) !important;
+  background: rgba(9, 9, 11, 0.65) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   display: flex !important;
@@ -698,7 +685,7 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center !important;
   z-index: 99999 !important;
   padding: 1.25rem !important;
-  animation: modalFadeIn 0.2s cubic-bezier(0.2, 0, 0, 1) forwards;
+  animation: modalFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   overflow-y: auto !important;
 }
 
@@ -726,16 +713,16 @@ h1, h2, h3, h4, h5, h6 {
 .modal-content,
 .modal-container {
   background: var(--surface, #FFFFFF);
-  border-radius: var(--radius-2xl, 28px);
+  border-radius: var(--radius-xl, 16px);
   border: 1px solid var(--border-color);
-  box-shadow: 0 8px 28px 0 rgba(60,64,67,0.25), 0 16px 40px 6px rgba(60,64,67,0.15);
+  box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 580px;
   max-height: 90vh;
   overflow-y: auto;
   padding: 1.75rem;
   position: relative;
-  animation: modalPopScale 0.22s cubic-bezier(0.2, 0, 0, 1) forwards;
+  animation: modalPopScale 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   z-index: 100000;
   display: flex;
   flex-direction: column;

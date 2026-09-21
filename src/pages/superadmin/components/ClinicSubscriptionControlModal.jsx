@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Save, CheckCircle2, AlertOctagon, Clock, 
+  X, Save, CheckCircle2, CheckCheck, AlertOctagon, Clock, 
   Ban, CreditCard, Activity, Layers, Crown, DollarSign
 } from 'lucide-react';
 import { 

@@ -425,29 +425,15 @@ const Dashboard = () => {
     <div className="dashboard-page">
       
       {/* 1. Sleek Minimal Architectural Command Bar */}
-      <div 
-        className="dashboard-command-bar"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          backgroundColor: 'var(--bg-primary, #FFFFFF)',
-          border: '1px solid var(--border-color, #E4E4E7)',
-          borderRadius: '16px',
-          padding: '1rem 1.5rem',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-        }}
-      >
+      <div className="dashboard-command-bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary, #09090B)' }}>
+            <h2 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-primary)' }}>
               {isDoctor 
                 ? `العمليات السريرية • ${(user?.name && !user.name.startsWith('د.') ? `د. ${user.name}` : (user?.name || tenant?.doctorName || currentClinic.doctorName || tenant?.name || 'طبيب العيادة'))}`
                 : `مكتب الاستقبال • ${user?.name || 'طاقم الاستقبال'}`}
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', fontSize: '0.78rem', color: 'var(--text-secondary, #71717A)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                 <CalendarDays size={13} />
                 <span>{today}</span>
@@ -464,20 +450,7 @@ const Dashboard = () => {
           <button 
             type="button" 
             onClick={handleCopyBookingLink} 
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.45rem 0.85rem',
-              borderRadius: '8px',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              backgroundColor: 'var(--surface, transparent)',
-              border: '1px solid var(--border-color, #E4E4E7)',
-              color: 'var(--text-primary, #09090B)',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease'
-            }}
+            className="btn btn-secondary btn-sm"
             title="نسخ رابط حجز العيادة المباشر للمرضى"
           >
             <Share2 size={13} />
@@ -488,20 +461,7 @@ const Dashboard = () => {
             <button 
               type="button" 
               onClick={() => setIsShiftModalOpen(true)} 
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.45rem 0.85rem',
-                borderRadius: '8px',
-                fontSize: '0.78rem',
-                fontWeight: 600,
-                backgroundColor: 'var(--surface, transparent)',
-                border: '1px solid var(--border-color, #E4E4E7)',
-                color: 'var(--text-primary, #09090B)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
+              className="btn btn-secondary btn-sm"
               title="تصفية الخزينة وتسليم وردية الاستقبال"
             >
               <Landmark size={13} />
@@ -513,18 +473,8 @@ const Dashboard = () => {
             <button 
               type="button" 
               onClick={handleRefreshToday} 
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                backgroundColor: 'transparent',
-                border: '1px solid #E4E4E7',
-                color: '#71717A',
-                cursor: 'pointer'
-              }}
+              className="cockpit-icon-btn"
+              style={{ width: '32px', height: '32px' }}
               title="تحديث جدول اليوم التجريبي"
             >
               <RotateCcw size={14} />
@@ -534,20 +484,7 @@ const Dashboard = () => {
           <button 
             type="button" 
             onClick={() => setIsWalkInModalOpen(true)} 
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.48rem 1rem',
-              borderRadius: '8px',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              backgroundColor: '#09090B',
-              color: '#FFFFFF',
-              border: 'none',
-              cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.12)'
-            }}
+            className="btn btn-primary btn-sm"
           >
             <UserPlus size={15} />
             <span>{isDoctor ? 'تسجيل مريض جديد' : 'تسجيل حضور مباشر (Walk-in)'}</span>
