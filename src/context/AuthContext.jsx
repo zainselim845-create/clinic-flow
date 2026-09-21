@@ -241,7 +241,30 @@ export const AuthProvider = ({ children }) => {
       cleanPass === 'admin';
 
     if (isKnownDemoOrLocal) {
-      // Priority 0: Authenticate against registered users & custom tenants
+      // Priority 0: Check Super Admin Master Login
+      if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
+        const isMasterPass = cleanPass === 'admin' || cleanPass === 'admin123' || cleanPass === 'superadmin' || cleanPass === '123456';
+        if (!isMasterPass) {
+          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام (الافتراضية: admin).') };
+        }
+        const superAdminUser = {
+          id: 'user-superadmin-master',
+          name: 'مدير المنصة العام (Super Admin)',
+          email: 'superadmin@clinicflow.com',
+          role: 'super_admin',
+          isSuperAdmin: true,
+          jobTitle: 'مدير عام المنصة والسحابة السريرية',
+          allowedClinics: ['*'],
+          authenticatedAt: new Date().toISOString()
+        };
+        persistUser(superAdminUser);
+        localStorage.setItem('clinicflow_role', 'super_admin');
+        setUser(superAdminUser);
+        setRole('super_admin');
+        return { data: { user: superAdminUser }, error: null };
+      }
+
+      // Priority 1: Authenticate against registered users & custom tenants
       try {
         const authUser = authenticateUser(cleanId, cleanPass);
         if (authUser) {
@@ -275,28 +298,6 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (e) {
         console.warn('Could not read stored staff from localStorage', e);
-      }
-
-      // 1. Check Super Admin Login
-      if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
-        if (cleanPass !== 'admin') {
-          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام.') };
-        }
-        const superAdminUser = {
-          id: 'user-superadmin-master',
-          name: 'مدير المنصة العام (Super Admin)',
-          email: 'superadmin@clinicflow.com',
-          role: 'super_admin',
-          isSuperAdmin: true,
-          jobTitle: 'مدير عام المنصة والسحابة السريرية',
-          allowedClinics: ['*'],
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(superAdminUser);
-        localStorage.setItem('clinicflow_role', 'super_admin');
-        setUser(superAdminUser);
-        setRole('super_admin');
-        return { data: { user: superAdminUser }, error: null };
       }
 
       // 2. Check Multi-Clinic Owner Login

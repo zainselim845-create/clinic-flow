@@ -399,7 +399,12 @@ export default function Login() {
                 </div>
 
                 <div className="form-field-group">
-                  <label className="field-label" htmlFor="saasPassword">كلمة المرور الرئيسية</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.375rem' }}>
+                    <label className="field-label" htmlFor="saasPassword" style={{ margin: 0 }}>كلمة المرور الرئيسية</label>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#059669', background: '#ECFDF5', padding: '0.15rem 0.55rem', borderRadius: '9999px', border: '1px solid #A7F3D0' }}>
+                      الافتراضية: admin
+                    </span>
+                  </div>
                   <div className="field-input-wrapper">
                     <Lock className="input-icon" size={18} />
                     <input
