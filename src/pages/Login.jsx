@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Stethoscope, Eye, EyeOff, Loader2, Shield, AlertTriangle, 
-  Globe, Check, User, Lock, Mail, Phone, 
+  Building2, Globe, Check, User, Lock, Mail, Phone, 
   Sparkles, CheckCircle2, ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -40,11 +40,12 @@ export default function Login() {
 
   // If someone passes portal=admin or portal=saas to /login, securely redirect to dedicated /superadmin/login
   useEffect(() => {
-    const portal = searchParams.get('portal');
+    const params = new URLSearchParams(location.search);
+    const portal = params.get('portal');
     if (portal === 'admin' || portal === 'saas') {
       navigate('/superadmin/login', { replace: true });
     }
-  }, [searchParams, navigate]);
+  }, [location.search, navigate]);
 
   const [activeTab, setActiveTab] = useState(initialTab); // 'login' | 'register'
   
