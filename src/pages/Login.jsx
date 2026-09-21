@@ -141,14 +141,14 @@ export default function Login() {
       if (signInError) throw signInError;
       
       // Remember me logic
-      if (rememberMe && portalScope === 'clinic') {
+      if (rememberMe) {
         safeSetItem(REMEMBERED_USER_KEY, identifier.trim());
-      } else if (!rememberMe) {
+      } else {
         safeRemoveItem(REMEMBERED_USER_KEY);
       }
 
       const loggedUser = data?.user;
-      if (loggedUser?.role === 'super_admin' || loggedUser?.isSuperAdmin || portalScope === 'saas') {
+      if (loggedUser?.role === 'super_admin' || loggedUser?.isSuperAdmin) {
         navigate('/super-admin', { replace: true });
       } else {
         navigate(from, { replace: true });
@@ -300,14 +300,10 @@ export default function Login() {
             
             <div className="forms-header">
               <h1 className="form-main-title">
-                {portalScope === 'saas' 
-                  ? 'تسجيل الدخول — إدارة المنصة (Control Plane)' 
-                  : (activeTab === 'login' ? 'مرحباً بك مجدداً دكتور' : 'تأسيس وتدشين حساب عيادة جديدة')}
+                {activeTab === 'login' ? 'مرحباً بك مجدداً دكتور' : 'تأسيس وتدشين حساب عيادة جديدة'}
               </h1>
               <p className="form-subtitle">
-                {portalScope === 'saas' 
-                  ? 'مركز الرقابة السحابي لإدارة الاشتراكات والتراخيص' 
-                  : (activeTab === 'login' ? 'أدخل بيانات حسابك للمتابعة إلى لوحة التحكم' : 'ابدأ استخدام المنظومة بدقائق وبدون تعقيد')}
+                {activeTab === 'login' ? 'أدخل بيانات حسابك للمتابعة إلى لوحة التحكم' : 'ابدأ استخدام المنظومة بدقائق وبدون تعقيد'}
               </p>
             </div>
 
@@ -335,95 +331,21 @@ export default function Login() {
               </div>
             )}
 
-            {portalScope === 'saas' ? (
-              /* SaaS Control Plane Sign In */
-              <form onSubmit={handleSubmit} className="auth-form">
-                <div className="form-field-group">
-                  <label className="field-label" htmlFor="saasIdentifier">البريد الإلكتروني لمدير المنصة</label>
-                  <div className="field-input-wrapper">
-                    <Mail className="input-icon" size={18} />
-                    <input
-                      id="saasIdentifier"
-                      name="identifier"
-                      type="text"
-                      className="field-input has-icon"
-                      placeholder="superadmin@clinicflow.com"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      disabled={isLocked || isLoading}
-                      required
-                      dir="ltr"
-                      autoComplete="username"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-field-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.375rem' }}>
-                    <label className="field-label" htmlFor="saasPassword" style={{ margin: 0 }}>كلمة المرور الرئيسية</label>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#059669', background: '#ECFDF5', padding: '0.15rem 0.55rem', borderRadius: '9999px', border: '1px solid #A7F3D0' }}>
-                      الافتراضية: admin
-                    </span>
-                  </div>
-                  <div className="field-input-wrapper">
-                    <Lock className="input-icon" size={18} />
-                    <input
-                      id="saasPassword"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      className="field-input has-icon has-toggle"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={isLocked || isLoading}
-                      required
-                      dir="ltr"
-                      autoComplete="current-password"
-                    />
-                    <button
-                      type="button"
-                      className="btn-toggle-eye"
-                      onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                  </div>
-                </div>
-
-                <button 
-                  type="submit" 
-                  className="btn-auth-primary saas-btn"
-                  disabled={isLoading || isLocked || !identifier || !password}
+            {/* Client Clinics: Tabs between Login and Register */}
+            <Tabs.Root 
+              value={activeTab} 
+              onValueChange={(details) => { 
+                setActiveTab(details.value); 
+                setError(''); 
+                setSuccessMessage(''); 
+              }}
+              className="auth-tabs-root"
+            >
+              <Tabs.List className="auth-tabs-header">
+                <Tabs.Trigger 
+                  value="login"
+                  className={`auth-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="btn-spinner" size={20} />
-                      <span>جاري التحقق والدخول...</span>
-                    </>
-                  ) : isLocked ? (
-                    <span>يرجى الانتظار ({lockoutTimer} ثانية)...</span>
-                  ) : (
-                    <span>تسجيل الدخول إلى لوحة الساس</span>
-                  )}
-                </button>
-              </form>
-            ) : (
-              /* Client Clinics: Tabs between Login and Register */
-              <Tabs.Root 
-                value={activeTab} 
-                onValueChange={(details) => { 
-                  setActiveTab(details.value); 
-                  setError(''); 
-                  setSuccessMessage(''); 
-                }}
-                className="auth-tabs-root"
-              >
-                <Tabs.List className="auth-tabs-header">
-                  <Tabs.Trigger 
-                    value="login"
-                    className={`auth-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
-                  >
                     <span>تسجيل الدخول</span>
                   </Tabs.Trigger>
                   <Tabs.Trigger 
@@ -720,7 +642,6 @@ export default function Login() {
                   </form>
                 </Tabs.Content>
               </Tabs.Root>
-            )}
 
             {/* Bottom Footer Navigation */}
             <div className="auth-footer-nav">
