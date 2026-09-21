@@ -42,20 +42,26 @@ export const saveSupabaseConfig = (url, key) => {
 
 export const isSupabaseConfigured = () => {
   const { url, key } = getSupabaseConfig();
-  return Boolean(url && key && key.length > 20);
+  return Boolean(
+    url && 
+    key && 
+    key.length > 20 && 
+    !url.includes('rogkodgqeowiylpckspi') && 
+    !key.includes('clinicflow_preconfigured')
+  );
 };
 
 let clientInstance = null;
 
 export const getSupabase = () => {
-  const { url, key } = getSupabaseConfig();
-  if (url && key && key.length > 20) {
-    if (!clientInstance) {
-      clientInstance = createClient(url, key);
-    }
-    return clientInstance;
+  if (!isSupabaseConfigured()) {
+    return null;
   }
-  return null;
+  const { url, key } = getSupabaseConfig();
+  if (!clientInstance) {
+    clientInstance = createClient(url, key);
+  }
+  return clientInstance;
 };
 
 const createOfflineQueryBuilder = () => {
