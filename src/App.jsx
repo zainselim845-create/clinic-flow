@@ -74,6 +74,7 @@ const pageTitles = {
   '/booking': 'حجز موعد',
   '/manage-booking': 'إدارة الحجز والمواعيد',
   '/onboarding': 'تهيئة وإعداد نظام العيادة',
+  '/superadmin/login': 'تسجيل دخول إدارة المنصة المركزية',
 };
 
 

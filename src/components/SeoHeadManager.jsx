@@ -71,6 +71,16 @@ const ROUTE_META = {
     description: 'لوحة التحكم المركزية لمدير منصة الساس: إدارة تراخيص العيادات، استهلاك الـ SMS، ومراقبة البنية السحابية.',
     schemaType: 'AdminWebPage'
   },
+  '/superadmin/login': {
+    title: 'تسجيل دخول إدارة المنصة المركزية | ClinicFlow SaaS Admin',
+    description: 'بوابة الدخول الآمنة لمديري منصة ClinicFlow وإدارة تراخيص المنظومة والعيادات.',
+    schemaType: 'AdminWebPage'
+  },
+  '/super-admin/login': {
+    title: 'تسجيل دخول إدارة المنصة المركزية | ClinicFlow SaaS Admin',
+    description: 'بوابة الدخول الآمنة لمديري منصة ClinicFlow وإدارة تراخيص المنظومة والعيادات.',
+    schemaType: 'AdminWebPage'
+  },
   '/booking': {
     title: 'بوابة استكشاف وحجز العيادات الطبية | ClinicFlow Discovery Hub',
     description: 'ابحث عن أفضل الأطباء والعيادات التخصصية واحجز موعدك فوراً برقم هاتفك دون الحاجة لإنشاء حساب.',

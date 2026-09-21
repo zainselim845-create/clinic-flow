@@ -132,7 +132,7 @@ export function AppProvider({ children }) {
 
       if (savedData) {
         try {
-          const parsed = JSON.parse(savedData);
+          const parsed = typeof savedData === 'string' ? JSON.parse(savedData) : savedData;
           const isUpToDate = parsed._version === DATA_SCHEMA_VERSION;
 
           let finalAppointments = Array.isArray(parsed.appointments) ? parsed.appointments : [];
