@@ -195,10 +195,19 @@
   color: var(--text-primary);
 }
 
+.modal-content {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .modal-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
+  padding-bottom: 0.5rem;
 }
 
 .form-group {
@@ -236,11 +245,16 @@
   gap: 0.85rem;
 }
 
+.modal-actions,
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 0.65rem;
-  border-top: 1px solid var(--border-subtle);
+  gap: 0.75rem;
+  border-top: 1px solid var(--border-color);
   padding-top: 1rem;
   margin-top: 0.5rem;
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  z-index: 10;
 }

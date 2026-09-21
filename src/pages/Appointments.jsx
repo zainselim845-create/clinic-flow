@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useDeferredValue } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
@@ -16,6 +17,7 @@ import './Appointments.css';
 
 
 const Appointments = () => {
+  const navigate = useNavigate();
   const { state, dispatch, useSupabase } = useApp();
   const { tenant } = useTenant();
   const { user } = useAuth();
@@ -498,14 +500,39 @@ const Appointments = () => {
               
               <form onSubmit={handleSubmit} className="modal-form">
                 <div className="form-group">
-                  <label>اسم المريض *</label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                    <label style={{ margin: 0 }}>اسم المريض *</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        navigate('/patients?action=new');
+                      }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--primary)',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: 0,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem'
+                      }}
+                      title="فتح نافذة إضافة مريض جديد"
+                    >
+                      <Plus size={13} />
+                      <span>إضافة مريض جديد</span>
+                    </button>
+                  </div>
                   <select 
                     className="input-field"
                     value={formData.patientId}
                     onChange={(e) => setFormData({...formData, patientId: e.target.value})}
                     required
                   >
-                    <option value="">اختر المريض...</option>
+                    <option value="">{patients.length === 0 ? 'لا يوجد مرضى مسجلين (أضف مريضاً أولاً)' : 'اختر المريض...'}</option>
                     {patients.map(p => (
                       <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
                     ))}

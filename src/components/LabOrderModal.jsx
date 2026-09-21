@@ -196,11 +196,9 @@ const LabOrderModal = ({
           </div>
 
           <div className="lab-modal-footer">
-            <Dialog.CloseTrigger asChild>
-              <button type="button" onClick={onClose} className="btn-cancel">
-                إلغاء
-              </button>
-            </Dialog.CloseTrigger>
+            <button type="button" onClick={onClose} className="btn-cancel">
+              إلغاء
+            </button>
             <button type="submit" disabled={isSubmitting} className="btn-save">
               <CheckCircle2 size={16} />
               <span>إرسال وتوثيق الطلب</span>

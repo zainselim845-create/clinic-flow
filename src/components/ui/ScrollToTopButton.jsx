@@ -40,7 +40,7 @@ export const ScrollToTopButton = () => {
       className="scroll-to-top-btn"
       style={{
         position: 'fixed',
-        bottom: '24px',
+        bottom: '84px',
         left: '24px',
         zIndex: 900,
         width: '44px',

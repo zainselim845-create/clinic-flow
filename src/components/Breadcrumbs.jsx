@@ -14,6 +14,7 @@ const SEGMENT_NAMES = {
   settings: 'إعدادات العيادة',
   'doctor-agent': 'مساعد الطبيب',
   notifications: 'التنبيهات',
+  'sms-integration': 'بوابة الرسائل النصية',
   booking: 'حجز موعد',
   'manage-booking': 'إدارة الحجز',
   'super-admin': 'إدارة الساس',

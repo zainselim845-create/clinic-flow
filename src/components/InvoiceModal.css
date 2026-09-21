@@ -193,6 +193,14 @@
 .status-pill.unpaid { background: #FEE2E2; color: #991B1B; }
 
 /* Table */
+.section-title {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0F172A;
+  margin-bottom: 0.65rem;
+}
+
 .inv-table {
   width: 100%;
   border-collapse: collapse;
@@ -212,6 +220,7 @@
   padding: 0.6rem 0.85rem;
   border-bottom: 1px solid #E2E8F0;
   font-size: 0.86rem;
+  color: #0F172A;
 }
 
 .table-txt-input {
@@ -221,6 +230,8 @@
   border-radius: 6px;
   font-size: 0.86rem;
   box-sizing: border-box;
+  color: #0F172A;
+  background: #FFFFFF;
 }
 
 .btn-del-row {

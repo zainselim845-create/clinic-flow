@@ -453,7 +453,7 @@ const Dashboard = () => {
                 <span>{today}</span>
               </span>
               <span>•</span>
-              <span style={{ fontWeight: 600, color: waitingToday.length > 0 ? '#09090B' : 'inherit' }}>
+              <span style={{ fontWeight: 600, color: waitingToday.length > 0 ? 'var(--text-primary)' : 'inherit' }}>
                 {waitingToday.length} في صالة الانتظار
               </span>
             </div>
@@ -472,9 +472,9 @@ const Dashboard = () => {
               borderRadius: '8px',
               fontSize: '0.78rem',
               fontWeight: 600,
-              backgroundColor: 'transparent',
-              border: '1px solid #E4E4E7',
-              color: '#09090B',
+              backgroundColor: 'var(--surface, transparent)',
+              border: '1px solid var(--border-color, #E4E4E7)',
+              color: 'var(--text-primary, #09090B)',
               cursor: 'pointer',
               transition: 'all 0.15s ease'
             }}
@@ -496,9 +496,9 @@ const Dashboard = () => {
                 borderRadius: '8px',
                 fontSize: '0.78rem',
                 fontWeight: 600,
-                backgroundColor: 'transparent',
-                border: '1px solid #E4E4E7',
-                color: '#09090B',
+                backgroundColor: 'var(--surface, transparent)',
+                border: '1px solid var(--border-color, #E4E4E7)',
+                color: 'var(--text-primary, #09090B)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease'
               }}

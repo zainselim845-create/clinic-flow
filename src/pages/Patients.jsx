@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
@@ -16,6 +17,7 @@ import * as patientsService from '../services/patientsService';
 import './Patients.css';
 
 const Patients = () => {
+  const location = useLocation();
   const { state, dispatch } = useApp();
   const { tenant } = useTenant();
   const { patients = [], appointments = [], useSupabase } = state;
@@ -52,6 +54,25 @@ const Patients = () => {
   useEffect(() => {
     patientIndex.buildIndex(clinicPatients, currentClinicId);
   }, [clinicPatients, currentClinicId]);
+
+  // Handle action=new from external navigation (e.g. from Appointments modal)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('action') === 'new') {
+      setSelectedPatient(null);
+      setFormData({
+        name: '',
+        age: '',
+        gender: 'ذكر',
+        phone: '',
+        bloodType: '',
+        diagnosis: '',
+        medicalAlerts: '',
+        notes: ''
+      });
+      setIsModalOpen(true);
+    }
+  }, [location.search]);
 
   const [formData, setFormData] = useState({
     name: '',

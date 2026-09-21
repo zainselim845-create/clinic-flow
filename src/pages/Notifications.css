@@ -26,6 +26,38 @@
   color: white;
 }
 
+.status-filters {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.status-filters button {
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #E4E4E7);
+  background: var(--surface, #FFFFFF);
+  color: var(--text-secondary, #64748B);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.status-filters button:hover {
+  background: var(--surface-container-high, #F4F4F5);
+  color: var(--text-primary);
+}
+
+.status-filters button.active {
+  background: var(--primary);
+  color: var(--clinic-on-primary, #FFFFFF);
+  border-color: var(--primary);
+  font-weight: 700;
+}
+
 .notifications-list {
   display: flex;
   flex-direction: column;
