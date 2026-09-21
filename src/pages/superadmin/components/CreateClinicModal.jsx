@@ -69,14 +69,54 @@ export function CreateClinicModal({
 
             <div className="form-group">
               <label htmlFor="clinic-specialty-input">التخصص الطبي *</label>
-              <input 
-                id="clinic-specialty-input"
-                type="text" 
-                placeholder="مثال: طب الأطفال وحديثي الولادة" 
-                value={newClinic.specialty}
-                onChange={(e) => setNewClinic(prev => ({ ...prev, specialty: e.target.value }))}
-                required
-              />
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                <select
+                  id="clinic-specialty-select"
+                  value={
+                    ['طب وجراحة الأسنان', 'الأمراض الجلدية والتجميل والليزر', 'طب الأطفال وحديثي الولادة', 'طب وجراحة العيون', 'أمراض النساء والتوليد', 'الأشعة والتصوير الطبي (DICOM)', 'القلب والأوعية الدموية', 'العظام والمفاصل', 'الباطنة والجهاز الهضمي'].includes(newClinic.specialty)
+                      ? newClinic.specialty
+                      : 'custom'
+                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val !== 'custom') {
+                      setNewClinic(prev => ({
+                        ...prev,
+                        specialty: val,
+                        slug: prev.slugManual ? prev.slug : slugifyClinic(prev.name, val)
+                      }));
+                    }
+                  }}
+                  style={{ minWidth: '160px', padding: '0.5rem', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.85rem' }}
+                >
+                  <option value="طب وجراحة الأسنان">طب وجراحة الأسنان</option>
+                  <option value="الأمراض الجلدية والتجميل والليزر">جلدية وتجميل</option>
+                  <option value="طب الأطفال وحديثي الولادة">طب الأطفال (Pediatrics)</option>
+                  <option value="طب وجراحة العيون">طب العيون (Ophthalmology)</option>
+                  <option value="أمراض النساء والتوليد">نساء وتوليد (OB/GYN)</option>
+                  <option value="الأشعة والتصوير الطبي (DICOM)">أشعة وتصوير طبي (DICOM)</option>
+                  <option value="القلب والأوعية الدموية">قلب وأوعية دموية</option>
+                  <option value="العظام والمفاصل">عظام ومفاصل</option>
+                  <option value="الباطنة والجهاز الهضمي">باطنة وجهاز هضمي</option>
+                  <option value="custom">تخصص آخر (مخصص)...</option>
+                </select>
+                <input 
+                  id="clinic-specialty-input"
+                  type="text" 
+                  placeholder="أدخل التخصص الطبي..." 
+                  value={newClinic.specialty}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setNewClinic(prev => ({ 
+                      ...prev, 
+                      specialty: val,
+                      slug: prev.slugManual ? prev.slug : slugifyClinic(prev.name, val)
+                    }));
+                  }}
+                  style={{ flex: 1, minWidth: '150px' }}
+                  required
+                />
+              </div>
             </div>
           </div>
 

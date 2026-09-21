@@ -4,7 +4,8 @@ import { useTenant } from '../context/TenantContext';
 import { 
   UserPlus, Search, FolderOpen, Share2, RotateCcw,
   CalendarDays, Clock, Stethoscope, Wallet, Landmark, CheckCircle2,
-  BellRing, Plus, Calendar, UserX, MessageCircle, ArrowRight
+  BellRing, Plus, Calendar, UserX, MessageCircle, ArrowRight,
+  Activity, Baby, Eye, Heart, Scan, ChevronLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -387,6 +388,13 @@ const Dashboard = () => {
       iconType: 'blue',
       onClick: () => setIsWalkInModalOpen(true)
     },
+    ...(isDoctor ? [{
+      id: 'specialty',
+      label: 'المخططات التخصصية',
+      icon: <Activity size={16} strokeWidth={2.2} />,
+      iconType: 'cyan',
+      onClick: () => navigate('/specialty-charts')
+    }] : []),
     ...((isAdmin || user?.role === 'staff' || user?.role === 'receptionist') ? [{
       id: 'shift',
       label: 'الخزينة والوردية',
@@ -419,7 +427,7 @@ const Dashboard = () => {
       iconType: 'rose',
       onClick: () => setIsRecallModalOpen(true)
     }
-  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab, isAdmin, user?.role]);
+  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab, isAdmin, isDoctor, user?.role, navigate]);
 
   // Schedule filtering (Memoized for high performance)
   const filteredAppointments = useMemo(() => {
@@ -668,6 +676,90 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Specialty Clinical Suite Quick Launch Strip */}
+      {isDoctor && (
+        <div className="specialty-quick-launch-strip" role="region" aria-label="أدوات ومخططات التخصص السريرية">
+          <div className="specialty-strip-header">
+            <div className="specialty-strip-title">
+              <div className="specialty-strip-icon">
+                <Activity size={18} />
+              </div>
+              <div>
+                <h4>المخططات التخصصية وعارض الأشعة (Clinical Specialty Suite)</h4>
+                <p>مخططات متوافقة مع منظمة الصحة العالمية (WHO) وحاسبات طبية متقدمة للأطفال، العيون، النساء والتوليد، والأشعة</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/specialty-charts')}
+              className="btn-launch-all-specialties"
+              title="فتح المنظومة التخصصية السريرية بالكامل"
+            >
+              <span>فتح كافة المخططات</span>
+              <ChevronLeft size={14} />
+            </button>
+          </div>
+
+          <div className="specialty-strip-buttons">
+            <button
+              type="button"
+              onClick={() => navigate('/specialty-charts?tab=pediatrics')}
+              className="specialty-launch-btn"
+            >
+              <span className="btn-icon-wrapper pediatrics">
+                <Baby size={16} />
+              </span>
+              <div className="btn-info">
+                <strong>جداول نمو الأطفال</strong>
+                <small>WHO Growth Percentiles (وزن، طول، محيط الرأس)</small>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/specialty-charts?tab=ophthalmology')}
+              className="specialty-launch-btn"
+            >
+              <span className="btn-icon-wrapper ophthalmology">
+                <Eye size={16} />
+              </span>
+              <div className="btn-info">
+                <strong>انكسار النظر والعيون</strong>
+                <small>Refraction Matrix (OD/OS) & ضغط العين (IOP)</small>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/specialty-charts?tab=obgyn')}
+              className="specialty-launch-btn"
+            >
+              <span className="btn-icon-wrapper obgyn">
+                <Heart size={16} />
+              </span>
+              <div className="btn-info">
+                <strong>الحمل وتتبع الأجنة</strong>
+                <small>Hadlock Biometry & عمر الحمل وموعد الولادة</small>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/specialty-charts?tab=dicom')}
+              className="specialty-launch-btn"
+            >
+              <span className="btn-icon-wrapper dicom">
+                <Scan size={16} />
+              </span>
+              <div className="btn-info">
+                <strong>عارض أشعة DICOM</strong>
+                <small>Medical Imaging مع Windowing وقياس Caliper</small>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 2. Cockpit Layout: 2-Column Responsive High-Density Grid */}
       <div className="dashboard-cockpit-grid">

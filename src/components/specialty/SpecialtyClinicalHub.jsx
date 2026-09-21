@@ -20,10 +20,15 @@ export default function SpecialtyClinicalHub({
   patientName = 'المريض',
   patientAge = 25,
   clinicSpecialty = 'general',
-  doctorName = 'الطبيب المعالج'
+  doctorName = 'الطبيب المعالج',
+  initialTab,
+  autoOpenDicom = false
 }) {
-  // Determine default tab based on clinic specialty
+  // Determine default tab based on clinic specialty or initialTab
   const getDefaultTab = () => {
+    if (initialTab && ['pediatrics', 'ophthalmology', 'obgyn'].includes(initialTab)) {
+      return initialTab;
+    }
     const s = (clinicSpecialty || '').toLowerCase();
     if (s.includes('pediatric') || s.includes('طفل') || s.includes('أطفال')) return 'pediatrics';
     if (s.includes('ophthalm') || s.includes('عين') || s.includes('عيون') || s.includes('optom')) return 'ophthalmology';
@@ -32,7 +37,16 @@ export default function SpecialtyClinicalHub({
   };
 
   const [activeTab, setActiveTab] = useState(getDefaultTab());
-  const [isDicomOpen, setIsDicomOpen] = useState(false);
+  const [isDicomOpen, setIsDicomOpen] = useState(autoOpenDicom);
+
+  React.useEffect(() => {
+    if (initialTab && ['pediatrics', 'ophthalmology', 'obgyn'].includes(initialTab)) {
+      setActiveTab(initialTab);
+    }
+    if (autoOpenDicom) {
+      setIsDicomOpen(true);
+    }
+  }, [initialTab, autoOpenDicom]);
 
   return (
     <div className="specialty-hub-wrapper" dir="rtl">

@@ -1794,3 +1794,158 @@
   transform: translateY(-1px);
 }
 
+/* ==========================================================================
+   Specialty Clinical Suite Quick Launch Strip
+   ========================================================================== */
+.specialty-quick-launch-strip {
+  background: var(--surface, #FFFFFF);
+  border: 1px solid var(--border-color, #E4E4E7);
+  border-radius: var(--radius-xl, 14px);
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0.5rem;
+}
+
+.specialty-strip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.specialty-strip-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.specialty-strip-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284C7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.specialty-strip-title h4 {
+  margin: 0 0 0.2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #09090B);
+}
+
+.specialty-strip-title p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-secondary, #71717A);
+}
+
+.btn-launch-all-specialties {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--bg-tertiary, #F4F4F5);
+  border: 1px solid var(--border-color, #E4E4E7);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary, #09090B);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-launch-all-specialties:hover {
+  background: var(--clinic-primary, #09090B);
+  color: #FFFFFF;
+  border-color: var(--clinic-primary, #09090B);
+}
+
+.specialty-strip-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.75rem;
+}
+
+.specialty-launch-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-primary, #F8FAFC);
+  border: 1px solid var(--border-color, #E4E4E7);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  cursor: pointer;
+  text-align: right;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.specialty-launch-btn:hover {
+  background: var(--surface, #FFFFFF);
+  border-color: var(--clinic-primary, #09090B);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.btn-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-icon-wrapper.pediatrics {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.btn-icon-wrapper.ophthalmology {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4F46E5;
+}
+
+.btn-icon-wrapper.obgyn {
+  background: rgba(236, 72, 153, 0.12);
+  color: #DB2777;
+}
+
+.btn-icon-wrapper.dicom {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284C7;
+}
+
+.specialty-launch-btn .btn-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  overflow: hidden;
+}
+
+.specialty-launch-btn .btn-info strong {
+  font-size: 0.84rem;
+  color: var(--text-primary, #09090B);
+  white-space: nowrap;
+}
+
+.specialty-launch-btn .btn-info small {
+  font-size: 0.7rem;
+  color: var(--text-secondary, #71717A);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
