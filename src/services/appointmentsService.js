@@ -151,7 +151,9 @@ export async function checkSlotCollision(clinicId, date, time, excludeAppointmen
       if (!error && Array.isArray(data) && data.length > 0) {
         return true;
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AppointmentsService] Slot conflict check note:', err);
+    }
   }
 
   return false;

@@ -120,12 +120,18 @@ export function captureSystemError({
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(inMemoryErrors));
-    } catch (_) {}
+    } catch (storageErr) {
+      console.warn('[SystemErrorService] Failed to persist system errors to localStorage:', storageErr);
+    }
   }
 
   // Dispatch an event for live admin notifications if listening
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('clinicflow_system_error_logged', { detail: errorEntry }));
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('clinicflow_system_error_logged', { detail: errorEntry }));
+    } catch (eventErr) {
+      console.warn('[SystemErrorService] Failed to dispatch error event:', eventErr);
+    }
   }
 
   return errorEntry;
@@ -157,7 +163,9 @@ export function resolveSystemError(errorId) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(inMemoryErrors));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[SystemErrorService] Failed to persist resolved errors:', err);
+    }
   }
   return inMemoryErrors;
 }
@@ -170,7 +178,9 @@ export function clearSystemErrors() {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.removeItem(SYSTEM_ERRORS_KEY);
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[SystemErrorService] Failed to clear system errors from storage:', err);
+    }
   }
 }
 
@@ -211,12 +221,18 @@ export function reportUserBug({
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(inMemoryBugReports));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[SystemErrorService] Failed to persist bug reports to storage:', err);
+    }
   }
 
   // Dispatch event for live UI update in SuperAdmin
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('clinicflow_bug_reported', { detail: report }));
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('clinicflow_bug_reported', { detail: report }));
+    } catch (eventErr) {
+      console.warn('[SystemErrorService] Failed to dispatch bug report event:', eventErr);
+    }
   }
 
   return report;
@@ -232,7 +248,8 @@ export function getBugReports() {
     const raw = localStorage.getItem(BUG_REPORTS_KEY);
     inMemoryBugReports = raw ? JSON.parse(raw) : [];
     return inMemoryBugReports;
-  } catch (_) {
+  } catch (err) {
+    console.warn('[SystemErrorService] Failed to read bug reports from storage:', err);
     return [];
   }
 }
@@ -248,7 +265,9 @@ export function updateBugReportStatus(reportId, status) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(inMemoryBugReports));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[SystemErrorService] Failed to update bug report in storage:', err);
+    }
   }
   return inMemoryBugReports;
 }
@@ -262,7 +281,9 @@ export function deleteBugReport(reportId) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(inMemoryBugReports));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[SystemErrorService] Failed to delete bug report from storage:', err);
+    }
   }
   return inMemoryBugReports;
 }
@@ -275,7 +296,9 @@ export function clearBugReports() {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.removeItem(BUG_REPORTS_KEY);
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[SystemErrorService] Failed to clear bug reports:', err);
+    }
   }
   return [];
 }
@@ -289,7 +312,9 @@ export function deleteSystemError(errorId) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(inMemoryErrors));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[SystemErrorService] Failed to delete system error:', err);
+    }
   }
   return inMemoryErrors;
 }
@@ -308,7 +333,9 @@ export function resolveAllSystemErrors() {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(inMemoryErrors));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[SystemErrorService] Failed to resolve all system errors in storage:', err);
+    }
   }
   return inMemoryErrors;
 }

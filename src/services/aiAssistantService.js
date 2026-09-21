@@ -20,7 +20,9 @@ export function getAiConfig() {
       } catch (e) {
         try {
           localStorage.removeItem('clinicflow_ai_config');
-        } catch (_) {}
+        } catch (removeErr) {
+          console.warn('[AiAssistantService] Failed to remove corrupt ai config:', removeErr);
+        }
       }
     }
   }

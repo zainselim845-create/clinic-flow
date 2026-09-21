@@ -58,7 +58,9 @@ class ErrorBoundary extends React.Component {
       sessionStorage.clear();
       localStorage.removeItem('clinicflow_active_tenant_slug');
       localStorage.removeItem('activeClinic');
-    } catch (_) {}
+    } catch (resetErr) {
+      console.warn('[ErrorBoundary] Storage clear warning during safe reset:', resetErr);
+    }
     window.location.href = '/?_t=' + Date.now();
   };
 

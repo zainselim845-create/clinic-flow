@@ -16,6 +16,7 @@ import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
 import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
 import { getPatientPrescriptionsFromStorage, formatPrescriptionForWhatsApp } from '../../services/prescriptionService';
 import { getWhatsAppUri } from '../../services/smsService';
+import { safeGetJSON } from '../../utils/safeStorage';
 import './PatientDossierDrawer.css';
 
 const STATUS_LABELS = {
@@ -65,19 +66,14 @@ export default function PatientDossierDrawer({
         const rxList = getPatientPrescriptionsFromStorage(patientId, currentClinicId);
         setPrescriptions(rxList || []);
 
-        try {
-          const storedLabs = localStorage.getItem(`clinicflow_labs_${currentSlug}`);
-          if (storedLabs) {
-            const parsed = JSON.parse(storedLabs);
-            if (Array.isArray(parsed)) {
-              const matches = parsed.filter(l => 
-                (l.patientName && patientName && l.patientName.trim().toLowerCase() === patientName.trim().toLowerCase()) ||
-                (patientPhone && l.patientPhone && l.patientPhone === patientPhone)
-              );
-              setPatientLabOrders(matches);
-            }
-          }
-        } catch (_) {}
+        const parsedLabs = safeGetJSON(`clinicflow_labs_${currentSlug}`, []);
+        if (Array.isArray(parsedLabs)) {
+          const matches = parsedLabs.filter(l => 
+            (l.patientName && patientName && l.patientName.trim().toLowerCase() === patientName.trim().toLowerCase()) ||
+            (patientPhone && l.patientPhone && l.patientPhone === patientPhone)
+          );
+          setPatientLabOrders(matches);
+        }
       }
     }
     loadData();

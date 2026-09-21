@@ -11,6 +11,7 @@ import {
 } from '../../utils/timeSlots';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import * as blockedSlotsService from '../../services/blockedSlotsService';
+import { safeGetJSON, safeSetJSON } from '../../utils/safeStorage';
 
 const ARABIC_MONTHS = [
   'يناير', 'فبراير', 'مارس', 'إبريل', 'مايو', 'يونيو',
@@ -78,17 +79,14 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
   );
 
   const persistSchedule = (updatedInfo) => {
-    try {
-      const slug = updatedInfo?.slug || state.clinicInfo?.slug || 'dr-ahmed';
-      const scopedKey = `clinicflow_data_${slug}`;
-      const stored = localStorage.getItem(scopedKey);
-      const parsed = stored ? JSON.parse(stored) : {};
-      parsed.clinicInfo = updatedInfo;
-      localStorage.setItem(scopedKey, JSON.stringify(parsed));
-      if (slug === 'dr-ahmed') {
-        localStorage.setItem('clinicflow_data', JSON.stringify(parsed));
-      }
-    } catch (_) {}
+    const slug = updatedInfo?.slug || state.clinicInfo?.slug || 'dr-ahmed';
+    const scopedKey = `clinicflow_data_${slug}`;
+    const parsed = safeGetJSON(scopedKey, {});
+    parsed.clinicInfo = updatedInfo;
+    safeSetJSON(scopedKey, parsed);
+    if (slug === 'dr-ahmed') {
+      safeSetJSON('clinicflow_data', parsed);
+    }
   };
 
   // Save Schedule Config

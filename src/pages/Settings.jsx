@@ -19,6 +19,7 @@ import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
 import { Tabs } from '../components/ui/tabs';
 import { isAdminRole } from '../utils/permissions';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Settings.css';
 
 const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain'];
@@ -105,18 +106,15 @@ const Settings = () => {
     if (updateTenantInfo) {
       updateTenantInfo(clinicForm);
     }
-    try {
-      const currentSlug = tenantSlug || tenant?.slug || 'dr-ahmed';
-      const scopedKey = `clinicflow_data_${currentSlug}`;
-      const stored = localStorage.getItem(scopedKey);
-      const parsed = stored ? JSON.parse(stored) : {};
-      parsed.clinicInfo = clinicForm;
-      if (clinicForm.services) parsed.services = clinicForm.services;
-      localStorage.setItem(scopedKey, JSON.stringify(parsed));
-      if (currentSlug === 'dr-ahmed') {
-        localStorage.setItem('clinicflow_data', JSON.stringify(parsed));
-      }
-    } catch (_) {}
+    const currentSlug = tenantSlug || tenant?.slug || 'dr-ahmed';
+    const scopedKey = `clinicflow_data_${currentSlug}`;
+    const parsed = safeGetJSON(scopedKey, {});
+    parsed.clinicInfo = clinicForm;
+    if (clinicForm.services) parsed.services = clinicForm.services;
+    safeSetJSON(scopedKey, parsed);
+    if (currentSlug === 'dr-ahmed') {
+      safeSetJSON('clinicflow_data', parsed);
+    }
 
     setClinicSaveSuccess(true);
     setTimeout(() => setClinicSaveSuccess(false), 3500);
@@ -312,18 +310,15 @@ const Settings = () => {
                 if (updateTenantInfo) {
                   updateTenantInfo({ services: newTypes });
                 }
-                try {
                   const scopedKey = `clinicflow_data_${currentSlug}`;
-                  const stored = localStorage.getItem(scopedKey);
-                  const parsed = stored ? JSON.parse(stored) : {};
+                  const parsed = safeGetJSON(scopedKey, {});
                   parsed.clinicInfo = updated;
                   parsed.services = newTypes;
-                  localStorage.setItem(scopedKey, JSON.stringify(parsed));
+                  safeSetJSON(scopedKey, parsed);
                   if (currentSlug === 'dr-ahmed') {
-                    localStorage.setItem('clinicflow_data', JSON.stringify(parsed));
+                    safeSetJSON('clinicflow_data', parsed);
                   }
-                } catch (_) {}
-              }}
+                }}
             />
           </Tabs.Content>
 

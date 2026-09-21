@@ -212,7 +212,9 @@ export function getAuditLogs(clinicId = null, limit = 10000) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) list = parsed;
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuditLogger] Failed to read audit logs from storage:', err);
+    }
   }
   if (clinicId) {
     list = list.filter(e => !e.clinicId || e.clinicId === clinicId);

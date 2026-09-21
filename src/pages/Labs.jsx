@@ -10,6 +10,7 @@ import {
   getLabOrders, addLabOrder, updateLabOrderStatus, 
   LAB_ORDER_STATUSES 
 } from '../services/labsService';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Labs.css';
 
 const Labs = () => {
@@ -19,13 +20,8 @@ const Labs = () => {
   const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
 
   const loadScopedOrders = useCallback(() => {
-    try {
-      const stored = localStorage.getItem(`clinicflow_labs_${currentSlug}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (_) {}
+    const parsed = safeGetJSON(`clinicflow_labs_${currentSlug}`, null);
+    if (Array.isArray(parsed)) return parsed;
     return [];
   }, [currentSlug]);
 
@@ -40,9 +36,7 @@ const Labs = () => {
   }, [loadScopedOrders]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(`clinicflow_labs_${currentSlug}`, JSON.stringify(orders));
-    } catch (_) {}
+    safeSetJSON(`clinicflow_labs_${currentSlug}`, orders);
   }, [orders, currentSlug]);
 
   useEffect(() => {

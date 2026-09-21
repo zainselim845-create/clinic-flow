@@ -79,6 +79,7 @@ const ManageBooking = () => {
       if (found) {
         setSelectedAppointment(found);
         setBookingCodeSearch(codeParam);
+        if (phoneParam) setPhoneSearch(phoneParam);
       }
     }
   }, [searchParams, clinicAppointments, clinicInfo?.id]);

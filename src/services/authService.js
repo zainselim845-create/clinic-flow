@@ -18,7 +18,9 @@ export function broadcastTenantUpdate(type, payload) {
       const channel = new BroadcastChannel('clinicflow_tenants_sync');
       channel.postMessage({ type, payload, timestamp: Date.now() });
       channel.close();
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] BroadcastChannel update error:', err);
+    }
   }
 }
 
@@ -103,7 +105,9 @@ export function saveRegisteredTenant(tenant) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(memoryTenantsCache));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to save registered tenants:', err);
+    }
   }
 
   // Cross-tab broadcast
@@ -114,7 +118,9 @@ export function saveRegisteredTenant(tenant) {
     if (isSupabaseConfigured()) {
       createClinicInDb(tenant).catch(err => console.warn('Supabase tenant creation sync note:', err));
     }
-  } catch (_) {}
+  } catch (syncErr) {
+    console.warn('[AuthService] Supabase sync trigger error:', syncErr);
+  }
 }
 
 /**
@@ -137,7 +143,9 @@ export function deleteRegisteredTenant(clinicIdOrSlug) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(memoryTenantsCache));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to persist tenant deletion:', err);
+    }
   }
 
   // Also clean up users registered specifically for this clinic
@@ -154,7 +162,9 @@ export function deleteRegisteredTenant(clinicIdOrSlug) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(filteredUsers));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to persist filtered users:', err);
+    }
   }
 
   // Broadcast deletion to all open tabs
@@ -165,7 +175,9 @@ export function deleteRegisteredTenant(clinicIdOrSlug) {
     if (isSupabaseConfigured()) {
       deleteClinicFromDb(targetId).catch(err => console.warn('Supabase tenant deletion sync note:', err));
     }
-  } catch (_) {}
+  } catch (syncErr) {
+    console.warn('[AuthService] Supabase delete sync trigger error:', syncErr);
+  }
 
   return true;
 }
@@ -197,7 +209,9 @@ export function updateClinicSubscriptionStatus(clinicIdOrSlug, status, reason = 
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(memoryTenantsCache));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to persist subscription status:', err);
+    }
   }
   return updatedTenant;
 }
@@ -274,7 +288,9 @@ export function saveRegisteredUser(user) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(memoryUsersCache));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to persist registered user:', err);
+    }
   }
 }
 
@@ -307,7 +323,9 @@ export function deleteRegisteredUser(userIdOrPhone, clinicSlugOrId = null) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(filtered));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to persist user deletion:', err);
+    }
   }
 }
 
@@ -331,7 +349,9 @@ export function updateStaffAccountStatus(staffIdOrPhone, status) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(memoryUsersCache));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to persist staff status:', err);
+    }
   }
 }
 
@@ -480,7 +500,9 @@ export function getAllPlatformUsers() {
           });
         }
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to read active auth user in getAllPlatformUsers:', err);
+    }
   }
 
   // Guarantee every tenant has its primary doctor owner account listed
@@ -541,7 +563,9 @@ export function getAllPlatformUsers() {
           }
         }
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to scan local data keys for staff:', err);
+    }
   }
 
   return Array.from(userMap.values());
@@ -572,7 +596,9 @@ export function updateUserAccount(userId, updates = {}) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(existing));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to persist updated user:', err);
+    }
   }
   return updatedUser;
 }
@@ -610,7 +636,9 @@ export function deleteUserAccount(userId) {
   if (typeof localStorage !== 'undefined') {
     try {
       localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(filtered));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[AuthService] Failed to persist user deletion:', err);
+    }
   }
   return true;
 }

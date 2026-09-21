@@ -12,6 +12,17 @@ import {
   saveRegisteredUser 
 } from '../services/authService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
+import { 
+  safeGetItem, 
+  safeSetItem, 
+  safeRemoveItem, 
+  safeGetJSON, 
+  safeSetJSON, 
+  safeSessionGetJSON, 
+  safeSessionSetJSON, 
+  safeSessionRemoveItem,
+  safeSessionSetItem
+} from '../utils/safeStorage';
 import TenantContext from './TenantContext';
 
 const AuthContext = createContext({});
@@ -51,24 +62,20 @@ export const AuthProvider = ({ children }) => {
 
   const persistUser = (userData) => {
     if (userData) {
-      try {
-        localStorage.setItem('clinicflow_auth_user', JSON.stringify(userData));
-        sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(userData));
-        saveRegisteredUser(userData);
-        recordAuditEvent({
-          eventType: AUDIT_EVENT_TYPES.USER_LOGIN,
-          user: userData.name || userData.email || 'مستخدم النظام',
-          action: 'تسجيل دخول للنظام',
-          details: `تم تسجيل الدخول بصلاحية ${userData.role || 'طبيب'} في العيادة ${userData.clinicSlug || 'الافتراضية'}`,
-          entityId: userData.id || '',
-          entityType: 'auth'
-        });
-      } catch (_) {}
+      safeSetJSON('clinicflow_auth_user', userData);
+      safeSessionSetJSON('clinicflow_auth_user', userData);
+      saveRegisteredUser(userData);
+      recordAuditEvent({
+        eventType: AUDIT_EVENT_TYPES.USER_LOGIN,
+        user: userData.name || userData.email || 'مستخدم النظام',
+        action: 'تسجيل دخول للنظام',
+        details: `تم تسجيل الدخول بصلاحية ${userData.role || 'طبيب'} في العيادة ${userData.clinicSlug || 'الافتراضية'}`,
+        entityId: userData.id || '',
+        entityType: 'auth'
+      });
     } else {
-      try {
-        localStorage.removeItem('clinicflow_auth_user');
-        sessionStorage.removeItem('clinicflow_auth_user');
-      } catch (_) {}
+      safeRemoveItem('clinicflow_auth_user');
+      safeSessionRemoveItem('clinicflow_auth_user');
     }
   };
 
@@ -80,12 +87,7 @@ export const AuthProvider = ({ children }) => {
 
   // SaaS Impersonation State: track original superadmin across sessions
   const [impersonatorAdmin, setImpersonatorAdmin] = useState(() => {
-    try {
-      const stored = sessionStorage.getItem('clinicflow_impersonator_admin');
-      return stored ? JSON.parse(stored) : null;
-    } catch (_) {
-      return null;
-    }
+    return safeSessionGetJSON('clinicflow_impersonator_admin', null);
   });
 
   const isImpersonating = Boolean(impersonatorAdmin);
@@ -95,11 +97,9 @@ export const AuthProvider = ({ children }) => {
       persistUser(impersonatorAdmin);
       setUser(impersonatorAdmin);
       setRole(impersonatorAdmin.role || 'super_admin');
-      localStorage.setItem('clinicflow_role', impersonatorAdmin.role || 'super_admin');
+      safeSetItem('clinicflow_role', impersonatorAdmin.role || 'super_admin');
       setImpersonatorAdmin(null);
-      try {
-        sessionStorage.removeItem('clinicflow_impersonator_admin');
-      } catch (_) {}
+      safeSessionRemoveItem('clinicflow_impersonator_admin');
     }
   };
 
@@ -108,16 +108,11 @@ export const AuthProvider = ({ children }) => {
     if (savedUser) {
       return savedUser.role || 'doctor';
     }
-    try {
-      if (typeof localStorage !== 'undefined') {
-        const storedRole = localStorage.getItem('clinicflow_role');
-        if (storedRole === 'super_admin') {
-          return 'doctor'; // Deny bare string tampering unless authenticated user object exists
-        }
-        return storedRole || 'doctor';
-      }
-    } catch (_) {}
-    return 'doctor';
+    const storedRole = safeGetItem('clinicflow_role');
+    if (storedRole === 'super_admin') {
+      return 'doctor'; // Deny bare string tampering unless authenticated user object exists
+    }
+    return storedRole || 'doctor';
   });
   
   const isDemoMode = !isSupabaseConfigured();
@@ -534,12 +529,14 @@ export const AuthProvider = ({ children }) => {
         const fallbackUser = authenticateUser(cleanId, cleanPass);
         if (fallbackUser) {
           persistUser(fallbackUser);
-          localStorage.setItem('clinicflow_role', fallbackUser.role || 'doctor');
+          safeSetItem('clinicflow_role', fallbackUser.role || 'doctor');
           setUser(fallbackUser);
           setRole(fallbackUser.role || 'doctor');
           return { data: { user: fallbackUser }, error: null };
         }
-      } catch (_) {}
+      } catch (fallbackErr) {
+        console.warn('[AuthContext] Local authentication fallback error:', fallbackErr);
+      }
       return { data: null, error };
     }
   };
@@ -847,20 +844,22 @@ export const AuthProvider = ({ children }) => {
       clinicSlug: '*'
     });
     setImpersonatorAdmin(currentAdmin);
-    try {
-      sessionStorage.setItem('clinicflow_impersonator_admin', JSON.stringify(currentAdmin));
-    } catch (_) {}
+    safeSessionSetJSON('clinicflow_impersonator_admin', currentAdmin);
 
     persistUser(targetUser);
-    localStorage.setItem('clinicflow_role', targetUser.role || 'doctor');
+    safeSetItem('clinicflow_role', targetUser.role || 'doctor');
     setUser(targetUser);
     setRole(targetUser.role || 'doctor');
     if (targetUser.clinicSlug && targetUser.clinicSlug !== '*') {
-      try {
-        localStorage.setItem('clinicflow_current_tenant', targetUser.clinicSlug);
-        sessionStorage.setItem('clinicflow_current_tenant', targetUser.clinicSlug);
-        window.dispatchEvent(new CustomEvent('clinicflow:tenant-changed', { detail: targetUser.clinicSlug }));
-      } catch (_) {}
+      safeSetItem('clinicflow_current_tenant', targetUser.clinicSlug);
+      safeSessionSetItem('clinicflow_current_tenant', targetUser.clinicSlug);
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent !== 'undefined') {
+        try {
+          window.dispatchEvent(new CustomEvent('clinicflow:tenant-changed', { detail: targetUser.clinicSlug }));
+        } catch (eventErr) {
+          console.warn('[AuthContext] Tenant change event dispatch warning:', eventErr);
+        }
+      }
     }
   };
 

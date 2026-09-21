@@ -8,6 +8,7 @@ import { Portal } from '@ark-ui/react/portal';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './ShiftHandoverModal.css';
 
 export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
@@ -94,12 +95,11 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
       details: `إجمالي الإيراد: ${financialTotals.totalRevenue} ج.م | النقد الفعلي: ${actualCash} ج.م | الفارق: ${discrepancy} ج.م`
     });
 
-    try {
-      const storedKey = `clinicflow_shifts_${state?.clinicInfo?.slug || 'dr-ahmed'}`;
-      const existing = JSON.parse(localStorage.getItem(storedKey) || '[]');
-      existing.unshift(shiftReport);
-      localStorage.setItem(storedKey, JSON.stringify(existing.slice(0, 50)));
-    } catch (_) {}
+    const storedKey = `clinicflow_shifts_${state?.clinicInfo?.slug || 'dr-ahmed'}`;
+    const existing = safeGetJSON(storedKey, []);
+    const updatedShifts = Array.isArray(existing) ? existing : [];
+    updatedShifts.unshift(shiftReport);
+    safeSetJSON(storedKey, updatedShifts.slice(0, 50));
 
     onSaveShift?.(shiftReport);
 

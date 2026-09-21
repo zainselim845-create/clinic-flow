@@ -92,7 +92,9 @@ export function registerWebhookEndpoint({
     try {
       const stored = getWebhookEndpoints(clinicId);
       localStorage.setItem(`${WEBHOOK_STORAGE_KEY}_${clinicId}`, JSON.stringify([...stored, newEndpoint]));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[WebhookService] Failed to persist webhook endpoint:', err);
+    }
   }
 
   return newEndpoint;
@@ -109,7 +111,9 @@ export function getWebhookEndpoints(clinicId = 'default') {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) return parsed;
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[WebhookService] Failed to read webhook endpoints:', err);
+    }
   }
   return inMemoryEndpoints.filter(e => e.clinicId === clinicId);
 }

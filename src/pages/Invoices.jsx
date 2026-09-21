@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import InvoiceModal from '../components/InvoiceModal';
 import { getInvoices, addInvoice } from '../services/invoicesService';
 import { invoices as defaultInvoices } from '../data/demoData';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Invoices.css';
 
 const Invoices = () => {
@@ -16,13 +17,8 @@ const Invoices = () => {
   const clinicId = currentClinic?.id || '550e8400-e29b-41d4-a716-446655440000';
 
   const loadScopedInvoices = (slug, cid) => {
-    try {
-      const stored = localStorage.getItem(`clinicflow_invoices_${slug}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (_) {}
+    const parsed = safeGetJSON(`clinicflow_invoices_${slug}`, null);
+    if (Array.isArray(parsed)) return parsed;
     if (slug === 'dr-ahmed' || slug === 'dr-sara') {
       return (defaultInvoices || []).filter(inv => inv.clinicId === cid);
     }
@@ -54,9 +50,7 @@ const Invoices = () => {
 
   // Save to tenant-scoped localStorage when list changes
   useEffect(() => {
-    try {
-      localStorage.setItem(`clinicflow_invoices_${clinicSlug}`, JSON.stringify(invoicesList));
-    } catch (_) {}
+    safeSetJSON(`clinicflow_invoices_${clinicSlug}`, invoicesList);
   }, [invoicesList, clinicSlug]);
 
   const filteredInvoices = useMemo(() => {

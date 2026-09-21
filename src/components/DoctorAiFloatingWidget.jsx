@@ -12,6 +12,7 @@ import { processDoctorIntent } from '../utils/clinicalAssistantActions';
 import { askDoctorAiAssistant } from '../services/aiAssistantService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
 import * as appointmentsService from '../services/appointmentsService';
+import { safeGetJSON, safeSetJSON, safeRemoveItem } from '../utils/safeStorage';
 import './DoctorAiFloatingWidget.css';
 
 export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggle }) {
@@ -49,16 +50,9 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
   ];
 
   const [messages, setMessages] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.removeItem('clinicflow_doctor_chat_history'); // purge legacy leak
-        const saved = localStorage.getItem(chatStorageKey);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-        }
-      } catch (_) {}
-    }
+    safeRemoveItem('clinicflow_doctor_chat_history'); // purge legacy leak
+    const saved = safeGetJSON(chatStorageKey, null);
+    if (Array.isArray(saved) && saved.length > 0) return saved;
     return getInitialWelcome(currentSlug, doctorName, tenant?.name || activeClinic?.name || 'العيادة');
   });
 
@@ -67,26 +61,19 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
 
   // Re-sync messages when tenant/clinic changes
   useEffect(() => {
-    try {
-      localStorage.removeItem('clinicflow_doctor_chat_history');
-      const saved = localStorage.getItem(chatStorageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMessages(parsed);
-          return;
-        }
-      }
-    } catch (_) {}
+    safeRemoveItem('clinicflow_doctor_chat_history');
+    const saved = safeGetJSON(chatStorageKey, null);
+    if (Array.isArray(saved) && saved.length > 0) {
+      setMessages(saved);
+      return;
+    }
     setMessages(getInitialWelcome(currentSlug, doctorName, tenant?.name || activeClinic?.name || 'العيادة'));
   }, [currentSlug, doctorName, chatStorageKey, tenant?.name, activeClinic?.name]);
 
   // Sync to scoped localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined' && messages.length > 0) {
-      try {
-        localStorage.setItem(chatStorageKey, JSON.stringify(messages));
-      } catch (_) {}
+    if (messages.length > 0) {
+      safeSetJSON(chatStorageKey, messages);
     }
   }, [messages, chatStorageKey]);
 
@@ -244,10 +231,8 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
         }
       ];
       setMessages(fresh);
-      try {
-        localStorage.removeItem(chatStorageKey);
-        localStorage.removeItem('clinicflow_doctor_chat_history');
-      } catch (_) {}
+      safeRemoveItem(chatStorageKey);
+      safeRemoveItem('clinicflow_doctor_chat_history');
     }
   };
 

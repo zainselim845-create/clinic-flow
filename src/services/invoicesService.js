@@ -215,7 +215,9 @@ export function getNextInvoiceNumber(clinicId, options = {}) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) candidateInvoices = parsed;
       }
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[InvoicesService] Failed to read stored invoices for next number:', err);
+    }
   }
 
   let maxSequence = 0;

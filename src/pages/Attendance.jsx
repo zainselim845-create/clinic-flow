@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext';
 import { 
   getStaffAttendance, recordCheckIn, recordCheckOut 
 } from '../services/attendanceService';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Attendance.css';
 
 const Attendance = () => {
@@ -17,13 +18,8 @@ const Attendance = () => {
   const isDemoClinic = currentSlug === 'dr-ahmed';
 
   const loadScopedAttendance = () => {
-    try {
-      const stored = localStorage.getItem(`clinicflow_attendance_${currentSlug}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (_) {}
+    const parsed = safeGetJSON(`clinicflow_attendance_${currentSlug}`, null);
+    if (Array.isArray(parsed)) return parsed;
     return isDemoClinic ? [
       {
         id: 'att-1',
@@ -56,9 +52,7 @@ const Attendance = () => {
   }, [currentSlug]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(`clinicflow_attendance_${currentSlug}`, JSON.stringify(attendanceRecords));
-    } catch (_) {}
+    safeSetJSON(`clinicflow_attendance_${currentSlug}`, attendanceRecords);
   }, [attendanceRecords, currentSlug]);
 
   useEffect(() => {

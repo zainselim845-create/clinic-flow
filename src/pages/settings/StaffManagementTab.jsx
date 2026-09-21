@@ -149,7 +149,9 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     try {
       updateStaffAccountStatus(id, nextStatus);
       if (member?.phone) updateStaffAccountStatus(member.phone, nextStatus);
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[StaffManagementTab] Failed to update staff account status:', err);
+    }
     dispatch({ type: 'TOGGLE_STAFF_STATUS', payload: id });
   };
 
@@ -435,7 +437,9 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
             deleteRegisteredUser(id, staffClinicId);
             if (deleteTargetStaff?.phone) deleteRegisteredUser(deleteTargetStaff.phone, staffClinicId);
             if (deleteTargetStaff?.email) deleteRegisteredUser(deleteTargetStaff.email, staffClinicId);
-          } catch (_) {}
+          } catch (err) {
+            console.warn('[StaffManagementTab] Failed to delete registered staff user:', err);
+          }
           dispatch({ type: 'DELETE_STAFF', payload: id });
           setDeleteTargetStaff(null);
         }}

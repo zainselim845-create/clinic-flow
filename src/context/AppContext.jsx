@@ -15,6 +15,7 @@ import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
 import { localDb } from '../db/localDatabase';
+import { safeGetItem } from '../utils/safeStorage';
 
 export const DATA_SCHEMA_VERSION = 'v5_clean_zero_state';
 
@@ -120,14 +121,11 @@ export function AppProvider({ children }) {
 
       // وضع الأوفلاين / العرض التجريبي: مفتاح تخزين منفصل ومعزول تماماً لكل عيادة
       const scopedKey = `clinicflow_data_${currentSlug}`;
-      let savedData = null;
-      try {
-        savedData = localStorage.getItem(scopedKey);
-        // التوافق الرجعي مع الحساب الافتراضي
-        if (!savedData && currentSlug === 'dr-ahmed') {
-          savedData = localStorage.getItem('clinicflow_data');
-        }
-      } catch (_) {}
+      let savedData = safeGetItem(scopedKey);
+      // التوافق الرجعي مع الحساب الافتراضي
+      if (!savedData && currentSlug === 'dr-ahmed') {
+        savedData = safeGetItem('clinicflow_data');
+      }
 
       const isDemoTenant = currentSlug === 'dr-ahmed' || currentSlug === 'dr-sara';
       const seedData = getInitialDataForTenant(activeTenant || currentSlug);
@@ -247,12 +245,14 @@ export function AppProvider({ children }) {
         // Asynchronous Dual-Write to high-capacity IndexedDB
         try {
           if (Array.isArray(state.patients) && state.patients.length > 0) {
-            state.patients.forEach(p => localDb.savePatient(p).catch(() => {}));
+            state.patients.forEach(p => localDb.savePatient(p).catch(e => console.warn('[AppContext] IndexedDB patient save note:', e)));
           }
           if (Array.isArray(state.appointments) && state.appointments.length > 0) {
-            state.appointments.forEach(a => localDb.saveAppointment(a).catch(() => {}));
+            state.appointments.forEach(a => localDb.saveAppointment(a).catch(e => console.warn('[AppContext] IndexedDB appointment save note:', e)));
           }
-        } catch (_) {}
+        } catch (dbErr) {
+          console.warn('[AppContext] IndexedDB dual-write warning:', dbErr);
+        }
       } catch (err) {
         console.warn('LocalStorage quota warning, executing smart compaction:', err);
         try {

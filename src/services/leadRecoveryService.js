@@ -48,7 +48,9 @@ export function saveBookingDraft(draftData, clinicId) {
         const globalList = globalData ? (typeof globalData === 'string' ? JSON.parse(globalData) : (Array.isArray(globalData) ? globalData : [])) : [];
         const globalFiltered = globalList.filter(d => !(d.phone === cleanPhone && (!d.clinicId || d.clinicId === targetClinicId)));
         safeStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify([updatedDraft, ...globalFiltered]));
-      } catch (_) {}
+      } catch (err) {
+        console.warn('[LeadRecoveryService] Global draft sync note:', err);
+      }
     }
     return updatedDraft;
   } catch (e) {
@@ -108,7 +110,9 @@ export function completeBookingDraft(phone, clinicId) {
         const globalDrafts = getBookingDrafts();
         const globalUpdated = globalDrafts.map(d => (d.phone === cleanPhone && (!d.clinicId || d.clinicId === clinicId)) ? { ...d, status: 'completed' } : d);
         safeStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(globalUpdated));
-      } catch (_) {}
+      } catch (err) {
+        console.warn('[LeadRecoveryService] Global draft completion note:', err);
+      }
     }
   } catch (e) {
     console.error('Failed to complete draft', e);

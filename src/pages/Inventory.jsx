@@ -10,6 +10,7 @@ import {
   getInventoryItems, addInventoryItem, adjustItemStock, 
   INVENTORY_CATEGORIES 
 } from '../services/inventoryService';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Inventory.css';
 
 const Inventory = () => {
@@ -21,13 +22,8 @@ const Inventory = () => {
   const isDemoClinic = currentSlug === 'dr-ahmed';
 
   const loadScopedInventory = () => {
-    try {
-      const stored = localStorage.getItem(`clinicflow_inventory_${currentSlug}`);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (_) {}
+    const parsed = safeGetJSON(`clinicflow_inventory_${currentSlug}`, null);
+    if (Array.isArray(parsed)) return parsed;
     return isDemoClinic ? [
       {
         id: 'inv-item-1',
@@ -103,9 +99,7 @@ const Inventory = () => {
   }, [currentSlug]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(`clinicflow_inventory_${currentSlug}`, JSON.stringify(items));
-    } catch (_) {}
+    safeSetJSON(`clinicflow_inventory_${currentSlug}`, items);
   }, [items, currentSlug]);
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import { canSwitchTenants } from '../utils/permissions';
 import { patientIndex } from '../services/indexedSearchService';
 import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus, deleteRegisteredTenant } from '../services/authService';
 import { getClinicDomainSettings } from '../services/customDomainService';
+import { safeGetItem, safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 
 const TenantContext = createContext(null);
 
@@ -167,19 +168,15 @@ export function resolveTenantFromLocation(
   }
 
   // 5. Stored preference in localStorage
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const saved = localStorage.getItem('clinicflow_active_tenant_slug');
-      if (saved) {
-        const savedSlug = saved.toLowerCase().trim();
-        const match = (tenants || []).find(t => t.slug?.toLowerCase() === savedSlug || t.id === savedSlug);
-        return {
-          slug: savedSlug,
-          isDedicatedDomain: false,
-          tenant: match || null
-        };
-      }
-    } catch (_) {}
+  const saved = safeGetItem('clinicflow_active_tenant_slug');
+  if (saved) {
+    const savedSlug = saved.toLowerCase().trim();
+    const match = (tenants || []).find(t => t.slug?.toLowerCase() === savedSlug || t.id === savedSlug);
+    return {
+      slug: savedSlug,
+      isDedicatedDomain: false,
+      tenant: match || null
+    };
   }
 
   // 6. Fallback
@@ -266,7 +263,9 @@ export const TenantProvider = ({ children }) => {
           const fresh = getCombinedTenants();
           setAllTenants(fresh);
         };
-      } catch (_) {}
+      } catch (channelErr) {
+        console.warn('[TenantContext] BroadcastChannel init warning:', channelErr);
+      }
     }
 
     if (typeof window !== 'undefined') {
@@ -425,9 +424,8 @@ export const TenantProvider = ({ children }) => {
         return false;
       }
 
-      const savedUserStr = sessionStorage.getItem('clinicflow_auth_user') || localStorage.getItem('clinicflow_auth_user');
-      if (savedUserStr) {
-        const currentUser = JSON.parse(savedUserStr);
+      const currentUser = safeSessionGetJSON('clinicflow_auth_user') || safeGetJSON('clinicflow_auth_user');
+      if (currentUser) {
         const canSwitch = canSwitchTenants(currentUser, currentPath, dedicatedDomainActive);
         if (!canSwitch) {
           const userAllowedSlug = currentUser.allowedClinics?.[0] || currentUser.clinicSlug || currentUser.clinicId;
@@ -437,7 +435,9 @@ export const TenantProvider = ({ children }) => {
           }
         }
       }
-    } catch (_) {}
+    } catch (parseErr) {
+      console.warn('[TenantContext] Error verifying user permissions for switchTenant:', parseErr);
+    }
 
     patientIndex.clearIndex();
     return loadTenant(slugOrId);
@@ -538,17 +538,14 @@ export const TenantProvider = ({ children }) => {
       return prev;
     });
 
-    try {
-      const stored = localStorage.getItem('clinicflow_registered_tenants');
-      if (stored) {
-        const list = JSON.parse(stored);
-        const idx = list.findIndex(t => (targetId && t.id === targetId) || (targetSlug && t.slug === targetSlug));
-        if (idx >= 0) {
-          list[idx] = { ...list[idx], ...updatedInfo };
-          localStorage.setItem('clinicflow_registered_tenants', JSON.stringify(list));
-        }
+    const storedList = safeGetJSON('clinicflow_registered_tenants');
+    if (storedList && Array.isArray(storedList)) {
+      const idx = storedList.findIndex(t => (targetId && t.id === targetId) || (targetSlug && t.slug === targetSlug));
+      if (idx >= 0) {
+        storedList[idx] = { ...storedList[idx], ...updatedInfo };
+        safeSetJSON('clinicflow_registered_tenants', storedList);
       }
-    } catch (_) {}
+    }
   }, [activeTenant]);
 
   // 10. Feature Gating & Quota Checks

@@ -19,6 +19,7 @@ import {
   filterTargetPatients 
 } from '../utils/doctorAgentHelpers';
 import MarketingCrmHub from './marketing/MarketingCrmHub';
+import { safeGetJSON, safeSetJSON, safeRemoveItem } from '../utils/safeStorage';
 import './DoctorAssistant.css';
 
 const DoctorAssistant = ({ initialMode }) => {
@@ -100,28 +101,19 @@ const DoctorAssistant = ({ initialMode }) => {
 
   // Re-sync messages when clinic/tenant changes
   useEffect(() => {
-    try {
-      localStorage.removeItem('clinicflow_doctor_chat_history');
-      const saved = localStorage.getItem(chatStorageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMessages(parsed);
-          return;
-        }
-      }
-    } catch (_) {}
+    safeRemoveItem('clinicflow_doctor_chat_history');
+    const saved = safeGetJSON(chatStorageKey, null);
+    if (Array.isArray(saved) && saved.length > 0) {
+      setMessages(saved);
+      return;
+    }
     setMessages(getInitialWelcome(currentSlug, doctorTitle, tenant?.name || activeClinic?.name || 'العيادة'));
   }, [currentSlug, doctorTitle, chatStorageKey, tenant?.name, activeClinic?.name]);
 
   // Automatically save chat history scoped per clinic
   useEffect(() => {
-    if (typeof window !== 'undefined' && messages.length > 0) {
-      try {
-        localStorage.setItem(chatStorageKey, JSON.stringify(messages));
-      } catch (e) {
-        console.error('Failed to save chat history to localStorage', e);
-      }
+    if (messages.length > 0) {
+      safeSetJSON(chatStorageKey, messages);
     }
   }, [messages, chatStorageKey]);
 

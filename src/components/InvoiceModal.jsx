@@ -155,7 +155,15 @@ const InvoiceModal = ({
             <div className="ctrl-left">
               <button 
                 type="button" 
-                onClick={() => window.print()} 
+                onClick={() => {
+                  try {
+                    if (typeof window !== 'undefined' && typeof window.print === 'function') {
+                      window.print();
+                    }
+                  } catch (err) {
+                    console.warn('[InvoiceModal] Print failed:', err);
+                  }
+                }} 
                 className="btn-inv-action print"
               >
                 <Printer size={16} />

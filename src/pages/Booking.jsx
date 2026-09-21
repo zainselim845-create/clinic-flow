@@ -419,7 +419,21 @@ const Booking = () => {
         copiedCode={copiedCode}
         onCopyBookingCode={copyBookingCode}
         onNewBooking={resetBookingForm}
-        onManageBooking={() => navigate('/manage-booking')}
+        onManageBooking={() => {
+          const slug = clinicSlug || currentClinic?.slug;
+          const phone = createdBooking?.patientPhone || formData.phone;
+          const code = createdBooking?.bookingCode || '';
+          const params = new URLSearchParams();
+          if (phone) params.set('phone', phone);
+          if (code) params.set('code', code);
+          if (slug) params.set('clinic', slug);
+          const qs = params.toString() ? `?${params.toString()}` : '';
+          if (slug) {
+            navigate(`/c/${slug}/manage-booking${qs}`);
+          } else {
+            navigate(`/manage-booking${qs}`);
+          }
+        }}
         onNavigate={navigate}
       />
     );

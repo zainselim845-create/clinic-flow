@@ -16,29 +16,21 @@ import ScrollToTopButton from './components/ui/ScrollToTopButton';
 import CookieBanner from './components/CookieBanner';
 import FloatingContactButton from './components/FloatingContactButton';
 import { initGlobalErrorListeners } from './services/systemErrorService';
+import { safeSessionGetJSON, safeSessionSetJSON } from './utils/safeStorage';
 import './App.css';
 
 // Smart Lazy Load with Auto-Retry on Deployment Update & Missing Export Shield
 const lazyWithRetry = (componentImport) =>
   lazy(async () => {
-    let pageHasAlreadyBeenForceRefreshed = false;
-    try {
-      pageHasAlreadyBeenForceRefreshed = JSON.parse(
-        window.sessionStorage.getItem('page-has-been-force-refreshed') || 'false'
-      );
-    } catch (_) {}
+    const pageHasAlreadyBeenForceRefreshed = safeSessionGetJSON('page-has-been-force-refreshed', false);
 
     try {
       const component = await componentImport();
-      try {
-        window.sessionStorage.setItem('page-has-been-force-refreshed', 'false');
-      } catch (_) {}
+      safeSessionSetJSON('page-has-been-force-refreshed', false);
       return component && component.default ? component : { default: component || (() => null) };
     } catch (error) {
       if (!pageHasAlreadyBeenForceRefreshed && typeof window !== 'undefined' && window.location?.reload) {
-        try {
-          window.sessionStorage?.setItem('page-has-been-force-refreshed', 'true');
-        } catch (_) {}
+        safeSessionSetJSON('page-has-been-force-refreshed', true);
         window.location.reload();
       }
       throw error;

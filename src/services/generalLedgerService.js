@@ -41,7 +41,9 @@ export function getNextJournalEntryNumber(clinicId, year = new Date().getFullYea
     try {
       const stored = localStorage.getItem(`clinicflow_journal_${clinicId}`);
       if (stored) entries = JSON.parse(stored);
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[GeneralLedger] Failed to read journal entries:', err);
+    }
   }
 
   let maxSeq = 0;
@@ -118,7 +120,9 @@ export function recordJournalEntry({
       const stored = localStorage.getItem(`clinicflow_journal_${clinicId}`);
       const list = stored ? JSON.parse(stored) : [];
       localStorage.setItem(`clinicflow_journal_${clinicId}`, JSON.stringify([entry, ...list].slice(0, 5000)));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[GeneralLedger] Failed to persist journal entry:', err);
+    }
   }
 
   if (isSupabaseConfigured()) {
@@ -140,9 +144,13 @@ export function recordJournalEntry({
           debit_amount: l.debit,
           credit_amount: l.credit
         }));
-        supabase.from('journal_lines').insert(lineRows).catch(() => {});
+        supabase.from('journal_lines').insert(lineRows).catch(lineErr => {
+          console.warn('[GeneralLedger] Failed to sync journal lines to Supabase:', lineErr);
+        });
       }
-    }).catch(() => {});
+    }).catch(entryErr => {
+      console.warn('[GeneralLedger] Failed to sync journal entry to Supabase:', entryErr);
+    });
   }
 
   return entry;
@@ -228,7 +236,9 @@ export function getClinicTrialBalance(clinicId = 'default') {
     try {
       const stored = localStorage.getItem(`clinicflow_journal_${clinicId}`);
       if (stored) entries = JSON.parse(stored);
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[GeneralLedger] Failed to read trial balance entries:', err);
+    }
   }
 
   const accountBalances = {};

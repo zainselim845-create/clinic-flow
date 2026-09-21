@@ -234,7 +234,9 @@ export async function verifyDomainDnsAndSsl(domain, clinicId, fetchFn = fetch) {
       if ((aResult.answers || []).some((ans) => matchesDnsTarget(ans.data))) {
         hasMatchingRecord = true;
       }
-    } catch (_) {}
+    } catch (aErr) {
+      console.debug('[CustomDomainService] A-record check note:', aErr);
+    }
   }
 
   // 3. Optional TXT verification challenge check
@@ -247,7 +249,9 @@ export async function verifyDomainDnsAndSsl(domain, clinicId, fetchFn = fetch) {
       if ((txtResult.answers || []).some(ans => (ans.data || '').replace(/['"]/g, '') === expectedToken)) {
         hasMatchingRecord = true;
       }
-    } catch (_) {}
+    } catch (txtErr) {
+      console.debug('[CustomDomainService] TXT-record check note:', txtErr);
+    }
   }
 
   if (hasMatchingRecord) {
