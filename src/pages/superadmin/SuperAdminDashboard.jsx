@@ -4,7 +4,7 @@ import { useTenant } from '../../context/TenantContext';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Building2, Plus, ShieldCheck, 
-  ExternalLink, AlertTriangle, Globe, LogOut, Server, Users
+  ExternalLink, AlertTriangle, Globe, LogOut, Server, Users, MapPin
 } from 'lucide-react';
 import { 
   getSystemErrors, 
@@ -28,7 +28,8 @@ import {
   TopUpCreditsModal,
   SaasInfrastructureCenter,
   SaasBrandingModal,
-  ClinicSubscriptionControlModal
+  ClinicSubscriptionControlModal,
+  SaasGeographicAnalytics
 } from './components';
 import { getSaaSBillingMetrics } from '../../services/saasSubscriptionPlansService';
 import Breadcrumbs from '../../components/Breadcrumbs';
@@ -447,6 +448,14 @@ export default function SuperAdminDashboard() {
             <Server size={16} />
             <span>البنية السحابية والربط المركزي (Infrastructure)</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('geographic')}
+            className={`saas-tab-btn ${activeTab === 'geographic' ? 'active-clinics' : ''}`}
+          >
+            <MapPin size={16} />
+            <span>الانتشار والمواقع الجغرافية (Geo Analytics)</span>
+          </button>
         </div>
 
         {activeTab === 'clinics' ? (
@@ -516,6 +525,8 @@ export default function SuperAdminDashboard() {
             onDeleteBug={handleDeleteBug}
             onClearBugs={handleClearBugs}
           />
+        ) : activeTab === 'geographic' ? (
+          <SaasGeographicAnalytics allTenants={allTenants} />
         ) : (
           <SaasInfrastructureCenter allTenants={allTenants} />
         )}

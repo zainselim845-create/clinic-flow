@@ -112,7 +112,6 @@ export function getSaaSBillingMetrics(tenants = []) {
   let mrr = 0;
   let activePayingCount = 0;
   let suspendedCount = 0;
-  let trialCount = 0;
   let pendingCount = 0;
   let lifetimeCount = 0;
   let totalLifetimeRevenue = 0;
@@ -141,8 +140,6 @@ export function getSaaSBillingMetrics(tenants = []) {
       }
     } else if (status === 'suspended') {
       suspendedCount++;
-    } else if (status === 'trial') {
-      trialCount++;
     } else if (status === 'pending_approval') {
       pendingCount++;
     } else {
@@ -170,7 +167,6 @@ export function getSaaSBillingMetrics(tenants = []) {
     totalClinics,
     activePayingCount,
     suspendedCount,
-    trialCount,
     pendingCount,
     lifetimeCount,
     totalLifetimeRevenue,

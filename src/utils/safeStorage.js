@@ -9,6 +9,15 @@ import { captureSystemError } from '../services/systemErrorService';
 
 const memoryStore = new Map();
 const sessionMemoryStore = new Map();
+const MAX_MEMORY_STORE_ENTRIES = 5000;
+
+function setBoundedMemory(map, key, value) {
+  if (map.size >= MAX_MEMORY_STORE_ENTRIES && !map.has(key)) {
+    const oldestKey = map.keys().next().value;
+    if (oldestKey) map.delete(oldestKey);
+  }
+  map.set(key, value);
+}
 
 function parseStoredValue(val, defaultValue) {
   if (val === null || val === undefined) return defaultValue;
@@ -86,7 +95,7 @@ export const safeStorage = {
       ? JSON.stringify(value) 
       : String(value);
 
-    memoryStore.set(key, stringVal);
+    setBoundedMemory(memoryStore, key, stringVal);
 
     const storage = getGlobalStorage();
     if (storage) {
@@ -226,7 +235,7 @@ export function safeSessionGetJSON(key, fallback = null) {
  */
 export function safeSessionSetItem(key, value) {
   const stringVal = (value !== null && typeof value === 'object') ? JSON.stringify(value) : String(value);
-  sessionMemoryStore.set(key, stringVal);
+  setBoundedMemory(sessionMemoryStore, key, stringVal);
   const storage = getGlobalSessionStorage();
   if (storage) {
     try {

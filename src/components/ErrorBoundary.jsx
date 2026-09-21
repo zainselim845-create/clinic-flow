@@ -1,6 +1,6 @@
 import React from 'react';
 import { captureSystemError, reportUserBug } from '../services/systemErrorService';
-import { AlertTriangle, RefreshCw, MessageSquare, Send, CheckCircle2, Copy, Check } from 'lucide-react';
+import { AlertTriangle, RefreshCw, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -116,53 +116,12 @@ class ErrorBoundary extends React.Component {
             </div>
 
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.75rem', color: '#fff' }}>
-              عذراً، حدث خطأ غير متوقع في هذه الشاشة
+              عذراً، حدث تعثر مؤقت في تحميل هذه الصفحة
             </h2>
 
-            <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-              تم رصد المشكلة وتسجيل تقرير تشخيصي آلي برقم كود:{' '}
-              <code style={{ background: '#0f172a', padding: '0.2rem 0.5rem', borderRadius: '4px', color: '#38bdf8' }}>
-                {this.state.errorId || 'ERR-SYS'}
-              </code>
+            <p style={{ color: '#94a3b8', fontSize: '0.92rem', lineHeight: '1.6', marginBottom: '1.75rem' }}>
+              تم تسجيل تقرير تشخيصي آلي لدى إدارة النظام. يمكنك المتابعة فوراً بإعادة التحديث أو العودة للوحة التحكم الرئيسية دون فقدان بياناتك.
             </p>
-
-            {this.state.error && (
-              <details open style={{ marginBottom: '1.5rem', textAlign: 'left', background: 'rgba(0, 0, 0, 0.35)', padding: '0.85rem 1rem', borderRadius: '10px', fontSize: '0.82rem', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
-                <summary style={{ cursor: 'pointer', color: '#fca5a5', direction: 'rtl', textAlign: 'right', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>التفاصيل التقنية للخطأ (Technical Details):</span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      this.handleCopyError();
-                    }}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      color: this.state.copied ? '#86efac' : '#cbd5e1',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      padding: '0.25rem 0.6rem',
-                      borderRadius: '6px',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {this.state.copied ? <Check size={13} /> : <Copy size={13} />}
-                    <span>{this.state.copied ? 'تم النسخ!' : 'نسخ التقرير الفني'}</span>
-                  </button>
-                </summary>
-                <div style={{ marginTop: '0.6rem', direction: 'ltr', textAlign: 'left' }}>
-                  <div style={{ color: '#f87171', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    {this.state.error?.message || String(this.state.error)}
-                  </div>
-                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace', color: '#94a3b8', fontSize: '0.75rem', maxHeight: '160px', overflowY: 'auto' }}>
-                    {this.state.error?.stack || this.state.errorInfo?.componentStack || 'No stack trace available'}
-                  </pre>
-                </div>
-              </details>
-            )}
 
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <button

@@ -97,20 +97,20 @@ describe('saasSubscriptionPlansService Unit Tests', () => {
     expect(getSaaSSubscriptionPlans().find(p => p.id === 'starter').monthlyPrice).toBe(499);
   });
 
-  it('calculates SaaS billing metrics (MRR, ARR, ARPU, active, trial, suspended)', () => {
+  it('calculates SaaS billing metrics (MRR, ARR, ARPU, active, suspended, lifetime)', () => {
     const mockTenants = [
       { id: '1', name: 'Clinic A', subscriptionTier: 'starter', subscriptionStatus: 'active' }, // 499
       { id: '2', name: 'Clinic B', subscriptionTier: 'pro', subscriptionStatus: 'active' },     // 999
       { id: '3', name: 'Clinic C', subscriptionTier: 'enterprise', subscriptionStatus: 'active' }, // 1999
       { id: '4', name: 'Clinic D', subscriptionTier: 'pro', subscriptionStatus: 'suspended' },   // Suspended => not in MRR
-      { id: '5', name: 'Clinic E', subscriptionTier: 'starter', subscriptionStatus: 'trial' },     // Trial
+      { id: '5', name: 'Clinic E', subscriptionTier: 'starter', subscriptionStatus: 'lifetime', isLifetimeLicense: true }, // Lifetime
     ];
 
     const metrics = getSaaSBillingMetrics(mockTenants);
     expect(metrics.totalClinics).toBe(5);
     expect(metrics.activePayingCount).toBe(3);
     expect(metrics.suspendedCount).toBe(1);
-    expect(metrics.trialCount).toBe(1);
+    expect(metrics.lifetimeCount).toBe(1);
 
     // MRR = 499 + 999 + 1999 = 3497
     expect(metrics.mrr).toBe(3497);

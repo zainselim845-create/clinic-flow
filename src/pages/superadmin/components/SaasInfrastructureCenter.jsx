@@ -924,14 +924,14 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
 
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>فترة تجريبية (Trial)</span>
-                <Clock size={16} color="#F59E0B" />
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>اشتراكات مدى الحياة</span>
+                <Crown size={16} color="#D97706" />
               </div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#D97706' }}>
-                {billingMetrics.trialCount} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>عيادة</span>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#B45309' }}>
+                {billingMetrics.lifetimeCount} <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>عيادة</span>
               </div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                تجربة مجانية قبل التعاقد
+                شراء دائم وترخيص كامل
               </div>
             </div>
 
@@ -1277,7 +1277,6 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                   <option value="all">كافة الحالات</option>
                   <option value="active">نشط (Active)</option>
                   <option value="lifetime">👑 ترخيص مدى الحياة (Lifetime)</option>
-                  <option value="trial">فترة تجريبية (Trial)</option>
                   <option value="suspended">موقوف ومجمد (Suspended)</option>
                   <option value="grace_period">مهلة سداد (Grace)</option>
                 </select>
@@ -1318,7 +1317,6 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                       const status = tenant.subscriptionStatus || 'active';
                       const isLifetime = Boolean(tenant.isLifetimeLicense || status === 'lifetime');
                       const isSuspended = status === 'suspended';
-                      const isTrial = status === 'trial';
                       const isGrace = status === 'grace_period';
                       const usage = getClinicUsage(tenant.id, tenant.quotas, tier);
                       const currentPlanObj = plans.find(p => p.id === tier) || { name: tier.toUpperCase(), monthlyPrice: 999 };
@@ -1331,7 +1329,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                                 width: 9,
                                 height: 9,
                                 borderRadius: '50%',
-                                background: isSuspended ? '#EF4444' : isTrial ? '#F59E0B' : '#10B981'
+                                background: isSuspended ? '#EF4444' : isGrace ? '#F59E0B' : '#10B981'
                               }} />
                               <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -1396,8 +1394,8 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '0.35rem',
-                              background: isSuspended ? '#FEE2E2' : isTrial ? '#FEF3C7' : isGrace ? '#FEF08A' : '#ECFDF5',
-                              color: isSuspended ? '#DC2626' : isTrial ? '#B45309' : isGrace ? '#A16207' : '#047857'
+                              background: isSuspended ? '#FEE2E2' : isGrace ? '#FEF08A' : '#ECFDF5',
+                              color: isSuspended ? '#DC2626' : isGrace ? '#A16207' : '#047857'
                             }}>
                               {isLifetime ? (
                                 <>
@@ -1408,11 +1406,6 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                                 <>
                                   <Lock size={12} />
                                   <span>موقوف ومجمد</span>
-                                </>
-                              ) : isTrial ? (
-                                <>
-                                  <Clock size={12} />
-                                  <span>فترة تجريبية</span>
                                 </>
                               ) : isGrace ? (
                                 <>

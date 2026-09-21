@@ -78,11 +78,6 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
     setSuspensionReason('');
   };
 
-  const handleSetTrial = () => {
-    setIsLifetimeLicense(false);
-    setStatus('trial');
-  };
-
   const handleSetGracePeriod = () => {
     setIsLifetimeLicense(false);
     setStatus('grace_period');
@@ -199,10 +194,10 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
               </h3>
               <span style={{
                 fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.6rem', borderRadius: '999px',
-                background: isLifetimeLicense ? '#FEF3C7' : status === 'suspended' ? '#FEE2E2' : status === 'trial' ? '#FEF3C7' : '#ECFDF5',
-                color: isLifetimeLicense ? '#B45309' : status === 'suspended' ? '#DC2626' : status === 'trial' ? '#D97706' : '#059669'
+                background: isLifetimeLicense ? '#FEF3C7' : status === 'suspended' ? '#FEE2E2' : status === 'grace_period' ? '#FEF08A' : '#ECFDF5',
+                color: isLifetimeLicense ? '#B45309' : status === 'suspended' ? '#DC2626' : status === 'grace_period' ? '#A16207' : '#059669'
               }}>
-                {isLifetimeLicense ? '👑 مدى الحياة (Lifetime Portal)' : status === 'suspended' ? 'موقوف ومجمد' : status === 'trial' ? 'فترة تجريبية' : 'نشط وساري'}
+                {isLifetimeLicense ? '👑 مدى الحياة (Lifetime Portal)' : status === 'suspended' ? 'موقوف ومجمد' : status === 'grace_period' ? 'مهلة سداد' : 'نشط وساري'}
               </span>
             </div>
             <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
@@ -296,21 +291,6 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
               >
                 <AlertOctagon size={15} />
                 <span>مهلة سداد ٧ أيام</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleSetTrial}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-                  padding: '0.5rem 0.85rem', borderRadius: '8px', border: '1px solid #FDE68A',
-                  background: (!isLifetimeLicense && status === 'trial') ? '#F59E0B' : '#FFFBEB',
-                  color: (!isLifetimeLicense && status === 'trial') ? '#FFF' : '#B45309',
-                  fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer'
-                }}
-              >
-                <Clock size={15} />
-                <span>فترة تجريبية (Trial)</span>
               </button>
             </div>
 

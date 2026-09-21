@@ -10,4 +10,5 @@ export { SaasInfrastructureCenter } from './SaasInfrastructureCenter';
 export { default as SaasBrandingModal } from './SaasBrandingModal';
 export { default as EditPlanTierModal } from './EditPlanTierModal';
 export { default as ClinicSubscriptionControlModal } from './ClinicSubscriptionControlModal';
+export { default as SaasGeographicAnalytics } from './SaasGeographicAnalytics';
 
