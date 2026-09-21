@@ -5,13 +5,16 @@ import {
   Lock, ArrowUpRight, TrendingUp, Layers, Crosshair,
   RotateCcw, SlidersHorizontal, Check, Eye
 } from 'lucide-react';
+import OpenStreetClinicMap from '../../../components/common/OpenStreetClinicMap';
 
-// Standard Egyptian Governorates and Regional Clusters
+// Standard Egyptian Governorates and Regional Clusters with real GPS coordinates for OpenStreetMap
 export const EGYPT_GOVERNORATES = [
   { 
     id: 'cairo', 
     name: 'القاهرة', 
     region: 'greater_cairo', 
+    lat: 30.0444, 
+    lng: 31.2357,
     keywords: ['قاهرة', 'cairo', 'تجمع', 'معادي', 'نصر', 'جديدة', 'شروق', 'مدينتي', 'رحاب', 'ميديكال بارك', 'أهرام'],
     center: { x: 442, y: 222 },
     path: 'M 425 205 L 470 205 L 465 245 L 420 245 Z'
@@ -20,6 +23,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'giza', 
     name: 'الجيزة', 
     region: 'greater_cairo', 
+    lat: 30.0131, 
+    lng: 31.2089,
     keywords: ['جيزة', 'giza', 'دقي', 'مهندسين', 'أكتوبر', 'october', 'زايد', 'zayed', 'هرم', 'فيصل'],
     center: { x: 382, y: 228 },
     path: 'M 360 195 L 415 205 L 410 260 L 350 250 Z'
@@ -28,6 +33,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'alexandria', 
     name: 'الإسكندرية', 
     region: 'alex_coast', 
+    lat: 31.2001, 
+    lng: 29.9187,
     keywords: ['إسكندرية', 'اسكندرية', 'alex', 'alexandria', 'سموحة', 'لوران', 'رشدي', 'رمل'],
     center: { x: 305, y: 105 },
     path: 'M 260 90 L 340 90 L 350 120 L 280 130 Z'
@@ -36,6 +43,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'dakahlia', 
     name: 'الدقهلية (المنصورة)', 
     region: 'delta', 
+    lat: 31.0409, 
+    lng: 31.3785,
     keywords: ['دقهلية', 'منصورة', 'mansoura', 'ميت غمر', 'سنبلاوين'],
     center: { x: 420, y: 135 },
     path: 'M 400 120 L 440 115 L 450 150 L 395 155 Z'
@@ -44,6 +53,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'gharbia', 
     name: 'الغربية (طنطا)', 
     region: 'delta', 
+    lat: 30.7865, 
+    lng: 31.0004,
     keywords: ['غربية', 'طنطا', 'tanta', 'محلة'],
     center: { x: 378, y: 138 },
     path: 'M 350 120 L 400 120 L 395 155 L 360 155 Z'
@@ -52,6 +63,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'sharqia', 
     name: 'الشرقية (الزقازيق)', 
     region: 'delta', 
+    lat: 30.5765, 
+    lng: 31.5041,
     keywords: ['شرقية', 'زقازيق', 'عاشر', '10th'],
     center: { x: 448, y: 152 },
     path: 'M 440 115 L 470 125 L 475 180 L 420 180 L 430 150 Z'
@@ -60,6 +73,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'qalyubia', 
     name: 'القليوبية (بنها)', 
     region: 'greater_cairo', 
+    lat: 30.4660, 
+    lng: 31.1856,
     keywords: ['قليوبية', 'بنها', 'شبرا'],
     center: { x: 410, y: 192 },
     path: 'M 395 180 L 430 180 L 425 205 L 395 205 Z'
@@ -68,6 +83,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'menofia', 
     name: 'المنوفية (شبين الكوم)', 
     region: 'delta', 
+    lat: 30.5567, 
+    lng: 31.0089,
     keywords: ['منوفية', 'شبين', 'سادات', 'منوف'],
     center: { x: 382, y: 170 },
     path: 'M 360 155 L 395 155 L 400 180 L 365 185 Z'
@@ -76,6 +93,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'beheira', 
     name: 'البحيرة (دمنهور)', 
     region: 'delta', 
+    lat: 31.0409, 
+    lng: 30.4700,
     keywords: ['بحيرة', 'دمنهور', 'كفر الدوار'],
     center: { x: 320, y: 155 },
     path: 'M 280 130 L 350 120 L 360 170 L 300 180 Z'
@@ -84,6 +103,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'kafr_el_sheikh', 
     name: 'كفر الشيخ', 
     region: 'delta', 
+    lat: 31.1107, 
+    lng: 30.9388,
     keywords: ['كفر الشيخ', 'دسوق'],
     center: { x: 375, y: 100 },
     path: 'M 340 90 L 410 80 L 400 120 L 350 120 Z'
@@ -92,6 +113,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'damietta', 
     name: 'دمياط', 
     region: 'delta', 
+    lat: 31.4175, 
+    lng: 31.8144,
     keywords: ['دمياط', 'رأس البر'],
     center: { x: 425, y: 100 },
     path: 'M 410 80 L 450 85 L 440 115 L 400 120 Z'
@@ -100,6 +123,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'port_said', 
     name: 'بورسعيد', 
     region: 'canal', 
+    lat: 31.2653, 
+    lng: 32.3019,
     keywords: ['بورسعيد', 'بورفؤاد'],
     center: { x: 468, y: 108 },
     path: 'M 450 85 L 485 95 L 480 125 L 450 120 Z'
@@ -108,6 +133,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'ismailia', 
     name: 'الإسماعيلية', 
     region: 'canal', 
+    lat: 30.5965, 
+    lng: 32.2715,
     keywords: ['إسماعيلية', 'اسماعيلية'],
     center: { x: 482, y: 155 },
     path: 'M 470 125 L 500 135 L 495 180 L 465 175 Z'
@@ -116,6 +143,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'suez', 
     name: 'السويس', 
     region: 'canal', 
+    lat: 29.9668, 
+    lng: 32.5498,
     keywords: ['سويس', 'عين سخنة'],
     center: { x: 478, y: 210 },
     path: 'M 465 175 L 500 185 L 490 240 L 455 235 Z'
@@ -124,6 +153,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'sinai', 
     name: 'سيناء (شرم الشيخ)', 
     region: 'canal', 
+    lat: 27.9158, 
+    lng: 34.3299,
     keywords: ['سيناء', 'شرم', 'دهب', 'طابا', 'عريش'],
     center: { x: 550, y: 210 },
     path: 'M 500 95 L 610 110 L 590 290 L 535 320 L 500 185 Z'
@@ -132,6 +163,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'fayoum', 
     name: 'الفيوم', 
     region: 'upper_egypt', 
+    lat: 29.3084, 
+    lng: 30.8428,
     keywords: ['فيوم'],
     center: { x: 362, y: 268 },
     path: 'M 345 250 L 385 255 L 380 285 L 340 280 Z'
@@ -140,6 +173,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'beni_suef', 
     name: 'بني سويف', 
     region: 'upper_egypt', 
+    lat: 29.0661, 
+    lng: 31.0994,
     keywords: ['بني سويف'],
     center: { x: 410, y: 275 },
     path: 'M 385 255 L 440 255 L 435 295 L 380 295 Z'
@@ -148,6 +183,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'minya', 
     name: 'المنيا', 
     region: 'upper_egypt', 
+    lat: 28.1099, 
+    lng: 30.7503,
     keywords: ['منيا', 'ملوي'],
     center: { x: 410, y: 322 },
     path: 'M 375 295 L 440 295 L 445 350 L 380 350 Z'
@@ -156,6 +193,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'assiut', 
     name: 'أسيوط', 
     region: 'upper_egypt', 
+    lat: 27.1783, 
+    lng: 31.1859,
     keywords: ['أسيوط', 'اسيوط', 'ديروط'],
     center: { x: 422, y: 380 },
     path: 'M 380 350 L 455 350 L 460 410 L 390 410 Z'
@@ -164,6 +203,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'sohag', 
     name: 'سوهاج', 
     region: 'upper_egypt', 
+    lat: 26.5569, 
+    lng: 31.6948,
     keywords: ['سوهاج', 'طهطا', 'جرجا'],
     center: { x: 438, y: 435 },
     path: 'M 395 410 L 470 410 L 475 460 L 410 460 Z'
@@ -172,6 +213,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'qena', 
     name: 'قنا', 
     region: 'upper_egypt', 
+    lat: 26.1551, 
+    lng: 32.7160,
     keywords: ['قنا', 'نجع حمادي'],
     center: { x: 465, y: 480 },
     path: 'M 420 460 L 505 460 L 500 500 L 435 500 Z'
@@ -180,6 +223,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'luxor', 
     name: 'الأقصر', 
     region: 'upper_egypt', 
+    lat: 25.6872, 
+    lng: 32.6396,
     keywords: ['أقصر', 'اقصر', 'luxor'],
     center: { x: 465, y: 518 },
     path: 'M 435 500 L 495 500 L 490 535 L 440 535 Z'
@@ -188,6 +233,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'aswan', 
     name: 'أسوان', 
     region: 'upper_egypt', 
+    lat: 24.0889, 
+    lng: 32.8998,
     keywords: ['أسوان', 'اسوان', 'aswan'],
     center: { x: 470, y: 572 },
     path: 'M 430 535 L 520 535 L 510 610 L 420 610 Z'
@@ -196,6 +243,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'red_sea', 
     name: 'البحر الأحمر (الغردقة)', 
     region: 'frontier', 
+    lat: 27.2579, 
+    lng: 33.8116,
     keywords: ['بحر أحمر', 'غردقة', 'hurghada', 'جونة', 'سفاجا', 'قصير', 'علم'],
     center: { x: 555, y: 420 },
     path: 'M 490 240 L 540 260 L 630 460 L 590 590 L 520 535 L 460 260 Z'
@@ -204,6 +253,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'matrouh', 
     name: 'مطروح والساحل الشمالي', 
     region: 'frontier', 
+    lat: 31.3543, 
+    lng: 27.2373,
     keywords: ['مطروح', 'ساحل', 'علمين', 'ضبعة', 'سلوم'],
     center: { x: 175, y: 180 },
     path: 'M 70 85 L 260 90 L 280 180 L 160 280 L 70 280 Z'
@@ -212,6 +263,8 @@ export const EGYPT_GOVERNORATES = [
     id: 'new_valley', 
     name: 'الوادي الجديد', 
     region: 'frontier', 
+    lat: 25.4514, 
+    lng: 30.5472,
     keywords: ['وادي جديد', 'خارجة', 'داخلة', 'فرافرة'],
     center: { x: 245, y: 445 },
     path: 'M 70 280 L 380 350 L 420 610 L 70 610 Z'
@@ -229,9 +282,9 @@ export const REGIONAL_CLUSTERS = {
 };
 
 export const GULF_EXPANSION_REGIONS = [
-  { id: 'riyadh', name: 'المملكة العربية السعودية', code: 'SA', center: { x: 380, y: 260 }, path: 'M 220 180 L 460 160 L 520 340 L 300 370 Z' },
-  { id: 'dubai', name: 'الإمارات العربية المتحدة', code: 'AE', center: { x: 580, y: 250 }, path: 'M 540 220 L 630 230 L 620 290 L 530 280 Z' },
-  { id: 'kuwait', name: 'دولة الكويت', code: 'KW', center: { x: 410, y: 140 }, path: 'M 390 120 L 440 125 L 435 165 L 385 160 Z' }
+  { id: 'riyadh', name: 'المملكة العربية السعودية', code: 'SA', lat: 24.7136, lng: 46.6753, region: 'gulf_international', center: { x: 380, y: 260 }, path: 'M 220 180 L 460 160 L 520 340 L 300 370 Z' },
+  { id: 'dubai', name: 'الإمارات العربية المتحدة', code: 'AE', lat: 25.2048, lng: 55.2708, region: 'gulf_international', center: { x: 580, y: 250 }, path: 'M 540 220 L 630 230 L 620 290 L 530 280 Z' },
+  { id: 'kuwait', name: 'دولة الكويت', code: 'KW', lat: 29.3759, lng: 47.9774, region: 'gulf_international', center: { x: 410, y: 140 }, path: 'M 390 120 L 440 125 L 435 165 L 385 160 Z' }
 ];
 
 /**
@@ -624,235 +677,30 @@ export default function SaasGeographicAnalytics({ allTenants = [] }) {
           </div>
         </div>
 
-        {/* SVG Map Canvas Container */}
-        <div style={{
-          position: 'relative',
-          width: '100%',
-          height: '460px',
-          background: 'radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.03) 0%, transparent 70%), #0D0F12',
-          borderRadius: '12px',
-          border: '1px solid #1E293B',
-          overflow: 'hidden',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          
-          {/* Subtle Grid Overlay */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px)',
-            backgroundSize: '32px 32px',
-            pointerEvents: 'none'
-          }} />
-
-          {/* Egypt Vector Map */}
-          {activeMapMode === 'egypt' ? (
-            <svg 
-              viewBox="0 0 700 650" 
-              style={{ width: '100%', height: '100%', maxHeight: '460px', userSelect: 'none' }}
-            >
-              <defs>
-                <filter id="glow-selected" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#10B981" floodOpacity="0.8" />
-                </filter>
-                <filter id="glow-hover" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#38BDF8" floodOpacity="0.8" />
-                </filter>
-                <style>{`
-                  @keyframes radarPulse {
-                    0% { r: 5px; opacity: 1; stroke-width: 2px; }
-                    100% { r: 20px; opacity: 0; stroke-width: 1px; }
-                  }
-                  .radar-pulse {
-                    animation: radarPulse 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
-                  }
-                `}</style>
-              </defs>
-
-              {/* Governorates SVG Paths */}
-              <g id="governorates-layer">
-                {EGYPT_GOVERNORATES.map(gov => {
-                  const count = geoAnalytics.govCounts[gov.id]?.total || 0;
-                  const isSelected = selectedGovernorate === gov.id;
-                  const isHovered = hoveredRegion?.id === gov.id;
-                  const fillColor = getRegionFillColor(gov.id);
-
-                  return (
-                    <g 
-                      key={gov.id}
-                      onClick={() => setSelectedGovernorate(prev => prev === gov.id ? 'all' : gov.id)}
-                      onMouseEnter={() => setHoveredRegion({
-                        id: gov.id,
-                        name: gov.name,
-                        cluster: REGIONAL_CLUSTERS[gov.region],
-                        count,
-                        center: gov.center
-                      })}
-                      onMouseLeave={() => setHoveredRegion(null)}
-                      style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
-                    >
-                      <path
-                        d={gov.path}
-                        fill={fillColor}
-                        stroke={isSelected ? '#10B981' : isHovered ? '#38BDF8' : '#334155'}
-                        strokeWidth={isSelected ? 2.5 : isHovered ? 2 : 1}
-                        filter={isSelected ? 'url(#glow-selected)' : isHovered ? 'url(#glow-hover)' : 'none'}
-                        style={{ transition: 'all 0.2s ease' }}
-                      />
-
-                      {/* City Hub Name Label for key areas */}
-                      {['cairo', 'giza', 'alexandria', 'dakahlia', 'gharbia', 'sharqia', 'assiut', 'aswan', 'red_sea', 'sinai', 'matrouh'].includes(gov.id) && (
-                        <text
-                          x={gov.center.x}
-                          y={gov.center.y}
-                          textAnchor="middle"
-                          fill={count > 0 ? '#FFFFFF' : '#94A3B8'}
-                          fontSize={gov.id === 'cairo' || gov.id === 'alexandria' ? '11px' : '9.5px'}
-                          fontWeight={count > 0 ? '700' : '500'}
-                          pointerEvents="none"
-                          style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}
-                        >
-                          {gov.name.split(' ')[0]}
-                        </text>
-                      )}
-
-                      {/* Live Radar Node if Governorates have active clinics */}
-                      {count > 0 && (
-                        <g transform={`translate(${gov.center.x}, ${gov.center.y})`}>
-                          <circle
-                            r="12"
-                            fill="none"
-                            stroke="#38BDF8"
-                            className="radar-pulse"
-                          />
-                          <circle
-                            r="5"
-                            fill={isSelected ? '#10B981' : '#38BDF8'}
-                            stroke="#FFFFFF"
-                            strokeWidth="1.5"
-                          />
-                          <text
-                            y="-9"
-                            textAnchor="middle"
-                            fill="#38BDF8"
-                            fontSize="8px"
-                            fontWeight="800"
-                            pointerEvents="none"
-                            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}
-                          >
-                            {count}
-                          </text>
-                        </g>
-                      )}
-                    </g>
-                  );
-                })}
-              </g>
-
-              {/* Telemetry Coordinate Label */}
-              <text x="30" y="40" fill="#475569" fontSize="10px" fontFamily="monospace">
-                EGY-GEO // LAT 26.8206° N, LON 30.8025° E
-              </text>
-              <text x="30" y="55" fill="#475569" fontSize="9px" fontFamily="monospace">
-                PLATFORM STATUS: {geoAnalytics.totalClinics} ACTIVE NODES
-              </text>
-            </svg>
-          ) : (
-            /* Gulf / International Expansion Map View */
-            <svg 
-              viewBox="0 0 700 450" 
-              style={{ width: '100%', height: '100%', maxHeight: '460px', userSelect: 'none' }}
-            >
-              <g id="gulf-layer">
-                {GULF_EXPANSION_REGIONS.map(gulf => {
-                  const count = geoAnalytics.govCounts[gulf.id]?.total || 0;
-                  const isSelected = selectedGovernorate === gulf.id;
-                  const isHovered = hoveredRegion?.id === gulf.id;
-
-                  return (
-                    <g 
-                      key={gulf.id}
-                      onClick={() => setSelectedGovernorate(prev => prev === gulf.id ? 'all' : gulf.id)}
-                      onMouseEnter={() => setHoveredRegion({
-                        id: gulf.id,
-                        name: gulf.name,
-                        cluster: 'الخليج والتوسع الدولي',
-                        count,
-                        center: gulf.center
-                      })}
-                      onMouseLeave={() => setHoveredRegion(null)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <path
-                        d={gulf.path}
-                        fill={isSelected ? '#10B981' : isHovered ? '#38BDF8' : count > 0 ? '#0284C7' : '#1E293B'}
-                        stroke={isSelected ? '#10B981' : '#334155'}
-                        strokeWidth={isSelected ? 2.5 : 1.5}
-                      />
-                      <text
-                        x={gulf.center.x}
-                        y={gulf.center.y}
-                        textAnchor="middle"
-                        fill="#FFFFFF"
-                        fontSize="12px"
-                        fontWeight="700"
-                        pointerEvents="none"
-                      >
-                        {gulf.name}
-                      </text>
-                      {count > 0 && (
-                        <g transform={`translate(${gulf.center.x}, ${gulf.center.y + 15})`}>
-                          <circle r="4" fill="#38BDF8" />
-                          <text x="10" y="3" fill="#38BDF8" fontSize="10px" fontWeight="700">
-                            {count} عيادة
-                          </text>
-                        </g>
-                      )}
-                    </g>
-                  );
-                })}
-              </g>
-              <text x="30" y="40" fill="#475569" fontSize="10px" fontFamily="monospace">
-                GCC-EXPANSION // REGIONAL MULTI-TENANT MAPPING
-              </text>
-            </svg>
-          )}
-
-          {/* Floating Hover Details Card / Tooltip */}
-          {hoveredRegion && (
-            <div style={{
-              position: 'absolute',
-              bottom: '16px',
-              right: '16px',
-              background: 'rgba(15, 23, 42, 0.95)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid #334155',
-              borderRadius: '10px',
-              padding: '0.75rem 1rem',
-              boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
-              pointerEvents: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '0.25rem',
-              minWidth: '180px'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                <strong style={{ fontSize: '0.9rem', color: '#F8FAFC' }}>{hoveredRegion.name}</strong>
-                <span style={{ fontSize: '0.7rem', color: '#38BDF8', background: 'rgba(56, 189, 248, 0.15)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>
-                  {hoveredRegion.cluster}
-                </span>
-              </div>
-              <div style={{ fontSize: '0.8rem', color: '#94A3B8', marginTop: '0.15rem' }}>
-                العيادات المسجلة: <strong style={{ color: '#F8FAFC' }}>{hoveredRegion.count}</strong> عيادة
-              </div>
-              <div style={{ fontSize: '0.72rem', color: '#64748B' }}>
-                الحصة من المنصة: {geoAnalytics.totalClinics > 0 ? Math.round((hoveredRegion.count / geoAnalytics.totalClinics) * 100) : 0}٪
-              </div>
-            </div>
-          )}
-
+        {/* OpenStreetMap Interactive Leaflet Map Container */}
+        <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
+          <OpenStreetClinicMap
+            center={
+              selectedGovernorate !== 'all'
+                ? (() => {
+                    const target = [...EGYPT_GOVERNORATES, ...GULF_EXPANSION_REGIONS].find(g => g.id === selectedGovernorate);
+                    return target ? [target.lat, target.lng] : (activeMapMode === 'egypt' ? [26.8206, 30.8025] : [24.5, 47.0]);
+                  })()
+                : (activeMapMode === 'egypt' ? [26.8206, 30.8025] : [24.5, 47.0])
+            }
+            zoom={selectedGovernorate !== 'all' ? 10 : (activeMapMode === 'egypt' ? 6 : 5)}
+            locations={(activeMapMode === 'egypt' ? EGYPT_GOVERNORATES : GULF_EXPANSION_REGIONS).map(reg => ({
+              id: reg.id,
+              name: reg.name,
+              lat: reg.lat,
+              lng: reg.lng,
+              count: geoAnalytics.govCounts[reg.id]?.total || 0,
+              governorate: REGIONAL_CLUSTERS[reg.region] || ''
+            }))}
+            selectedId={selectedGovernorate}
+            onSelectLocation={(id) => setSelectedGovernorate(prev => prev === id ? 'all' : id)}
+            height="460px"
+          />
         </div>
 
         {/* Active Selection Breadcrumb Bar */}

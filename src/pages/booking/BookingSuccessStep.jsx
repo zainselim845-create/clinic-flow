@@ -58,9 +58,9 @@ export default function BookingSuccessStep({
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${location}`;
   };
 
-  const getGoogleMapsUrl = (address, clinicName) => {
-    const query = address ? `${address} (${clinicName || ''})` : (clinicName || 'عيادة');
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  const getOpenStreetMapUrl = (address, clinicName) => {
+    const query = address ? `${address} ${clinicName || ''}` : (clinicName || 'عيادة');
+    return `https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`;
   };
 
   return (
@@ -154,17 +154,17 @@ export default function BookingSuccessStep({
               </div>
 
               <a 
-                href={getGoogleMapsUrl(currentClinic?.address, currentClinic?.name)}
+                href={getOpenStreetMapUrl(currentClinic?.address, currentClinic?.name)}
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="nebras-ticket-address"
-                title="عرض موقع العيادة والاتجاهات على خرائط جوجل"
+                title="عرض موقع العيادة والاتجاهات عبر الخريطة المفتوحة المصدر (OpenStreetMap)"
                 style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <MapPin size={16} />
                 <span>{currentClinic?.address}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600, marginRight: 'auto' }}>
-                  (الاتجاهات عبر Google Maps)
+                  (الاتجاهات عبر OpenStreetMap)
                 </span>
               </a>
             </div>
