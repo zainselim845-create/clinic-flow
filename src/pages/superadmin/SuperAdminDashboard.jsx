@@ -144,25 +144,41 @@ export default function SuperAdminDashboard() {
   };
 
   const handleRefreshAll = () => {
-    const freshTenants = getCombinedTenants();
+    const freshTenants = getCombinedTenants(true);
     setAllTenants(freshTenants);
     const freshUsers = getAllPlatformUsers();
     setAllUsers(freshUsers);
   };
 
-  // Keep platform tenants and users reactive to additions, storage events, and tab focus
+  // Keep platform tenants and users reactive to additions, storage events, BroadcastChannel, and tab focus
   React.useEffect(() => {
     handleRefreshAll();
-    const handleStorageChange = () => {
-      handleRefreshAll();
+    const handleStorageChange = (e) => {
+      if (!e || e.key === 'clinicflow_registered_tenants' || e.key === 'clinicflow_registered_users' || e.key === 'clinicflow_auth_user' || e.key === 'clinicflow_active_tenant_slug') {
+        handleRefreshAll();
+      }
     };
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('focus', handleRefreshAll);
     document.addEventListener('visibilitychange', handleRefreshAll);
+
+    let channel = null;
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        channel = new BroadcastChannel('clinicflow_tenants_sync');
+        channel.onmessage = () => {
+          handleRefreshAll();
+        };
+      } catch (channelErr) {
+        console.warn('[SuperAdminDashboard] BroadcastChannel sync warning:', channelErr);
+      }
+    }
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('focus', handleRefreshAll);
       document.removeEventListener('visibilitychange', handleRefreshAll);
+      if (channel) channel.close();
     };
   }, [activeTab]);
 

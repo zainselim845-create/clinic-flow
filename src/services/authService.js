@@ -66,7 +66,7 @@ export function clearAuthCache() {
 /**
  * Retrieves all custom registered clinics from persistent storage
  */
-export function getRegisteredTenants(forceRefresh = false) {
+export function getRegisteredTenants(forceRefresh = true) {
   if (!forceRefresh && memoryTenantsCache && memoryTenantsCache.length > 0) return memoryTenantsCache;
   if (typeof localStorage === 'undefined') return memoryTenantsCache || [];
   try {
@@ -90,7 +90,7 @@ export function getRegisteredTenants(forceRefresh = false) {
  */
 export function saveRegisteredTenant(tenant) {
   if (!tenant) return;
-  const existing = getRegisteredTenants();
+  const existing = getRegisteredTenants(true);
   if (tenant.slug) registeredSlugsSet.add(tenant.slug);
   if (tenant.doctorEmail) registeredEmailsSet.add(tenant.doctorEmail.toLowerCase());
   if (tenant.phone) registeredPhonesSet.add(tenant.phone.replace(/\D/g, ''));
@@ -237,7 +237,7 @@ export function suspendClinic(clinicIdOrSlug, reason = 'عدم سداد الاش
 /**
  * Retrieves all registered users (doctors and staff)
  */
-export function getRegisteredUsers(forceRefresh = false) {
+export function getRegisteredUsers(forceRefresh = true) {
   if (!forceRefresh && memoryUsersCache && memoryUsersCache.length > 0) return memoryUsersCache;
   if (typeof localStorage === 'undefined') return memoryUsersCache || [];
   try {
@@ -264,7 +264,7 @@ export function saveRegisteredUser(user) {
   if (user.role === 'super_admin' || user.isSuperAdmin) {
     user.password = user.password || 'admin';
   }
-  const existing = getRegisteredUsers();
+  const existing = getRegisteredUsers(true);
   if (user.email) registeredEmailsSet.add(user.email.toLowerCase());
   if (user.phone) registeredPhonesSet.add(user.phone.replace(/\D/g, ''));
 
@@ -298,6 +298,9 @@ export function saveRegisteredUser(user) {
       console.warn('[AuthService] Failed to persist registered user:', err);
     }
   }
+
+  // Cross-tab broadcast for real-time reactivity
+  broadcastTenantUpdate('REGISTER_USER', user);
 }
 
 /**
@@ -606,6 +609,8 @@ export function updateUserAccount(userId, updates = {}) {
       console.warn('[AuthService] Failed to persist updated user:', err);
     }
   }
+
+  broadcastTenantUpdate('UPDATE_USER', updatedUser);
   return updatedUser;
 }
 
@@ -636,7 +641,7 @@ export function toggleUserAccountStatus(userId, status) {
  */
 export function deleteUserAccount(userId) {
   if (!userId) return false;
-  const existing = getRegisteredUsers();
+  const existing = getRegisteredUsers(true);
   const filtered = existing.filter(u => u.id !== userId && u.email?.toLowerCase() !== userId.toLowerCase());
   memoryUsersCache = filtered;
   if (typeof localStorage !== 'undefined') {
@@ -646,6 +651,7 @@ export function deleteUserAccount(userId) {
       console.warn('[AuthService] Failed to persist user deletion:', err);
     }
   }
+  broadcastTenantUpdate('DELETE_USER', { id: userId });
   return true;
 }
 

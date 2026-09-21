@@ -621,6 +621,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     persistUser(realUser);
+    saveRegisteredUser(realUser);
     localStorage.setItem('clinicflow_role', realUser.role);
     setUser(realUser);
     setRole(realUser.role);

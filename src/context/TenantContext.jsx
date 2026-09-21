@@ -34,9 +34,9 @@ const initialClinics = fallbackDemoClinics || [
   }
 ];
 
-export function getCombinedTenants() {
+export function getCombinedTenants(forceRefresh = true) {
   const base = fallbackDemoClinics || initialClinics;
-  const registered = getRegisteredTenants();
+  const registered = getRegisteredTenants(forceRefresh);
   
   // Merge registered tenants with base (updating base if slug/id matches)
   const combined = base.map(b => {
@@ -259,23 +259,30 @@ export function applyTenantBranding(branding) {
 
 export const TenantProvider = ({ children }) => {
   const applyBranding = applyTenantBranding;
-  const [allTenants, setAllTenants] = useState(() => getCombinedTenants());
+  const [allTenants, setAllTenants] = useState(() => getCombinedTenants(true));
   const initialResolution = useMemo(() => resolveTenantFromLocation(allTenants), [allTenants]);
   const [activeTenant, setActiveTenant] = useState(initialResolution.tenant || allTenants[0]);
   const [dedicatedDomainActive, setDedicatedDomainActive] = useState(initialResolution.isDedicatedDomain);
   const [isLoadingTenant, setIsLoadingTenant] = useState(true);
 
+  // Expose immediate force-refresh helper for tenants directory
+  const refreshTenants = useCallback(() => {
+    const fresh = getCombinedTenants(true);
+    setAllTenants(fresh);
+    return fresh;
+  }, []);
+
   // 1. Cross-tab and Broadcast Synchronization (Multi-window & Multi-tab reactivity)
   useEffect(() => {
     const handleStorageChange = (e) => {
-      if (!e || e.key === 'clinicflow_registered_tenants' || e.key === 'clinicflow_active_tenant_slug' || e.key === 'clinicflow_registered_users') {
-        const fresh = getCombinedTenants();
+      if (!e || e.key === 'clinicflow_registered_tenants' || e.key === 'clinicflow_active_tenant_slug' || e.key === 'clinicflow_registered_users' || e.key === 'clinicflow_auth_user') {
+        const fresh = getCombinedTenants(true);
         setAllTenants(fresh);
       }
     };
 
     const handleFocusSync = () => {
-      const fresh = getCombinedTenants();
+      const fresh = getCombinedTenants(true);
       setAllTenants(fresh);
     };
 
@@ -284,7 +291,7 @@ export const TenantProvider = ({ children }) => {
       try {
         channel = new BroadcastChannel('clinicflow_tenants_sync');
         channel.onmessage = () => {
-          const fresh = getCombinedTenants();
+          const fresh = getCombinedTenants(true);
           setAllTenants(fresh);
         };
       } catch (channelErr) {
@@ -637,6 +644,7 @@ export const TenantProvider = ({ children }) => {
     resolveTenantSlug,
     allTenants: isolatedTenantsCatalog,
     setAllTenants,
+    refreshTenants,
     isLoadingTenant,
     isDedicatedDomain: dedicatedDomainActive,
     switchTenant,
@@ -649,7 +657,7 @@ export const TenantProvider = ({ children }) => {
     checkQuota,
     tier: activeTenant?.subscriptionTier || 'pro',
     isMultiTenant: true
-  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, deleteTenant, updateTenantInfo, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
+  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, refreshTenants, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, deleteTenant, updateTenantInfo, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
 
   return (
     <TenantContext.Provider value={value}>

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { 
+  registerDoctorAndClinic,
   saveRegisteredTenant, 
   getRegisteredTenants, 
   deleteRegisteredTenant,
@@ -11,6 +12,7 @@ import {
   toggleUserAccountStatus,
   deleteUserAccount
 } from '../services/authService';
+import { getCombinedTenants } from '../context/TenantContext';
 import { formatSenderId } from '../services/smsService';
 import { 
   getClinicUsage, 
@@ -332,6 +334,34 @@ describe('Super Admin Platform Control Plane & Tenant Lifecycle', () => {
     deleteUserAccount('doc-test-99');
     users = getAllPlatformUsers();
     expect(users.some(u => u.id === 'doc-test-99')).toBe(false);
+  });
+
+  it('ensures newly registered doctors and clinics immediately appear in getCombinedTenants and getAllPlatformUsers across calls', () => {
+    const newDocRegistration = {
+      doctorName: 'د. سامي العزازي',
+      email: 'sami.elazazi@clinicflow.com',
+      phone: '01019998877',
+      password: 'password123',
+      clinicName: 'مركز العزازي للجراحة',
+      specialty: 'جراحة العظام والمفاصل'
+    };
+
+    const { tenant, user } = registerDoctorAndClinic(newDocRegistration);
+    expect(tenant).toBeDefined();
+    expect(user).toBeDefined();
+
+    // 1. Check getCombinedTenants immediately includes the clinic
+    const combined = getCombinedTenants();
+    const foundClinic = combined.find(t => t.id === tenant.id || t.slug === tenant.slug);
+    expect(foundClinic).toBeDefined();
+    expect(foundClinic.name).toBe('مركز العزازي للجراحة');
+
+    // 2. Check getAllPlatformUsers immediately includes the doctor
+    const platformUsers = getAllPlatformUsers();
+    const foundUser = platformUsers.find(u => u.email === 'sami.elazazi@clinicflow.com');
+    expect(foundUser).toBeDefined();
+    expect(foundUser.name).toBe('د. سامي العزازي');
+    expect(foundUser.clinicSlug).toBe(tenant.slug);
   });
 });
 
