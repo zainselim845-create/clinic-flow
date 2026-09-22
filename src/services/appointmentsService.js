@@ -38,9 +38,9 @@ export function toDbAppointment(data) {
   if (data.id && typeof data.id === 'string' && data.id.includes('-') && data.id.length > 20) {
     payload.id = data.id;
   }
-  if (data.bookingCode !== undefined) payload.booking_code = data.bookingCode;
-  if (data.clinicId !== undefined) payload.clinic_id = data.clinicId;
-  if (data.patientId !== undefined) payload.patient_id = data.patientId;
+  if (data.bookingCode !== undefined || data.booking_code !== undefined) payload.booking_code = data.bookingCode || data.booking_code;
+  if (data.clinicId !== undefined || data.clinic_id !== undefined) payload.clinic_id = data.clinicId || data.clinic_id;
+  if (data.patientId !== undefined || data.patient_id !== undefined) payload.patient_id = data.patientId || data.patient_id;
   if (data.patientName !== undefined) payload.patient_name = data.patientName;
   if (data.patientPhone !== undefined) payload.patient_phone = data.patientPhone;
   if (data.date !== undefined) payload.date = data.date;

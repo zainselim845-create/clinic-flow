@@ -1,7 +1,28 @@
 export function patientsReducer(state, action) {
   switch (action.type) {
-    case 'ADD_PATIENT':
-      return { ...state, patients: [action.payload, ...state.patients] };
+    case 'ADD_PATIENT': {
+      const incoming = action.payload;
+      if (!incoming) return state;
+
+      const existingIndex = state.patients.findIndex(p =>
+        (incoming.id && p.id === incoming.id) ||
+        (incoming.phone && p.phone && p.phone === incoming.phone && p.name === incoming.name)
+      );
+
+      if (existingIndex >= 0) {
+        const updatedPatients = [...state.patients];
+        updatedPatients[existingIndex] = {
+          ...updatedPatients[existingIndex],
+          ...incoming
+        };
+        return {
+          ...state,
+          patients: updatedPatients
+        };
+      }
+
+      return { ...state, patients: [incoming, ...state.patients] };
+    }
 
     case 'ADD_PATIENTS_BULK':
       return { ...state, patients: [...(action.payload || []), ...state.patients] };

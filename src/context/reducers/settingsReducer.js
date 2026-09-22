@@ -8,9 +8,9 @@ export function settingsReducer(state, action) {
 
     // Blocked Slots & Vacations
     case 'TOGGLE_BLOCK_SLOT': {
-      const { date, time, reason = 'مغلق من السكرتارية' } = action.payload;
+      const { date, time, reason = 'مغلق من السكرتارية', isUnblock } = action.payload;
       const exists = state.blockedSlots.some(b => b.date === date && b.time === time);
-      if (exists) {
+      if (isUnblock || exists) {
         return {
           ...state,
           blockedSlots: state.blockedSlots.filter(b => !(b.date === date && b.time === time))
@@ -44,22 +44,32 @@ export function settingsReducer(state, action) {
       return { ...state, blockedSlots: action.payload };
 
     // Staff Management
-    case 'ADD_STAFF':
+    case 'ADD_STAFF': {
+      const incoming = action.payload;
+      if (!incoming) return state;
+      const exists = (state.staffMembers || []).some(s => incoming.id && s.id === incoming.id);
+      if (exists) {
+        return {
+          ...state,
+          staffMembers: (state.staffMembers || []).map(s => s.id === incoming.id ? incoming : s)
+        };
+      }
       return { 
         ...state, 
-        staffMembers: [action.payload, ...(state.staffMembers || [])],
+        staffMembers: [incoming, ...(state.staffMembers || [])],
         notifications: [
           {
             id: 'notif-' + Date.now(),
             type: 'staff',
             title: 'إضافة موظف جديد ',
-            message: `تم إضافة ${action.payload.name} (${action.payload.role}) إلى فريق العيادة`,
+            message: `تم إضافة ${incoming.name} (${incoming.role}) إلى فريق العيادة`,
             timestamp: new Date().toISOString(),
             read: false
           },
           ...(state.notifications || [])
         ].slice(0, 100)
       };
+    }
 
     case 'UPDATE_STAFF':
       return {
@@ -112,22 +122,32 @@ export function settingsReducer(state, action) {
     }
 
     // Patient Recalls
-    case 'ADD_RECALL':
+    case 'ADD_RECALL': {
+      const incoming = action.payload;
+      if (!incoming) return state;
+      const exists = (state.recalls || []).some(r => incoming.id && r.id === incoming.id);
+      if (exists) {
+        return {
+          ...state,
+          recalls: (state.recalls || []).map(r => r.id === incoming.id ? incoming : r)
+        };
+      }
       return {
         ...state,
-        recalls: [action.payload, ...(state.recalls || [])],
+        recalls: [incoming, ...(state.recalls || [])],
         notifications: [
           {
             id: 'notif-' + Date.now(),
             type: 'recall',
             title: 'جدولة استدعاء مريض',
-            message: `تمت جدولة استدعاء دوري للمريض ${action.payload.patientName} (${action.payload.reason})`,
+            message: `تمت جدولة استدعاء دوري للمريض ${incoming.patientName} (${incoming.reason})`,
             timestamp: new Date().toISOString(),
             read: false
           },
           ...(state.notifications || [])
         ].slice(0, 100)
       };
+    }
 
     case 'UPDATE_RECALL_STATUS':
       return {

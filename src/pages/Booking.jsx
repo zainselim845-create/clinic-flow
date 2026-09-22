@@ -67,7 +67,7 @@ const Booking = () => {
     gender: 'ذكر',
     date: todayStr,
     time: '',
-    type: currentClinic.services?.[0]?.name || 'كشف وفحص تشخيصي شامل',
+    type: currentClinic?.services?.[0]?.name || 'كشف وفحص تشخيصي شامل',
     notes: ''
   });
 
@@ -339,8 +339,8 @@ const Booking = () => {
       const bookingId = generateUuid();
       const bookingCode = '#CF-' + Math.floor(1000 + Math.random() * 9000);
 
-      const selectedService = (currentClinic.services || []).find(s => s.name === formData.type);
-      const serviceFee = selectedService?.price || (currentClinic.regularFee || '300 ج.م');
+      const selectedService = (currentClinic?.services || []).find(s => s.name === formData.type);
+      const serviceFee = selectedService?.price || (currentClinic?.regularFee || '300 ج.م');
 
       const newAppointment = {
         id: bookingId,
@@ -406,7 +406,7 @@ const Booking = () => {
       gender: 'ذكر',
       date: todayStr,
       time: '',
-      type: currentClinic.services?.[0]?.name || 'كشف وفحص تشخيصي شامل',
+      type: currentClinic?.services?.[0]?.name || 'كشف وفحص تشخيصي شامل',
       notes: ''
     });
     setIsExistingClient(false);
@@ -522,7 +522,7 @@ const Booking = () => {
       </div>
 
       <footer className="nebras-footer">
-        <p>نظام الحجز الإلكتروني • {currentClinic.name} • {currentClinic.address}</p>
+        <p>نظام الحجز الإلكتروني • {currentClinic?.name || 'العيادة'} • {currentClinic?.address || ''}</p>
       </footer>
     </div>
   );

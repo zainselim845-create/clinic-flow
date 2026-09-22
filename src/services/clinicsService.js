@@ -111,6 +111,10 @@ export async function deleteClinicFromDb(clinicId) {
     return { success: false, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { success: false, error: new Error('Clinic ID is strictly required to delete clinic') };
+  }
+
   try {
     const { error } = await supabase.from('clinics').delete().eq('id', clinicId);
     if (error) throw error;
@@ -126,12 +130,13 @@ export async function updateClinicInfo(clinicId, updateData) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: null, error: new Error('Clinic ID is strictly required to update clinic info') };
+  }
+
   try {
     const dbPayload = toDbClinic(updateData);
-    let query = supabase.from('clinics').update(dbPayload);
-    if (clinicId) {
-      query = query.eq('id', clinicId);
-    }
+    let query = supabase.from('clinics').update(dbPayload).eq('id', clinicId);
     const { data, error } = await query.select().maybeSingle();
     if (error) throw error;
     return { data: data ? fromDbClinic(data) : null, error: null };

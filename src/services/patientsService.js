@@ -36,7 +36,7 @@ export function toDbPatient(data) {
   if (data.id && typeof data.id === 'string' && data.id.includes('-') && data.id.length > 20) {
     payload.id = data.id;
   }
-  if (data.clinicId !== undefined) payload.clinic_id = data.clinicId;
+  if (data.clinicId !== undefined || data.clinic_id !== undefined) payload.clinic_id = data.clinicId || data.clinic_id;
   if (data.name !== undefined) payload.name = data.name;
   if (data.age !== undefined) payload.age = parseInt(String(data.age).replace(/\D/g, ''), 10) || 30;
   if (data.gender !== undefined) payload.gender = data.gender;

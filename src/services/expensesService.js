@@ -22,8 +22,8 @@ export function toDbExpense(data) {
   if (data.id && typeof data.id === 'string' && data.id.includes('-') && data.id.length > 20) {
     payload.id = data.id;
   }
-  if (data.clinicId && typeof data.clinicId === 'string' && data.clinicId.includes('-')) {
-    payload.clinic_id = data.clinicId;
+  if (data.clinicId !== undefined || data.clinic_id !== undefined) {
+    payload.clinic_id = data.clinicId || data.clinic_id;
   }
   if (data.title !== undefined) payload.title = data.title;
   if (data.amount !== undefined) payload.amount = Number(data.amount) || 0;

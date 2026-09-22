@@ -22,7 +22,9 @@ export function toDbBlockedSlot(data) {
   if (data.id && typeof data.id === 'string' && data.id.includes('-') && data.id.length > 20) {
     payload.id = data.id;
   }
-  if (data.clinicId !== undefined) payload.clinic_id = data.clinicId;
+  if (data.clinicId !== undefined || data.clinic_id !== undefined) {
+    payload.clinic_id = data.clinicId || data.clinic_id;
+  }
   if (data.date !== undefined) payload.date = data.date;
   if (data.time !== undefined) payload.time = data.time;
   if (data.isFullDay !== undefined) payload.is_full_day = data.isFullDay;
@@ -37,14 +39,16 @@ export function toDbBlockedSlot(data) {
 export async function getBlockedSlots(clinicId, date = null) {
   if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
   try {
     let query = supabase
       .from('blocked_slots')
-      .select('*');
+      .select('*')
+      .eq('clinic_id', clinicId);
 
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
     if (date) {
       query = query.eq('date', date);
     }

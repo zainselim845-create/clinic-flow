@@ -24,11 +24,11 @@ export function toDbRecall(data) {
   if (data.id && typeof data.id === 'string' && data.id.includes('-') && data.id.length > 20) {
     payload.id = data.id;
   }
-  if (data.clinicId && typeof data.clinicId === 'string' && data.clinicId.includes('-')) {
-    payload.clinic_id = data.clinicId;
+  if (data.clinicId !== undefined || data.clinic_id !== undefined) {
+    payload.clinic_id = data.clinicId || data.clinic_id;
   }
-  if (data.patientId && typeof data.patientId === 'string' && data.patientId.includes('-')) {
-    payload.patient_id = data.patientId;
+  if (data.patientId !== undefined || data.patient_id !== undefined) {
+    payload.patient_id = data.patientId || data.patient_id;
   }
   if (data.patientName !== undefined) payload.patient_name = data.patientName;
   if (data.patientPhone !== undefined) payload.patient_phone = data.patientPhone;
@@ -43,11 +43,11 @@ export async function getRecalls(clinicId, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
   try {
-    let query = supabase.from('patient_recalls').select('*');
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
+    let query = supabase.from('patient_recalls').select('*').eq('clinic_id', clinicId);
     const limit = options?.limit || 200;
     const { data, error } = await query.order('due_date', { ascending: true }).limit(limit);
     if (error) throw error;

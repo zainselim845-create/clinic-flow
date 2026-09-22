@@ -26,7 +26,9 @@ export function toDbStaff(data) {
   if (data.id && typeof data.id === 'string' && data.id.includes('-') && data.id.length > 20) {
     payload.id = data.id;
   }
-  if (data.clinicId !== undefined) payload.clinic_id = data.clinicId;
+  if (data.clinicId !== undefined || data.clinic_id !== undefined) {
+    payload.clinic_id = data.clinicId || data.clinic_id;
+  }
   if (data.name !== undefined) payload.name = data.name;
   if (data.phone !== undefined) payload.phone = data.phone;
   if (data.email !== undefined) payload.email = data.email;
@@ -47,15 +49,16 @@ export async function getStaffMembers(clinicId) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
   try {
     let query = supabase
       .from('staff_members')
       .select('*')
+      .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false });
-
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
 
     const { data, error } = await query;
     if (error) throw error;

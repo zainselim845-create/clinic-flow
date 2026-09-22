@@ -23,7 +23,9 @@ export function toDbNotification(data) {
   if (data.id && typeof data.id === 'string' && data.id.includes('-') && data.id.length > 20) {
     payload.id = data.id;
   }
-  if (data.clinicId !== undefined) payload.clinic_id = data.clinicId;
+  if (data.clinicId !== undefined || data.clinic_id !== undefined) {
+    payload.clinic_id = data.clinicId || data.clinic_id;
+  }
   if (data.type !== undefined) payload.type = data.type;
   if (data.title !== undefined) payload.title = data.title;
   if (data.message !== undefined) payload.message = data.message;
@@ -39,17 +41,18 @@ export function toDbNotification(data) {
 export async function getNotifications(clinicId, options = {}) {
   if (!isSupabaseConfigured()) return { data: null, error: NOT_CONFIGURED_ERROR };
 
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
   try {
     const limit = options?.limit || 100;
     let query = supabase
       .from('notifications')
       .select('*')
+      .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false })
       .limit(limit);
-
-    if (clinicId) {
-      query = query.eq('clinic_id', clinicId);
-    }
 
     const { data, error } = await query;
 

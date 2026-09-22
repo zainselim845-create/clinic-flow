@@ -1,18 +1,41 @@
 export function appointmentsReducer(state, action) {
   switch (action.type) {
     case 'ADD_APPOINTMENT': {
+      const incoming = action.payload;
+      if (!incoming) return state;
+
+      // Check if appointment already exists by id, or by exact same slot + patient
+      const existingIndex = state.appointments.findIndex(a => 
+        (incoming.id && a.id === incoming.id) ||
+        (a.date === incoming.date && a.time === incoming.time && 
+         ((a.patientId && incoming.patientId && a.patientId === incoming.patientId) ||
+          (a.patientName && incoming.patientName && a.patientName === incoming.patientName)))
+      );
+
+      if (existingIndex >= 0) {
+        const updatedAppointments = [...state.appointments];
+        updatedAppointments[existingIndex] = {
+          ...updatedAppointments[existingIndex],
+          ...incoming
+        };
+        return {
+          ...state,
+          appointments: updatedAppointments
+        };
+      }
+
       const newNotif = {
         id: 'notif-' + Date.now(),
         type: 'appointment',
         title: 'حجز موعد جديد',
-        message: `تم حجز موعد للمريض ${action.payload.patientName || 'مريض'} يوم ${action.payload.date} الساعة ${action.payload.time}`,
+        message: `تم حجز موعد للمريض ${incoming.patientName || 'مريض'} يوم ${incoming.date} الساعة ${incoming.time}`,
         timestamp: new Date().toISOString(),
         read: false,
-        relatedId: action.payload.id
+        relatedId: incoming.id
       };
       return { 
         ...state, 
-        appointments: [...state.appointments, action.payload],
+        appointments: [...state.appointments, incoming],
         notifications: [newNotif, ...(state.notifications || [])].slice(0, 100)
       };
     }

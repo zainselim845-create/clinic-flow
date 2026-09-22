@@ -8,6 +8,9 @@ import { fromDbPatient } from './patientsService';
 import { fromDbNotification } from './notificationsService';
 import { fromDbStaff } from './staffService';
 import { fromDbBlockedSlot } from './blockedSlotsService';
+import { fromDbExpense } from './expensesService';
+import { fromDbRecall } from './recallsService';
+import { apiCache } from './apiCacheService';
 
 export const REALTIME_STATUS = {
   DISCONNECTED: 'DISCONNECTED',
@@ -104,6 +107,12 @@ export function mapPostgresChangeToDomainAction(table, payload) {
       if (eventType === 'INSERT') {
         return { type: 'ADD_NOTIFICATION', payload: fromDbNotification(newRow) };
       }
+      if (eventType === 'UPDATE') {
+        return { type: 'MARK_NOTIFICATION_READ', payload: newRow?.id };
+      }
+      if (eventType === 'DELETE') {
+        return { type: 'DELETE_NOTIFICATION', payload: oldRow?.id };
+      }
       return null;
     }
 
@@ -123,6 +132,36 @@ export function mapPostgresChangeToDomainAction(table, payload) {
     case 'blocked_slots': {
       if (eventType === 'INSERT') {
         return { type: 'TOGGLE_BLOCK_SLOT', payload: fromDbBlockedSlot(newRow) };
+      }
+      if (eventType === 'DELETE') {
+        const deleted = fromDbBlockedSlot(oldRow) || {};
+        return { type: 'TOGGLE_BLOCK_SLOT', payload: { date: deleted.date, time: deleted.time, isUnblock: true } };
+      }
+      return null;
+    }
+
+    case 'expenses': {
+      if (eventType === 'INSERT') {
+        return { type: 'ADD_EXPENSE', payload: fromDbExpense(newRow) };
+      }
+      if (eventType === 'UPDATE') {
+        return { type: 'UPDATE_EXPENSE', payload: fromDbExpense(newRow) };
+      }
+      if (eventType === 'DELETE') {
+        return { type: 'DELETE_EXPENSE', payload: oldRow?.id };
+      }
+      return null;
+    }
+
+    case 'patient_recalls': {
+      if (eventType === 'INSERT') {
+        return { type: 'ADD_RECALL', payload: fromDbRecall(newRow) };
+      }
+      if (eventType === 'UPDATE') {
+        return { type: 'UPDATE_RECALL_STATUS', payload: fromDbRecall(newRow) };
+      }
+      if (eventType === 'DELETE') {
+        return { type: 'DELETE_RECALL', payload: oldRow?.id };
       }
       return null;
     }
@@ -157,6 +196,9 @@ export function createClinicRealtimeManager({
   const channel = supabaseClient.channel(channelName);
 
   const handlePostgresChange = (table, payload) => {
+    // Invalidate in-memory cache immediately to guarantee fresh reads
+    apiCache.invalidateResource(table, clinicId);
+
     const action = mapPostgresChangeToDomainAction(table, payload);
     if (!action) return;
 
@@ -167,7 +209,7 @@ export function createClinicRealtimeManager({
   };
 
   // Register table listeners with strict clinic_id scoping
-  const tables = ['appointments', 'patients', 'notifications', 'staff_members', 'blocked_slots'];
+  const tables = ['appointments', 'patients', 'notifications', 'staff_members', 'blocked_slots', 'expenses', 'patient_recalls'];
   tables.forEach((tableName) => {
     channel.on(
       'postgres_changes',
