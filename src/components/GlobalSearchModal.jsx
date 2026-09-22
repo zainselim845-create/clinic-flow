@@ -5,8 +5,7 @@ import { useTenant } from '../context/TenantContext';
 import { 
   Search, User, Calendar, Clock, ArrowLeft, X, 
   Smartphone, Users, CheckCircle2, AlertCircle, ShieldCheck,
-  Receipt, Package, Layers, Bot, SunMoon, UserPlus, CalendarPlus, CreditCard,
-  Baby, Eye, Heart, Scan
+  Receipt, Package, Layers, Bot, SunMoon, UserPlus, CalendarPlus, CreditCard
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
@@ -73,10 +72,6 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
 
   // 4. Quick Action Shortcuts (Linear / Raycast style command actions)
   const quickActions = useMemo(() => [
-    { id: 'act-pediatrics', title: 'جداول ومنحنيات نمو الأطفال (WHO Growth Standards)', icon: Baby, path: '/patients?tab=specialty&module=pediatrics', category: 'المخططات التخصصية' },
-    { id: 'act-ophthalmology', title: 'انكسار النظر ووصفة النظارة الطبية (Ophthalmology)', icon: Eye, path: '/patients?tab=specialty&module=ophthalmology', category: 'المخططات التخصصية' },
-    { id: 'act-obgyn', title: 'حاسبة الحمل وتتبع الأجنة (OB/GYN Hadlock)', icon: Heart, path: '/patients?tab=specialty&module=obgyn', category: 'المخططات التخصصية' },
-    { id: 'act-dicom', title: 'عارض الأشعة الطبية (DICOM Viewer)', icon: Scan, path: '/patients?tab=specialty&module=dicom', category: 'المخططات التخصصية' },
     { id: 'act-new-patient', title: 'إضافة مريض جديد', icon: UserPlus, path: '/patients?action=new', category: 'إجراءات سريعة' },
     { id: 'act-new-appt', title: 'حجز موعد كشف جديد', icon: CalendarPlus, path: '/appointments?action=new', category: 'إجراءات سريعة' },
     { id: 'act-new-inv', title: 'إصدار فاتورة جديدة', icon: Receipt, path: '/invoices?action=new', category: 'إجراءات سريعة' },

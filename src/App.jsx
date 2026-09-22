@@ -56,7 +56,6 @@ const Onboarding = lazyWithRetry(() => import('./pages/Onboarding'));
 const LandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
 const SmsIntegration = lazyWithRetry(() => import('./pages/SmsIntegration'));
 const Labs = lazyWithRetry(() => import('./pages/Labs'));
-const SpecialtyClinics = lazyWithRetry(() => import('./pages/SpecialtyClinics'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 const pageTitles = {
@@ -68,8 +67,6 @@ const pageTitles = {
   '/inventory': 'مخزون المستلزمات الطبية',
   '/attendance': 'حضور وانصراف الطاقم',
   '/doctor-agent': 'مساعد الطبيب الذكي',
-  '/specialty-charts': 'المخططات التخصصية وعارض الأشعة (DICOM)',
-  '/specialty': 'المخططات التخصصية وعارض الأشعة (DICOM)',
   '/notifications': 'التنبيهات والإشعارات',
   '/sms-integration': 'بوابة الرسائل النصية والتكامل',
   '/labs': 'معمل التركيبات والتحاليل',
@@ -281,10 +278,6 @@ function App() {
                 <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
               } />
               <Route path="/doctor-assistant" element={<Navigate to="/doctor-agent" replace />} />
-              <Route path="/specialty-charts" element={
-                <ProtectedRoute allowedRoles={['doctor', 'super_admin']}><SpecialtyClinics /></ProtectedRoute>
-              } />
-              <Route path="/specialty" element={<Navigate to="/specialty-charts" replace />} />
               <Route path="/sms-integration" element={
                 <ProtectedRoute allowedRoles={['doctor']}><SmsIntegration /></ProtectedRoute>
               } />
@@ -297,6 +290,8 @@ function App() {
             </Route>
 
             {/* 3. Removed Routes Redirects */}
+            <Route path="/specialty-charts" element={<Navigate to="/" replace />} />
+            <Route path="/specialty" element={<Navigate to="/" replace />} />
             <Route path="/insurance" element={<Navigate to="/" replace />} />
 
             {/* 4. Fallback unknown paths */}

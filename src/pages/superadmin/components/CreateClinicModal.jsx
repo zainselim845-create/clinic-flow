@@ -73,7 +73,7 @@ export function CreateClinicModal({
                 <select
                   id="clinic-specialty-select"
                   value={
-                    ['طب وجراحة الأسنان', 'الأمراض الجلدية والتجميل والليزر', 'طب الأطفال وحديثي الولادة', 'طب وجراحة العيون', 'أمراض النساء والتوليد', 'الأشعة والتصوير الطبي (DICOM)', 'القلب والأوعية الدموية', 'العظام والمفاصل', 'الباطنة والجهاز الهضمي'].includes(newClinic.specialty)
+                    ['طب وجراحة الأسنان', 'الأمراض الجلدية والتجميل والليزر', 'طب الأطفال وحديثي الولادة', 'طب وجراحة العيون', 'أمراض النساء والتوليد', 'الأشعة والتصوير الطبي', 'القلب والأوعية الدموية', 'العظام والمفاصل', 'الباطنة والجهاز الهضمي'].includes(newClinic.specialty)
                       ? newClinic.specialty
                       : 'custom'
                   }
@@ -94,7 +94,7 @@ export function CreateClinicModal({
                   <option value="طب الأطفال وحديثي الولادة">طب الأطفال (Pediatrics)</option>
                   <option value="طب وجراحة العيون">طب العيون (Ophthalmology)</option>
                   <option value="أمراض النساء والتوليد">نساء وتوليد (OB/GYN)</option>
-                  <option value="الأشعة والتصوير الطبي (DICOM)">أشعة وتصوير طبي (DICOM)</option>
+                  <option value="الأشعة والتصوير الطبي">أشعة وتصوير طبي</option>
                   <option value="القلب والأوعية الدموية">قلب وأوعية دموية</option>
                   <option value="العظام والمفاصل">عظام ومفاصل</option>
                   <option value="الباطنة والجهاز الهضمي">باطنة وجهاز هضمي</option>

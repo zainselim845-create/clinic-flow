@@ -4,7 +4,7 @@ import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, MessageSquare, 
-  FileSpreadsheet, X, Edit3, Wallet, Pill, Layers, Printer, Eye, Activity 
+  FileSpreadsheet, X, Edit3, Wallet, Pill, Layers, Printer
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTenant } from '../../context/TenantContext';
@@ -12,7 +12,6 @@ import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
 import TreatmentPlanModal from '../../components/TreatmentPlanModal';
 import PatientWalletPanel from '../../components/PatientWalletPanel';
 import PrescriptionPrintModal from '../../components/PrescriptionPrintModal';
-import SpecialtyClinicalHub from '../../components/specialty/SpecialtyClinicalHub';
 import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
 import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
 import { getPatientPrescriptionsFromStorage, formatPrescriptionForWhatsApp } from '../../services/prescriptionService';
@@ -297,29 +296,6 @@ export default function PatientDossierDrawer({
                   >
                     <Layers size={14} />
                     <span>أعمال المعمل والتركيبات ({patientLabOrders.length})</span>
-                  </button>
-                </Tabs.Trigger>
-
-                <Tabs.Trigger value="specialty" asChild>
-                  <button
-                    type="button"
-                    className={`btn-dossier-tab ${activeTab === 'specialty' ? 'active' : ''}`}
-                    style={{
-                      background: activeTab === 'specialty' ? 'var(--primary)' : 'var(--surface)',
-                      color: activeTab === 'specialty' ? '#FFFFFF' : 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
-                      padding: '0.45rem 0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 700,
-                      fontSize: '0.84rem',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.35rem'
-                    }}
-                  >
-                    <Activity size={14} />
-                    <span>المخططات التخصصية والأشعة</span>
                   </button>
                 </Tabs.Trigger>
               </Tabs.List>
@@ -671,20 +647,6 @@ export default function PatientDossierDrawer({
                   ))}
                 </div>
               )}
-            </div>
-          </Tabs.Content>
-
-          {/* TAB 7: SPECIALTY CLINICAL MODULES & DICOM */}
-          <Tabs.Content value="specialty">
-            <div style={{ paddingTop: '0.5rem' }}>
-              <SpecialtyClinicalHub
-                patientId={patient?.id}
-                clinicId={currentClinicId}
-                patientName={patientName}
-                patientAge={patient?.age || 25}
-                clinicSpecialty={tenant?.specialty || state?.clinicInfo?.specialty || 'general'}
-                doctorName={tenant?.doctorName || state?.clinicInfo?.doctorName || 'طبيب العيادة'}
-              />
             </div>
           </Tabs.Content>
 

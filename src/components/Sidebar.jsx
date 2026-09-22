@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, 
   Stethoscope, LogOut, Smartphone, Bot, Receipt, Layers, 
-  Package, UserCheck, Sparkles, ShieldCheck, Settings, Activity
+  Package, UserCheck, Sparkles, ShieldCheck, Settings
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -104,10 +104,6 @@ const Sidebar = () => {
             <NavLink to="/doctor-agent" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
               <Bot size={19} />
               <span>مساعد الطبيب الذكي</span>
-            </NavLink>
-            <NavLink to="/specialty-charts" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-              <Activity size={19} />
-              <span>المخططات التخصصية والأشعة</span>
             </NavLink>
             {enableLabs && (
               <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
