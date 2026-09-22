@@ -49,7 +49,8 @@ import './SuperAdminDashboard.css';
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { signOut, impersonateUser } = useAuth();
-  const { allTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant, updateTenantInfo } = useTenant();
+  const { setAllTenants, switchTenant, updateTenantStatus, deleteTenant, updateTenantInfo } = useTenant();
+  const [allTenants, setDashboardTenants] = useState(() => getCombinedTenants(true));
   const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'users' | 'telemetry_bugs' | 'infrastructure'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
   const [bugReports, setBugReports] = useState(getBugReports());
@@ -145,12 +146,13 @@ export default function SuperAdminDashboard() {
 
   const handleRefreshAll = () => {
     const freshTenants = getCombinedTenants(true);
+    setDashboardTenants(freshTenants);
     setAllTenants(freshTenants);
     const freshUsers = getAllPlatformUsers();
     setAllUsers(freshUsers);
   };
 
-  // Keep platform tenants and users reactive to additions, storage events, BroadcastChannel, and tab focus
+  // Keep platform tenants and users reactive to additions, storage events, BroadcastChannel, CustomEvent, and tab focus
   React.useEffect(() => {
     handleRefreshAll();
     const handleStorageChange = (e) => {
@@ -160,6 +162,7 @@ export default function SuperAdminDashboard() {
     };
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('focus', handleRefreshAll);
+    window.addEventListener('clinicflow_sync', handleRefreshAll);
     document.addEventListener('visibilitychange', handleRefreshAll);
 
     let channel = null;
@@ -177,8 +180,11 @@ export default function SuperAdminDashboard() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('focus', handleRefreshAll);
+      window.removeEventListener('clinicflow_sync', handleRefreshAll);
       document.removeEventListener('visibilitychange', handleRefreshAll);
-      if (channel) channel.close();
+      if (channel) {
+        try { channel.close(); } catch (_) {}
+      }
     };
   }, [activeTab]);
 
@@ -187,7 +193,7 @@ export default function SuperAdminDashboard() {
     const clinicName = target?.name || slugOrId;
     if (window.confirm(`تحذير أمني: هل أنت متأكد من رغبتك في حذف عيادة (${clinicName}) نهائياً من المنصة؟\nسيتم إزالة كافة الحسابات والبيانات التابعة لها.`)) {
       deleteTenant(slugOrId);
-      setTimeout(() => setAllUsers(getAllPlatformUsers()), 100);
+      handleRefreshAll();
     }
   };
 
@@ -304,8 +310,7 @@ export default function SuperAdminDashboard() {
       });
     }
 
-    setAllTenants(prev => [...prev, created]);
-    setAllUsers(getAllPlatformUsers());
+    handleRefreshAll();
     setIsCreateModalOpen(false);
     setNewClinic({
       name: '',
@@ -598,7 +603,7 @@ export default function SuperAdminDashboard() {
         }}
         clinic={selectedTopUpClinic}
         onSuccess={() => {
-          setAllTenants([...allTenants]);
+          handleRefreshAll();
         }}
       />
 
@@ -639,19 +644,7 @@ export default function SuperAdminDashboard() {
               ...brandingUpdates
             });
           }
-          setAllTenants(prev => prev.map(t => {
-            if (t.id === clinicIdOrSlug || t.slug === clinicIdOrSlug) {
-              return {
-                ...t,
-                ...brandingUpdates,
-                branding: {
-                  ...(t.branding || {}),
-                  ...(brandingUpdates.branding || {})
-                }
-              };
-            }
-            return t;
-          }));
+          handleRefreshAll();
         }}
       />
 
@@ -671,7 +664,7 @@ export default function SuperAdminDashboard() {
               ...updates
             });
           }
-          setAllTenants(getCombinedTenants());
+          handleRefreshAll();
         }}
       />
     </div>

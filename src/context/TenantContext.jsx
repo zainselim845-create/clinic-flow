@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { useLocation, useInRouterContext } from 'react-router-dom';
 import { clinicInfo as defaultClinicInfo, demoClinics as fallbackDemoClinics } from '../data/demoData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { fromDbClinic, getAllClinicsFromDb } from '../services/clinicsService';
@@ -6,7 +7,7 @@ import { canSwitchTenants } from '../utils/permissions';
 import { patientIndex } from '../services/indexedSearchService';
 import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus, deleteRegisteredTenant } from '../services/authService';
 import { getClinicDomainSettings } from '../services/customDomainService';
-import { safeGetItem, safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import { safeGetItem, safeGetJSON, safeSetJSON, safeSessionGetJSON } from '../utils/safeStorage';
 
 const TenantContext = createContext(null);
 
@@ -257,7 +258,21 @@ export function applyTenantBranding(branding) {
   root.style.setProperty('--clinic-ring', accent);
 }
 
+const LocationBridge = ({ onPathChange }) => {
+  const location = useLocation();
+  useEffect(() => {
+    if (location?.pathname) {
+      onPathChange(location.pathname);
+    }
+  }, [location?.pathname, onPathChange]);
+  return null;
+};
+
 export const TenantProvider = ({ children }) => {
+  const inRouter = useInRouterContext();
+  const [currentPath, setCurrentPath] = useState(() => 
+    typeof window !== 'undefined' ? window.location.pathname : ''
+  );
   const applyBranding = applyTenantBranding;
   const [allTenants, setAllTenants] = useState(() => getCombinedTenants(true));
   const initialResolution = useMemo(() => resolveTenantFromLocation(allTenants), [allTenants]);
@@ -274,16 +289,15 @@ export const TenantProvider = ({ children }) => {
 
   // 1. Cross-tab and Broadcast Synchronization (Multi-window & Multi-tab reactivity)
   useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (!e || e.key === 'clinicflow_registered_tenants' || e.key === 'clinicflow_active_tenant_slug' || e.key === 'clinicflow_registered_users' || e.key === 'clinicflow_auth_user') {
-        const fresh = getCombinedTenants(true);
-        setAllTenants(fresh);
-      }
-    };
-
-    const handleFocusSync = () => {
+    const handleSync = () => {
       const fresh = getCombinedTenants(true);
       setAllTenants(fresh);
+    };
+
+    const handleStorageChange = (e) => {
+      if (!e || e.key === 'clinicflow_registered_tenants' || e.key === 'clinicflow_active_tenant_slug' || e.key === 'clinicflow_registered_users' || e.key === 'clinicflow_auth_user') {
+        handleSync();
+      }
     };
 
     let channel = null;
@@ -291,8 +305,7 @@ export const TenantProvider = ({ children }) => {
       try {
         channel = new BroadcastChannel('clinicflow_tenants_sync');
         channel.onmessage = () => {
-          const fresh = getCombinedTenants(true);
-          setAllTenants(fresh);
+          handleSync();
         };
       } catch (channelErr) {
         console.warn('[TenantContext] BroadcastChannel init warning:', channelErr);
@@ -301,18 +314,20 @@ export const TenantProvider = ({ children }) => {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', handleStorageChange);
-      window.addEventListener('focus', handleFocusSync);
-      document.addEventListener('visibilitychange', handleFocusSync);
+      window.addEventListener('focus', handleSync);
+      window.addEventListener('clinicflow_sync', handleSync);
+      document.addEventListener('visibilitychange', handleSync);
     }
 
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('storage', handleStorageChange);
-        window.removeEventListener('focus', handleFocusSync);
-        document.removeEventListener('visibilitychange', handleFocusSync);
+        window.removeEventListener('focus', handleSync);
+        window.removeEventListener('clinicflow_sync', handleSync);
+        document.removeEventListener('visibilitychange', handleSync);
       }
       if (channel) {
-        channel.close();
+        try { channel.close(); } catch (_) {}
       }
     };
   }, []);
@@ -482,12 +497,8 @@ export const TenantProvider = ({ children }) => {
   const registerNewTenant = useCallback((newTenant) => {
     if (!newTenant) return;
     saveRegisteredTenant(newTenant);
-    setAllTenants(prev => {
-      const exists = prev.some(t => t.id === newTenant.id || t.slug === newTenant.slug);
-      return exists 
-        ? prev.map(t => (t.id === newTenant.id || t.slug === newTenant.slug) ? newTenant : t) 
-        : [newTenant, ...prev];
-    });
+    const freshCombined = getCombinedTenants(true);
+    setAllTenants(freshCombined);
     setActiveTenant(newTenant);
     if (newTenant.slug) {
       localStorage.setItem('clinicflow_active_tenant_slug', newTenant.slug);
@@ -625,14 +636,24 @@ export const TenantProvider = ({ children }) => {
     }
   }, [activeTenant]);
 
-  const isSuperAdminRoute = typeof window !== 'undefined' && (
-    window.location.pathname.startsWith('/super-admin') ||
-    window.location.pathname.startsWith('/superadmin') ||
-    window.location.pathname.startsWith('/saas') ||
-    window.location.pathname.startsWith('/admin')
-  );
+  const isSuperAdminRoute = useMemo(() => {
+    const path = currentPath || (typeof window !== 'undefined' ? window.location.pathname : '');
+    return path.startsWith('/super-admin') ||
+      path.startsWith('/superadmin') ||
+      path.startsWith('/saas') ||
+      path.startsWith('/admin') ||
+      path.startsWith('/control-plane');
+  }, [currentPath]);
+
   const isolatedTenantsCatalog = useMemo(() => {
-    if (dedicatedDomainActive && !isSuperAdminRoute) {
+    const storedUser = safeSessionGetJSON('clinicflow_auth_user') || safeGetJSON('clinicflow_auth_user');
+    const isSuperUser = storedUser?.role === 'super_admin' || storedUser?.isSuperAdmin === true;
+
+    if (isSuperAdminRoute || isSuperUser) {
+      return allTenants;
+    }
+
+    if (dedicatedDomainActive) {
       return activeTenant ? [activeTenant] : allTenants.slice(0, 1);
     }
     return allTenants;
@@ -642,7 +663,8 @@ export const TenantProvider = ({ children }) => {
     tenant: activeTenant,
     tenantSlug: activeTenant?.slug || 'dr-ahmed',
     resolveTenantSlug,
-    allTenants: isolatedTenantsCatalog,
+    allTenants: (isSuperAdminRoute ? allTenants : isolatedTenantsCatalog),
+    rawAllTenants: allTenants,
     setAllTenants,
     refreshTenants,
     isLoadingTenant,
@@ -657,10 +679,11 @@ export const TenantProvider = ({ children }) => {
     checkQuota,
     tier: activeTenant?.subscriptionTier || 'pro',
     isMultiTenant: true
-  }), [activeTenant, resolveTenantSlug, isolatedTenantsCatalog, refreshTenants, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, deleteTenant, updateTenantInfo, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
+  }), [activeTenant, resolveTenantSlug, isSuperAdminRoute, allTenants, isolatedTenantsCatalog, refreshTenants, dedicatedDomainActive, isLoadingTenant, switchTenant, registerNewTenant, deleteTenant, updateTenantInfo, updateTenantStatus, updateTenantDomain, hasFeature, checkQuota]);
 
   return (
     <TenantContext.Provider value={value}>
+      {inRouter && <LocationBridge onPathChange={setCurrentPath} />}
       {children}
     </TenantContext.Provider>
   );

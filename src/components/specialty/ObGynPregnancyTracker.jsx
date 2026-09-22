@@ -153,7 +153,7 @@ export default function ObGynPregnancyTracker({
 
         <div className="obgyn-kpi-card">
           <span className="kpi-label">تاريخ الولادة المتوقع (EDD)</span>
-          <div className="kpi-value edd-value">{gaCalculation.edd || '—'}</div>
+          <div className="kpi-value edd-value">{gaCalculation.eddFormatted || '—'}</div>
           <span className="kpi-subtext">حسب قاعدة نيجل (Naegele's Rule)</span>
         </div>
 
