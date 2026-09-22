@@ -161,13 +161,7 @@ function WaitingRoomQueue({
                     <div className="item-actions">
                       <button
                         type="button"
-                        onClick={() => {
-                          if (currentExamPatient) {
-                            alert('يوجد مريض قيد الكشف حالياً في غرفة الكشف. يرجى إنهاء الكشف الحالي أولاً قبل إدخال مريض جديد.');
-                            return;
-                          }
-                          onStartExam(appt);
-                        }}
+                        onClick={() => onStartExam(appt)}
                         disabled={!!currentExamPatient}
                         className="btn-queue-start-exam"
                         style={currentExamPatient ? { opacity: 0.5, cursor: 'not-allowed' } : {}}

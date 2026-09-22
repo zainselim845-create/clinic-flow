@@ -1,5 +1,5 @@
 import { safeStorage } from '../utils/safeStorage';
-import { updateClinicSubscriptionStatus } from './authService';
+import { updateClinicSubscriptionStatus, broadcastTenantUpdate } from './authService';
 
 export const SAAS_PLANS_STORAGE_KEY = 'clinicflow_saas_custom_plans';
 
@@ -181,6 +181,7 @@ export function updateClinicSubscriptionDetails(clinicSlugOrId, updates = {}) {
   const registered = safeStorage.getItem('clinicflow_registered_tenants', []);
   const index = registered.findIndex(t => t.id === clinicSlugOrId || t.slug === clinicSlugOrId);
 
+  let updated = null;
   if (index >= 0) {
     const existing = registered[index];
     const history = Array.isArray(existing.subscriptionPaymentHistory) ? [...existing.subscriptionPaymentHistory] : [];
@@ -196,7 +197,7 @@ export function updateClinicSubscriptionDetails(clinicSlugOrId, updates = {}) {
       });
     }
 
-    const updated = {
+    updated = {
       ...existing,
       ...updates,
       subscriptionPaymentHistory: history,
@@ -237,6 +238,9 @@ export function updateClinicSubscriptionDetails(clinicSlugOrId, updates = {}) {
       clinicId: clinicSlugOrId
     });
   }
+
+  // 4. Broadcast update across all open tabs and windows
+  broadcastTenantUpdate('UPDATE_TENANT_DETAILS', { id: clinicSlugOrId, updates, tenant: updated });
 
   return true;
 }

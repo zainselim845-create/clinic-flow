@@ -18,6 +18,8 @@ import PrescriptionPrintModal from '../components/PrescriptionPrintModal';
 import ExpensesModal from '../components/ExpensesModal';
 import PatientRecallModal from '../components/PatientRecallModal';
 import ShiftHandoverModal from '../components/ShiftHandoverModal';
+import ConfirmationModal from '../components/ConfirmationModal';
+import QuickPaymentModal from './dashboard/QuickPaymentModal';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
@@ -50,6 +52,9 @@ const Dashboard = () => {
   const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
   const [isRecallModalOpen, setIsRecallModalOpen] = useState(false);
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
+  const [paymentModalAppt, setPaymentModalAppt] = useState(null);
+  const [roomWarningModal, setRoomWarningModal] = useState(null);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [scheduleSearchQuery, setScheduleSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('all');
   const [copiedBookingLink, setCopiedBookingLink] = useState(false);
@@ -149,8 +154,16 @@ const Dashboard = () => {
 
   const currentExamPatient = inProgressToday[0] || null;
 
-  // Status transitions
+  // Status transitions with Room Occupancy Guard
   const handleStartExam = async (appt) => {
+    if (currentExamPatient && currentExamPatient.id !== appt.id) {
+      setRoomWarningModal({
+        occupiedPatient: currentExamPatient,
+        nextPatient: appt
+      });
+      return;
+    }
+
     if (state.useSupabase) {
       try {
         await appointmentsService.updateAppointmentStatus(appt.id, 'in_progress', {
@@ -238,15 +251,19 @@ const Dashboard = () => {
   };
 
   // Secretary collects payment → status becomes completed + auto invoice creation
-  const handleCollectPayment = async (appointmentId, paymentMethod) => {
+  const handleCollectPayment = async (appointmentId, paymentMethod, customAmount, notes) => {
     const targetAppt = todaysAppointments.find(a => a.id === appointmentId);
     const rawFee = targetAppt?.fee ?? targetAppt?.paidAmount;
-    const numericFee = typeof rawFee === 'number'
+    const defaultNumericFee = typeof rawFee === 'number'
       ? rawFee
       : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) || 0 : (currentClinic.regularFee || 0));
+    const numericFee = (customAmount !== undefined && customAmount !== null) ? Number(customAmount) : defaultNumericFee;
 
     const clinicSlug = currentClinic.slug || tenant?.slug || 'clinic';
     const invoiceNumber = getNextInvoiceNumber(currentClinicId || clinicSlug);
+
+    const paymentMethodLabel = paymentMethod === 'cash' ? 'نقداً (كاش)' : paymentMethod === 'card' ? 'بطاقة بنكية' : 'إنستاباي/محفظة إلكترونية';
+    const paymentNotes = notes ? `ملاحظات: ${notes} • تم التحصيل عبر (${paymentMethodLabel})` : `تم تحصيل الرسوم بواسطة مكتب الاستقبال عبر (${paymentMethodLabel})`;
 
     const newInvoice = {
       id: 'inv-' + Date.now(),
@@ -274,7 +291,7 @@ const Dashboard = () => {
         quantity: 1,
         total: numericFee
       }],
-      notes: `تم تحصيل الرسوم بواسطة مكتب الاستقبال عبر (${paymentMethod === 'cash' ? 'نقداً (كاش)' : paymentMethod === 'card' ? 'بطاقة بنكية' : 'إنستاباي/محفظة'})`,
+      notes: paymentNotes,
       createdAt: new Date().toISOString()
     };
 
@@ -373,9 +390,12 @@ const Dashboard = () => {
   };
 
   const handleRefreshToday = () => {
-    if (window.confirm('تنبيه: هل أنت متأكد من رغبتك في إعادة ضبط واستعادة جدول مواعيد اليوم للحالة الأولية؟')) {
-      dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' });
-    }
+    setIsResetConfirmOpen(true);
+  };
+
+  const confirmResetToday = () => {
+    dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' });
+    setIsResetConfirmOpen(false);
   };
 
   // Minimalist Monochrome Quick Actions Dock Shortcuts
@@ -545,7 +565,7 @@ const Dashboard = () => {
             title="نسخ رابط حجز العيادة المباشر للمرضى"
           >
             <Share2 size={13} />
-            <span>{copiedBookingLink ? 'تم النسخ!' : 'رابط الحجز'}</span>
+            <span>{copiedBookingLink ? 'تم نسخ الرابط بنجاح!' : 'نسخ رابط حجز المرضى'}</span>
           </button>
 
           {(isAdmin || user?.role === 'staff' || user?.role === 'receptionist') && (
@@ -560,14 +580,13 @@ const Dashboard = () => {
             </button>
           )}
 
-
           <button 
             type="button" 
             onClick={() => setIsWalkInModalOpen(true)} 
             className="btn btn-primary btn-sm"
           >
             <UserPlus size={15} />
-            <span>{isDoctor ? 'تسجيل مريض جديد' : 'تسجيل حضور مباشر (Walk-in)'}</span>
+            <span>تسجيل كشف فوري (Walk-in)</span>
           </button>
         </div>
       </div>
@@ -878,6 +897,9 @@ const Dashboard = () => {
                                 type="button"
                                 onClick={() => handleStartExam(appt)}
                                 className="btn-action-primary"
+                                disabled={!!currentExamPatient}
+                                style={currentExamPatient ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                                title={currentExamPatient ? `غرفة الكشف مشغولة حالياً بـ ${currentExamPatient.patientName}` : (isDoctor ? 'بدء الكشف' : 'إدخال للطبيب')}
                               >
                                 {isDoctor ? 'بدء الكشف' : 'إدخال للطبيب'}
                               </button>
@@ -892,40 +914,22 @@ const Dashboard = () => {
                               </button>
                             )}
                             {appt.status === 'pending_payment' && (
-                              <div className="payment-actions" style={{ display: 'flex', gap: '0.3rem' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCollectPayment(appt.id, 'cash')}
-                                  className="btn-action-success"
-                                  title="تحصيل نقداً"
-                                >
-                                  كاش
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCollectPayment(appt.id, 'card')}
-                                  className="btn-action-primary"
-                                  title="تحصيل بالبطاقة"
-                                  style={{ fontSize: '0.75rem' }}
-                                >
-                                  فيزا
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleCollectPayment(appt.id, 'instapay')}
-                                  className="btn-action-primary"
-                                  title="تحصيل إنستاباي"
-                                  style={{ fontSize: '0.75rem' }}
-                                >
-                                  إنستاباي
-                                </button>
-                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setPaymentModalAppt(appt)}
+                                className="btn-action-success"
+                                title="تحصيل الرسوم وإصدار الفاتورة الإلكترونية"
+                              >
+                                <Wallet size={13} style={{ marginLeft: '0.35rem' }} />
+                                <span>تحصيل الرسوم</span>
+                              </button>
                             )}
                             <button
                               type="button"
                               onClick={() => setDossierPatient(appt)}
                               className="btn-action-icon"
                               title="عرض السجل الطبي"
+                              aria-label="عرض السجل الطبي"
                             >
                               <FolderOpen size={15} />
                             </button>
@@ -1151,6 +1155,38 @@ const Dashboard = () => {
       <ShiftHandoverModal
         isOpen={isShiftModalOpen}
         onClose={() => setIsShiftModalOpen(false)}
+      />
+
+      {/* Quick Payment & Invoicing Modal */}
+      <QuickPaymentModal
+        isOpen={!!paymentModalAppt}
+        appointment={paymentModalAppt}
+        onClose={() => setPaymentModalAppt(null)}
+        onConfirm={handleCollectPayment}
+      />
+
+      {/* Room Occupancy Guard Warning Modal */}
+      <ConfirmationModal
+        isOpen={!!roomWarningModal}
+        onClose={() => setRoomWarningModal(null)}
+        onConfirm={() => setRoomWarningModal(null)}
+        title="غرفة الكشف مشغولة حالياً"
+        message={`المريض (${roomWarningModal?.occupiedPatient?.patientName || ''}) متواجد حالياً داخل غرفة الكشف مع الطبيب. يرجى إنهاء الكشف الحالي قبل إدخال (${roomWarningModal?.nextPatient?.patientName || ''}).`}
+        confirmText="حسناً، فهمت"
+        cancelText=""
+        isDestructive={false}
+      />
+
+      {/* Reset Schedule Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={confirmResetToday}
+        title="تأكيد استعادة جدول مواعيد اليوم"
+        message="هل أنت متأكد من رغبتك في إعادة ضبط واستعادة جدول مواعيد اليوم للحالة الأولية؟"
+        confirmText="تأكيد إعادة الضبط"
+        cancelText="إلغاء"
+        isDestructive={true}
       />
 
       {/* 4. Floating Quick Actions Command Dock */}

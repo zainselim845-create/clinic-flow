@@ -13,6 +13,7 @@ const LabOrderModal = ({
   onSaveOrder, 
   patients = [] 
 }) => {
+  const [patientId, setPatientId] = useState('');
   const [patientName, setPatientName] = useState('');
   const [labName, setLabName] = useState('معمل الأهرام للتركيبات الرقمية');
   const [workType, setWorkType] = useState('zircon_crown');
@@ -31,9 +32,12 @@ const LabOrderModal = ({
 
     setIsSubmitting(true);
     const workObj = DENTAL_WORK_TYPES.find(w => w.id === workType);
+    const matchedPatient = (patients || []).find(p => p.name === patientName || p.id === patientId);
+    const resolvedPatientId = patientId || matchedPatient?.id || null;
 
     const newOrder = {
       id: 'lab_' + Date.now(),
+      patientId: resolvedPatientId,
       patientName,
       labName,
       workType: workObj?.labelAr || workType,

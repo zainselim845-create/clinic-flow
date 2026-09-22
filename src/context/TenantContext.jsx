@@ -432,7 +432,11 @@ export const TenantProvider = ({ children }) => {
   const switchTenant = useCallback((slugOrId) => {
     try {
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
-      const isSuperAdminRoute = currentPath.startsWith('/super-admin');
+      const isSuperAdminRoute = currentPath.startsWith('/super-admin') ||
+        currentPath.startsWith('/superadmin') ||
+        currentPath.startsWith('/admin') ||
+        currentPath.startsWith('/saas') ||
+        currentPath.startsWith('/control-plane');
 
       // Locked in dedicated domain mode unless explicitly on super admin
       if (dedicatedDomainActive && !isSuperAdminRoute) {

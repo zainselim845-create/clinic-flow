@@ -12,6 +12,7 @@ export function ClinicsTable({
   statusFilter,
   setStatusFilter,
   activeClinics,
+  lifetimeClinics = 0,
   pendingClinics,
   suspendedClinics,
   copiedSlug,
@@ -73,6 +74,7 @@ export function ClinicsTable({
           >
             <option value="all">كافة حالات العيادات</option>
             <option value="active">العيادات النشطة ({activeClinics})</option>
+            <option value="lifetime">تراخيص مدى الحياة ({lifetimeClinics})</option>
             <option value="pending_approval">قيد المراجعة والموافقة ({pendingClinics})</option>
             <option value="suspended">الموقوفة لعدم السداد ({suspendedClinics})</option>
           </select>
@@ -143,31 +145,31 @@ export function ClinicsTable({
 
                     <td>
                       <div className="tenant-cell-doctor">
-                        <span>{t.doctorName}</span>
-                        <small>{t.specialty}</small>
+                        <strong style={{ fontSize: '0.88rem', color: 'var(--text-primary, #0f172a)' }}>{t.doctorName}</strong>
+                        <small style={{ color: 'var(--text-secondary, #64748b)', marginTop: '2px' }}>{t.specialty}</small>
                         {t.phone && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
                             <a 
                               href={`tel:${t.phone}`}
                               style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '3px',
-                                fontSize: '0.75rem',
+                                fontSize: '0.74rem',
                                 color: '#0284C7',
                                 textDecoration: 'none',
                                 fontWeight: 700,
                                 background: 'rgba(2, 132, 199, 0.08)',
-                                padding: '1px 6px',
+                                padding: '2px 6px',
                                 borderRadius: '4px'
                               }}
-                              title="اتصال بالطبيب هاتفياً للتفعيل"
+                              title="اتصال بالطبيب هاتفياً"
                             >
                               <Phone size={11} />
                               <span dir="ltr">{t.phone}</span>
                             </a>
                             <a
-                              href={`https://wa.me/20${t.phone.replace(/^0/, '')}?text=${encodeURIComponent(`مرحباً د. ${t.doctorName || ''}، نتواصل معك من إدارة منصة ClinicFlow بخصوص تفعيل اشتراك عيادتكم (${t.name}).`)}`}
+                              href={`https://wa.me/20${t.phone.replace(/^0/, '')}?text=${encodeURIComponent(`مرحباً د. ${t.doctorName || ''}، نتواصل معك من إدارة منصة ClinicFlow بخصوص عيادتكم (${t.name}).`)}`}
                               target="_blank"
                               rel="noreferrer"
                               style={{
@@ -179,7 +181,7 @@ export function ClinicsTable({
                                 textDecoration: 'none',
                                 fontWeight: 700,
                                 background: 'rgba(22, 163, 74, 0.08)',
-                                padding: '1px 6px',
+                                padding: '2px 6px',
                                 borderRadius: '4px'
                               }}
                               title="محادثة واتساب مع الطبيب"
@@ -189,26 +191,6 @@ export function ClinicsTable({
                             </a>
                           </div>
                         )}
-                        <div style={{ marginTop: '4px' }}>
-                          <span 
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              fontSize: '0.72rem',
-                              fontFamily: 'monospace',
-                              background: 'rgba(59, 130, 246, 0.08)',
-                              color: '#2563eb',
-                              padding: '1px 6px',
-                              borderRadius: '4px',
-                              border: '1px solid rgba(59, 130, 246, 0.2)'
-                            }}
-                            title="معرّف مرسل الـ SMS الحصري للعيادة (Telecom Sender ID)"
-                          >
-                            <MessageSquare size={10} />
-                            <span>Sender: {t.senderId || getClinicSenderId(t.id || t.slug)}</span>
-                          </span>
-                        </div>
                       </div>
                     </td>
 
@@ -235,6 +217,27 @@ export function ClinicsTable({
                           <ExternalLink size={13} />
                         </a>
                       </div>
+                      {t.senderId && (
+                        <div style={{ marginTop: '4px' }}>
+                          <span 
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '0.7rem',
+                              fontFamily: 'monospace',
+                              background: '#F1F5F9',
+                              color: '#475569',
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              border: '1px solid #E2E8F0'
+                            }}
+                            title="معرّف مرسل الـ SMS الحصري للعيادة (Telecom Sender ID)"
+                          >
+                            <span>Sender: {t.senderId}</span>
+                          </span>
+                        </div>
+                      )}
                       {(t.customDomain || t.custom_domain) && (
                         <div style={{ marginTop: '4px' }}>
                           <a
@@ -245,7 +248,7 @@ export function ClinicsTable({
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
-                              fontSize: '0.76rem',
+                              fontSize: '0.74rem',
                               color: '#059669',
                               textDecoration: 'none',
                               fontFamily: 'monospace',
@@ -335,156 +338,94 @@ export function ClinicsTable({
                     </td>
 
                     <td>
-                      <div className="tenant-actions-cell">
-                        {/* Top-up Button */}
-                        <button
-                          type="button"
-                          onClick={() => onTopUpClinic && onTopUpClinic(t)}
-                          className="btn-topup-clinic"
-                          title="شحن رصيد رسائل SMS أو ذكاء اصطناعي فوراً"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                            background: '#FEF3C7',
-                            border: '1px solid #FCD34D',
-                            borderRadius: '6px',
-                            padding: '0.32rem 0.6rem',
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            color: '#92400E'
-                          }}
-                        >
-                          <Zap size={13} color="#D97706" />
-                          <span>شحن رصيد</span>
-                        </button>
-
-                        {/* Brand & Logo Customization Button for SaaS SuperAdmin */}
-                        <button
-                          type="button"
-                          onClick={() => onCustomizeBrand && onCustomizeBrand(t)}
-                          className="btn-brand-clinic"
-                          title="تخصيص الشعار والباليتة الثلاثية للعيادة"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                            background: '#F4F4F5',
-                            border: '1px solid #E4E4E7',
-                            borderRadius: '6px',
-                            padding: '0.32rem 0.6rem',
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            color: '#09090B'
-                          }}
-                        >
-                          <Palette size={13} color="#09090B" />
-                          <span>الهوية والشعار</span>
-                        </button>
-
-                        {/* Direct Subscription & Freeze/Suspend Control */}
-                        <button
-                          type="button"
-                          onClick={() => onManageSubscription && onManageSubscription(t)}
-                          className="btn-manage-subscription"
-                          title="التحكم الكامل في الباقة والوقف والتجديد والحصص"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.25rem',
-                            background: '#EEF2FF',
-                            border: '1px solid #C7D2FE',
-                            borderRadius: '6px',
-                            padding: '0.32rem 0.6rem',
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            color: '#3730A3'
-                          }}
-                        >
-                          <ShieldAlert size={13} color="#4F46E5" />
-                          <span>الباقة والوقف</span>
-                        </button>
-
-                        {isPending && (
+                      <div className="table-actions-container">
+                        {isPending ? (
                           <button 
                             type="button"
                             onClick={() => onApproveClinic(t.slug)}
-                            className="btn-approve-clinic"
+                            className="btn-table-primary"
                             title="الموافقة على تسجيل العيادة واعتماد الحساب وتفعيله فوراً"
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.35rem',
-                              background: '#10B981',
-                              color: '#FFFFFF',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '0.35rem 0.75rem',
-                              fontSize: '0.8rem',
-                              fontWeight: 800,
-                              cursor: 'pointer',
-                              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)'
-                            }}
                           >
                             <CheckCircle2 size={14} />
-                            <span>تفعيل واعتماد الحساب</span>
+                            <span>تفعيل واعتماد</span>
                           </button>
-                        )}
-
-                        {!isSuspended ? (
+                        ) : isSuspended ? (
                           <button 
                             type="button"
-                            onClick={() => onSuspendClinic(t.slug)}
-                            className="btn-suspend-clinic"
-                            title="إيقاف العيادة فوراً لعدم سداد الاشتراك"
+                            onClick={() => onReactivateClinic(t.slug)}
+                            className="btn-table-primary"
+                            title="إلغاء الإيقاف وإعادة تفعيل العيادة"
                           >
-                            <Ban size={13} />
-                            <span>إيقاف لعدم السداد</span>
+                            <CheckCircle2 size={14} />
+                            <span>إلغاء الإيقاف</span>
                           </button>
                         ) : (
                           <button 
                             type="button"
-                            onClick={() => onReactivateClinic(t.slug)}
-                            className="btn-reactivate-clinic"
-                            title="إلغاء الإيقاف وإعادة تفعيل العيادة"
+                            className="btn-table-primary"
+                            onClick={() => onSwitchAndVisit(t.slug)}
+                            title="الانتقال إلى لوحة تحكم هذه العيادة"
                           >
-                            <CheckCircle2 size={13} />
-                            <span>إعادة التفعيل</span>
+                            <span>لوحة العيادة</span>
+                            <ExternalLink size={12} />
                           </button>
                         )}
 
-                        <button 
+                        {/* Direct Subscription & Management Button */}
+                        <button
                           type="button"
-                          className="btn-switch-tenant"
-                          onClick={() => onSwitchAndVisit(t.slug)}
-                          title="التبديل إلى بيانات هذه العيادة فوراً"
+                          onClick={() => onManageSubscription && onManageSubscription(t)}
+                          className="btn-table-secondary"
+                          title="التحكم في الباقة، الحصص، الإيقاف، والترقية"
                         >
-                          <span>لوحة العيادة</span>
-                          <ExternalLink size={13} />
+                          <ShieldAlert size={13} />
+                          <span>إدارة الاشتراك</span>
                         </button>
+
+                        {/* Top-up Icon Button */}
+                        <button
+                          type="button"
+                          onClick={() => onTopUpClinic && onTopUpClinic(t)}
+                          className="btn-table-icon warning"
+                          title="شحن رصيد رسائل SMS أو ذكاء اصطناعي"
+                          aria-label="شحن رصيد"
+                        >
+                          <Zap size={14} />
+                        </button>
+
+                        {/* Brand Customization Icon Button */}
+                        <button
+                          type="button"
+                          onClick={() => onCustomizeBrand && onCustomizeBrand(t)}
+                          className="btn-table-icon btn-brand-clinic"
+                          title="تخصيص الشعار وألوان هوية العيادة"
+                          aria-label="تخصيص الهوية"
+                        >
+                          <Palette size={14} />
+                        </button>
+
+                        {/* Suspend Toggle (If not already suspended/pending) */}
+                        {!isSuspended && !isPending && (
+                          <button 
+                            type="button"
+                            onClick={() => onSuspendClinic(t.slug)}
+                            className="btn-table-icon danger"
+                            title="إيقاف العيادة مؤقتاً لعدم سداد الاشتراك"
+                            aria-label="إيقاف العيادة"
+                          >
+                            <Ban size={14} />
+                          </button>
+                        )}
 
                         {onDeleteClinic && (
                           <button
                             type="button"
                             onClick={() => onDeleteClinic(t.slug || t.id)}
-                            className="btn-delete-tenant"
+                            className="btn-table-icon danger"
                             title="حذف العيادة نهائياً من المنصة"
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              background: '#FEE2E2',
-                              border: '1px solid #FCA5A5',
-                              borderRadius: '6px',
-                              padding: '0.35rem 0.5rem',
-                              cursor: 'pointer',
-                              color: '#DC2626'
-                            }}
+                            aria-label="حذف العيادة"
                           >
-                            <Trash2 size={13} />
+                            <Trash2 size={14} />
                           </button>
                         )}
                       </div>

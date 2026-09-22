@@ -235,6 +235,34 @@ export function updateClinicSubscriptionStatus(clinicIdOrSlug, status, reason = 
       console.warn('[AuthService] Failed to persist subscription status:', err);
     }
   }
+
+  // If approved and activated, also ensure any doctor accounts for this clinic are active
+  if (status === 'active' && updatedTenant) {
+    const users = getRegisteredUsers();
+    let usersChanged = false;
+    const updatedUsers = users.map(u => {
+      if ((u.clinicId === updatedTenant.id || u.clinicSlug === updatedTenant.slug) && u.status !== 'active') {
+        usersChanged = true;
+        return { ...u, status: 'active', updatedAt: new Date().toISOString() };
+      }
+      return u;
+    });
+    if (usersChanged) {
+      memoryUsersCache = updatedUsers;
+      if (typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(updatedUsers));
+        } catch (err) {
+          console.warn('[AuthService] Failed to persist activated users:', err);
+        }
+      }
+    }
+  }
+
+  if (updatedTenant) {
+    broadcastTenantUpdate('UPDATE_TENANT_STATUS', { id: clinicIdOrSlug, status, reason, tenant: updatedTenant });
+  }
+
   return updatedTenant;
 }
 

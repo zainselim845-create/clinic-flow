@@ -49,8 +49,8 @@ import './SuperAdminDashboard.css';
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { signOut, impersonateUser } = useAuth();
-  const { setAllTenants, switchTenant, updateTenantStatus, deleteTenant, updateTenantInfo } = useTenant();
-  const [allTenants, setDashboardTenants] = useState(() => getCombinedTenants(true));
+  const { allTenants: contextTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant, updateTenantInfo, refreshTenants } = useTenant();
+  const allTenants = contextTenants || [];
   const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'users' | 'telemetry_bugs' | 'infrastructure'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
   const [bugReports, setBugReports] = useState(getBugReports());
@@ -91,6 +91,7 @@ export default function SuperAdminDashboard() {
   // Calculate high-level platform stats
   const totalClinics = allTenants.length;
   const activeClinics = allTenants.filter(t => (t.subscriptionStatus || 'active') === 'active').length;
+  const lifetimeClinics = allTenants.filter(t => t.isLifetimeLicense || t.subscriptionStatus === 'lifetime').length;
   const pendingClinics = allTenants.filter(t => t.subscriptionStatus === 'pending_approval').length;
   const suspendedClinics = allTenants.filter(t => t.subscriptionStatus === 'suspended').length;
   const totalSmsUsed = allTenants.reduce((sum, t) => {
@@ -113,23 +114,46 @@ export default function SuperAdminDashboard() {
     const matchesSearch = !cleanSearch || nameStr.includes(cleanSearch) || doctorStr.includes(cleanSearch) || slugStr.includes(cleanSearch);
     const matchesTier = tierFilter === 'all' || t.subscriptionTier === tierFilter;
     const currentStatus = t.subscriptionStatus || 'active';
-    const matchesStatus = statusFilter === 'all' || currentStatus === statusFilter;
+    let matchesStatus = statusFilter === 'all';
+    if (!matchesStatus) {
+      if (statusFilter === 'lifetime') {
+        matchesStatus = currentStatus === 'lifetime' || Boolean(t.isLifetimeLicense);
+      } else if (statusFilter === 'active') {
+        matchesStatus = currentStatus === 'active';
+      } else {
+        matchesStatus = currentStatus === statusFilter;
+      }
+    }
     return matchesSearch && matchesTier && matchesStatus;
   });
 
+  const handleRefreshAll = () => {
+    if (refreshTenants) {
+      refreshTenants();
+    } else {
+      const freshTenants = getCombinedTenants(true);
+      setAllTenants(freshTenants);
+    }
+    const freshUsers = getAllPlatformUsers();
+    setAllUsers(freshUsers);
+  };
+
   const handleApproveClinic = (slug) => {
     updateTenantStatus(slug, 'active');
+    handleRefreshAll();
   };
 
   const handleSuspendClinic = (slug) => {
     const reason = window.prompt('سبب إيقاف العيادة وتعليق الاشتراك:', 'عدم سداد الاشتراك الدوري المستحق');
     if (reason !== null) {
       updateTenantStatus(slug, 'suspended', reason.trim() || 'عدم سداد الاشتراك الدوري المستحق');
+      handleRefreshAll();
     }
   };
 
   const handleReactivateClinic = (slug) => {
     updateTenantStatus(slug, 'active');
+    handleRefreshAll();
   };
 
   const handleCopyLink = (slug) => {
@@ -142,14 +166,6 @@ export default function SuperAdminDashboard() {
   const handleSwitchAndVisit = (slug) => {
     switchTenant(slug);
     navigate('/dashboard');
-  };
-
-  const handleRefreshAll = () => {
-    const freshTenants = getCombinedTenants(true);
-    setDashboardTenants(freshTenants);
-    setAllTenants(freshTenants);
-    const freshUsers = getAllPlatformUsers();
-    setAllUsers(freshUsers);
   };
 
   // Keep platform tenants and users reactive to additions, storage events, BroadcastChannel, CustomEvent, and tab focus
@@ -259,7 +275,9 @@ export default function SuperAdminDashboard() {
     e.preventDefault();
     if (!newClinic.name || !newClinic.slug) return;
 
-    const resolvedSenderId = formatSenderId(newClinic.senderId || newClinic.slug, 'ClinicFlow');
+    const resolvedSenderId = newClinic.senderId?.trim() 
+      ? formatSenderId(newClinic.senderId, 'ClinicFlow')
+      : '';
 
     const created = {
       id: `clinic_${Date.now()}`,
@@ -451,7 +469,7 @@ export default function SuperAdminDashboard() {
           <button
             type="button"
             onClick={() => setActiveTab('clinics')}
-            className={`saas-tab-btn ${activeTab === 'clinics' ? 'active-clinics' : ''}`}
+            className={`saas-tab-btn ${activeTab === 'clinics' ? 'active-tab' : ''}`}
           >
             <Building2 size={16} />
             <span>دليل العيادات والاشتراكات ({totalClinics})</span>
@@ -462,7 +480,7 @@ export default function SuperAdminDashboard() {
               setActiveTab('users');
               setAllUsers(getAllPlatformUsers());
             }}
-            className={`saas-tab-btn ${activeTab === 'users' ? 'active-clinics' : ''}`}
+            className={`saas-tab-btn ${activeTab === 'users' ? 'active-tab' : ''}`}
           >
             <Users size={16} />
             <span>حسابات العملاء والمستخدمين ({allUsers.length})</span>
@@ -474,7 +492,7 @@ export default function SuperAdminDashboard() {
               setSystemErrors(getSystemErrors());
               setBugReports(getBugReports());
             }}
-            className={`saas-tab-btn ${activeTab === 'telemetry_bugs' ? 'active-telemetry' : ''}`}
+            className={`saas-tab-btn ${activeTab === 'telemetry_bugs' ? 'active-tab active-telemetry' : ''}`}
           >
             <AlertTriangle size={16} />
             <span>مركز الأعطال وبلاغات النظام ({unresolvedIncidentsCount})</span>
@@ -482,7 +500,7 @@ export default function SuperAdminDashboard() {
           <button
             type="button"
             onClick={() => setActiveTab('infrastructure')}
-            className={`saas-tab-btn ${activeTab === 'infrastructure' ? 'active-clinics' : ''}`}
+            className={`saas-tab-btn ${activeTab === 'infrastructure' ? 'active-tab' : ''}`}
           >
             <Server size={16} />
             <span>البنية السحابية والربط المركزي (Infrastructure)</span>
@@ -490,7 +508,7 @@ export default function SuperAdminDashboard() {
           <button
             type="button"
             onClick={() => setActiveTab('geographic')}
-            className={`saas-tab-btn ${activeTab === 'geographic' ? 'active-clinics' : ''}`}
+            className={`saas-tab-btn ${activeTab === 'geographic' ? 'active-tab' : ''}`}
           >
             <MapPin size={16} />
             <span>الانتشار والمواقع الجغرافية (Geo Analytics)</span>
@@ -507,6 +525,7 @@ export default function SuperAdminDashboard() {
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
             activeClinics={activeClinics}
+            lifetimeClinics={lifetimeClinics}
             pendingClinics={pendingClinics}
             suspendedClinics={suspendedClinics}
             copiedSlug={copiedSlug}

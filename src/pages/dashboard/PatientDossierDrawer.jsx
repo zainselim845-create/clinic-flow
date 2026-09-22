@@ -69,6 +69,7 @@ export default function PatientDossierDrawer({
         const parsedLabs = currentSlug ? safeGetJSON(`clinicflow_labs_${currentSlug}`, []) : [];
         if (Array.isArray(parsedLabs)) {
           const matches = parsedLabs.filter(l => 
+            (l.patientId && patientId && l.patientId === patientId) ||
             (l.patientName && patientName && l.patientName.trim().toLowerCase() === patientName.trim().toLowerCase()) ||
             (patientPhone && l.patientPhone && l.patientPhone === patientPhone)
           );

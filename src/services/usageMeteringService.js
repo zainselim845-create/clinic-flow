@@ -248,6 +248,18 @@ export function topUpClinicCredits({
     authorizedBy,
     newRemainingSms: updatedUsage.remainingSms + Math.max(0, Number(smsCredits) || 0)
   });
+  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+    try {
+      window.dispatchEvent(new CustomEvent('clinicflow_sync', { detail: { type: 'TOPUP_CREDITS', clinicId: cleanClinicId } }));
+    } catch (_) {}
+  }
+  if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+    try {
+      const channel = new BroadcastChannel('clinicflow_tenants_sync');
+      channel.postMessage({ type: 'TOPUP_CREDITS', clinicId: cleanClinicId, timestamp: Date.now() });
+      setTimeout(() => { try { channel.close(); } catch (_) {} }, 1000);
+    } catch (_) {}
+  }
 
   return getClinicUsage(cleanClinicId);
 }

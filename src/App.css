@@ -38,7 +38,7 @@
 
 .page-content {
   flex: 1;
-  padding: 1.25rem 2rem 2.5rem 2rem;
+  padding: 1.5rem 1.75rem 2rem 1.75rem;
   animation: fadeIn 0.25s ease;
   width: 100%;
   max-width: 1800px;

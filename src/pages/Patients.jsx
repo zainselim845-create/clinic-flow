@@ -153,7 +153,7 @@ const Patients = () => {
         }
       }
       dispatch({ type: 'ADD_PATIENT', payload: newPatient });
-      showToast('تم إضافة المريض الجديد بنجاح ', 'success');
+      showToast('تم إضافة المريض الجديد بنجاح', 'success');
     }
     
     setIsModalOpen(false);
@@ -193,7 +193,7 @@ const Patients = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('تم تصدير ملف المرضى (CSV) بنجاح ', 'success');
+    showToast('تم تصدير ملف المرضى (CSV) بنجاح', 'success');
   };
 
   const handleImportPatients = async (newPatientsList) => {

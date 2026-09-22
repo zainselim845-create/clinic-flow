@@ -37,7 +37,7 @@ import ClinicSubscriptionControlModal from './ClinicSubscriptionControlModal';
 
 export function SaasInfrastructureCenter({ allTenants = [] }) {
   const [subTab, setSubTab] = useState('database');
-  const { updateTenantDomain, updateTenantInfo } = useTenant();
+  const { updateTenantDomain, updateTenantInfo, updateTenantStatus, refreshTenants } = useTenant();
   const [showTokens, setShowTokens] = useState({ dbKey: false, smsKey: false, aiKey: false });
 
   // Database State
@@ -184,6 +184,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
       subscriptionTier: newTier,
       quotas
     });
+    if (refreshTenants) refreshTenants();
   };
 
   const handleQuickToggleSuspend = (tenant) => {
@@ -192,14 +193,19 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
       updateClinicSubscriptionDetails(tenant.id, {
         subscriptionStatus: 'active'
       });
+      if (updateTenantStatus) updateTenantStatus(tenant.id, 'active');
+      if (refreshTenants) refreshTenants();
       alert(`تم فك تجميد وتفعيل عيادة (${tenant.name}) بنجاح!`);
     } else {
       const reason = window.prompt('سبب تجميد وإيقاف العيادة:', 'عدم سداد الاشتراك الدوري المستحق');
       if (reason !== null) {
+        const cleanReason = reason.trim() || 'عدم سداد الاشتراك الدوري المستحق';
         updateClinicSubscriptionDetails(tenant.id, {
           subscriptionStatus: 'suspended',
-          suspensionReason: reason.trim() || 'عدم سداد الاشتراك الدوري المستحق'
+          suspensionReason: cleanReason
         });
+        if (updateTenantStatus) updateTenantStatus(tenant.id, 'suspended', cleanReason);
+        if (refreshTenants) refreshTenants();
         alert(`تم تجميد عيادة (${tenant.name}) وسيظهر سبب الإيقاف للطبيب فوراً على شاشة الدخول.`);
       }
     }
@@ -331,12 +337,11 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.85rem', flexWrap: 'wrap' }}>
+      <div className="saas-tabs-nav" style={{ marginBottom: '1.5rem' }}>
         <button
           type="button"
           onClick={() => setSubTab('database')}
-          className={`btn ${subTab === 'database' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ borderRadius: '10px' }}
+          className={`saas-tab-btn ${subTab === 'database' ? 'active-tab' : ''}`}
         >
           <Database size={16} />
           <span>قاعدة بيانات Supabase المركزية</span>
@@ -344,8 +349,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
         <button
           type="button"
           onClick={() => setSubTab('sms')}
-          className={`btn ${subTab === 'sms' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ borderRadius: '10px' }}
+          className={`saas-tab-btn ${subTab === 'sms' ? 'active-tab' : ''}`}
         >
           <Smartphone size={16} />
           <span>بوابات الرسائل المركزية (SMS Gateways)</span>
@@ -353,8 +357,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
         <button
           type="button"
           onClick={() => setSubTab('ai')}
-          className={`btn ${subTab === 'ai' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ borderRadius: '10px' }}
+          className={`saas-tab-btn ${subTab === 'ai' ? 'active-tab' : ''}`}
         >
           <Sparkles size={16} />
           <span>محرك الذكاء الاصطناعي المركزي (AI Core)</span>
@@ -362,8 +365,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
         <button
           type="button"
           onClick={() => setSubTab('domains')}
-          className={`btn ${subTab === 'domains' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ borderRadius: '10px' }}
+          className={`saas-tab-btn ${subTab === 'domains' ? 'active-tab' : ''}`}
         >
           <Globe size={16} />
           <span>الدومينات الخاصة والـ SSL (Custom Domains)</span>
@@ -371,8 +373,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
         <button
           type="button"
           onClick={() => setSubTab('subscriptions')}
-          className={`btn ${subTab === 'subscriptions' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ borderRadius: '10px' }}
+          className={`saas-tab-btn ${subTab === 'subscriptions' ? 'active-tab' : ''}`}
         >
           <CreditCard size={16} />
           <span>باقات الاشتراكات والترخيص (Subscription Plans)</span>
@@ -380,8 +381,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
         <button
           type="button"
           onClick={() => setSubTab('auth')}
-          className={`btn ${subTab === 'auth' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ borderRadius: '10px' }}
+          className={`saas-tab-btn ${subTab === 'auth' ? 'active-tab' : ''}`}
         >
           <ShieldCheck size={16} />
           <span>المصادقة وGoogle OAuth (SSO)</span>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from '../../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { X, UserPlus, Shield, User, Building, Lock, Mail, Phone, Briefcase } from 'lucide-react';
+import { getAllPlatformUsers } from '../../../services/authService';
 
 export function CreateUserModal({
   isOpen,
@@ -51,6 +52,15 @@ export function CreateUserModal({
     if (!formData.password.trim()) {
       setError('يرجى تعيين كلمة مرور للحساب');
       return;
+    }
+
+    const cleanEmail = formData.email.trim().toLowerCase();
+    if (cleanEmail) {
+      const existingUsers = getAllPlatformUsers();
+      if (existingUsers.some(u => u.email?.toLowerCase() === cleanEmail)) {
+        setError('البريد الإلكتروني مسجل بالفعل لمستخدم آخر في المنصة.');
+        return;
+      }
     }
 
     const selectedClinic = allTenants.find(t => t.slug === formData.clinicSlug);

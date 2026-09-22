@@ -202,7 +202,7 @@ const Appointments = () => {
       }
     }
     dispatch({ type: 'UNBLOCK_FULL_DAY', payload: { date } });
-    showToast('تم فتح اليوم واستقبال الحجوزات بنجاح ', 'success');
+    showToast('تم فتح اليوم واستقبال الحجوزات بنجاح', 'success');
   };
 
   // Get slot status info for the Blocker Modal
@@ -245,7 +245,7 @@ const Appointments = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast('تم تصدير ملف المواعيد (CSV) بنجاح ', 'success');
+    showToast('تم تصدير ملف المواعيد (CSV) بنجاح', 'success');
   };
 
   return (
