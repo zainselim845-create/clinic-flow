@@ -30,7 +30,9 @@ export function SaasStatsGrid({
         <div className="kpi-content">
           <span className="kpi-label">العائد الشهري المتكرر (MRR)</span>
           <strong className="kpi-value">{estimatedMRR.toLocaleString()} ج.م</strong>
-          <span className="kpi-subtext">نمو مستقر +18% هذا الشهر</span>
+          <span className="kpi-subtext">
+            {estimatedMRR > 0 ? `${activeClinics} عيادة تدفع اشتراكاً شهرياً` : 'لا توجد اشتراكات مدفوعة حالياً'}
+          </span>
         </div>
       </div>
 
