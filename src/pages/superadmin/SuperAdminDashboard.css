@@ -299,6 +299,7 @@
   border-collapse: collapse;
   text-align: right;
   font-size: 0.88rem;
+  min-width: 1180px;
 }
 
 .saas-table th {
@@ -308,6 +309,7 @@
   font-weight: 700;
   color: #64748b;
   border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .saas-table td {
@@ -315,6 +317,15 @@
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
 }
+
+/* Explicit minimum widths to guarantee clean, un-squashed data presentation */
+.saas-table th:nth-child(1), .saas-table td:nth-child(1) { min-width: 170px; }
+.saas-table th:nth-child(2), .saas-table td:nth-child(2) { min-width: 200px; }
+.saas-table th:nth-child(3), .saas-table td:nth-child(3) { min-width: 190px; }
+.saas-table th:nth-child(4), .saas-table td:nth-child(4) { min-width: 110px; }
+.saas-table th:nth-child(5), .saas-table td:nth-child(5) { min-width: 120px; }
+.saas-table th:nth-child(6), .saas-table td:nth-child(6) { min-width: 140px; }
+.saas-table th:nth-child(7), .saas-table td:nth-child(7) { min-width: 260px; }
 
 .tenant-cell-brand {
   display: flex;
@@ -345,15 +356,19 @@
   align-items: center;
   gap: 6px;
   direction: ltr;
-  justify-content: flex-end;
+  justify-content: flex-start;
+  white-space: nowrap;
 }
 
 .tenant-cell-slug code {
   background: #f1f5f9;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-size: 0.8rem;
   color: #0284c7;
+  font-weight: 600;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .btn-icon-copy {

@@ -42,8 +42,9 @@ export function SaasStatsGrid({
         </div>
         <div className="kpi-content">
           <span className="kpi-label">استهلاك رسائل SMS للمنصة</span>
-          <strong className="kpi-value">
-            {totalSmsUsed.toLocaleString()} <span className="text-muted">/ {totalSmsQuota.toLocaleString()}</span>
+          <strong className="kpi-value" dir="ltr" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <span>{totalSmsUsed.toLocaleString()}</span>
+            <span className="text-muted">/ {totalSmsQuota.toLocaleString()}</span>
           </strong>
           <span className="kpi-subtext">نسبة الاستهلاك الإجمالي {smsPercent}%</span>
         </div>

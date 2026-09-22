@@ -195,8 +195,10 @@ export function ClinicsTable({
                     </td>
 
                     <td>
-                      <div className="tenant-cell-slug">
-                        <code>/c/{t.slug}</code>
+                      <div className="tenant-cell-slug" dir="ltr" style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-start', whiteSpace: 'nowrap' }}>
+                        <code style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '6px', background: '#F1F5F9', color: '#0284C7', fontWeight: 600, whiteSpace: 'nowrap', fontFeatureSettings: '"tnum"' }}>
+                          /c/{t.slug}
+                        </code>
                         <button 
                           type="button" 
                           onClick={() => onCopyLink(t.slug)}
@@ -218,19 +220,20 @@ export function ClinicsTable({
                         </a>
                       </div>
                       {t.senderId && (
-                        <div style={{ marginTop: '4px' }}>
+                        <div style={{ marginTop: '6px' }} dir="ltr">
                           <span 
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
-                              fontSize: '0.7rem',
+                              fontSize: '0.72rem',
                               fontFamily: 'monospace',
-                              background: '#F1F5F9',
+                              background: '#F8FAFC',
                               color: '#475569',
-                              padding: '1px 6px',
-                              borderRadius: '4px',
-                              border: '1px solid #E2E8F0'
+                              padding: '2px 8px',
+                              borderRadius: '5px',
+                              border: '1px solid #E2E8F0',
+                              whiteSpace: 'nowrap'
                             }}
                             title="معرّف مرسل الـ SMS الحصري للعيادة (Telecom Sender ID)"
                           >
@@ -317,9 +320,11 @@ export function ClinicsTable({
                         const percent = Math.min(100, Math.round(((usage.smsUsed || 0) / Math.max(1, usage.totalSmsAllowed)) * 100));
                         return (
                           <div className="tenant-cell-quota">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '2px' }}>
-                              <span>SMS: {usage.smsUsed}/{usage.totalSmsAllowed}</span>
-                              <span style={{ fontWeight: 700, color: usage.isSmsDepleted ? '#EF4444' : 'var(--text-secondary)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', marginBottom: '4px' }}>
+                              <span dir="ltr" style={{ fontWeight: 600, color: '#334155' }}>
+                                SMS: {usage.smsUsed} / {usage.totalSmsAllowed}
+                              </span>
+                              <span style={{ fontWeight: 700, color: usage.isSmsDepleted ? '#EF4444' : '#64748B' }}>
                                 {usage.remainingSms} متبقي
                               </span>
                             </div>
