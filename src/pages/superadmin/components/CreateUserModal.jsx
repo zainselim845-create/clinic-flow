@@ -15,7 +15,7 @@ export function CreateUserModal({
     phone: '',
     password: '',
     role: 'doctor',
-    clinicSlug: allTenants[0]?.slug || 'dr-ahmed',
+    clinicSlug: allTenants[0]?.slug || '',
     jobTitle: '',
     status: 'active'
   });
@@ -30,7 +30,7 @@ export function CreateUserModal({
         phone: '',
         password: '',
         role: 'doctor',
-        clinicSlug: allTenants[0]?.slug || 'dr-ahmed',
+        clinicSlug: allTenants[0]?.slug || '',
         jobTitle: '',
         status: 'active'
       });

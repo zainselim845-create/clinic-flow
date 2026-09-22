@@ -22,13 +22,13 @@ export default function GeneralSettingsTab({
   const [specialtyNotice, setSpecialtyNotice] = useState('');
   const [copiedBookingLink, setCopiedBookingLink] = useState(false);
 
-  const clinicSlug = clinicForm.slug || 'dr-ahmed';
-  const resolvedSenderId = clinicForm.senderId || formatSenderId(clinicSlug, 'ClinicFlow');
+  const clinicSlug = clinicForm.slug || '';
+  const resolvedSenderId = clinicForm.senderId || (clinicSlug ? formatSenderId(clinicSlug, 'ClinicFlow') : 'ClinicFlow');
 
   const handleCopyBookingLink = () => {
     const bookingUrl = typeof window !== 'undefined' 
-      ? `${window.location.origin}/c/${clinicSlug}/booking` 
-      : `/c/${clinicSlug}/booking`;
+      ? (clinicSlug ? `${window.location.origin}/c/${clinicSlug}/booking` : `${window.location.origin}/booking`)
+      : (clinicSlug ? `/c/${clinicSlug}/booking` : '/booking');
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(bookingUrl);
       setCopiedBookingLink(true);

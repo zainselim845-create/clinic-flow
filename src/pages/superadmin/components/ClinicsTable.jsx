@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone } from 'lucide-react';
 import { getClinicUsage } from '../../../services/usageMeteringService';
 import { getClinicSenderId } from '../../../services/smsService';
 
@@ -145,6 +145,50 @@ export function ClinicsTable({
                       <div className="tenant-cell-doctor">
                         <span>{t.doctorName}</span>
                         <small>{t.specialty}</small>
+                        {t.phone && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                            <a 
+                              href={`tel:${t.phone}`}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                fontSize: '0.75rem',
+                                color: '#0284C7',
+                                textDecoration: 'none',
+                                fontWeight: 700,
+                                background: 'rgba(2, 132, 199, 0.08)',
+                                padding: '1px 6px',
+                                borderRadius: '4px'
+                              }}
+                              title="اتصال بالطبيب هاتفياً للتفعيل"
+                            >
+                              <Phone size={11} />
+                              <span dir="ltr">{t.phone}</span>
+                            </a>
+                            <a
+                              href={`https://wa.me/20${t.phone.replace(/^0/, '')}?text=${encodeURIComponent(`مرحباً د. ${t.doctorName || ''}، نتواصل معك من إدارة منصة ClinicFlow بخصوص تفعيل اشتراك عيادتكم (${t.name}).`)}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                fontSize: '0.72rem',
+                                color: '#16A34A',
+                                textDecoration: 'none',
+                                fontWeight: 700,
+                                background: 'rgba(22, 163, 74, 0.08)',
+                                padding: '1px 6px',
+                                borderRadius: '4px'
+                              }}
+                              title="محادثة واتساب مع الطبيب"
+                            >
+                              <MessageSquare size={11} />
+                              <span>واتساب</span>
+                            </a>
+                          </div>
+                        )}
                         <div style={{ marginTop: '4px' }}>
                           <span 
                             style={{
@@ -369,10 +413,24 @@ export function ClinicsTable({
                             type="button"
                             onClick={() => onApproveClinic(t.slug)}
                             className="btn-approve-clinic"
-                            title="الموافقة على تسجيل العيادة وتفعيلها فوراً"
+                            title="الموافقة على تسجيل العيادة واعتماد الحساب وتفعيله فوراً"
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.35rem',
+                              background: '#10B981',
+                              color: '#FFFFFF',
+                              border: 'none',
+                              borderRadius: '6px',
+                              padding: '0.35rem 0.75rem',
+                              fontSize: '0.8rem',
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.25)'
+                            }}
                           >
-                            <Check size={13} />
-                            <span>اعتماد العيادة</span>
+                            <CheckCircle2 size={14} />
+                            <span>تفعيل واعتماد الحساب</span>
                           </button>
                         )}
 

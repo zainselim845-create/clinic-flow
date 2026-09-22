@@ -79,14 +79,12 @@ export default function ScheduleBuilderTab({ state, dispatch, clinicForm, setCli
   );
 
   const persistSchedule = (updatedInfo) => {
-    const slug = updatedInfo?.slug || state.clinicInfo?.slug || 'dr-ahmed';
+    const slug = updatedInfo?.slug || state.clinicInfo?.slug || state.currentTenantSlug;
+    if (!slug) return;
     const scopedKey = `clinicflow_data_${slug}`;
     const parsed = safeGetJSON(scopedKey, {});
     parsed.clinicInfo = updatedInfo;
     safeSetJSON(scopedKey, parsed);
-    if (slug === 'dr-ahmed') {
-      safeSetJSON('clinicflow_data', parsed);
-    }
   };
 
   // Save Schedule Config

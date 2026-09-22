@@ -106,14 +106,13 @@ const Settings = () => {
     if (updateTenantInfo) {
       updateTenantInfo(clinicForm);
     }
-    const currentSlug = tenantSlug || tenant?.slug || 'dr-ahmed';
-    const scopedKey = `clinicflow_data_${currentSlug}`;
-    const parsed = safeGetJSON(scopedKey, {});
-    parsed.clinicInfo = clinicForm;
-    if (clinicForm.services) parsed.services = clinicForm.services;
-    safeSetJSON(scopedKey, parsed);
-    if (currentSlug === 'dr-ahmed') {
-      safeSetJSON('clinicflow_data', parsed);
+    const currentSlug = tenantSlug || tenant?.slug || state.clinicInfo?.slug || state.currentTenantSlug;
+    if (currentSlug) {
+      const scopedKey = `clinicflow_data_${currentSlug}`;
+      const parsed = safeGetJSON(scopedKey, {});
+      parsed.clinicInfo = clinicForm;
+      if (clinicForm.services) parsed.services = clinicForm.services;
+      safeSetJSON(scopedKey, parsed);
     }
 
     setClinicSaveSuccess(true);
@@ -297,7 +296,7 @@ const Settings = () => {
             <VisitTypesTab
               visitTypes={clinicForm?.services || state.clinicInfo?.services || []}
               onUpdateVisitTypes={(newTypes) => {
-                const currentSlug = tenantSlug || tenant?.slug || 'dr-ahmed';
+                const currentSlug = tenantSlug || tenant?.slug || state.clinicInfo?.slug || state.currentTenantSlug;
                 const updated = {
                   ...(clinicForm || state.clinicInfo),
                   services: newTypes
@@ -310,15 +309,14 @@ const Settings = () => {
                 if (updateTenantInfo) {
                   updateTenantInfo({ services: newTypes });
                 }
+                if (currentSlug) {
                   const scopedKey = `clinicflow_data_${currentSlug}`;
                   const parsed = safeGetJSON(scopedKey, {});
                   parsed.clinicInfo = updated;
                   parsed.services = newTypes;
                   safeSetJSON(scopedKey, parsed);
-                  if (currentSlug === 'dr-ahmed') {
-                    safeSetJSON('clinicflow_data', parsed);
-                  }
-                }}
+                }
+              }}
             />
           </Tabs.Content>
 

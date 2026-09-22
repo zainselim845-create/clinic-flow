@@ -38,7 +38,7 @@ export default function PatientDossierDrawer({
   const { state } = useApp();
   const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id;
-  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
+  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || '';
 
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'notes' | 'plans' | 'wallet' | 'prescriptions' | 'labs'
 
@@ -66,7 +66,7 @@ export default function PatientDossierDrawer({
         const rxList = getPatientPrescriptionsFromStorage(patientId, currentClinicId);
         setPrescriptions(rxList || []);
 
-        const parsedLabs = safeGetJSON(`clinicflow_labs_${currentSlug}`, []);
+        const parsedLabs = currentSlug ? safeGetJSON(`clinicflow_labs_${currentSlug}`, []) : [];
         if (Array.isArray(parsedLabs)) {
           const matches = parsedLabs.filter(l => 
             (l.patientName && patientName && l.patientName.trim().toLowerCase() === patientName.trim().toLowerCase()) ||

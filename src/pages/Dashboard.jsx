@@ -25,6 +25,7 @@ import { savePrescriptionToStorage } from '../services/prescriptionService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '../utils/permissions';
 import { getBookingFunnelStats, getBookingDrafts, generateLeadRecoveryWhatsAppUrl, BOOKING_FUNNEL_STEPS } from '../services/leadRecoveryService';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -244,13 +245,13 @@ const Dashboard = () => {
       ? rawFee
       : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) || 0 : (currentClinic.regularFee || 0));
 
-    const clinicSlug = currentClinic.slug || 'dr-ahmed';
+    const clinicSlug = currentClinic.slug || tenant?.slug || 'clinic';
     const invoiceNumber = getNextInvoiceNumber(currentClinicId || clinicSlug);
 
     const newInvoice = {
       id: 'inv-' + Date.now(),
-      clinicId: currentClinicId || '550e8400-e29b-41d4-a716-446655440000',
-      clinic_id: currentClinicId || '550e8400-e29b-41d4-a716-446655440000',
+      clinicId: currentClinicId || tenant?.id || (clinicSlug ? `tenant-${clinicSlug}` : 'clinic-default'),
+      clinic_id: currentClinicId || tenant?.id || (clinicSlug ? `tenant-${clinicSlug}` : 'clinic-default'),
       patientId: targetAppt?.patientId || appointmentId,
       patientName: targetAppt?.patientName || 'مريض',
       patientPhone: targetAppt?.patientPhone || '',
@@ -280,9 +281,8 @@ const Dashboard = () => {
     // 1. Sync invoice to Supabase and LocalStorage
     try {
       await addInvoice(newInvoice);
-      const stored = localStorage.getItem(`clinicflow_invoices_${clinicSlug}`);
-      const existingInvoices = stored ? JSON.parse(stored) : [];
-      localStorage.setItem(`clinicflow_invoices_${clinicSlug}`, JSON.stringify([newInvoice, ...existingInvoices]));
+      const existingInvoices = safeGetJSON(`clinicflow_invoices_${clinicSlug}`, []);
+      safeSetJSON(`clinicflow_invoices_${clinicSlug}`, [newInvoice, ...existingInvoices]);
     } catch (invErr) {
       console.warn('Could not persist auto-generated invoice:', invErr);
     }
@@ -438,6 +438,83 @@ const Dashboard = () => {
   return (
     <div className="dashboard-page">
       
+      {/* SaaS Pending Activation & Review Banner */}
+      {((tenant?.subscriptionStatus === 'pending_approval') || (currentClinic?.subscriptionStatus === 'pending_approval')) && (
+        <div style={{
+          background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+          border: '1.5px solid #FCD34D',
+          borderRadius: '14px',
+          padding: '1.1rem 1.4rem',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          direction: 'rtl',
+          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.08)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+            <div style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '10px',
+              background: '#F59E0B',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              marginTop: '2px'
+            }}>
+              <Clock size={22} strokeWidth={2.4} />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontWeight: 800, fontSize: '0.98rem', color: '#92400E' }}>
+                  حساب العيادة قيد المراجعة والتفعيل السريع
+                </span>
+                <span style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  background: '#FDE68A',
+                  color: '#78350F',
+                  padding: '2px 8px',
+                  borderRadius: '6px'
+                }}>
+                  باقة {tenant?.subscriptionTier === 'enterprise' ? 'Enterprise (المراكز الكبرى)' : tenant?.subscriptionTier === 'starter' ? 'Starter (الأساسية)' : 'Pro (العيادة الذكية)'}
+                </span>
+              </div>
+              <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.86rem', color: '#B45309', lineHeight: 1.5 }}>
+                مرحباً بك {user?.name ? (user.name.startsWith('د.') ? user.name : `د. ${user.name}`) : 'دكتور'}! تم تدشين عيادتك بنجاح ويمكنك استكشاف النظام وإدخال بيانات المرضى والخدمات. سيقوم فريق ClinicFlow بالتواصل معك هاتفياً على ({user?.phone || tenant?.phone || 'رقم هاتفك'}) لتأكيد الاشتراك وتفعيل كافة الصلاحيات المتقدمة.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+            <a 
+              href={`https://wa.me/201006285031?text=${encodeURIComponent(`مرحباً فريق ClinicFlow، أنا الطبيب ${user?.name || ''} عيادة ${tenant?.name || ''} وأرغب في تأكيد وتفعيل حسابي سريعاً.`)}`}
+              target="_blank" 
+              rel="noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                background: '#10B981',
+                color: '#FFFFFF',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                boxShadow: '0 2px 6px rgba(16, 185, 129, 0.2)'
+              }}
+            >
+              <MessageCircle size={15} />
+              <span>تواصل لتسريع التفعيل</span>
+            </a>
+          </div>
+        </div>
+      )}
+
       {/* 1. Sleek Minimal Architectural Command Bar */}
       <div className="dashboard-command-bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
@@ -483,17 +560,6 @@ const Dashboard = () => {
             </button>
           )}
 
-          {(currentClinic?.slug === 'dr-ahmed' || currentClinic?.slug === 'dr-sara') && (
-            <button 
-              type="button" 
-              onClick={handleRefreshToday} 
-              className="cockpit-icon-btn"
-              style={{ width: '32px', height: '32px' }}
-              title="تحديث جدول اليوم التجريبي"
-            >
-              <RotateCcw size={14} />
-            </button>
-          )}
 
           <button 
             type="button" 

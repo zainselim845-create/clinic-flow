@@ -22,12 +22,13 @@ const Inventory = () => {
   const { tenant } = useTenant();
   const currentClinicId = tenant?.id || state?.clinicInfo?.id;
 
-  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
+  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || '';
 
   const clinicModules = tenant?.modules || state.clinicInfo?.modules || {};
   const isEnabled = Boolean(tenant?.enableInventory ?? state.clinicInfo?.enableInventory ?? clinicModules.inventory);
 
   const loadScopedInventory = () => {
+    if (!currentSlug) return [];
     const parsed = safeGetJSON(`clinicflow_inventory_${currentSlug}`, null);
     if (Array.isArray(parsed)) return parsed;
     return [];

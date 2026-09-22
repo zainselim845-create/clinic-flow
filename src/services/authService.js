@@ -738,7 +738,8 @@ export function registerDoctorAndClinic({
   specialty = 'طب وجراحة الفم والأسنان',
   address = 'القاهرة، جمهورية مصر العربية',
   customSlug,
-  senderId
+  senderId,
+  subscriptionTier = 'pro'
 }) {
   if (!doctorName?.trim()) throw new Error('يرجى إدخال اسم الطبيب بالكامل.');
   if (!email?.trim() || !email.includes('@')) throw new Error('يرجى إدخال بريد إلكتروني صالح.');
@@ -750,6 +751,7 @@ export function registerDoctorAndClinic({
   const cleanPhone = phone.trim().replace(/\D/g, '');
   const cleanName = doctorName.trim();
   const cleanClinicName = clinicName.trim();
+  const tier = subscriptionTier || 'pro';
 
   // O(1) Uniqueness check via indexed sets
   getRegisteredUsers();
@@ -786,6 +788,12 @@ export function registerDoctorAndClinic({
     { id: 3, name: 'فحص سريري شامل مع تقرير', price: 600, duration: 30 }
   ];
 
+  const tierQuotas = {
+    starter: { maxDoctors: 1, monthlySmsQuota: 500, smsUsed: 0 },
+    pro: { maxDoctors: 3, monthlySmsQuota: 2000, smsUsed: 0 },
+    enterprise: { maxDoctors: 10, monthlySmsQuota: 6000, smsUsed: 0 }
+  };
+
   const newTenant = {
     id: tenantId,
     name: cleanClinicName,
@@ -804,18 +812,14 @@ export function registerDoctorAndClinic({
       slotDuration: 30
     },
     services: defaultServices,
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
+    subscriptionTier: tier,
+    subscriptionStatus: 'pending_approval',
     branding: {
       primaryColor: '#09090B',
       accentColor: '#10B981',
       brandTitle: cleanClinicName
     },
-    quotas: {
-      maxDoctors: 3,
-      monthlySmsQuota: 1000,
-      smsUsed: 0
-    },
+    quotas: tierQuotas[tier] || tierQuotas.pro,
     createdAt: new Date().toISOString()
   };
 

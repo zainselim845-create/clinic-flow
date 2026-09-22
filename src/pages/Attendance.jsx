@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import { 
   getStaffAttendance, recordCheckIn, recordCheckOut 
 } from '../services/attendanceService';
@@ -12,11 +13,13 @@ import './Attendance.css';
 
 const Attendance = () => {
   const { state } = useApp();
+  const { tenant } = useTenant();
   const staffList = state.staffMembers || [];
 
-  const currentSlug = state.clinicInfo?.slug || 'dr-ahmed';
+  const currentSlug = tenant?.slug || state.clinicInfo?.slug || '';
 
   const loadScopedAttendance = () => {
+    if (!currentSlug) return [];
     const parsed = safeGetJSON(`clinicflow_attendance_${currentSlug}`, null);
     if (Array.isArray(parsed)) return parsed;
     return [];

@@ -95,7 +95,8 @@ export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {
       details: `إجمالي الإيراد: ${financialTotals.totalRevenue} ج.م | النقد الفعلي: ${actualCash} ج.م | الفارق: ${discrepancy} ج.م`
     });
 
-    const storedKey = `clinicflow_shifts_${state?.clinicInfo?.slug || 'dr-ahmed'}`;
+    const clinicSlug = state?.clinicInfo?.slug || state?.currentTenantSlug || 'default';
+    const storedKey = `clinicflow_shifts_${clinicSlug}`;
     const existing = safeGetJSON(storedKey, []);
     const updatedShifts = Array.isArray(existing) ? existing : [];
     updatedShifts.unshift(shiftReport);

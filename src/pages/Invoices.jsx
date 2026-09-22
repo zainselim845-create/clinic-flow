@@ -5,6 +5,7 @@ import {
   Clock, AlertCircle, DollarSign, Eye, RefreshCw 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useTenant } from '../context/TenantContext';
 import InvoiceModal from '../components/InvoiceModal';
 import { Skeleton } from '../components/ui/Skeleton';
 import { getInvoices, addInvoice } from '../services/invoicesService';
@@ -15,17 +16,19 @@ import './Invoices.css';
 const Invoices = () => {
   const location = useLocation();
   const { state } = useApp();
-  const currentClinic = state.clinicInfo || {};
-  const clinicSlug = currentClinic?.slug || 'dr-ahmed';
-  const clinicId = currentClinic?.id || '550e8400-e29b-41d4-a716-446655440000';
+  const { tenant } = useTenant();
+  const currentClinic = state.clinicInfo || tenant || {};
+  const clinicSlug = currentClinic?.slug || tenant?.slug || '';
+  const clinicId = currentClinic?.id || tenant?.id || (clinicSlug ? `tenant-${clinicSlug}` : '');
 
   const loadScopedInvoices = (slug) => {
+    if (!slug) return [];
     const parsed = safeGetJSON(`clinicflow_invoices_${slug}`, null);
     if (Array.isArray(parsed)) return parsed;
     return [];
   };
 
-  const [invoicesList, setInvoicesList] = useState(() => loadScopedInvoices(clinicSlug, clinicId));
+  const [invoicesList, setInvoicesList] = useState(() => loadScopedInvoices(clinicSlug));
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
 

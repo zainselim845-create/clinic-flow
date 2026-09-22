@@ -19,13 +19,14 @@ const Labs = () => {
   const location = useLocation();
   const { state } = useApp();
   const { tenant } = useTenant();
-  const currentClinicId = tenant?.id || state?.clinicInfo?.id || '550e8400-e29b-41d4-a716-446655440000';
-  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || 'dr-ahmed';
+  const currentClinicId = tenant?.id || state?.clinicInfo?.id || (tenant?.slug ? `tenant-${tenant.slug}` : '');
+  const currentSlug = tenant?.slug || state?.clinicInfo?.slug || '';
 
   const clinicModules = tenant?.modules || state.clinicInfo?.modules || {};
   const isEnabled = Boolean(tenant?.enableLabs ?? state.clinicInfo?.enableLabs ?? clinicModules.labs);
 
   const loadScopedOrders = useCallback(() => {
+    if (!currentSlug) return [];
     const parsed = safeGetJSON(`clinicflow_labs_${currentSlug}`, null);
     if (Array.isArray(parsed)) return parsed;
     return [];

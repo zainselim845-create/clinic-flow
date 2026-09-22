@@ -63,8 +63,8 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
       return;
     }
 
-    const staffClinicId = tenant?.id || 'dr-ahmed';
-    const staffClinicSlug = tenant?.slug || 'dr-ahmed';
+    const staffClinicId = tenant?.id || (tenant?.slug ? `tenant-${tenant.slug}` : 'clinic-default');
+    const staffClinicSlug = tenant?.slug || 'clinic';
 
     // 1. Pre-flight auth validation and phone uniqueness check
     const targetId = editingStaff ? editingStaff.id : 'staff-' + Date.now();
@@ -425,7 +425,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         onConfirm={async () => {
           if (!deleteTargetStaff) return;
           const id = deleteTargetStaff.id;
-          const staffClinicId = tenant?.id || 'dr-ahmed';
+          const staffClinicId = tenant?.id || (tenant?.slug ? `tenant-${tenant.slug}` : 'clinic-default');
           if (isSupabaseConfigured()) {
             try {
               await staffService.deleteStaffMember(id);

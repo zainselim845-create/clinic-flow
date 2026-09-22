@@ -16,7 +16,7 @@ export function EditUserModal({
     email: '',
     phone: '',
     role: 'doctor',
-    clinicSlug: 'dr-ahmed',
+    clinicSlug: allTenants[0]?.slug || '',
     jobTitle: '',
     status: 'active'
   });
@@ -32,7 +32,7 @@ export function EditUserModal({
         email: user.email || '',
         phone: user.phone || '',
         role: user.role || 'doctor',
-        clinicSlug: user.clinicSlug || allTenants[0]?.slug || 'dr-ahmed',
+        clinicSlug: user.clinicSlug || allTenants[0]?.slug || '',
         jobTitle: user.jobTitle || '',
         status: user.status || 'active'
       });

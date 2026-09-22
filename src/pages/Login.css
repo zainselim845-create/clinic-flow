@@ -649,3 +649,144 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* SaaS Plan Selector Grid */
+.saas-plan-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.saas-plan-card {
+  border: 1.5px solid var(--border-color, #E2E8F0);
+  border-radius: 12px;
+  padding: 0.85rem;
+  background: var(--bg-card, #FFFFFF);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  text-align: right;
+  direction: rtl;
+}
+
+.saas-plan-card:hover {
+  border-color: #94A3B8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.saas-plan-card.selected {
+  border-color: #0F172A;
+  background: #F8FAFC;
+  box-shadow: 0 0 0 2px #0F172A;
+}
+
+.plan-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.plan-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary, #0F172A);
+}
+
+.plan-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #E2E8F0;
+  color: #334155;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.saas-plan-card.selected .plan-badge {
+  background: #0F172A;
+  color: #FFFFFF;
+}
+
+.plan-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.plan-price {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary, #0F172A);
+}
+
+.plan-period {
+  font-size: 0.72rem;
+  color: var(--text-secondary, #64748B);
+}
+
+.plan-features-mini {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.plan-features-mini li {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary, #475569);
+  line-height: 1.3;
+}
+
+.feat-check {
+  color: #10B981;
+  flex-shrink: 0;
+}
+
+.plan-select-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color, #F1F5F9);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary, #64748B);
+}
+
+.saas-plan-card.selected .plan-select-indicator {
+  color: #0F172A;
+}
+
+.radio-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid #CBD5E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-dot.active {
+  border-color: #0F172A;
+  background: #0F172A;
+}
+
+@media (max-width: 640px) {
+  .saas-plan-selector-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

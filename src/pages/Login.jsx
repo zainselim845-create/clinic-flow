@@ -69,6 +69,7 @@ export default function Login() {
     clinicName: '',
     specialty: 'طب وجراحة الفم والأسنان',
     address: 'القاهرة، مصر',
+    subscriptionTier: 'pro',
     agreeTerms: true
   });
   
@@ -191,7 +192,8 @@ export default function Login() {
         ...regForm,
         doctorName: formattedDocName,
         email: regForm.email.trim().toLowerCase(),
-        phone: cleanPhone
+        phone: cleanPhone,
+        subscriptionTier: regForm.subscriptionTier || 'pro'
       };
 
       const { error: signUpError } = await signUpDoctorAndClinic(payload);
@@ -607,6 +609,76 @@ export default function Login() {
                           </span>
                         </div>
                       )}
+                    </div>
+
+                    {/* SaaS Plan Selection */}
+                    <div className="form-field-group">
+                      <label className="field-label">اختر باقة الاشتراك المناسبة لعيادتك *</label>
+                      <div className="saas-plan-selector-grid">
+                        {[
+                          {
+                            id: 'starter',
+                            name: 'Starter (الأساسية)',
+                            price: '499 ج.م',
+                            period: '/ شهر',
+                            badge: 'العيادات الفردية',
+                            features: ['طبيب واحد', '500 رسالة SMS', 'مواعيد ومرضى وفواتير']
+                          },
+                          {
+                            id: 'pro',
+                            name: 'Pro (العيادة الذكية)',
+                            price: '999 ج.م',
+                            period: '/ شهر',
+                            badge: 'الأكثر طلباً',
+                            features: ['حتى 3 أطباء', '2000 رسالة SMS', 'مساعد ذكي ومخزون']
+                          },
+                          {
+                            id: 'enterprise',
+                            name: 'Enterprise (المراكز الكبرى)',
+                            price: '1999 ج.م',
+                            period: '/ شهر',
+                            badge: 'مؤسسي متقدم',
+                            features: ['حتى 10 أطباء', '6000 رسالة SMS', 'نطاق مخصص وأفرع']
+                          }
+                        ].map((plan) => {
+                          const isSelected = (regForm.subscriptionTier || 'pro') === plan.id;
+                          return (
+                            <div
+                              key={plan.id}
+                              className={`saas-plan-card ${isSelected ? 'selected' : ''}`}
+                              onClick={() => setRegForm(prev => ({ ...prev, subscriptionTier: plan.id }))}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  setRegForm(prev => ({ ...prev, subscriptionTier: plan.id }));
+                                }
+                              }}
+                            >
+                              <div className="plan-card-header">
+                                <span className="plan-name">{plan.name}</span>
+                                {plan.badge && <span className="plan-badge">{plan.badge}</span>}
+                              </div>
+                              <div className="plan-price-row">
+                                <span className="plan-price">{plan.price}</span>
+                                <span className="plan-period">{plan.period}</span>
+                              </div>
+                              <ul className="plan-features-mini">
+                                {plan.features.map((feat, idx) => (
+                                  <li key={idx}>
+                                    <Check size={12} className="feat-check" />
+                                    <span>{feat}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                              <div className="plan-select-indicator">
+                                <div className={`radio-dot ${isSelected ? 'active' : ''}`} />
+                                <span>{isSelected ? 'الباقة المختارة' : 'اختيار هذه الباقة'}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     <div className="form-options-row">

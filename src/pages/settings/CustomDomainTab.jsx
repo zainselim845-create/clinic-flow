@@ -29,7 +29,7 @@ export default function CustomDomainTab() {
   const { state, dispatch } = useApp();
   const { tenant, updateTenantDomain } = useTenant();
 
-  const clinicId = state.clinicInfo?.id || tenant?.id || '550e8400-e29b-41d4-a716-446655440000';
+  const clinicId = state.clinicInfo?.id || tenant?.id || (tenant?.slug ? `tenant-${tenant.slug}` : 'clinic-default');
   const initialDomain = state.clinicInfo?.customDomain || state.clinicInfo?.custom_domain || tenant?.customDomain || '';
 
   const [domainInput, setDomainInput] = useState(initialDomain);
