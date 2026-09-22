@@ -70,16 +70,6 @@ describe('smsService Unit Tests', () => {
   });
 
   describe('getClinicSenderId (Per-Client Dedicated Resolution)', () => {
-    it('resolves dedicated Sender ID for Dr. Ahmed demo clinic', () => {
-      expect(getClinicSenderId('550e8400-e29b-41d4-a716-446655440000')).toBe('DrAhmed');
-      expect(getClinicSenderId('dr-ahmed')).toBe('DrAhmed');
-    });
-
-    it('resolves dedicated Sender ID for Dr. Sara demo clinic', () => {
-      expect(getClinicSenderId('550e8400-e29b-41d4-a716-446655440099')).toBe('SaraDerma');
-      expect(getClinicSenderId('dr-sara')).toBe('SaraDerma');
-    });
-
     it('resolves dedicated Sender ID from saved clinic config if present', () => {
       const clinicId = 'clinic_cairo_care';
       safeStorage.setItem(`clinicflow_sms_config_${clinicId}`, {
@@ -116,24 +106,26 @@ describe('smsService Unit Tests', () => {
 
   describe('getSmsConfig with Clinic Scoping', () => {
     it('binds clinic dedicated senderId to the resolved config', () => {
-      const configAhmed = getSmsConfig('dr-ahmed');
-      expect(configAhmed.senderId).toBe('DrAhmed');
-      expect(configAhmed.easysendsmsSender).toBe('DrAhmed');
-      expect(configAhmed.smsmisrSender).toBe('DrAhmed');
+      safeStorage.setItem('clinicflow_registered_tenants', [
+        {
+          id: 'clinic-custom',
+          slug: 'custom-clinic',
+          senderId: 'CustomCare'
+        }
+      ]);
 
-      const configSara = getSmsConfig('dr-sara');
-      expect(configSara.senderId).toBe('SaraDerma');
-      expect(configSara.easysendsmsSender).toBe('SaraDerma');
-      expect(configSara.smsmisrSender).toBe('SaraDerma');
+      const config = getSmsConfig('custom-clinic');
+      expect(config.senderId).toBe('CustomCare');
+      expect(config.easysendsmsSender).toBe('CustomCare');
+      expect(config.smsmisrSender).toBe('CustomCare');
     });
   });
 
   describe('sendSMS unconfigured behavior and audit ledger metadata', () => {
     it('returns honest unconfigured status when no credentials are provided', async () => {
-      const result = await sendSMS('01006285031', 'رسالة اختبار', 'dr-ahmed');
+      const result = await sendSMS('01006285031', 'رسالة اختبار', 'test-clinic');
       expect(result.success).toBe(false);
       expect(result.isConfigured).toBe(false);
-      expect(result.senderId).toBe('DrAhmed');
       expect(result.error).toContain('لم يتم ربط مزود خدمة SMS');
     });
   });

@@ -74,6 +74,15 @@ export function clearAuthCache() {
   registeredPhonesSet.clear();
 }
 
+const LEGACY_DEMO_SLUGS = new Set(['dr-ahmed', 'dr-sara', 'dr-zainselim845']);
+const LEGACY_DEMO_EMAILS = new Set([
+  'doctor@clinicflow.com',
+  'sara.clinic@clinicflow.com',
+  'owner@clinicflow.com',
+  'reception@clinicflow.com',
+  'zainselim845@gmail.com'
+]);
+
 /**
  * Retrieves all custom registered clinics from persistent storage
  */
@@ -83,7 +92,8 @@ export function getRegisteredTenants(forceRefresh = true) {
   try {
     const raw = localStorage.getItem(REGISTERED_TENANTS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    memoryTenantsCache = Array.isArray(parsed) ? parsed : [];
+    const list = Array.isArray(parsed) ? parsed : [];
+    memoryTenantsCache = list.filter(t => !LEGACY_DEMO_SLUGS.has(t.slug));
     memoryTenantsCache.forEach(t => {
       if (t.slug) registeredSlugsSet.add(t.slug);
       if (t.doctorEmail) registeredEmailsSet.add(t.doctorEmail.toLowerCase());
@@ -254,7 +264,13 @@ export function getRegisteredUsers(forceRefresh = true) {
   try {
     const raw = localStorage.getItem(REGISTERED_USERS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    memoryUsersCache = Array.isArray(parsed) ? parsed : [];
+    const list = Array.isArray(parsed) ? parsed : [];
+    memoryUsersCache = list.filter(u => {
+      const email = (u.email || '').toLowerCase();
+      if (LEGACY_DEMO_EMAILS.has(email)) return false;
+      if (u.id === 'doc-master' || u.id === 'doc-sara-master' || u.id === 'user-multi-clinic-owner' || u.id === 'staff-reception-master') return false;
+      return true;
+    });
     memoryUsersCache.forEach(u => {
       if (u.email) registeredEmailsSet.add(u.email.toLowerCase());
       if (u.phone) registeredPhonesSet.add(u.phone.replace(/\D/g, ''));
@@ -386,64 +402,6 @@ export function getAllPlatformUsers() {
 
   const defaultUsers = [
     {
-      id: 'doc-master',
-      name: 'د. أحمد الشريف',
-      email: 'doctor@clinicflow.com',
-      phone: '01006285031',
-      role: 'doctor',
-      isClinicOwner: true,
-      jobTitle: 'المدير الطبي / استشاري طب وجراحة وتجميل الأسنان',
-      clinicSlug: 'dr-ahmed',
-      clinicId: '550e8400-e29b-41d4-a716-446655440000',
-      clinicName: 'مركز النخبة لطب وجراحة الأسنان',
-      status: 'active',
-      authProvider: 'password',
-      createdAt: '2026-01-10T08:00:00.000Z'
-    },
-    {
-      id: 'doc-sara-master',
-      name: 'د. سارة محمود',
-      email: 'sara.clinic@clinicflow.com',
-      phone: '01123456780',
-      role: 'doctor',
-      isClinicOwner: true,
-      jobTitle: 'استشاري الأمراض الجلدية وتجميل الليزر',
-      clinicSlug: 'dr-sara',
-      clinicId: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-      clinicName: 'عيادة د. سارة للجلدية والتجميل والليزر',
-      status: 'active',
-      authProvider: 'password',
-      createdAt: '2026-02-01T09:30:00.000Z'
-    },
-    {
-      id: 'user-multi-clinic-owner',
-      name: 'د. شريف العوضي',
-      email: 'owner@clinicflow.com',
-      phone: '01200000001',
-      role: 'multi_clinic_owner',
-      isClinicOwner: true,
-      jobTitle: 'مالك ومستثمر طبي — مجمع عيادات كلينيك فلو',
-      clinicSlug: 'dr-ahmed',
-      clinicName: 'مجمع عيادات كلينيك فلو (فروع متعددة)',
-      status: 'active',
-      authProvider: 'password',
-      createdAt: '2026-02-15T11:00:00.000Z'
-    },
-    {
-      id: 'staff-reception-master',
-      name: 'سارة كمال',
-      email: 'reception@clinicflow.com',
-      phone: '01012345678',
-      role: 'staff',
-      jobTitle: 'سكرتارية واستقبال العيادة',
-      clinicSlug: 'dr-ahmed',
-      clinicId: '550e8400-e29b-41d4-a716-446655440000',
-      clinicName: 'مركز النخبة لطب وجراحة الأسنان',
-      status: 'active',
-      authProvider: 'password',
-      createdAt: '2026-01-12T10:00:00.000Z'
-    },
-    {
       id: 'user-superadmin-master',
       name: 'مدير المنصة العام (Super Admin)',
       email: 'superadmin@clinicflow.com',
@@ -456,28 +414,10 @@ export function getAllPlatformUsers() {
       status: 'active',
       authProvider: 'password',
       createdAt: '2026-01-01T00:00:00.000Z'
-    },
-    {
-      id: 'doc-zainselim-master',
-      name: 'د. zain selim',
-      email: 'zainselim845@gmail.com',
-      phone: '01006285031',
-      role: 'doctor',
-      isClinicOwner: true,
-      jobTitle: 'المدير الطبي / استشاري العيادة (Verified)',
-      clinicSlug: 'dr-zainselim845',
-      clinicId: 'clinic-zainselim845',
-      clinicName: 'عيادة د. zain selim',
-      status: 'active',
-      authProvider: 'google',
-      createdAt: '2026-01-15T10:00:00.000Z'
     }
   ];
 
   const clinicLookup = new Map();
-  clinicLookup.set('dr-ahmed', 'مركز النخبة لطب وجراحة الأسنان');
-  clinicLookup.set('dr-sara', 'عيادة د. سارة للجلدية والتجميل والليزر');
-  clinicLookup.set('dr-zainselim845', 'عيادة د. zain selim');
   tenants.forEach(t => {
     if (t.slug) clinicLookup.set(t.slug, t.name || t.slug);
     if (t.id) clinicLookup.set(t.id, t.name || t.slug);
@@ -489,8 +429,8 @@ export function getAllPlatformUsers() {
   registered.forEach(u => {
     const key = (u.email || u.id || '').toLowerCase();
     const existing = userMap.get(key) || {};
-    const resolvedClinicSlug = u.clinicSlug || existing.clinicSlug || 'dr-ahmed';
-    const resolvedClinicName = u.clinicName || clinicLookup.get(resolvedClinicSlug) || existing.clinicName || 'عيادة خاصة';
+    const resolvedClinicSlug = u.clinicSlug || existing.clinicSlug || '';
+    const resolvedClinicName = u.clinicName || (resolvedClinicSlug ? clinicLookup.get(resolvedClinicSlug) : '') || existing.clinicName || 'عيادة خاصة';
     userMap.set(key, {
       ...existing,
       ...u,
@@ -509,8 +449,8 @@ export function getAllPlatformUsers() {
         if (authUser && (authUser.email || authUser.id)) {
           const key = (authUser.email || authUser.id).toLowerCase();
           const existing = userMap.get(key) || {};
-          const resolvedClinicSlug = authUser.clinicSlug || existing.clinicSlug || 'dr-ahmed';
-          const resolvedClinicName = authUser.clinicName || clinicLookup.get(resolvedClinicSlug) || existing.clinicName || (authUser.name ? `عيادة ${authUser.name}` : 'عيادة خاصة');
+          const resolvedClinicSlug = authUser.clinicSlug || existing.clinicSlug || '';
+          const resolvedClinicName = authUser.clinicName || (resolvedClinicSlug ? clinicLookup.get(resolvedClinicSlug) : '') || existing.clinicName || (authUser.name ? `عيادة ${authUser.name}` : 'عيادة خاصة');
           userMap.set(key, {
             ...existing,
             ...authUser,

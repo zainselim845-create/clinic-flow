@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useInRouterContext } from 'react-router-dom';
-import { clinicInfo as defaultClinicInfo, demoClinics as fallbackDemoClinics } from '../data/demoData';
+import { demoClinics as fallbackDemoClinics } from '../data/demoData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { fromDbClinic, getAllClinicsFromDb } from '../services/clinicsService';
 import { canSwitchTenants } from '../utils/permissions';
@@ -11,48 +11,14 @@ import { safeGetItem, safeGetJSON, safeSetJSON, safeSessionGetJSON } from '../ut
 
 const TenantContext = createContext(null);
 
-// Fallback seed clinics if demoClinics not exported
-const initialClinics = fallbackDemoClinics || [
-  {
-    ...defaultClinicInfo,
-    id: '550e8400-e29b-41d4-a716-446655440000',
-    slug: 'dr-ahmed',
-    customDomain: 'dr-ahmed-dental.com',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    branding: {
-      primaryColor: '#09090B',
-      accentColor: '#10B981',
-      badgeText: 'العيادة التخصصية'
-    },
-    quotas: {
-      maxDoctors: 3,
-      monthlySmsQuota: 2000,
-      smsUsed: 340,
-      aiTokensQuota: 10000000,
-      aiTokensUsed: 1250000
-    }
-  }
-];
+// Fallback seed clinics: zero demo clinics in production
+const initialClinics = [];
 
 export function getCombinedTenants(forceRefresh = true) {
-  const base = fallbackDemoClinics || initialClinics;
   const registered = getRegisteredTenants(forceRefresh);
-  
-  // Merge registered tenants with base (updating base if slug/id matches)
-  const combined = base.map(b => {
-    const override = registered.find(rt => rt.id === b.id || rt.slug === b.slug);
-    return override ? { ...b, ...override } : b;
-  });
-
-  for (const rt of registered) {
-    if (!combined.some(b => b.id === rt.id || b.slug === rt.slug)) {
-      combined.push(rt);
-    }
-  }
 
   // Enrich with custom domain settings saved via CustomDomainTab
-  return combined.map(tenant => {
+  return registered.map(tenant => {
     const domainConfig = getClinicDomainSettings(tenant.id);
     if (domainConfig && domainConfig.domain) {
       return {
@@ -73,16 +39,16 @@ export function getCombinedTenants(forceRefresh = true) {
  *  3. URL path (/c/:slug/...) -> isDedicatedDomain: false
  *  4. URL query (?clinic=slug) -> isDedicatedDomain: false
  *  5. LocalStorage stored preference -> isDedicatedDomain: false
- *  6. Default fallback ('dr-ahmed') -> isDedicatedDomain: false
+ *  6. Default fallback -> isDedicatedDomain: false
  */
 export function resolveTenantFromLocation(
-  tenants = fallbackDemoClinics || initialClinics,
+  tenants = [],
   locationObj = (typeof window !== 'undefined' ? window.location : null)
 ) {
   if (!locationObj) {
     const defaultClinic = tenants?.[0] || null;
     return {
-      slug: defaultClinic?.slug || 'dr-ahmed',
+      slug: defaultClinic?.slug || '',
       isDedicatedDomain: false,
       tenant: defaultClinic
     };
@@ -183,7 +149,7 @@ export function resolveTenantFromLocation(
   // 6. Fallback
   const defaultFallback = (tenants && tenants[0]) ? tenants[0] : null;
   return {
-    slug: defaultFallback?.slug || 'dr-ahmed',
+    slug: defaultFallback?.slug || '',
     isDedicatedDomain: false,
     tenant: defaultFallback
   };
@@ -194,7 +160,7 @@ export function resolveTenantFromLocation(
  */
 export function isDedicatedDomain(
   locationObj = (typeof window !== 'undefined' ? window.location : null),
-  tenants = fallbackDemoClinics || initialClinics
+  tenants = []
 ) {
   return resolveTenantFromLocation(tenants, locationObj).isDedicatedDomain;
 }
@@ -276,7 +242,7 @@ export const TenantProvider = ({ children }) => {
   const applyBranding = applyTenantBranding;
   const [allTenants, setAllTenants] = useState(() => getCombinedTenants(true));
   const initialResolution = useMemo(() => resolveTenantFromLocation(allTenants), [allTenants]);
-  const [activeTenant, setActiveTenant] = useState(initialResolution.tenant || allTenants[0]);
+  const [activeTenant, setActiveTenant] = useState(initialResolution.tenant || allTenants[0] || null);
   const [dedicatedDomainActive, setDedicatedDomainActive] = useState(initialResolution.isDedicatedDomain);
   const [isLoadingTenant, setIsLoadingTenant] = useState(true);
 
@@ -371,7 +337,7 @@ export const TenantProvider = ({ children }) => {
       // Offline / Demo Mode: find in demo clinics and all registered clinics
       const currentCombined = getCombinedTenants();
       let match = currentCombined.find(t => t.slug === targetSlug || t.id === targetSlug);
-      if (!match) match = locationResolution.tenant || currentCombined[0];
+      if (!match) match = locationResolution.tenant || currentCombined[0] || null;
       setActiveTenant(match);
       if (!locationResolution.isDedicatedDomain && match?.slug) {
         localStorage.setItem('clinicflow_active_tenant_slug', match.slug);
@@ -451,7 +417,7 @@ export const TenantProvider = ({ children }) => {
     }
 
     // Fallback to first tenant
-    const fallback = locationResolution.tenant || allTenants[0];
+    const fallback = locationResolution.tenant || allTenants[0] || null;
     setActiveTenant(fallback);
     applyBranding(fallback?.branding);
     setIsLoadingTenant(false);
@@ -661,7 +627,7 @@ export const TenantProvider = ({ children }) => {
 
   const value = useMemo(() => ({
     tenant: activeTenant,
-    tenantSlug: activeTenant?.slug || 'dr-ahmed',
+    tenantSlug: activeTenant?.slug || '',
     resolveTenantSlug,
     allTenants: (isSuperAdminRoute ? allTenants : isolatedTenantsCatalog),
     rawAllTenants: allTenants,

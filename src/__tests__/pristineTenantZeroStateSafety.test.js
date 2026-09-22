@@ -5,7 +5,8 @@ import {
   getAllPlatformUsers, 
   saveRegisteredTenant, 
   getRegisteredTenants, 
-  saveRegisteredUser 
+  saveRegisteredUser,
+  clearAuthCache
 } from '../services/authService';
 
 const createStorageMock = () => {
@@ -25,6 +26,7 @@ describe('Pristine Tenant Zero-State Safety & Anti-Leakage Architecture', () => 
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    clearAuthCache();
   });
 
   it('guarantees that any custom doctor clinic starts with 0 appointments, 0 patients, and 0 expenses', () => {
@@ -117,22 +119,22 @@ describe('Pristine Tenant Zero-State Safety & Anti-Leakage Architecture', () => 
   it('guarantees Google OAuth users are recorded in global user registry and accessible to Super Admin', () => {
     const googleUser = {
       id: 'google-sub-987654',
-      email: 'zainselim845@gmail.com',
-      name: 'د. zain selim',
+      email: 'dr.khalid.google@gmail.com',
+      name: 'د. خالد سليم',
       role: 'doctor',
       jobTitle: 'المدير الطبي / استشاري العيادة (Google Verified)',
-      clinicSlug: 'dr-zainselim845',
-      clinicId: 'clinic-zainselim845',
+      clinicSlug: 'dr-khalid',
+      clinicId: 'clinic-khalid',
       status: 'active'
     };
 
     saveRegisteredUser(googleUser);
 
     const platformUsers = getAllPlatformUsers();
-    const match = platformUsers.find(u => u.email === 'zainselim845@gmail.com');
+    const match = platformUsers.find(u => u.email === 'dr.khalid.google@gmail.com');
 
     expect(match).toBeDefined();
-    expect(match.name).toBe('د. zain selim');
+    expect(match.name).toBe('د. خالد سليم');
     expect(match.role).toBe('doctor');
   });
 

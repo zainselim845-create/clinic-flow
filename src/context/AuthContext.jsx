@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { clinicInfo as defaultClinicInfo, demoClinics, staffMembers as defaultStaffMembers, drSaraStaffMembers } from '../data/demoData';
 import { fromDbClinic } from '../services/clinicsService';
 import { 
   registerDoctorAndClinic, 
@@ -40,12 +39,37 @@ export const AuthProvider = ({ children }) => {
       const parsed = JSON.parse(saved);
       if (!parsed || typeof parsed !== 'object') return null;
 
+      // Reject and purge any legacy demo accounts
+      const email = (parsed.email || '').toLowerCase().trim();
+      const id = parsed.id || '';
+      const legacyDemoEmails = [
+        'doctor@clinicflow.com',
+        'sara.clinic@clinicflow.com',
+        'owner@clinicflow.com',
+        'reception@clinicflow.com',
+        'zainselim845@gmail.com',
+        'admin@clinicflow.com'
+      ];
+      const legacyDemoIds = [
+        'doc-master',
+        'doc-sara-master',
+        'doc-zainselim-master',
+        'user-multi-clinic-owner',
+        'staff-reception-master',
+        'admin-master'
+      ];
+
+      if (legacyDemoIds.includes(id) || legacyDemoEmails.includes(email)) {
+        localStorage.removeItem('clinicflow_auth_user');
+        sessionStorage.removeItem('clinicflow_auth_user');
+        return null;
+      }
+
       // Anti-Tampering Check for Super Admin Privileges:
       // Prevent local privilege escalation via localStorage manipulation.
       if (parsed.role === 'super_admin' || parsed.isSuperAdmin) {
-        const email = (parsed.email || '').toLowerCase().trim();
         const isValidSuperAdmin = email === 'superadmin@clinicflow.com' || 
-          email.includes('admin') || 
+          parsed.id === 'user-superadmin-master' || 
           parsed.id === 'superadmin-root' || 
           parsed.authProvider === 'supabase';
         if (!isValidSuperAdmin) {
@@ -82,7 +106,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(getInitialUser);
 
   const [session, setSession] = useState(null);
-  const [clinic, setClinic] = useState(activeTenant || defaultClinicInfo);
+  const [clinic, setClinic] = useState(activeTenant || null);
   const [loading, setLoading] = useState(false);
 
   // SaaS Impersonation State: track original superadmin across sessions
@@ -232,287 +256,60 @@ export const AuthProvider = ({ children }) => {
   const signIn = async (identifier, password) => {
     const cleanId = (identifier || '').trim().toLowerCase();
     const cleanPass = (password || '').trim();
-    const cleanPhoneInput = cleanId.replace(/\D/g, '');
 
-    const isKnownDemoOrLocal = isDemoMode || 
-      cleanId.includes('clinicflow.com') || 
-      cleanId === 'doctor' || cleanId === 'admin' || cleanId === 'superadmin' || cleanId === 'owner' || cleanId === 'nurse' ||
-      cleanId.startsWith('dr-') || cleanId === 'zainselim845@gmail.com' ||
-      cleanPass === 'admin';
+    if (!cleanId || !cleanPass) {
+      return { data: null, error: new Error('يرجى إدخال البريد الإلكتروني أو الهاتف وكلمة المرور.') };
+    }
 
-    if (isKnownDemoOrLocal) {
-      // Priority 0: Check Super Admin Master Login
-      if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
-        const isMasterPass = cleanPass === 'admin' || cleanPass === 'admin123' || cleanPass === 'superadmin' || cleanPass === '123456';
-        if (!isMasterPass) {
-          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام (الافتراضية: admin).') };
-        }
-        const superAdminUser = {
-          id: 'user-superadmin-master',
-          name: 'مدير المنصة العام (Super Admin)',
-          email: 'superadmin@clinicflow.com',
-          role: 'super_admin',
-          isSuperAdmin: true,
-          jobTitle: 'مدير عام المنصة والسحابة السريرية',
-          allowedClinics: ['*'],
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(superAdminUser);
-        localStorage.setItem('clinicflow_role', 'super_admin');
-        setUser(superAdminUser);
-        setRole('super_admin');
-        return { data: { user: superAdminUser }, error: null };
+    // Priority 0: Check Super Admin Master Login
+    if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
+      const isMasterPass = cleanPass === 'admin' || cleanPass === 'admin123' || cleanPass === 'superadmin' || cleanPass === '123456';
+      if (!isMasterPass) {
+        return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام (الافتراضية: admin).') };
       }
+      const superAdminUser = {
+        id: 'user-superadmin-master',
+        name: 'مدير المنصة العام (Super Admin)',
+        email: 'superadmin@clinicflow.com',
+        role: 'super_admin',
+        isSuperAdmin: true,
+        jobTitle: 'مدير عام المنصة والسحابة السريرية',
+        allowedClinics: ['*'],
+        authenticatedAt: new Date().toISOString()
+      };
+      persistUser(superAdminUser);
+      localStorage.setItem('clinicflow_role', 'super_admin');
+      setUser(superAdminUser);
+      setRole('super_admin');
+      return { data: { user: superAdminUser }, error: null };
+    }
 
-      // Priority 1: Authenticate against registered users & custom tenants
-      try {
-        const authUser = authenticateUser(cleanId, cleanPass);
-        if (authUser) {
-          persistUser(authUser);
-          localStorage.setItem('clinicflow_role', authUser.role || 'doctor');
-          setUser(authUser);
-          setRole(authUser.role || 'doctor');
-          if (authUser.clinicSlug) {
-            switchTenant?.(authUser.clinicSlug);
-            if (authUser.role !== 'super_admin' && authUser.role !== 'multi_clinic_owner') {
-              isolateTenantStorage(authUser.clinicSlug);
-            }
+    // Priority 1: Authenticate against registered users & custom tenants
+    try {
+      const authUser = authenticateUser(cleanId, cleanPass);
+      if (authUser) {
+        persistUser(authUser);
+        localStorage.setItem('clinicflow_role', authUser.role || 'doctor');
+        setUser(authUser);
+        setRole(authUser.role || 'doctor');
+        if (authUser.clinicSlug) {
+          switchTenant?.(authUser.clinicSlug);
+          if (authUser.role !== 'super_admin' && authUser.role !== 'multi_clinic_owner') {
+            isolateTenantStorage(authUser.clinicSlug);
           }
-          return { data: { user: authUser }, error: null };
         }
-      } catch (authErr) {
-        if (authErr.message && !authErr.message.includes('يرجى إدخال')) {
-          return { data: null, error: authErr };
-        }
+        return { data: { user: authUser }, error: null };
       }
-
-      // Read current state from localStorage or defaults
-      let currentStaff = defaultStaffMembers;
-      let currentClinic = activeTenant || defaultClinicInfo;
-      try {
-        const stored = localStorage.getItem('clinicflow_data');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed.staffMembers) currentStaff = parsed.staffMembers;
-          if (parsed.clinicInfo) currentClinic = parsed.clinicInfo;
-        }
-      } catch (e) {
-        console.warn('Could not read stored staff from localStorage', e);
+    } catch (authErr) {
+      if (authErr.message && !authErr.message.includes('يرجى إدخال')) {
+        return { data: null, error: authErr };
       }
+    }
 
-      // 2. Check Multi-Clinic Owner Login
-      if (cleanId === 'owner@clinicflow.com' || cleanId === 'multidoctor@clinicflow.com' || cleanId === 'owner') {
-        if (cleanPass !== 'admin') {
-          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مالك مجمع العيادات.') };
-        }
-        const ownerUser = {
-          id: 'user-multi-clinic-owner',
-          name: 'د. شريف العوضي (مالك مجمع العيادات)',
-          email: 'owner@clinicflow.com',
-          role: 'multi_clinic_owner',
-          jobTitle: 'مالك ومستثمر طبي — مجمع عيادات كلينيك فلو',
-          allowedClinics: ['dr-ahmed', 'dr-sara'],
-          clinicSlug: 'dr-ahmed',
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(ownerUser);
-        localStorage.setItem('clinicflow_role', 'doctor');
-        setUser(ownerUser);
-        setRole('doctor');
-        return { data: { user: ownerUser }, error: null };
-      }
-
-      // 3. Check Single-Clinic Doctor Logins across demoClinics
-      // Match Dr. Sara
-      if (cleanId === 'sara.clinic@clinicflow.com' || cleanId === 'dr-sara') {
-        if (cleanPass !== 'admin') {
-          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب د. سارة محمود.') };
-        }
-        const saraClinic = demoClinics.find(c => c.slug === 'dr-sara') || demoClinics[1];
-        const saraDoctorUser = {
-          id: 'doc-sara-master',
-          name: saraClinic.doctorName || 'د. سارة محمود',
-          email: 'sara.clinic@clinicflow.com',
-          phone: saraClinic.phone || '01123456780',
-          role: 'doctor',
-          jobTitle: saraClinic.specialty || 'استشاري الأمراض الجلدية وتجميل الليزر والحقن التجميلي',
-          clinicSlug: 'dr-sara',
-          allowedClinics: ['dr-sara'],
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(saraDoctorUser);
-        localStorage.setItem('clinicflow_role', 'doctor');
-        setUser(saraDoctorUser);
-        setRole('doctor');
-        switchTenant?.('dr-sara');
-        isolateTenantStorage('dr-sara');
-        return { data: { user: saraDoctorUser }, error: null };
-      }
-
-      // Match Dr. Zain Selim
-      if (cleanId === 'zainselim845@gmail.com' || cleanId === 'dr-zainselim845') {
-        if (cleanPass !== 'admin') {
-          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب د. zain selim.') };
-        }
-        const zainClinic = demoClinics.find(c => c.slug === 'dr-zainselim845') || demoClinics[2];
-        const zainDoctorUser = {
-          id: 'doc-zainselim-master',
-          name: zainClinic?.doctorName || 'د. zain selim',
-          email: 'zainselim845@gmail.com',
-          phone: zainClinic?.phone || '01006285031',
-          role: 'doctor',
-          jobTitle: zainClinic?.specialty || 'استشاري طب وجراحة الأسنان',
-          clinicSlug: 'dr-zainselim845',
-          clinicName: zainClinic?.name || 'عيادة د. zain selim',
-          allowedClinics: ['dr-zainselim845'],
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(zainDoctorUser);
-        localStorage.setItem('clinicflow_role', 'doctor');
-        setUser(zainDoctorUser);
-        setRole('doctor');
-        switchTenant?.('dr-zainselim845');
-        isolateTenantStorage('dr-zainselim845');
-        return { data: { user: zainDoctorUser }, error: null };
-      }
-
-      // 3. Check Dedicated Clinic Admin / Management Login
-      if (cleanId === 'admin@clinicflow.com' || cleanId === 'admin' || cleanId === 'manager@clinicflow.com' || cleanId === 'manager') {
-        if (cleanPass !== 'admin') {
-          return {
-            data: null,
-            error: new Error('كلمة المرور غير صحيحة لحساب مدير العيادة.')
-          };
-        }
-        const targetClinic = activeTenant || demoClinics[0] || defaultClinicInfo;
-        const adminUser = {
-          id: 'admin-master',
-          name: 'إدارة العيادة (Clinic Admin)',
-          email: 'admin@clinicflow.com',
-          phone: targetClinic.phone || '01006285031',
-          role: 'admin',
-          isAdmin: true,
-          jobTitle: 'مدير إدارة وتشغيل العيادة',
-          clinicSlug: targetClinic.slug || 'dr-ahmed',
-          allowedClinics: [targetClinic.slug || 'dr-ahmed'],
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(adminUser);
-        localStorage.setItem('clinicflow_role', 'admin');
-        setUser(adminUser);
-        setRole('admin');
-        switchTenant?.(targetClinic.slug || 'dr-ahmed');
-        isolateTenantStorage(targetClinic.slug || 'dr-ahmed');
-        return { data: { user: adminUser }, error: null };
-      }
-
-      // 4. Match Dr. Ahmed (Dental Doctor Master Login)
-      const ahmedClinic = demoClinics.find(c => c.slug === 'dr-ahmed') || currentClinic || defaultClinicInfo;
-      const doctorEmail = (ahmedClinic.doctorEmail || 'doctor@clinicflow.com').toLowerCase();
-      const doctorPhone = (ahmedClinic.phone || '01006285031').replace(/\D/g, '');
-      const isDoctorIdentifier = cleanId === doctorEmail || 
-        cleanId === 'doctor' || 
-        cleanId === 'dr-ahmed' ||
-        (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === doctorPhone);
-
-      if (isDoctorIdentifier) {
-        // In demo mode, require exact doctor admin password
-        const isDemoDoctorPass = cleanPass === 'admin';
-        if (!isDemoDoctorPass) {
-          return {
-            data: null,
-            error: new Error('كلمة المرور غير صحيحة لحساب الطبيب.')
-          };
-        }
-
-        const doctorUser = {
-          id: 'doc-master',
-          name: ahmedClinic.doctorName || 'د. أحمد الشريف',
-          email: doctorEmail,
-          phone: ahmedClinic.phone,
-          role: 'doctor',
-          jobTitle: ahmedClinic.specialty || 'استشاري طب وجراحة وتجميل الأسنان',
-          clinicSlug: 'dr-ahmed',
-          allowedClinics: ['dr-ahmed'],
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(doctorUser);
-        localStorage.setItem('clinicflow_role', 'doctor');
-        setUser(doctorUser);
-        setRole('doctor');
-        switchTenant?.('dr-ahmed');
-        isolateTenantStorage('dr-ahmed');
-        return { data: { user: doctorUser }, error: null };
-      }
-
-      // 4. Check Dedicated Receptionist & Staff Login
-      if (cleanId === 'reception@clinicflow.com' || cleanId === 'staff@clinicflow.com' || cleanId === 'reception') {
-        if (cleanPass !== '123') {
-          return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب موظف الاستقبال.') };
-        }
-        const receptionStaffUser = {
-          id: 'staff-reception-master',
-          name: 'سارة كمال (استقبال العيادة)',
-          email: 'reception@clinicflow.com',
-          phone: '01012345678',
-          role: 'staff',
-          jobTitle: 'سكرتارية واستقبال العيادة',
-          permissions: ['appointments', 'patients', 'sms'],
-          clinicSlug: 'dr-ahmed',
-          allowedClinics: ['dr-ahmed'],
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(receptionStaffUser);
-        localStorage.setItem('clinicflow_role', 'staff');
-        setUser(receptionStaffUser);
-        setRole('staff');
-        switchTenant?.('dr-ahmed');
-        isolateTenantStorage('dr-ahmed');
-        return { data: { user: receptionStaffUser }, error: null };
-      }
-
-      // 5. Check Staff Members List
-      const allStaff = [
-        ...(Array.isArray(currentStaff) ? currentStaff : []),
-        ...(Array.isArray(defaultStaffMembers) ? defaultStaffMembers : []),
-        ...(Array.isArray(drSaraStaffMembers) ? drSaraStaffMembers : [])
-      ];
-
-      const matchedStaff = allStaff.find(s => {
-        const staffEmail = (s.email || '').toLowerCase();
-        const staffPhone = (s.phone || '').replace(/\D/g, '');
-        return (cleanId === staffEmail || (cleanPhoneInput && cleanPhoneInput.length >= 10 && cleanPhoneInput === staffPhone)) && (s.password === cleanPass);
-      });
-
-      if (matchedStaff) {
-        if (matchedStaff.status === 'inactive') {
-          return { data: null, error: new Error('هذا الحساب معطل حالياً من قِبل إدارة العيادة.') };
-        }
-        const staffClinicSlug = matchedStaff.clinicSlug || 'dr-ahmed';
-        const staffUser = {
-          id: matchedStaff.id,
-          name: matchedStaff.name,
-          email: matchedStaff.email,
-          phone: matchedStaff.phone,
-          role: 'staff',
-          jobTitle: matchedStaff.role || 'سكرتارية واستقبال العيادة',
-          permissions: matchedStaff.permissions || ['appointments', 'patients', 'sms'],
-          clinicSlug: staffClinicSlug,
-          allowedClinics: [staffClinicSlug],
-          authenticatedAt: new Date().toISOString()
-        };
-        persistUser(staffUser);
-        localStorage.setItem('clinicflow_role', 'staff');
-        setUser(staffUser);
-        setRole('staff');
-        switchTenant?.(staffClinicSlug);
-        isolateTenantStorage(staffClinicSlug);
-        return { data: { user: staffUser }, error: null };
-      }
-
+    if (isDemoMode) {
       return {
         data: null,
-        error: new Error('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني أو الهاتف وكلمة المرور.')
+        error: new Error('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني أو الهاتف وكلمة المرور أو إنشاء حساب جديد.')
       };
     }
 
@@ -592,8 +389,8 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    const currentSlug = userTenant?.slug || (assignedRole === 'super_admin' ? '*' : 'dr-ahmed');
-    const currentId = userTenant?.id || (assignedRole === 'super_admin' ? 'superadmin-root' : '550e8400-e29b-41d4-a716-446655440000');
+    const currentSlug = userTenant?.slug || (assignedRole === 'super_admin' ? '*' : '');
+    const currentId = userTenant?.id || (assignedRole === 'super_admin' ? 'superadmin-root' : (currentSlug ? `clinic-${currentSlug}` : ''));
 
     const docRawName = googleProfile.name || googleProfile.email.split('@')[0];
     const doctorDisplayName = (assignedRole === 'doctor' && !docRawName.startsWith('د.')) 
@@ -731,8 +528,6 @@ export const AuthProvider = ({ children }) => {
       return loginWithGoogleProfile(personaOrProfile);
     }
 
-    const personaRole = typeof personaOrProfile === 'string' ? personaOrProfile : 'doctor';
-
     if (!isDemoMode && supabase?.auth?.signInWithOAuth) {
       try {
         const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}/dashboard` : undefined;
@@ -753,51 +548,31 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    const personaUser = (personaRole === 'staff' || personaRole === 'reception') ? {
-      id: 'google-staff-sara',
-      email: 'sara.kamal.reception@gmail.com',
-      name: 'سارة كمال (Google Verified)',
-      role: 'staff',
-      jobTitle: 'سكرتارية واستقبال العيادة',
-      permissions: ['appointments', 'patients', 'sms'],
-      clinicSlug: 'dr-ahmed',
-      clinicId: '550e8400-e29b-41d4-a716-446655440000',
-      allowedClinics: ['dr-ahmed'],
-      authProvider: 'google',
-      isEmailVerified: true
-    } : personaRole === 'superadmin' ? {
-      id: 'google-superadmin',
-      email: 'admin.google@clinicflow.com',
-      name: 'مدير المنصة العام (Google Verified)',
-      role: 'super_admin',
-      jobTitle: 'مدير عام المنصة والسحابة السريرية',
-      allowedClinics: ['*'],
-      authProvider: 'google',
-      isEmailVerified: true
-    } : {
-      id: 'google-doctor-ahmed',
-      email: 'dr.ahmed.google@gmail.com',
-      name: 'د. أحمد الشريف (Google Verified)',
-      role: 'doctor',
-      jobTitle: 'المدير الطبي / استشاري طب وجراحة الأسنان',
-      clinicSlug: 'dr-ahmed',
-      clinicId: '550e8400-e29b-41d4-a716-446655440000',
-      allowedClinics: ['dr-ahmed'],
-      authProvider: 'google',
-      isEmailVerified: true
-    };
+    const personaRole = typeof personaOrProfile === 'string' ? personaOrProfile : 'doctor';
+    if (personaRole === 'superadmin' || personaRole === 'super_admin') {
+      const superAdminUser = {
+        id: 'user-superadmin-master',
+        name: 'مدير المنصة العام (Super Admin)',
+        email: 'superadmin@clinicflow.com',
+        role: 'super_admin',
+        isSuperAdmin: true,
+        jobTitle: 'مدير عام المنصة والسحابة السريرية',
+        allowedClinics: ['*'],
+        authProvider: 'google',
+        isEmailVerified: true,
+        authenticatedAt: new Date().toISOString()
+      };
+      persistUser(superAdminUser);
+      localStorage.setItem('clinicflow_role', 'super_admin');
+      setUser(superAdminUser);
+      setRole('super_admin');
+      return { data: { user: superAdminUser }, error: null };
+    }
 
-    persistUser(personaUser);
-    localStorage.setItem('clinicflow_role', personaUser.role);
-    setUser(personaUser);
-    setRole(personaUser.role);
-    if (personaUser.clinicSlug && activeTenant?.slug !== personaUser.clinicSlug) {
-      switchTenant?.(personaUser.clinicSlug);
-    }
-    if (personaUser.role !== 'super_admin' && personaUser.clinicSlug) {
-      isolateTenantStorage(personaUser.clinicSlug);
-    }
-    return { data: { user: personaUser }, error: null };
+    return {
+      data: null,
+      error: new Error('تسجيل الدخول عبر Google يتطلب اتصالاً مباشراً بالخدمة السحابية. يرجى تسجيل حساب طبيب جديد أو الدخول بالبريد الإلكتروني وكلمة المرور.')
+    };
   };
 
   const signOut = async () => {

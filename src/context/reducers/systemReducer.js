@@ -74,41 +74,13 @@ export function systemReducer(state, action) {
       return { ...state, searchQuery: action.payload };
 
     case 'REFRESH_TODAY_DEMO_DATA': {
-      const slug = state.currentTenantSlug || 'dr-ahmed';
-      const isDemoTenant = slug === 'dr-ahmed' || slug === 'dr-sara';
-      if (!isDemoTenant) {
-        return state;
-      }
-      const freshSeed = getInitialDataForTenant(state.clinicInfo || slug);
-      const today = getTodayDateStr();
-      const nonToday = (state.appointments || []).filter(a => a.date !== today);
-      const existingPatIds = new Set((state.patients || []).map(p => p.id));
-      const missingPatients = freshSeed.patients.filter(p => !existingPatIds.has(p.id));
-
-      return {
-        ...state,
-        appointments: [...freshSeed.appointments, ...nonToday],
-        patients: [...missingPatients, ...(state.patients || [])],
-        expenses: freshSeed.expenses && freshSeed.expenses.length > 0 ? freshSeed.expenses : (state.expenses || []),
-        recalls: freshSeed.recalls && freshSeed.recalls.length > 0 ? freshSeed.recalls : (state.recalls || []),
-        notifications: [
-          {
-            id: 'notif-' + Date.now(),
-            type: 'system',
-            title: 'تحديث بيانات اليوم الحية',
-            message: 'تم تحديث جدول اليوم المباشر وصالة الانتظار بنجاح وفق معايير Google Material 3',
-            timestamp: new Date().toISOString(),
-            read: false
-          },
-          ...(state.notifications || [])
-        ].slice(0, 100)
-      };
+      return state;
     }
 
     case 'RESET_ALL_DATA': {
       if (typeof window !== 'undefined') {
-        const slug = state.currentTenantSlug || 'dr-ahmed';
-        localStorage.removeItem(`clinicflow_data_${slug}`);
+        const slug = state.currentTenantSlug || '';
+        if (slug) localStorage.removeItem(`clinicflow_data_${slug}`);
         localStorage.removeItem('clinicflow_data');
       }
       return {

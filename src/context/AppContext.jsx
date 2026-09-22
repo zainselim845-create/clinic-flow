@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { getInitialDataForTenant, demoClinics } from '../data/demoData';
+import { getInitialDataForTenant } from '../data/demoData';
 import { combinedAppReducer } from './reducers';
 import TenantContext from './TenantContext';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
@@ -51,9 +51,8 @@ export function AppProvider({ children }) {
   // Resolve active tenant from TenantContext
   const tenantContext = useContext(TenantContext);
   const activeTenant = tenantContext?.tenant;
-  const tenantSlug = tenantContext?.tenantSlug || activeTenant?.slug || 'dr-ahmed';
-  const resolvedClinic = (demoClinics || []).find(c => c.slug === tenantSlug);
-  const tenantId = activeTenant?.id || resolvedClinic?.id || (tenantSlug ? `tenant-${tenantSlug}` : 'tenant-default');
+  const tenantSlug = tenantContext?.tenantSlug || activeTenant?.slug || '';
+  const tenantId = activeTenant?.id || (tenantSlug ? `tenant-${tenantSlug}` : 'tenant-default');
 
   useEffect(() => {
     stateRef.current = state;
@@ -73,7 +72,7 @@ export function AppProvider({ children }) {
       saveTimeoutRef.current = null;
     }
 
-    const currentSlug = tenantSlug || 'dr-ahmed';
+    const currentSlug = tenantSlug || '';
     const currentClinicId = tenantId;
 
     // Reset previous tenant data so it never flashes or leaks into the new tenant
@@ -119,16 +118,9 @@ export function AppProvider({ children }) {
 
       if (isCancelled) return;
 
-      // وضع الأوفلاين / العرض التجريبي: مفتاح تخزين منفصل ومعزول تماماً لكل عيادة
+      // وضع التخزين المحلي المعزول تماماً لكل عيادة
       const scopedKey = `clinicflow_data_${currentSlug}`;
-      let savedData = safeGetItem(scopedKey);
-      // التوافق الرجعي مع الحساب الافتراضي
-      if (!savedData && currentSlug === 'dr-ahmed') {
-        savedData = safeGetItem('clinicflow_data');
-      }
-
-      const isDemoTenant = currentSlug === 'dr-ahmed' || currentSlug === 'dr-sara';
-      const seedData = getInitialDataForTenant(activeTenant || currentSlug);
+      let savedData = currentSlug ? safeGetItem(scopedKey) : null;
 
       if (savedData) {
         try {
@@ -157,8 +149,8 @@ export function AppProvider({ children }) {
               blockedSlots: (isUpToDate && parsed.blockedSlots) ? parsed.blockedSlots : [],
               expenses: finalExpenses,
               recalls: finalRecalls,
-              staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : (isDemoTenant ? seedData.staffMembers : []),
-              clinicInfo: activeTenant || parsed.clinicInfo || (isDemoTenant ? seedData.clinicInfo : { slug: currentSlug, name: currentSlug }),
+              staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : [],
+              clinicInfo: activeTenant || parsed.clinicInfo || (currentSlug ? { slug: currentSlug, name: currentSlug } : null),
               useSupabase: false,
               currentTenantSlug: currentSlug
             } 
@@ -168,14 +160,14 @@ export function AppProvider({ children }) {
           dispatch({ 
             type: 'INIT_DATA', 
             payload: { 
-              patients: isDemoTenant ? seedData.patients : [],
-              appointments: isDemoTenant ? seedData.appointments : [],
-              notifications: isDemoTenant ? seedData.notifications : [],
-              blockedSlots: isDemoTenant ? seedData.blockedSlots : [],
-              expenses: isDemoTenant ? seedData.expenses : [],
-              recalls: isDemoTenant ? seedData.recalls : [],
-              staffMembers: isDemoTenant ? seedData.staffMembers : [],
-              clinicInfo: activeTenant || (isDemoTenant ? seedData.clinicInfo : { slug: currentSlug, name: currentSlug }),
+              patients: [],
+              appointments: [],
+              notifications: [],
+              blockedSlots: [],
+              expenses: [],
+              recalls: [],
+              staffMembers: [],
+              clinicInfo: activeTenant || (currentSlug ? { slug: currentSlug, name: currentSlug } : null),
               useSupabase: false,
               currentTenantSlug: currentSlug 
             } 
@@ -185,14 +177,14 @@ export function AppProvider({ children }) {
         dispatch({ 
           type: 'INIT_DATA', 
           payload: { 
-            patients: isDemoTenant ? seedData.patients : [],
-            appointments: isDemoTenant ? seedData.appointments : [],
-            notifications: isDemoTenant ? seedData.notifications : [],
-            blockedSlots: isDemoTenant ? seedData.blockedSlots : [],
-            expenses: isDemoTenant ? seedData.expenses : [],
-            recalls: isDemoTenant ? seedData.recalls : [],
-            staffMembers: isDemoTenant ? seedData.staffMembers : [],
-            clinicInfo: activeTenant || (isDemoTenant ? seedData.clinicInfo : { slug: currentSlug, name: currentSlug }),
+            patients: [],
+            appointments: [],
+            notifications: [],
+            blockedSlots: [],
+            expenses: [],
+            recalls: [],
+            staffMembers: [],
+            clinicInfo: activeTenant || (currentSlug ? { slug: currentSlug, name: currentSlug } : null),
             useSupabase: false,
             currentTenantSlug: currentSlug 
           } 
@@ -212,7 +204,8 @@ export function AppProvider({ children }) {
   // ==========================================
   useEffect(() => {
     if (state.isLoading || !state.currentTenantSlug) return;
-    const currentSlug = tenantSlug || 'dr-ahmed';
+    const currentSlug = tenantSlug || '';
+    if (!currentSlug) return;
 
     // Strict Isolation Guard: DO NOT save state if state does not match the active tenant slug!
     if (state.currentTenantSlug !== currentSlug) {
@@ -238,9 +231,6 @@ export function AppProvider({ children }) {
           recalls: state.recalls
         });
         localStorage.setItem(scopedKey, payload);
-        if (currentSlug === 'dr-ahmed') {
-          localStorage.setItem('clinicflow_data', payload);
-        }
 
         // Asynchronous Dual-Write to high-capacity IndexedDB
         try {
@@ -269,9 +259,6 @@ export function AppProvider({ children }) {
             recalls: state.recalls
           };
           localStorage.setItem(scopedKey, JSON.stringify(compactedState));
-          if (currentSlug === 'dr-ahmed') {
-            localStorage.setItem('clinicflow_data', JSON.stringify(compactedState));
-          }
         } catch (compactErr) {
           console.error('Fatal LocalStorage quota exceeded, keeping in-memory state:', compactErr);
         }

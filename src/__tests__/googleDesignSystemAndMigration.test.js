@@ -12,23 +12,19 @@ describe('Google Material Design 3 & State Auto-Healing Quality Gate', () => {
       expect(DATA_SCHEMA_VERSION).toContain('v5_clean_zero_state');
     });
 
-    it('REFRESH_TODAY_DEMO_DATA safely updates state and preserves appointments history', () => {
+    it('REFRESH_TODAY_DEMO_DATA safely leaves production state intact without injecting fake demo data', () => {
       const stateWithOldAppts = {
         ...initialState,
-        currentTenantSlug: 'dr-ahmed',
+        currentTenantSlug: 'dr-omar',
         appointments: [
-          { id: 'old-1', date: '2026-01-01', patientName: 'قديم', status: 'completed' }
+          { id: 'app-1', date: '2026-01-01', patientName: 'مريض حقيقي', status: 'completed' }
         ]
       };
 
       const newState = appReducer(stateWithOldAppts, { type: 'REFRESH_TODAY_DEMO_DATA' });
 
-      expect(newState.appointments.length).toBeGreaterThanOrEqual(1);
-      // Old appointments are preserved in history
-      expect(newState.appointments.some(a => a.id === 'old-1')).toBe(true);
-
-      // System notification added
-      expect(newState.notifications[0].title).toContain('تحديث بيانات اليوم');
+      expect(newState.appointments.length).toBe(1);
+      expect(newState.appointments[0].id).toBe('app-1');
     });
   });
 

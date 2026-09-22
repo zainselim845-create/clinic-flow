@@ -11,10 +11,8 @@ describe('Clinical Pricing & Data Consistency Audit', () => {
     });
   });
 
-  it('clinicInfo contains regular, consultation, and emergency fees matching clinical standard', () => {
-    expect(clinicInfo.regularFee).toBe('300 ج.م');
-    expect(clinicInfo.consultationFee).toBe('150 ج.م');
-    expect(clinicInfo.emergencyFee).toBe('400 ج.م');
+  it('clinicInfo is null in pristine zero state until clinic registration', () => {
+    expect(clinicInfo).toBeNull();
   });
 
   it('DEFAULT_DENTAL_VISIT_TYPES are properly formatted with standard fees', () => {

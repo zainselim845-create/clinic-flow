@@ -23,6 +23,7 @@ import {
 } from '../services/customDomainService';
 import { demoClinics } from '../data/demoData';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
+import { saveRegisteredTenant } from '../services/authService';
 
 const createStorageMock = () => {
   let store = {};
@@ -128,8 +129,12 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
       expect(res.tenant?.name).toBe('عيادة د. حازم للعيون');
     });
 
+    const testClinics = [
+      { id: 'clinic-sara', slug: 'dr-sara', name: 'عيادة د. سارة محمود', doctorName: 'د. سارة محمود' }
+    ];
+
     it('locks to dedicated domain mode when visiting a tenant subdomain (e.g. dr-sara.clinicflow.app)', () => {
-      const res = resolveTenantFromLocation(demoClinics, {
+      const res = resolveTenantFromLocation(testClinics, {
         hostname: 'dr-sara.clinicflow.app',
         pathname: '/booking',
         search: ''
@@ -140,7 +145,7 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
     });
 
     it('resolves tenant cleanly from path /c/:clinicSlug/booking on shared domain', () => {
-      const res = resolveTenantFromLocation(demoClinics, {
+      const res = resolveTenantFromLocation(testClinics, {
         hostname: 'clinicflow.app',
         pathname: '/c/dr-sara/booking',
         search: ''
@@ -151,7 +156,7 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
     });
 
     it('treats platform deployment domain (e.g. clinic-flow-lh3g.vercel.app) as shared platform, NOT dedicated domain', () => {
-      const res = resolveTenantFromLocation(demoClinics, {
+      const res = resolveTenantFromLocation(testClinics, {
         hostname: 'clinic-flow-lh3g.vercel.app',
         pathname: '/booking',
         search: ''
@@ -161,7 +166,7 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
     });
 
     it('resolves dedicated clinic from 4-segment subdomain on platform (e.g. dr-sara.clinic-flow-lh3g.vercel.app)', () => {
-      const res = resolveTenantFromLocation(demoClinics, {
+      const res = resolveTenantFromLocation(testClinics, {
         hostname: 'dr-sara.clinic-flow-lh3g.vercel.app',
         pathname: '/booking',
         search: ''
@@ -173,7 +178,7 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
     });
 
     it('correctly resolves /c/:slug on deployment domain without dedicated lock', () => {
-      const res = resolveTenantFromLocation(demoClinics, {
+      const res = resolveTenantFromLocation(testClinics, {
         hostname: 'clinic-flow-lh3g.vercel.app',
         pathname: '/c/dr-sara/booking',
         search: ''
@@ -385,6 +390,13 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
 
     it('persists clinic domain settings and merges them into getCombinedTenants', () => {
       const testClinicId = '550e8400-e29b-41d4-a716-446655440000';
+      saveRegisteredTenant({
+        id: testClinicId,
+        slug: 'custom-ahmed-dental',
+        name: 'عيادة د. أحمد للأسنان',
+        doctorName: 'د. أحمد الشريف'
+      });
+
       saveClinicDomainSettings(testClinicId, {
         domain: 'custom-ahmed-smile.com',
         sslStatus: DOMAIN_STATUS.ACTIVE,
@@ -403,6 +415,13 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
 
     it('resolves dedicated domain mode for newly configured custom domain', () => {
       const testClinicId = '550e8400-e29b-41d4-a716-446655440000';
+      saveRegisteredTenant({
+        id: testClinicId,
+        slug: 'custom-ahmed-dental',
+        name: 'عيادة د. أحمد للأسنان',
+        doctorName: 'د. أحمد الشريف'
+      });
+
       saveClinicDomainSettings(testClinicId, {
         domain: 'ahmed-smile-hub.com',
         sslStatus: DOMAIN_STATUS.ACTIVE,
@@ -417,9 +436,9 @@ describe('Enterprise SaaS Multi-Tenant & Telemetry Pipeline Verification', () =>
       });
 
       expect(resolved.isDedicatedDomain).toBe(true);
-      expect(resolved.slug).toBe('dr-ahmed');
+      expect(resolved.slug).toBe('custom-ahmed-dental');
       expect(resolved.tenant?.doctorName).toContain('أحمد');
-      expect(resolved.tenant?.name).toContain('الأسنان');
+      expect(resolved.tenant?.name).toContain('أسنان');
     });
   });
 });

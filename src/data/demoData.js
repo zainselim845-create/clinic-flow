@@ -41,134 +41,9 @@ export const availableSlots = [
   '09:00 م', '09:30 م', '10:00 م'
 ];
 
-export const clinicInfo = {
-  name: 'مركز النخبة لطب وجراحة الأسنان',
-  doctorName: 'د. أحمد الشريف',
-  doctorEmail: 'doctor@clinicflow.com',
-  specialty: 'طب وجراحة الفم والأسنان وتجميل الابتسامة',
-  senderId: 'DrAhmed',
-  address: 'مصر الجديدة — شارع الأهرام، برج الأطباء، الدور الرابع',
-  phone: '01006285031',
-  regularFee: '300 ج.م',
-  consultationFee: '150 ج.م',
-  emergencyFee: '400 ج.م',
-  services: defaultServices,
-  workingHours: 'السبت - الخميس: ٥:٠٠ مساءً - ١٠:٠٠ مساءً',
-  scheduleConfig: {
-    workingDays: [6, 0, 1, 2, 3, 4],
-    startTime: '17:00',
-    endTime: '22:00',
-    slotDuration: 30,
-    workingHoursText: 'السبت - الخميس: ٥:٠٠ مساءً - ١٠:٠٠ مساءً'
-  }
-};
+export const clinicInfo = null;
 
-export const demoClinics = [
-  {
-    ...clinicInfo,
-    id: '550e8400-e29b-41d4-a716-446655440000',
-    slug: 'dr-ahmed',
-    senderId: 'DrAhmed',
-    customDomain: 'dr-ahmed-dental.com',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    branding: {
-      primaryColor: '#09090B',
-      accentColor: '#10B981',
-      badgeText: 'مركز الأسنان والابتسامة',
-      brandTitle: 'كلينيك فلو دنتال'
-    },
-    quotas: {
-      maxDoctors: 3,
-      monthlySmsQuota: 2000,
-      smsUsed: 340,
-      aiTokensQuota: 10000000,
-      aiTokensUsed: 1250000
-    }
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440099',
-    slug: 'dr-sara',
-    senderId: 'SaraDerma',
-    customDomain: 'drsara-clinic.com',
-    name: 'عيادة د. سارة للجلدية والتجميل والليزر',
-    doctorName: 'د. سارة محمود',
-    doctorEmail: 'sara.clinic@clinicflow.com',
-    specialty: 'استشاري الأمراض الجلدية وتجميل الليزر والحقن التجميلي',
-    phone: '01123456780',
-    address: 'التجمع الخامس — ميديكال سنتر 2، الدور الثالث',
-    regularFee: '500 ج.م',
-    consultationFee: '250 ج.م',
-    emergencyFee: '600 ج.م',
-    subscriptionTier: 'enterprise',
-    subscriptionStatus: 'active',
-    branding: {
-      primaryColor: '#8B5CF6',
-      accentColor: '#EC4899',
-      badgeText: 'مركز الجلدية والتجميل',
-      brandTitle: 'كلينيك فلو ديرما'
-    },
-    quotas: {
-      maxDoctors: 10,
-      monthlySmsQuota: 5000,
-      smsUsed: 1120,
-      aiTokensQuota: 25000000,
-      aiTokensUsed: 4300000
-    },
-    services: [
-      { id: 'srv-sara-1', name: 'كشف واستشارة جلدية متخصصة', price: '500 ج.م', description: 'فحص مجهري للجلد وتشخيص تساقط الشعر والتصبغات' },
-      { id: 'srv-sara-2', name: 'جلسة فراكشنال ليزر نضارة وتفتيح', price: '1200 ج.م', description: 'علاج آثار حب الشباب وتجديد خلايا البشرة' },
-      { id: 'srv-sara-3', name: 'جلسة حقن بوتوكس لإزالة التجاعيد', price: '2500 ج.م', description: 'حقن عضلات الوجه والجبهة بمادة معتمدة عالمياً' }
-    ],
-    workingHours: 'السبت - الأربعاء: ١:٠٠ م - ٨:٠٠ م',
-    scheduleConfig: {
-      workingDays: [6, 0, 1, 2, 3],
-      startTime: '13:00',
-      endTime: '20:00',
-      slotDuration: 30,
-      workingHoursText: 'السبت - الأربعاء: ١:٠٠ م - ٨:٠٠ م'
-    }
-  },
-  {
-    id: 'clinic-zainselim845',
-    slug: 'dr-zainselim845',
-    senderId: 'ZainSelim',
-    customDomain: 'zainselim-clinic.com',
-    name: 'عيادة د. zain selim',
-    doctorName: 'د. zain selim',
-    doctorEmail: 'zainselim845@gmail.com',
-    specialty: 'طب وجراحة الفم والأسنان وتجميل الابتسامة',
-    phone: '01006285031',
-    address: 'القاهرة — التجمع الخامس، شارع التسعين، مجمع الميديكال بارك',
-    regularFee: '350 ج.م',
-    consultationFee: '200 ج.م',
-    emergencyFee: '500 ج.م',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    branding: {
-      primaryColor: '#09090B',
-      accentColor: '#10B981',
-      badgeText: 'العيادة التخصصية',
-      brandTitle: 'كلينيك فلو'
-    },
-    quotas: {
-      maxDoctors: 3,
-      monthlySmsQuota: 2000,
-      smsUsed: 210,
-      aiTokensQuota: 10000000,
-      aiTokensUsed: 650000
-    },
-    services: defaultServices,
-    workingHours: 'السبت - الخميس: ٥:٠٠ م - ١٠:٠٠ م',
-    scheduleConfig: {
-      workingDays: [6, 0, 1, 2, 3, 4],
-      startTime: '17:00',
-      endTime: '22:00',
-      slotDuration: 30,
-      workingHoursText: 'السبت - الخميس: ٥:٠٠ م - ١٠:٠٠ م'
-    }
-  }
-];
+export const demoClinics = [];
 
 export const staffMembers = [];
 
@@ -204,15 +79,15 @@ export const drSaraStaffMembers = [];
 export const getInitialDataForTenant = (tenantOrSlug) => {
   const slug = typeof tenantOrSlug === 'string'
     ? tenantOrSlug
-    : (tenantOrSlug?.slug || 'dr-ahmed');
+    : (tenantOrSlug?.slug || '');
   const targetId = typeof tenantOrSlug === 'object' ? tenantOrSlug?.id : null;
 
-  let matchedClinic = demoClinics.find(c => c.slug === slug || c.id === targetId || c.id === slug);
-  if (!matchedClinic && typeof tenantOrSlug === 'object') {
+  let matchedClinic = (demoClinics || []).find(c => c.slug === slug || c.id === targetId || c.id === slug);
+  if (!matchedClinic && typeof tenantOrSlug === 'object' && tenantOrSlug) {
     matchedClinic = tenantOrSlug;
   }
   if (!matchedClinic) {
-    matchedClinic = { slug, name: slug };
+    matchedClinic = { slug: slug || '', name: slug || '' };
   }
 
   return {
@@ -245,6 +120,6 @@ export const getCleanInitialDataForTenant = (tenantOrSlug) => {
   };
 };
 
-export const getInitialData = (tenantOrSlug = 'dr-ahmed') => {
+export const getInitialData = (tenantOrSlug = '') => {
   return getInitialDataForTenant(tenantOrSlug);
 };

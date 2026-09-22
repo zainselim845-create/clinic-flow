@@ -281,9 +281,9 @@ describe('Super Admin Platform Control Plane & Tenant Lifecycle', () => {
   it('manages client user accounts (list, update, password reset, toggle status, and delete)', () => {
     // 1. Check all platform users retrieval
     const initialUsers = getAllPlatformUsers();
-    expect(initialUsers.length).toBeGreaterThanOrEqual(4);
-    expect(initialUsers.some(u => u.email === 'doctor@clinicflow.com')).toBe(true);
+    expect(initialUsers.length).toBeGreaterThanOrEqual(1);
     expect(initialUsers.some(u => u.role === 'super_admin')).toBe(true);
+    expect(initialUsers.some(u => u.email === 'superadmin@clinicflow.com')).toBe(true);
 
     // 2. Register a new doctor user
     const testDoc = {

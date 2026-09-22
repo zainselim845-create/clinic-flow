@@ -10,14 +10,58 @@ import { getSmsConfig, saveSmsConfig } from '../services/smsService';
 import fs from 'fs';
 import path from 'path';
 
+// Architectural test fixtures for multi-tenant isolation testing
+const testMultiTenants = [
+  {
+    id: 'test-dental-id',
+    slug: 'dr-ahmed',
+    name: 'عيادة د. أحمد لطب وجراحة الأسنان',
+    doctorName: 'د. أحمد الشريف',
+    specialty: 'طب وجراحة الأسنان',
+    customDomain: 'dr-ahmed-dental.com',
+    subscriptionTier: 'pro',
+    branding: {
+      primaryColor: '#09090B',
+      brandTitle: 'كلينيك فلو دنتال'
+    },
+    quotas: {
+      monthlySmsQuota: 2000,
+      maxDoctors: 3
+    },
+    services: [
+      { id: 'srv-1', name: 'كشف وفحص تشخيصي شامل للأسنان', price: '300 ج.م' }
+    ]
+  },
+  {
+    id: 'test-derm-id',
+    slug: 'dr-sara',
+    name: 'عيادة د. سارة للجلدية والتجميل والليزر',
+    doctorName: 'د. سارة محمود',
+    specialty: 'الأمراض الجلدية والتجميل والليزر',
+    customDomain: 'drsara-clinic.com',
+    subscriptionTier: 'enterprise',
+    branding: {
+      primaryColor: '#8B5CF6',
+      brandTitle: 'كلينيك فلو ديرما'
+    },
+    quotas: {
+      monthlySmsQuota: 5000,
+      maxDoctors: 10
+    },
+    services: [
+      { id: 'srv-10', name: 'كشف واستشارة جلدية متخصصة', price: '450 ج.م' }
+    ]
+  }
+];
+
 describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
 
   describe('1. Tenant Directory & Seed Configurations', () => {
-    it('provides multi-tenant seed clinics with complete isolation metadata', () => {
+    it('provides multi-tenant seed clinics with complete isolation metadata while keeping production zero-state', () => {
       expect(Array.isArray(demoClinics)).toBe(true);
-      expect(demoClinics.length).toBeGreaterThanOrEqual(2);
+      expect(demoClinics.length).toBe(0); // 100% clean zero state in production
 
-      const [dentalClinic, dermClinic] = demoClinics;
+      const [dentalClinic, dermClinic] = testMultiTenants;
 
       // Dental Clinic (Dr. Ahmed)
       expect(dentalClinic.slug).toBe('dr-ahmed');
@@ -37,7 +81,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
     });
 
     it('each tenant has independent services, working hours and pricing', () => {
-      const [dental, derm] = demoClinics;
+      const [dental, derm] = testMultiTenants;
       
       const dentalServices = dental.services.map(s => s.name);
       const dermServices = derm.services.map(s => s.name);
@@ -122,39 +166,39 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
   describe('4. Dynamic Tenant Slug, Custom Domain & Subdomain Resolution Engine', () => {
     it('resolves tenant and activates dedicated domain mode from custom domains', () => {
       // Dr. Sara custom domain (with and without www)
-      const saraResult = resolveTenantFromLocation(demoClinics, { hostname: 'drsara-clinic.com', pathname: '/', search: '' });
+      const saraResult = resolveTenantFromLocation(testMultiTenants, { hostname: 'drsara-clinic.com', pathname: '/', search: '' });
       expect(saraResult.slug).toBe('dr-sara');
       expect(saraResult.isDedicatedDomain).toBe(true);
       expect(saraResult.tenant?.name).toContain('سارة');
 
-      const saraWwwResult = resolveTenantFromLocation(demoClinics, { hostname: 'www.drsara-clinic.com', pathname: '/', search: '' });
+      const saraWwwResult = resolveTenantFromLocation(testMultiTenants, { hostname: 'www.drsara-clinic.com', pathname: '/', search: '' });
       expect(saraWwwResult.slug).toBe('dr-sara');
       expect(saraWwwResult.isDedicatedDomain).toBe(true);
 
       // Dr. Ahmed custom domain (with and without www)
-      const ahmedResult = resolveTenantFromLocation(demoClinics, { hostname: 'dr-ahmed-dental.com', pathname: '/', search: '' });
+      const ahmedResult = resolveTenantFromLocation(testMultiTenants, { hostname: 'dr-ahmed-dental.com', pathname: '/', search: '' });
       expect(ahmedResult.slug).toBe('dr-ahmed');
       expect(ahmedResult.isDedicatedDomain).toBe(true);
-      expect(ahmedResult.tenant?.name).toContain('النخبة');
+      expect(ahmedResult.tenant?.name).toContain('أحمد');
 
-      const ahmedWwwResult = resolveTenantFromLocation(demoClinics, { hostname: 'www.dr-ahmed-dental.com', pathname: '/', search: '' });
+      const ahmedWwwResult = resolveTenantFromLocation(testMultiTenants, { hostname: 'www.dr-ahmed-dental.com', pathname: '/', search: '' });
       expect(ahmedWwwResult.slug).toBe('dr-ahmed');
       expect(ahmedWwwResult.isDedicatedDomain).toBe(true);
     });
 
     it('resolves tenant and activates dedicated domain mode from subdomains', () => {
       // Subdomain on cloud platform (dr-sara.clinicflow.app)
-      const saraSub = resolveTenantFromLocation(demoClinics, { hostname: 'dr-sara.clinicflow.app', pathname: '/', search: '' });
+      const saraSub = resolveTenantFromLocation(testMultiTenants, { hostname: 'dr-sara.clinicflow.app', pathname: '/', search: '' });
       expect(saraSub.slug).toBe('dr-sara');
       expect(saraSub.isDedicatedDomain).toBe(true);
 
       // Subdomain on cloud platform (dr-ahmed.clinicflow.app)
-      const ahmedSub = resolveTenantFromLocation(demoClinics, { hostname: 'dr-ahmed.clinicflow.app', pathname: '/', search: '' });
+      const ahmedSub = resolveTenantFromLocation(testMultiTenants, { hostname: 'dr-ahmed.clinicflow.app', pathname: '/', search: '' });
       expect(ahmedSub.slug).toBe('dr-ahmed');
       expect(ahmedSub.isDedicatedDomain).toBe(true);
 
       // Local development subdomain (dr-sara.localhost)
-      const saraLocal = resolveTenantFromLocation(demoClinics, { hostname: 'dr-sara.localhost', pathname: '/', search: '' });
+      const saraLocal = resolveTenantFromLocation(testMultiTenants, { hostname: 'dr-sara.localhost', pathname: '/', search: '' });
       expect(saraLocal.slug).toBe('dr-sara');
       expect(saraLocal.isDedicatedDomain).toBe(true);
     });
@@ -166,28 +210,28 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
     });
 
     it('resolves slug from query param ?clinic=dr-sara on shared domain without dedicated flag', () => {
-      const queryResult = resolveTenantFromLocation(demoClinics, { hostname: 'clinicflow.app', pathname: '/booking', search: '?clinic=dr-sara' });
+      const queryResult = resolveTenantFromLocation(testMultiTenants, { hostname: 'clinicflow.app', pathname: '/booking', search: '?clinic=dr-sara' });
       expect(queryResult.slug).toBe('dr-sara');
       expect(queryResult.isDedicatedDomain).toBe(false);
     });
 
-    it('falls back to default root tenant (dr-ahmed) for root shared domain and localhost', () => {
-      const rootResult = resolveTenantFromLocation(demoClinics, { hostname: 'clinicflow.app', pathname: '/', search: '' });
-      expect(rootResult.slug).toBe('dr-ahmed');
+    it('falls back to clean empty tenant when no clinics registered for root shared domain and localhost', () => {
+      const rootResult = resolveTenantFromLocation([], { hostname: 'clinicflow.app', pathname: '/', search: '' });
+      expect(rootResult.slug).toBe('');
       expect(rootResult.isDedicatedDomain).toBe(false);
 
-      const localResult = resolveTenantFromLocation(demoClinics, { hostname: 'localhost', pathname: '/', search: '' });
-      expect(localResult.slug).toBe('dr-ahmed');
+      const localResult = resolveTenantFromLocation([], { hostname: 'localhost', pathname: '/', search: '' });
+      expect(localResult.slug).toBe('');
       expect(localResult.isDedicatedDomain).toBe(false);
     });
 
     it('isDedicatedDomain helper function correctly identifies dedicated hostnames', () => {
-      expect(isDedicatedDomain({ hostname: 'drsara-clinic.com' }, demoClinics)).toBe(true);
-      expect(isDedicatedDomain({ hostname: 'dr-ahmed-dental.com' }, demoClinics)).toBe(true);
-      expect(isDedicatedDomain({ hostname: 'dr-sara.clinicflow.app' }, demoClinics)).toBe(true);
-      expect(isDedicatedDomain({ hostname: 'clinicflow.app' }, demoClinics)).toBe(false);
-      expect(isDedicatedDomain({ hostname: 'app.clinicflow.app' }, demoClinics)).toBe(false);
-      expect(isDedicatedDomain({ hostname: 'localhost' }, demoClinics)).toBe(false);
+      expect(isDedicatedDomain({ hostname: 'drsara-clinic.com' }, testMultiTenants)).toBe(true);
+      expect(isDedicatedDomain({ hostname: 'dr-ahmed-dental.com' }, testMultiTenants)).toBe(true);
+      expect(isDedicatedDomain({ hostname: 'dr-sara.clinicflow.app' }, testMultiTenants)).toBe(true);
+      expect(isDedicatedDomain({ hostname: 'clinicflow.app' }, testMultiTenants)).toBe(false);
+      expect(isDedicatedDomain({ hostname: 'app.clinicflow.app' }, testMultiTenants)).toBe(false);
+      expect(isDedicatedDomain({ hostname: 'localhost' }, testMultiTenants)).toBe(false);
     });
   });
 
@@ -258,7 +302,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
         clinicSlug: 'dr-sara',
         allowedClinics: ['dr-sara']
       };
-      const allowed = getUserAllowedClinics(singleDoctor, demoClinics);
+      const allowed = getUserAllowedClinics(singleDoctor, testMultiTenants);
       expect(allowed.length).toBe(1);
       expect(allowed[0].slug).toBe('dr-sara');
 
@@ -266,49 +310,45 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
         id: 'admin-1',
         role: 'super_admin'
       };
-      const adminAllowed = getUserAllowedClinics(superAdmin, demoClinics);
-      expect(adminAllowed.length).toBe(demoClinics.length);
+      const adminAllowed = getUserAllowedClinics(superAdmin, testMultiTenants);
+      expect(adminAllowed.length).toBe(testMultiTenants.length);
     });
   });
 
   describe('7. Scoped Tenant Initial Data Isolation & Dynamic Branding', () => {
-    it('returns isolated dental dataset with dental branding for dr-ahmed', () => {
-      const data = getInitialDataForTenant('dr-ahmed');
+    it('returns isolated dental dataset with dental branding when tenant object is provided', () => {
+      const [dental] = testMultiTenants;
+      const data = getInitialDataForTenant(dental);
       expect(data.clinicInfo.slug).toBe('dr-ahmed');
       expect(data.clinicInfo.specialty).toContain('أسنان');
       expect(data.clinicInfo.branding.brandTitle).toBe('كلينيك فلو دنتال');
       expect(Array.isArray(data.patients)).toBe(true);
+      expect(data.patients.length).toBe(0);
       expect(Array.isArray(data.appointments)).toBe(true);
+      expect(data.appointments.length).toBe(0);
     });
 
-    it('returns isolated dermatology dataset with derma branding for dr-sara', () => {
-      const data = getInitialDataForTenant('dr-sara');
+    it('returns isolated dermatology dataset with derma branding when tenant object is provided', () => {
+      const [, derm] = testMultiTenants;
+      const data = getInitialDataForTenant(derm);
       expect(data.clinicInfo.slug).toBe('dr-sara');
       expect(data.clinicInfo.specialty).toContain('جلدية');
       expect(data.clinicInfo.branding.brandTitle).toBe('كلينيك فلو ديرما');
       expect(Array.isArray(data.patients)).toBe(true);
+      expect(data.patients.length).toBe(0);
       expect(Array.isArray(data.appointments)).toBe(true);
+      expect(data.appointments.length).toBe(0);
     });
 
     it('guarantees complete patient and appointment isolation between clinics', () => {
-      const ahmedData = getInitialDataForTenant('dr-ahmed');
-      const saraData = getInitialDataForTenant('dr-sara');
+      const [dental, derm] = testMultiTenants;
+      const ahmedData = getInitialDataForTenant(dental);
+      const saraData = getInitialDataForTenant(derm);
 
-      const ahmedPatientIds = new Set(ahmedData.patients.map(p => p.id));
-      const saraPatientIds = new Set(saraData.patients.map(p => p.id));
-
-      // No patient ID overlap between tenants
-      for (const id of saraPatientIds) {
-        expect(ahmedPatientIds.has(id)).toBe(false);
-      }
-
-      const ahmedApptIds = new Set(ahmedData.appointments.map(a => a.id));
-      const saraApptIds = new Set(saraData.appointments.map(a => a.id));
-
-      // No appointment ID overlap between tenants
-      for (const id of saraApptIds) {
-        expect(ahmedApptIds.has(id)).toBe(false);
-      }
+      expect(ahmedData.patients).toEqual([]);
+      expect(saraData.patients).toEqual([]);
+      expect(ahmedData.appointments).toEqual([]);
+      expect(saraData.appointments).toEqual([]);
     });
   });
 
@@ -360,7 +400,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
         jobTitle: 'مالك ومستثمر طبي — مجمع عيادات كلينيك فلو'
       };
 
-      const drSaraTenant = demoClinics.find(c => c.slug === 'dr-sara');
+      const drSaraTenant = testMultiTenants.find(c => c.slug === 'dr-sara');
       
       // Compute identity with the updated Header logic
       const effectiveRole = ownerUser.role;
@@ -375,7 +415,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
 
     it('falls back to active clinic doctor name only when unauthenticated demo visitor', () => {
       const unauthUser = null;
-      const drSaraTenant = demoClinics.find(c => c.slug === 'dr-sara');
+      const drSaraTenant = testMultiTenants.find(c => c.slug === 'dr-sara');
 
       const isDoctor = true;
       const activeDoctorName = drSaraTenant.doctorName;
@@ -452,7 +492,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
 
   describe('12. Public Booking & Manage Booking Multi-Tenant Scoping Integrity', () => {
     it('attaches clinicId to online patient and appointment objects', () => {
-      const activeClinic = demoClinics.find(c => c.slug === 'dr-sara');
+      const activeClinic = testMultiTenants.find(c => c.slug === 'dr-sara');
       const bookingId = 'booking-12345';
       const patientId = 'patient-online-999';
 
