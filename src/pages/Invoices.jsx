@@ -78,21 +78,23 @@ const Invoices = () => {
   }, [invoicesList, clinicSlug]);
 
   const filteredInvoices = useMemo(() => {
+    const q = (searchQuery || '').trim().toLowerCase();
     return invoicesList.filter(inv => {
-      const matchesSearch = 
-        (inv.patientName && inv.patientName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (inv.patientPhone && inv.patientPhone.includes(searchQuery)) ||
-        (inv.invoiceNumber && inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()));
+      if (!inv) return false;
+      const pName = inv.patientName ? String(inv.patientName).toLowerCase() : '';
+      const pPhone = inv.patientPhone ? String(inv.patientPhone) : '';
+      const invNum = inv.invoiceNumber ? String(inv.invoiceNumber).toLowerCase() : '';
 
+      const matchesSearch = !q || pName.includes(q) || pPhone.includes(q) || invNum.includes(q);
       const matchesStatus = statusFilter === 'all' || inv.paymentStatus === statusFilter;
       return matchesSearch && matchesStatus;
     });
   }, [invoicesList, searchQuery, statusFilter]);
 
   // Metric Aggregates
-  const totalBilled = invoicesList.reduce((acc, i) => acc + Number(i.total || i.totalAmount || i.amount || ((Number(i.paidAmount || 0) + Number(i.remainingBalance || 0))) || 0), 0);
-  const totalCollected = invoicesList.reduce((acc, i) => acc + Number(i.paidAmount || i.paid || 0), 0);
-  const totalOutstanding = invoicesList.reduce((acc, i) => acc + Number(i.remainingBalance != null ? i.remainingBalance : Math.max(0, (Number(i.total || i.totalAmount || 0) - Number(i.paidAmount || i.paid || 0)))), 0);
+  const totalBilled = (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.total || i.totalAmount || i.amount || ((Number(i.paidAmount || 0) + Number(i.remainingBalance || 0))) || 0) : 0), 0);
+  const totalCollected = (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.paidAmount || i.paid || 0) : 0), 0);
+  const totalOutstanding = (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.remainingBalance != null ? i.remainingBalance : Math.max(0, (Number(i.total || i.totalAmount || 0) - Number(i.paidAmount || i.paid || 0)))) : 0), 0);
 
   const handleOpenNew = () => {
     setSelectedInvoice(null);

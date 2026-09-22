@@ -81,15 +81,17 @@ const Inventory = () => {
   }, [currentClinicId]);
 
   const filteredItems = useMemo(() => {
+    const q = (searchQuery || '').trim().toLowerCase();
     return items.filter(it => {
+      if (!it) return false;
       // Tenant scoping
       if (!currentClinicId) return false;
       const itClinicId = it.clinicId || it.clinic_id;
       if (itClinicId && itClinicId !== currentClinicId) return false;
 
-      const matchesSearch = 
-        it.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (it.lotNumber && it.lotNumber.toLowerCase().includes(searchQuery.toLowerCase()));
+      const itName = it.name ? String(it.name).toLowerCase() : '';
+      const itLot = it.lotNumber ? String(it.lotNumber).toLowerCase() : '';
+      const matchesSearch = !q || itName.includes(q) || itLot.includes(q);
 
       const matchesCat = selectedCategory === 'all' || it.category === selectedCategory;
       return matchesSearch && matchesCat;

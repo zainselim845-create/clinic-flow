@@ -94,6 +94,7 @@ const Appointments = () => {
   const filteredAppointments = useMemo(() => {
     const query = deferredQuery.trim().toLowerCase();
     return appointments.filter(appt => {
+      if (!appt) return false;
       // Strict multi-tenant isolation
       if (appt.clinicId && currentClinicId && appt.clinicId !== currentClinicId) return false;
 
@@ -109,11 +110,16 @@ const Appointments = () => {
       if (!query) return true;
 
       const patient = patientMap.get(appt.patientId);
+      const pName = patient?.name ? String(patient.name).toLowerCase() : '';
+      const aName = appt.patientName ? String(appt.patientName).toLowerCase() : '';
+      const aPhone = appt.patientPhone ? String(appt.patientPhone) : '';
+      const aCode = appt.bookingCode ? String(appt.bookingCode).toLowerCase() : '';
+
       return (
-        (patient && patient.name && patient.name.toLowerCase().includes(query)) ||
-        (appt.patientName && appt.patientName.toLowerCase().includes(query)) ||
-        (appt.patientPhone && appt.patientPhone.includes(query)) ||
-        (appt.bookingCode && appt.bookingCode.toLowerCase().includes(query))
+        pName.includes(query) ||
+        aName.includes(query) ||
+        aPhone.includes(query) ||
+        aCode.includes(query)
       );
     });
   }, [appointments, patientMap, filterStatus, filterDate, deferredQuery, currentClinicId]);

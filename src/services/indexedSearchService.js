@@ -115,11 +115,11 @@ export class PatientIndexEngine {
     const matches = [];
     for (let i = 0; i < source.length; i++) {
       const p = source[i];
-      if (
-        (p.name && p.name.toLowerCase().includes(q)) ||
-        (p.phone && p.phone.includes(q)) ||
-        (p.diagnosis && p.diagnosis.toLowerCase().includes(q))
-      ) {
+      if (!p) continue;
+      const pName = p.name ? String(p.name).toLowerCase() : '';
+      const pPhone = p.phone ? String(p.phone) : '';
+      const pDiag = p.diagnosis ? String(p.diagnosis).toLowerCase() : '';
+      if (pName.includes(q) || pPhone.includes(q) || pDiag.includes(q)) {
         matches.push(p);
       }
     }
