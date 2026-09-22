@@ -46,7 +46,6 @@ export const isSupabaseConfigured = () => {
     url && 
     key && 
     key.length > 20 && 
-    !url.includes('rogkodgqeowiylpckspi') && 
     !key.includes('clinicflow_preconfigured')
   );
 };

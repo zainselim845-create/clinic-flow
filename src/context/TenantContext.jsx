@@ -11,14 +11,60 @@ import { safeGetItem, safeGetJSON, safeSetJSON, safeSessionGetJSON } from '../ut
 
 const TenantContext = createContext(null);
 
-// Fallback seed clinics: zero demo clinics in production
-const initialClinics = [];
+// Persistent registered clinics across all devices and sessions
+const initialClinics = [
+  {
+    id: 'clinic-domya-auto',
+    name: 'عيادة د. domya auto',
+    doctorName: 'د. domya auto',
+    specialty: 'جراحة العظام والمفاصل والعمود الفقري',
+    slug: 'dr-domyaauto',
+    senderId: 'DrDomyaauto',
+    subscriptionTier: 'pro',
+    subscriptionStatus: 'active',
+    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
+  },
+  {
+    id: 'clinic-mohamed-saeed-obgyn',
+    name: 'عيادة د. Mohamed Saeed',
+    doctorName: 'د. Mohamed Saeed',
+    specialty: 'النساء والتوليد ورعاية الحوامل وعلاج العقم',
+    slug: 'dr-mo1momo3mo16',
+    senderId: 'DrMo1momo3m',
+    subscriptionTier: 'pro',
+    subscriptionStatus: 'lifetime',
+    isLifetimeLicense: true,
+    agreementAmount: 25000,
+    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
+  },
+  {
+    id: 'clinic-mohammed-saeed-dental',
+    name: 'عيادة د. Mohamed Saeed',
+    doctorName: 'د. Mohamed Saeed',
+    specialty: 'طب وجراحة الفم والأسنان العام',
+    slug: 'dr-mohammedsaeed6u',
+    senderId: 'DrMohammeds',
+    subscriptionTier: 'pro',
+    subscriptionStatus: 'active',
+    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
+  }
+];
 
 export function getCombinedTenants(forceRefresh = true) {
   const registered = getRegisteredTenants(forceRefresh);
+  const combined = [...initialClinics];
+
+  registered.forEach(r => {
+    const idx = combined.findIndex(c => c.slug === r.slug || c.id === r.id);
+    if (idx >= 0) {
+      combined[idx] = { ...combined[idx], ...r };
+    } else {
+      combined.push(r);
+    }
+  });
 
   // Enrich with custom domain settings saved via CustomDomainTab
-  return registered.map(tenant => {
+  return combined.map(tenant => {
     const domainConfig = getClinicDomainSettings(tenant.id);
     if (domainConfig && domainConfig.domain) {
       return {
