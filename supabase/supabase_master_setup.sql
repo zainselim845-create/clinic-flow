@@ -287,6 +287,18 @@ VALUES
     false,
     0,
     '{"maxPatients": 10000, "maxDoctors": 3, "monthlySmsQuota": 1000, "smsUsed": 0}'::jsonb
+),
+(
+    'd4e5f6a1-b2c3-4d5e-0f1a-2b3c4d5e6f7a',
+    'عيادة د. Rama Sarg',
+    'dr-ramasarg0',
+    'د. Rama Sarg',
+    'طب وجراحة الفم والأسنان العام',
+    'pro',
+    'active',
+    false,
+    0,
+    '{"maxPatients": 10000, "maxDoctors": 3, "monthlySmsQuota": 1000, "smsUsed": 0}'::jsonb
 )
 ON CONFLICT (slug) DO UPDATE 
 SET 
@@ -297,3 +309,12 @@ SET
     subscription_status = EXCLUDED.subscription_status,
     is_lifetime_license = EXCLUDED.is_lifetime_license,
     agreement_amount = EXCLUDED.agreement_amount;
+
+-- 18. ESR Composite Indexes for 100M-Scale Keyset Cursor Pagination
+CREATE INDEX IF NOT EXISTS idx_patients_clinic_created ON patients (clinic_id, created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_appointments_clinic_date_time ON appointments (clinic_id, date, time);
+CREATE INDEX IF NOT EXISTS idx_appointments_clinic_status_date ON appointments (clinic_id, status, date);
+CREATE INDEX IF NOT EXISTS idx_invoices_clinic_created ON invoices (clinic_id, created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_staff_clinic_status ON staff_members (clinic_id, status);
+CREATE INDEX IF NOT EXISTS idx_notifications_clinic_created ON notifications (clinic_id, created_at DESC);
+
