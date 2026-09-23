@@ -3,7 +3,8 @@ import {
   Building2, Save, CheckCircle2, Phone, Mail, Clock, 
   CalendarDays, ArrowLeft, Stethoscope, Globe, 
   FileText, Printer, ShieldCheck, UserCheck, Sparkles,
-  Copy, ExternalLink, MessageSquare, Layers, Package
+  Copy, ExternalLink, MessageSquare, Layers, Package,
+  MapPin, LocateFixed, Compass, RefreshCw, AlertCircle
 } from 'lucide-react';
 
 import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
@@ -24,6 +25,79 @@ export default function GeneralSettingsTab({
 
   const clinicSlug = clinicForm.slug || '';
   const resolvedSenderId = clinicForm.senderId || (clinicSlug ? formatSenderId(clinicSlug, 'ClinicFlow') : 'ClinicFlow');
+
+  const [isLocatingGps, setIsLocatingGps] = useState(false);
+  const [gpsNotice, setGpsNotice] = useState(null);
+
+  const handleCaptureClinicGps = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setGpsNotice({ type: 'error', text: 'خاصية تحديد الموقع عبر GPS غير مدعومة في هذا المتصفح.' });
+      return;
+    }
+    setIsLocatingGps(true);
+    setGpsNotice(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = Math.round(pos.coords.latitude * 10000) / 10000;
+        const lng = Math.round(pos.coords.longitude * 10000) / 10000;
+        const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+
+        let detectedAddress = '';
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+            headers: { 'Accept-Language': 'ar,en' }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.display_name) {
+              const comp = data.address || {};
+              detectedAddress = comp.road ? `${comp.road}، ${comp.suburb || comp.city || ''}` : data.display_name.split(',').slice(0, 3).join(',');
+            }
+          }
+        } catch {
+          // fallback
+        }
+
+        setClinicForm(prev => ({
+          ...prev,
+          googleMapsUrl: prev.googleMapsUrl || mapsLink,
+          coordinates: { lat, lng },
+          address: prev.address || detectedAddress || prev.address
+        }));
+
+        setIsLocatingGps(false);
+        setGpsNotice({
+          type: 'success',
+          text: `تم التقاط إحداثيات موقع العيادة بنجاح عبر GPS: (${lat}, ${lng}) بدقة ±${Math.round(pos.coords.accuracy || 0)}م`
+        });
+        setTimeout(() => setGpsNotice(null), 6000);
+      },
+      (err) => {
+        setIsLocatingGps(false);
+        setGpsNotice({
+          type: 'error',
+          text: 'تعذر التقاط الموقع عبر GPS: ' + (err.code === 1 ? 'يرجى السماح بصلاحية الموقع في المتصفح' : err.message)
+        });
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  };
+
+  const handleGoogleMapsUrlChange = (url) => {
+    let lat = null;
+    let lng = null;
+    const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (match) {
+      lat = parseFloat(match[1]);
+      lng = parseFloat(match[2]);
+    }
+    setClinicForm(prev => ({
+      ...prev,
+      googleMapsUrl: url,
+      ...(lat && lng ? { coordinates: { lat, lng } } : {})
+    }));
+  };
 
   const handleCopyBookingLink = () => {
     const bookingUrl = typeof window !== 'undefined' 
@@ -555,8 +629,196 @@ export default function GeneralSettingsTab({
             />
           </div>
 
+          {/* ======================================================== */}
+          {/* GOOGLE MAPS & GPS LOCATION SECTION                       */}
+          {/* ======================================================== */}
+          <div className="form-group full-width" style={{
+            background: 'var(--surface-container, #F8FAFC)',
+            border: '1.5px solid var(--border-color)',
+            borderRadius: '12px',
+            padding: '1.25rem',
+            marginTop: '0.5rem',
+            marginBottom: '0.5rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '8px',
+                  background: 'rgba(2, 132, 199, 0.1)',
+                  color: '#0284C7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <MapPin size={20} />
+                </div>
+                <div>
+                  <h5 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                    الموقع الجغرافي للعيادة وخرائط جوجل (Google Maps & GPS)
+                  </h5>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    حدد موقع عيادتك الحقيقي ليتمكن المرضى من الملاحة المباشرة للعيادة عبر Google Maps
+                  </span>
+                </div>
+              </div>
+
+              {/* Instant GPS Detection Button */}
+              <button
+                type="button"
+                onClick={handleCaptureClinicGps}
+                disabled={isLocatingGps}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.45rem 0.95rem',
+                  borderRadius: '8px',
+                  background: isLocatingGps ? '#94A3B8' : '#0284C7',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: isLocatingGps ? 'wait' : 'pointer',
+                  boxShadow: '0 2px 6px rgba(2, 132, 199, 0.3)',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {isLocatingGps ? <RefreshCw size={14} className="spin" /> : <LocateFixed size={14} />}
+                <span>{isLocatingGps ? 'جارٍ الاتصال بالأقمار الصناعية...' : 'التقاط موقع العيادة الفعلي عبر GPS الآن'}</span>
+              </button>
+            </div>
+
+            {/* GPS Status Alert */}
+            {gpsNotice && (
+              <div style={{
+                background: gpsNotice.type === 'success' ? '#ECFDF5' : '#FEF2F2',
+                border: '1px solid ' + (gpsNotice.type === 'success' ? '#A7F3D0' : '#FECACA'),
+                color: gpsNotice.type === 'success' ? '#065F46' : '#991B1B',
+                padding: '0.65rem 0.85rem',
+                borderRadius: '8px',
+                fontSize: '0.8rem',
+                marginBottom: '1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                {gpsNotice.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+                <span>{gpsNotice.text}</span>
+              </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '0.75rem' }}>
+              <div>
+                <label htmlFor="googleMapsUrl" style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  رابط موقع العيادة على خرائط Google (Google Maps URL)
+                </label>
+                <div className="input-with-icon">
+                  <Compass size={16} />
+                  <input
+                    id="googleMapsUrl"
+                    name="googleMapsUrl"
+                    type="url"
+                    dir="ltr"
+                    value={clinicForm.googleMapsUrl || ''}
+                    onChange={(e) => handleGoogleMapsUrlChange(e.target.value)}
+                    placeholder="https://maps.app.goo.gl/... أو https://www.google.com/maps?q=30.044,31.235"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  الإحداثيات الجغرافية المعتمدة (GPS Coordinates)
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    step="0.0001"
+                    placeholder="خط العرض (Lat)"
+                    dir="ltr"
+                    value={clinicForm.coordinates?.lat ?? ''}
+                    onChange={(e) => {
+                      const lat = parseFloat(e.target.value) || 0;
+                      setClinicForm(prev => ({
+                        ...prev,
+                        coordinates: {
+                          lat,
+                          lng: prev.coordinates?.lng || 0
+                        },
+                        googleMapsUrl: prev.googleMapsUrl || (lat && prev.coordinates?.lng ? `https://www.google.com/maps?q=${lat},${prev.coordinates.lng}` : prev.googleMapsUrl)
+                      }));
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color)',
+                      fontSize: '0.82rem',
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                  <input
+                    type="number"
+                    step="0.0001"
+                    placeholder="خط الطول (Lng)"
+                    dir="ltr"
+                    value={clinicForm.coordinates?.lng ?? ''}
+                    onChange={(e) => {
+                      const lng = parseFloat(e.target.value) || 0;
+                      setClinicForm(prev => ({
+                        ...prev,
+                        coordinates: {
+                          lat: prev.coordinates?.lat || 0,
+                          lng
+                        },
+                        googleMapsUrl: prev.googleMapsUrl || (prev.coordinates?.lat && lng ? `https://www.google.com/maps?q=${prev.coordinates.lat},${lng}` : prev.googleMapsUrl)
+                      }));
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '0.5rem',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color)',
+                      fontSize: '0.82rem',
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Direct Directions & Preview Link */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', marginTop: '0.5rem' }}>
+              <span style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
+                يتم إرفاق هذا الرابط تلقائياً في تذاكر الحجز ورسائل الـ SMS للمرضى للملاحة المباشرة.
+              </span>
+              {(clinicForm.googleMapsUrl || (clinicForm.coordinates?.lat && clinicForm.coordinates?.lng)) && (
+                <a
+                  href={clinicForm.googleMapsUrl || `https://www.google.com/maps/dir/?api=1&destination=${clinicForm.coordinates?.lat},${clinicForm.coordinates?.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    fontSize: '0.78rem',
+                    color: '#0284C7',
+                    fontWeight: 700,
+                    textDecoration: 'none'
+                  }}
+                >
+                  <ExternalLink size={13} />
+                  <span>معاينة وفتح الموقع في خرائط Google للاتجاهات</span>
+                </a>
+              )}
+            </div>
+          </div>
+
           <div className="form-group full-width">
-            <label htmlFor="googleReviewUrl">رابط صفحة العيادة على خرائط جوجل (Google Maps Reviews URL)</label>
+            <label htmlFor="googleReviewUrl">رابط صفحة تقييمات العيادة على خرائط جوجل (Google Maps Reviews URL)</label>
             <div className="input-with-icon">
               <Globe size={18} />
               <input 

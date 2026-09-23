@@ -6,7 +6,7 @@ import { fromDbClinic, getAllClinicsFromDb } from '../services/clinicsService';
 import { canSwitchTenants } from '../utils/permissions';
 import { patientIndex } from '../services/indexedSearchService';
 import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus, deleteRegisteredTenant } from '../services/authService';
-import { getClinicDomainSettings } from '../services/customDomainService';
+import { getClinicDomainSettings, saveClinicDomainSettings } from '../services/customDomainService';
 import { safeGetItem, safeGetJSON, safeSetJSON, safeSessionGetJSON } from '../utils/safeStorage';
 
 const TenantContext = createContext(null);
@@ -544,16 +544,25 @@ export const TenantProvider = ({ children }) => {
   // 7. Update Tenant Custom Domain
   const updateTenantDomain = useCallback((clinicIdOrSlug, newDomain) => {
     const cleanDomain = newDomain ? newDomain.toLowerCase().trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '') : '';
-    setAllTenants(prev => prev.map(t => {
-      if (t.id === clinicIdOrSlug || t.slug === clinicIdOrSlug) {
-        return {
-          ...t,
-          customDomain: cleanDomain || undefined,
-          custom_domain: cleanDomain || undefined
-        };
-      }
-      return t;
-    }));
+    setAllTenants(prev => {
+      return prev.map(t => {
+        if (t.id === clinicIdOrSlug || t.slug === clinicIdOrSlug) {
+          const updatedTenant = {
+            ...t,
+            customDomain: cleanDomain || undefined,
+            custom_domain: cleanDomain || undefined
+          };
+          saveRegisteredTenant(updatedTenant);
+          saveClinicDomainSettings(t.id, {
+            domain: cleanDomain,
+            sslStatus: cleanDomain ? 'active' : 'unconfigured',
+            verifiedAt: cleanDomain ? new Date().toISOString() : null
+          });
+          return updatedTenant;
+        }
+        return t;
+      });
+    });
     setActiveTenant(prev => {
       if (prev && (prev.id === clinicIdOrSlug || prev.slug === clinicIdOrSlug)) {
         return {

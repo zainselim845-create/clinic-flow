@@ -135,3 +135,64 @@
   border: 1px solid #CBD5E1;
   pointer-events: none;
 }
+
+/* User Location GPS Marker */
+.custom-osm-user-marker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.user-location-pin {
+  width: 22px;
+  height: 22px;
+  background-color: #0284C7;
+  border: 3px solid #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(2, 132, 199, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.user-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #FFFFFF;
+  border-radius: 50%;
+}
+
+.user-location-pulse-ring {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(2, 132, 199, 0.28);
+  animation: osm-user-pulse 2s infinite ease-out;
+  pointer-events: none;
+}
+
+@keyframes osm-user-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.6);
+    opacity: 0;
+  }
+}
+
+.marker-pin-label.user-label {
+  background: #0284C7;
+  color: #FFFFFF;
+  border-color: #0369A1;
+  font-weight: 800;
+}
+

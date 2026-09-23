@@ -30,13 +30,68 @@ export function getAiConfig() {
   return {
     apiKey: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OPENROUTER_API_KEY) || DEFAULT_OPENROUTER_KEY,
     model: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_AI_MODEL) || DEFAULT_AI_MODEL,
-    enabled: true
+    enabled: true,
+    customInstructions: ''
   };
 }
 
 export function saveAiConfig(config) {
   if (typeof window !== 'undefined' && window.localStorage) {
     localStorage.setItem('clinicflow_ai_config', JSON.stringify(config));
+  }
+}
+
+/**
+ * Pings OpenRouter to test AI connection latency and credentials
+ */
+export async function testAiConnection(apiKey, model, fetchFn = fetch) {
+  const targetKey = apiKey || getAiConfig().apiKey || DEFAULT_OPENROUTER_KEY;
+  const targetModel = model || getAiConfig().model || DEFAULT_AI_MODEL;
+
+  if (!targetKey) {
+    return { success: false, error: 'مفتاح OpenRouter API غير محدد. يرجى إدخال المفتاح أولاً.' };
+  }
+
+  const startTime = Date.now();
+  try {
+    const res = await fetchFn('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${targetKey.trim()}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': (typeof window !== 'undefined' && window.location?.origin) || 'https://clinicflow.app',
+        'X-Title': 'ClinicFlow Doctor Assistant'
+      },
+      body: JSON.stringify({
+        model: targetModel,
+        messages: [{ role: 'user', content: 'Ping' }],
+        max_tokens: 5
+      })
+    });
+
+    const latencyMs = Date.now() - startTime;
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        error: errBody.error?.message || `خطأ استجابة من OpenRouter (${res.status})`,
+        latencyMs
+      };
+    }
+
+    const data = await res.json();
+    return {
+      success: true,
+      model: targetModel,
+      latencyMs,
+      response: data.choices?.[0]?.message?.content || 'جاهز للاستخدام'
+    };
+  } catch (err) {
+    return {
+      success: false,
+      error: 'تعذر الاتصال بالخادم: ' + (err.message || 'خطأ في الشبكة'),
+      latencyMs: Date.now() - startTime
+    };
   }
 }
 
@@ -49,6 +104,14 @@ export function saveAiConfig(config) {
  */
 export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, patientsSummary = [], systemState = {}) {
   const config = getAiConfig();
+  if (config.enabled === false) {
+    return {
+      success: false,
+      isDisabled: true,
+      error: 'المساعد الذكي معطل في إعدادات العيادة. يمكنك تفعيله من تبويب المساعد الذكي في الإعدادات.'
+    };
+  }
+
   const key = config.apiKey || DEFAULT_OPENROUTER_KEY;
   const targetModel = config.model || DEFAULT_AI_MODEL;
 
@@ -119,7 +182,7 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
 2. لديك وصول كامل لكل ما يذكره الطبيب: ملفات المرضى، المواعيد، الإجازات، المخزن، الفواتير، وحجز المواعيد.
 3. إذا طلب الطبيب حجز موعد، أكد له تسجيل الموعد وبياناته فوراً.
 4. إذا سأل عن مريض، قدم ملخصاً سريرياً دقيقاً (الهاتف، الحساسيات، آخر كشف، المديونية).
-5. كن ذكياً وموجزاً ومباشراً ولا تكرر المقدمات الطويلة، واعرض الأرقام والأسماء بدقة كما هي في سجلات العيادة.`;
+5. كن ذكياً وموجزاً ومباشراً ولا تكرر المقدمات الطويلة، واعرض الأرقام والأسماء بدقة كما هي في سجلات العيادة.${config.customInstructions ? `\n\nإرشادات وبروتوكول الطبيب الخاص بالعيادة:\n${config.customInstructions}` : ''}`;
 
   const formattedMessages = [
     { role: 'system', content: systemPrompt },

@@ -28,4 +28,5 @@ dist-ssr
 .env*.local
 .agent-review/
 screenshots_audit/
+scratch/
 .env*

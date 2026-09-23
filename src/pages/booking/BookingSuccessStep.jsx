@@ -58,6 +58,18 @@ export default function BookingSuccessStep({
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startIso}/${endIso}&details=${details}&location=${location}`;
   };
 
+  const getNavigationUrl = (clinic) => {
+    if (!clinic) return '#';
+    if (clinic.googleMapsUrl && clinic.googleMapsUrl.trim()) {
+      return clinic.googleMapsUrl.trim();
+    }
+    if (clinic.coordinates && clinic.coordinates.lat && clinic.coordinates.lng) {
+      return `https://www.google.com/maps/dir/?api=1&destination=${clinic.coordinates.lat},${clinic.coordinates.lng}`;
+    }
+    const query = clinic.address ? `${clinic.address} ${clinic.name || ''}` : (clinic.name || 'عيادة');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+  };
+
   const getOpenStreetMapUrl = (address, clinicName) => {
     const query = address ? `${address} ${clinicName || ''}` : (clinicName || 'عيادة');
     return `https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`;
@@ -154,17 +166,17 @@ export default function BookingSuccessStep({
               </div>
 
               <a 
-                href={getOpenStreetMapUrl(currentClinic?.address, currentClinic?.name)}
+                href={getNavigationUrl(currentClinic)}
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="nebras-ticket-address"
-                title="عرض موقع العيادة والاتجاهات عبر الخريطة المفتوحة المصدر (OpenStreetMap)"
+                title="عرض موقع العيادة والاتجاهات المباشرة عبر خرائط جوجل (Google Maps)"
                 style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                 <MapPin size={16} />
-                <span>{currentClinic?.address}</span>
+                <span>{currentClinic?.address || 'موقع العيادة على الخريطة'}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 600, marginRight: 'auto' }}>
-                  (الاتجاهات عبر OpenStreetMap)
+                  (الاتجاهات عبر خرائط Google)
                 </span>
               </a>
             </div>

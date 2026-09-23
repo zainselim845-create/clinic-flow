@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
-  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Smartphone
+  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Smartphone, Bot
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
@@ -15,6 +15,7 @@ import StaffManagementTab from './settings/StaffManagementTab';
 import SubscriptionPlanTab from './settings/SubscriptionPlanTab';
 import CustomDomainTab from './settings/CustomDomainTab';
 import SmsConfigTab from './settings/SmsConfigTab';
+import AiAssistantTab from './settings/AiAssistantTab';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '../data/demoData';
 import { Tabs } from '../components/ui/tabs';
@@ -22,9 +23,9 @@ import { isAdminRole } from '../utils/permissions';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Settings.css';
 
-const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'sms', 'subscription', 'customDomain'];
+const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'aiAssistant', 'subscription', 'customDomain', 'sms'];
 // const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff']
-const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'subscription', 'customDomain'];
+const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'aiAssistant', 'subscription', 'customDomain'];
 
 const Settings = () => {
   const { state, dispatch } = useApp();
@@ -242,6 +243,15 @@ const Settings = () => {
           </Tabs.Trigger>
 
           <Tabs.Trigger 
+            value="aiAssistant"
+            className={`tab-btn ${activeTab === 'aiAssistant' ? 'active' : ''}`}
+            title="إعدادات المساعد الطبي الذكي ونماذج الذكاء الاصطناعي"
+          >
+            <Bot size={18} />
+            <span>المساعد الذكي</span>
+          </Tabs.Trigger>
+
+          <Tabs.Trigger 
             value="subscription"
             className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`}
             title="متابعة باقة الاشتراك، الرصيد، والترخيص"
@@ -325,6 +335,10 @@ const Settings = () => {
               staffMembers={state.staffMembers || []}
               dispatch={dispatch}
             />
+          </Tabs.Content>
+
+          <Tabs.Content value="aiAssistant">
+            <AiAssistantTab />
           </Tabs.Content>
 
           <Tabs.Content value="subscription">
