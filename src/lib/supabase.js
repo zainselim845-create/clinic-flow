@@ -15,13 +15,19 @@ export const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
 export const DEFAULT_SUPABASE_URL = 'https://rogkodgqeowiylpckspi.supabase.co';
 export const DEFAULT_SUPABASE_KEY = 'sb_publishable_wuceFYy_wMujWGBRRVVfUg_oTXMFKrg';
+export const CLOUD_TENANTS_REGISTRY_URL = 'https://rogkodgqeowiylpckspi.supabase.co/storage/v1/object/public/tenants/sync/tenants_registry.json';
+
+export const sanitizeConfigString = (str) => {
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(/^[\uFEFF\xA0\s]+|[\uFEFF\xA0\s]+$/g, '').trim();
+};
 
 export const getSupabaseConfig = () => {
   const storedUrl = safeStorage.getItem('clinicflow_supabase_url', null);
   const storedKey = safeStorage.getItem('clinicflow_supabase_key', null);
 
   if (storedKey === '' || storedKey === '__DISABLED__') {
-    return { url: storedUrl || '', key: '' };
+    return { url: sanitizeConfigString(storedUrl), key: '' };
   }
 
   // Preserve test suite isolation where saveSupabaseConfig(null, null) explicitly resets mock storage
@@ -32,8 +38,11 @@ export const getSupabaseConfig = () => {
   const envUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL);
   const envKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY);
 
-  const url = storedUrl || envUrl || DEFAULT_SUPABASE_URL;
-  const key = storedKey || envKey || DEFAULT_SUPABASE_KEY;
+  const rawUrl = storedUrl || envUrl || DEFAULT_SUPABASE_URL;
+  const rawKey = storedKey || envKey || DEFAULT_SUPABASE_KEY;
+
+  const url = sanitizeConfigString(rawUrl);
+  const key = sanitizeConfigString(rawKey);
 
   return { url, key };
 };

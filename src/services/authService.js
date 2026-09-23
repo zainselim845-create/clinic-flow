@@ -6,7 +6,7 @@
 
 import { CLINIC_SPECIALTIES } from '../data/specialtiesData';
 import { formatSenderId } from './smsService';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured, CLOUD_TENANTS_REGISTRY_URL } from '../lib/supabase';
 import { createClinicInDb, deleteClinicFromDb } from './clinicsService';
 
 const REGISTERED_TENANTS_KEY = 'clinicflow_registered_tenants';
@@ -109,6 +109,102 @@ export function getRegisteredTenants(forceRefresh = true) {
 /**
  * Saves a new clinic tenant to persistent storage
  */
+
+/**
+ * Synchronizes registered tenants and users from the cloud registry
+ * Checks both local Vercel Serverless Sync API and Supabase Storage public CDN
+ */
+export async function syncTenantsFromCloud() {
+  if (typeof window === 'undefined' || typeof fetch === 'undefined') return memoryTenantsCache || [];
+  try {
+    let cloudTenants = [];
+    let cloudUsers = [];
+
+    // 1. Try local serverless endpoint first
+    try {
+      const res = await fetch('/api/sync-tenants', { signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.tenants) && data.tenants.length > 0) {
+          cloudTenants = data.tenants;
+        }
+        if (Array.isArray(data.users) && data.users.length > 0) {
+          cloudUsers = data.users;
+        }
+      }
+    } catch (_) {
+      // Fallback to direct public CDN storage endpoint
+    }
+
+    // 2. Fallback to direct public CDN storage endpoint if API route returned nothing
+    if (cloudTenants.length === 0 && CLOUD_TENANTS_REGISTRY_URL) {
+      try {
+        const cdnRes = await fetch(CLOUD_TENANTS_REGISTRY_URL, { signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined });
+        if (cdnRes.ok) {
+          const cdnData = await cdnRes.json();
+          if (Array.isArray(cdnData.tenants)) {
+            cloudTenants = cdnData.tenants;
+          }
+          if (Array.isArray(cdnData.users)) {
+            cloudUsers = cdnData.users;
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (cloudTenants.length === 0) return memoryTenantsCache || [];
+
+    // Merge into memoryTenantsCache and localStorage
+    const local = getRegisteredTenants(true);
+    const merged = [...local];
+    cloudTenants.forEach(ct => {
+      if (!ct || !ct.slug) return;
+      const idx = merged.findIndex(m => m.id === ct.id || m.slug === ct.slug);
+      if (idx >= 0) {
+        merged[idx] = { ...merged[idx], ...ct };
+      } else {
+        merged.push(ct);
+      }
+      if (ct.slug) registeredSlugsSet.add(ct.slug);
+      if (ct.doctorEmail) registeredEmailsSet.add(ct.doctorEmail.toLowerCase());
+      if (ct.phone) registeredPhonesSet.add(ct.phone.replace(/\D/g, ''));
+    });
+
+    memoryTenantsCache = merged;
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(merged));
+      } catch (_) {}
+    }
+
+    // Also merge users if any
+    if (cloudUsers.length > 0) {
+      const localUsers = getRegisteredUsers(true);
+      const mergedUsers = [...localUsers];
+      cloudUsers.forEach(cu => {
+        if (!cu || (!cu.id && !cu.email)) return;
+        const idx = mergedUsers.findIndex(u => u.id === cu.id || (cu.email && u.email?.toLowerCase() === cu.email.toLowerCase()));
+        if (idx >= 0) {
+          mergedUsers[idx] = { ...mergedUsers[idx], ...cu };
+        } else {
+          mergedUsers.push(cu);
+        }
+      });
+      memoryUsersCache = mergedUsers;
+      if (typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(mergedUsers));
+        } catch (_) {}
+      }
+    }
+
+    return merged;
+  } catch (err) {
+    console.warn('[AuthService] syncTenantsFromCloud notice:', err);
+    return memoryTenantsCache || [];
+  }
+}
+
 export function saveRegisteredTenant(tenant) {
   if (!tenant) return;
   const existing = getRegisteredTenants(true);
@@ -135,13 +231,20 @@ export function saveRegisteredTenant(tenant) {
   // Cross-tab broadcast
   broadcastTenantUpdate('REGISTER_TENANT', tenant);
 
-  // Background Cloud Sync if Supabase is connected
+  // Background Cloud Sync to Vercel Serverless Sync API & Supabase
   try {
+    if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+      fetch('/api/sync-tenants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenant })
+      }).catch(apiErr => console.warn('[AuthService] /api/sync-tenants sync note:', apiErr));
+    }
     if (isSupabaseConfigured()) {
       createClinicInDb(tenant).catch(err => console.warn('Supabase tenant creation sync note:', err));
     }
   } catch (syncErr) {
-    console.warn('[AuthService] Supabase sync trigger error:', syncErr);
+    console.warn('[AuthService] Cloud sync trigger error:', syncErr);
   }
 }
 
@@ -192,13 +295,20 @@ export function deleteRegisteredTenant(clinicIdOrSlug) {
   // Broadcast deletion to all open tabs
   broadcastTenantUpdate('DELETE_TENANT', { id: targetId, slug: targetSlug });
 
-  // Cloud Supabase sync if connected
+  // Cloud Sync to Vercel Serverless Sync API & Supabase
   try {
+    if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+      fetch('/api/sync-tenants', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: targetId, slug: targetSlug })
+      }).catch(apiErr => console.warn('[AuthService] /api/sync-tenants delete note:', apiErr));
+    }
     if (isSupabaseConfigured()) {
       deleteClinicFromDb(targetId).catch(err => console.warn('Supabase tenant deletion sync note:', err));
     }
   } catch (syncErr) {
-    console.warn('[AuthService] Supabase delete sync trigger error:', syncErr);
+    console.warn('[AuthService] Cloud delete sync trigger error:', syncErr);
   }
 
   return true;
@@ -261,6 +371,24 @@ export function updateClinicSubscriptionStatus(clinicIdOrSlug, status, reason = 
 
   if (updatedTenant) {
     broadcastTenantUpdate('UPDATE_TENANT_STATUS', { id: clinicIdOrSlug, status, reason, tenant: updatedTenant });
+
+    // Cloud Sync update
+    if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+      try {
+        fetch('/api/sync-tenants', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: updatedTenant.id,
+            slug: updatedTenant.slug,
+            status,
+            reason,
+            branding: updatedTenant.branding,
+            quotas: updatedTenant.quotas
+          })
+        }).catch(apiErr => console.warn('[AuthService] /api/sync-tenants PUT note:', apiErr));
+      } catch (_) {}
+    }
   }
 
   return updatedTenant;
@@ -356,7 +484,21 @@ export function saveRegisteredUser(user) {
 
   // Cross-tab broadcast for real-time reactivity
   broadcastTenantUpdate('REGISTER_USER', user);
+
+  // Background Cloud Sync to Vercel Serverless Sync API & Supabase
+  try {
+    if (typeof fetch !== 'undefined' && user) {
+      fetch('/api/sync-tenants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user })
+      }).catch(apiErr => console.warn('[AuthService] /api/sync-tenants user sync note:', apiErr));
+    }
+  } catch (syncErr) {
+    console.warn('[AuthService] User cloud sync trigger error:', syncErr);
+  }
 }
+
 
 /**
  * Removes a registered user from auth registry
