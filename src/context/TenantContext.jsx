@@ -35,6 +35,7 @@ const initialClinics = [
     subscriptionStatus: 'lifetime',
     isLifetimeLicense: true,
     agreementAmount: 25000,
+    customAgreedPrice: 25000,
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
   },
   {

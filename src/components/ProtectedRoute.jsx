@@ -139,7 +139,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
   // 2. Role-Based Authorization
   if (allowedRoles && allowedRoles.length > 0) {
     const isDoctorAllowed = allowedRoles.includes('doctor') && isDoctorRole(user);
-    const isExplicitlyAllowed = allowedRoles.includes(effectiveRole);
+    const isExplicitlyAllowed = allowedRoles.includes(effectiveRole) || isSuperAdmin;
     if (!isDoctorAllowed && !isExplicitlyAllowed) {
       const allowedRoleLabels = allowedRoles.map(r => {
         if (r === 'doctor') return 'الأطباء والمدير الطبي';
@@ -235,7 +235,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
   }
 
   // 3. Permission-Based Authorization
-  if (requiredPermission && !hasPermission(user, requiredPermission)) {
+  if (requiredPermission && !isSuperAdmin && !hasPermission(user, requiredPermission)) {
     return (
       <div style={{
         minHeight: '70vh',

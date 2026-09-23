@@ -272,11 +272,11 @@ export function ClinicsTable({
                       <span className={`saas-tier-pill ${t.subscriptionTier || 'pro'}`}>
                         {t.subscriptionTier === 'enterprise' ? 'مؤسسي' : t.subscriptionTier === 'pro' ? 'برو ذكي' : 'أساسي'}
                       </span>
-                      {t.customAgreedPrice !== undefined && t.customAgreedPrice !== null && t.customAgreedPrice !== '' && (
+                      {(t.customAgreedPrice || t.agreementAmount) ? (
                         <div style={{ fontSize: '0.72rem', color: '#059669', fontWeight: 700, marginTop: '2px' }}>
-                          اتفاق: {t.customAgreedPrice} ج.م
+                          اتفاق: {t.customAgreedPrice || t.agreementAmount} ج.م
                         </div>
-                      )}
+                      ) : null}
                     </td>
 
                     <td>
