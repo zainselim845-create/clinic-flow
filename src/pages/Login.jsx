@@ -429,6 +429,55 @@ export default function Login() {
                       </label>
                     </div>
 
+                    <div style={{
+                      display: 'flex',
+                      gap: '0.5rem',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      marginBottom: '1rem',
+                      fontSize: '0.78rem'
+                    }}>
+                      <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>دخول تجريبي سريع:</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIdentifier('doctor@clinicflow.com');
+                          setPassword('admin');
+                        }}
+                        style={{
+                          background: 'rgba(2, 132, 199, 0.08)',
+                          border: '1px solid rgba(2, 132, 199, 0.25)',
+                          color: '#0284C7',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontWeight: 700,
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        طبيب (doctor@clinicflow.com)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIdentifier('superadmin@clinicflow.com');
+                          setPassword('admin');
+                        }}
+                        style={{
+                          background: 'rgba(16, 185, 129, 0.08)',
+                          border: '1px solid rgba(16, 185, 129, 0.25)',
+                          color: '#059669',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontWeight: 700,
+                          fontSize: '0.75rem'
+                        }}
+                      >
+                        مدير الساس (superadmin)
+                      </button>
+                    </div>
+
                     <button 
                       type="submit" 
                       className="btn-auth-primary"
@@ -466,6 +515,20 @@ export default function Login() {
                       </svg>
                       <span>المتابعة باستخدام حساب Google</span>
                     </button>
+
+                    <div style={{
+                      marginTop: '0.75rem',
+                      padding: '0.65rem 0.85rem',
+                      borderRadius: '8px',
+                      background: 'var(--bg-secondary, #F4F4F5)',
+                      border: '1px solid var(--border-color)',
+                      fontSize: '0.75rem',
+                      color: 'var(--text-secondary)',
+                      lineHeight: 1.5,
+                      textAlign: 'center'
+                    }}>
+                      <span>ملاحظة: يتطلب زر Google تسجيل هذا الدومين في Google Cloud Console (Authorized Origins). يمكنك دائماً تسجيل الدخول المباشر بالبريد وكلمة المرور أعلاه دون قيود.</span>
+                    </div>
                   </form>
                 </Tabs.Content>
 
