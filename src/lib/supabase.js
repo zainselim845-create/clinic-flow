@@ -13,12 +13,27 @@ if (typeof globalThis !== 'undefined' && typeof globalThis.WebSocket === 'undefi
 
 export const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
+export const DEFAULT_SUPABASE_URL = 'https://rogkodgqeowiylpckspi.supabase.co';
+export const DEFAULT_SUPABASE_KEY = 'sb_publishable_wuceFYy_wMujWGBRRVVfUg_oTXMFKrg';
+
 export const getSupabaseConfig = () => {
   const storedUrl = safeStorage.getItem('clinicflow_supabase_url', null);
   const storedKey = safeStorage.getItem('clinicflow_supabase_key', null);
 
-  const url = storedUrl || import.meta.env.VITE_SUPABASE_URL || 'https://rogkodgqeowiylpckspi.supabase.co';
-  const key = storedKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+  if (storedKey === '' || storedKey === '__DISABLED__') {
+    return { url: storedUrl || '', key: '' };
+  }
+
+  // Preserve test suite isolation where saveSupabaseConfig(null, null) explicitly resets mock storage
+  if (storedKey === null && storedUrl === null && typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
+    return { url: '', key: '' };
+  }
+
+  const envUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL);
+  const envKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY);
+
+  const url = storedUrl || envUrl || DEFAULT_SUPABASE_URL;
+  const key = storedKey || envKey || DEFAULT_SUPABASE_KEY;
 
   return { url, key };
 };

@@ -48,6 +48,17 @@ const initialClinics = [
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
+  },
+  {
+    id: 'clinic-rama-sarg-dental',
+    name: 'عيادة د. Rama Sarg',
+    doctorName: 'د. Rama Sarg',
+    specialty: 'طب وجراحة الفم والأسنان العام',
+    slug: 'dr-ramasarg0',
+    senderId: 'DrRamaSarg',
+    subscriptionTier: 'pro',
+    subscriptionStatus: 'active',
+    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
   }
 ];
 
