@@ -16,7 +16,7 @@ export function fromDbInvoice(row) {
     taxAmount: Number(row.tax_amount || 0),
     total: Number(row.total || 0),
     insuranceShare: Number(row.insurance_share || 0),
-    patientShare: Number(row.patient_share || row.total || 0),
+    patientShare: Number(row.patient_share !== undefined && row.patient_share !== null ? row.patient_share : (row.total || 0)),
     paidAmount: Number(row.paid_amount || 0),
     remainingBalance: Number(row.remaining_balance || 0),
     paymentStatus: row.payment_status || 'unpaid', // unpaid, partial, paid, refunded
@@ -40,7 +40,7 @@ export function toDbInvoice(data) {
     tax_amount: Number(data.taxAmount || 0),
     total: Number(data.total || 0),
     insurance_share: Number(data.insuranceShare || 0),
-    patient_share: Number(data.patientShare || data.total || 0),
+    patient_share: Number(data.patientShare !== undefined && data.patientShare !== null ? data.patientShare : (data.total || 0)),
     paid_amount: Number(data.paidAmount || 0),
     remaining_balance: Number(data.remainingBalance || 0),
     payment_status: data.paymentStatus || 'unpaid',
@@ -178,7 +178,12 @@ export async function recordPayment(invoiceId, paymentData) {
 
     // 3. Update invoice status
     const newPaid = Number(currentInv.paid_amount || 0) + Number(paymentData.amount);
-    const remaining = Math.max(0, Number(currentInv.patient_share || currentInv.total) - newPaid);
+    const targetDue = Number(
+      currentInv.patient_share !== undefined && currentInv.patient_share !== null
+        ? currentInv.patient_share
+        : (currentInv.total || 0)
+    );
+    const remaining = Math.max(0, targetDue - newPaid);
     const newStatus = remaining <= 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'unpaid');
 
     await supabase.from('invoices').update({

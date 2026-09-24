@@ -52,6 +52,15 @@ export class RateLimiter {
   }
 
   saveBucket(key, bucket) {
+    if (this.memoryBuckets.size > 1000) {
+      const now = Date.now();
+      for (const [bKey, bVal] of this.memoryBuckets.entries()) {
+        const hasRecent = Array.isArray(bVal?.timestamps) && bVal.timestamps.some(ts => now - ts < 3600000);
+        if (!hasRecent) {
+          this.memoryBuckets.delete(bKey);
+        }
+      }
+    }
     this.memoryBuckets.set(key, bucket);
     safeStorage.setItem(`${RATE_LIMIT_PREFIX}${key}`, bucket);
   }

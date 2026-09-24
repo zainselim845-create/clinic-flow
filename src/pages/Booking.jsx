@@ -363,7 +363,14 @@ const Booking = () => {
 
       if (useSupabase) {
         try {
-          await appointmentsService.addAppointment(newAppointment);
+          const res = await appointmentsService.addAppointment(newAppointment);
+          if (res?.error) {
+            if (res.error.message && res.error.message.includes('Slot collision')) {
+              setBookingError('عذراً، تم حجز هذا الموعد للتو من قبل مريض آخر. يرجى اختيار موعد بديل يناسبك.');
+              setIsSubmitting(false);
+              return;
+            }
+          }
         } catch (err) {
           console.error('Failed to sync appointment to Supabase:', err);
         }
