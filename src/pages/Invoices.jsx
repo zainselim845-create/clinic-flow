@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { 
-  Receipt, Plus, Search, Download, 
-  Clock, AlertCircle, DollarSign, Eye, RefreshCw 
-} from 'lucide-react';
+import { Download, Plus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import InvoiceModal from '../components/InvoiceModal';
-import { Skeleton } from '../components/ui/Skeleton';
+import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import { getInvoices, addInvoice } from '../services/invoicesService';
-import { invoices as defaultInvoices } from '../data/demoData';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import {
+  InvoicesMetricsGrid,
+  InvoicesFiltersBar,
+  InvoicesTable
+} from '../components/invoices';
 import './Invoices.css';
 
 const Invoices = () => {
@@ -92,9 +93,17 @@ const Invoices = () => {
   }, [invoicesList, searchQuery, statusFilter]);
 
   // Metric Aggregates
-  const totalBilled = (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.total || i.totalAmount || i.amount || ((Number(i.paidAmount || 0) + Number(i.remainingBalance || 0))) || 0) : 0), 0);
-  const totalCollected = (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.paidAmount || i.paid || 0) : 0), 0);
-  const totalOutstanding = (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.remainingBalance != null ? i.remainingBalance : Math.max(0, (Number(i.total || i.totalAmount || 0) - Number(i.paidAmount || i.paid || 0)))) : 0), 0);
+  const totalBilled = useMemo(() => {
+    return (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.total || i.totalAmount || i.amount || ((Number(i.paidAmount || 0) + Number(i.remainingBalance || 0))) || 0) : 0), 0);
+  }, [invoicesList]);
+
+  const totalCollected = useMemo(() => {
+    return (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.paidAmount || i.paid || 0) : 0), 0);
+  }, [invoicesList]);
+
+  const totalOutstanding = useMemo(() => {
+    return (invoicesList || []).reduce((acc, i) => acc + (i ? Number(i.remainingBalance != null ? i.remainingBalance : Math.max(0, (Number(i.total || i.totalAmount || 0) - Number(i.paidAmount || i.paid || 0)))) : 0), 0);
+  }, [invoicesList]);
 
   const handleOpenNew = () => {
     setSelectedInvoice(null);
@@ -143,7 +152,6 @@ const Invoices = () => {
 
   return (
     <div className="invoices-page">
-      
       {/* Header */}
       <div className="page-header">
         <div>
@@ -163,224 +171,52 @@ const Invoices = () => {
       </div>
 
       {/* Metrics Row */}
-      <div className="invoices-metrics-grid">
-        <div className="inv-metric-card">
-          <div className="metric-icon-wrap blue"><Receipt size={22} /></div>
-          <div>
-            <span className="metric-lbl">إجمالي المطالبات</span>
-            <strong className="metric-val">{totalBilled.toLocaleString()} ج.م</strong>
-          </div>
-        </div>
-
-        <div className="inv-metric-card">
-          <div className="metric-icon-wrap green"><DollarSign size={22} /></div>
-          <div>
-            <span className="metric-lbl">إجمالي المتحصلات</span>
-            <strong className="metric-val text-success">{totalCollected.toLocaleString()} ج.م</strong>
-          </div>
-        </div>
-
-        <div className="inv-metric-card">
-          <div className="metric-icon-wrap red"><AlertCircle size={22} /></div>
-          <div>
-            <span className="metric-lbl">الديون والمستحقات</span>
-            <strong className="metric-val text-danger">{totalOutstanding.toLocaleString()} ج.م</strong>
-          </div>
-        </div>
-
-        <div className="inv-metric-card">
-          <div className="metric-icon-wrap orange"><Clock size={22} /></div>
-          <div>
-            <span className="metric-lbl">عدد الفواتير الصادرة</span>
-            <strong className="metric-val">{invoicesList.length} فاتورة</strong>
-          </div>
-        </div>
-      </div>
+      <FeatureErrorBoundary featureName="Invoices Metrics Grid">
+        <InvoicesMetricsGrid
+          totalBilled={totalBilled}
+          totalCollected={totalCollected}
+          totalOutstanding={totalOutstanding}
+          invoicesCount={invoicesList.length}
+        />
+      </FeatureErrorBoundary>
 
       {/* Search & Filter Bar */}
-      <div className="filters-bar glass-card" style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-        <div className="search-box" style={{ flex: 1, minWidth: '240px' }}>
-          <Search size={18} className="search-icon" aria-hidden="true" />
-          <input
-            type="text"
-            placeholder="بحث برقم الفاتورة، اسم المريض، أو الهاتف..."
-            aria-label="بحث برقم الفاتورة، اسم المريض، أو الهاتف"
-            className="input-field"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-
-        <div className="status-filter-pills" role="tablist" aria-label="تصفية الفواتير حسب حالة السداد">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={statusFilter === 'all'}
-            className={`filter-pill ${statusFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setStatusFilter('all')}
-          >
-            الكل ({invoicesList.length})
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={statusFilter === 'unpaid'}
-            className={`filter-pill ${statusFilter === 'unpaid' ? 'active' : ''}`}
-            onClick={() => setStatusFilter('unpaid')}
-          >
-            مستحقة للدفع
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={statusFilter === 'partial'}
-            className={`filter-pill ${statusFilter === 'partial' ? 'active' : ''}`}
-            onClick={() => setStatusFilter('partial')}
-          >
-            سداد جزئي
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={statusFilter === 'paid'}
-            className={`filter-pill ${statusFilter === 'paid' ? 'active' : ''}`}
-            onClick={() => setStatusFilter('paid')}
-          >
-            مدفوعة بالكامل
-          </button>
-        </div>
-      </div>
+      <FeatureErrorBoundary featureName="Invoices Filters Bar">
+        <InvoicesFiltersBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          totalCount={invoicesList.length}
+        />
+      </FeatureErrorBoundary>
 
       {/* Invoices Table */}
-      <div className="glass-card table-responsive-container">
-        <table className="invoices-main-table">
-          <thead>
-            <tr>
-              <th>رقم الفاتورة</th>
-              <th>اسم المريض</th>
-              <th>الهاتف</th>
-              <th>التاريخ</th>
-              <th>الإجمالي</th>
-              <th>المدفوع</th>
-              <th>المتبقي</th>
-              <th>حالة السداد</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, idx) => (
-                <tr key={`inv-skel-${idx}`}>
-                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '130px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '90px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '60px', borderRadius: '12px' }} /></td>
-                  <td><Skeleton style={{ height: '28px', width: '85px', borderRadius: '6px' }} /></td>
-                </tr>
-              ))
-            ) : loadError ? (
-              <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                    <AlertCircle size={36} color="var(--danger, #DC2626)" aria-hidden="true" />
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{loadError}</strong>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                      onClick={fetchInvoices}
-                    >
-                      <RefreshCw size={15} />
-                      <span>إعادة المحاولة الآن</span>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ) : filteredInvoices.length === 0 ? (
-              <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                    <Receipt size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
-                      {searchQuery || statusFilter !== 'all'
-                        ? 'لا توجد فواتير مطابقة لمعايير البحث والتصفية'
-                        : 'لا توجد فواتير صادرة حتى الآن'}
-                    </strong>
-                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', maxWidth: '380px' }}>
-                      {searchQuery || statusFilter !== 'all'
-                        ? 'جرّب كتابة رقم فاتورة آخر أو مسح خانة البحث أو اختيار تصنيف الكل.'
-                        : 'يمكنك إنشاء فاتورة كشف أو خدمات علاجية جديدة للمرضى بسهولة.'}
-                    </p>
-                    {searchQuery || statusFilter !== 'all' ? (
-                      <button
-                        type="button"
-                        className="btn-table-action"
-                        style={{ marginTop: '0.5rem', padding: '0.45rem 1rem' }}
-                        onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
-                      >
-                        إعادة ضبط الفلاتر
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn-table-action"
-                        style={{ marginTop: '0.5rem', padding: '0.45rem 1rem', background: 'var(--primary)', color: '#FFFFFF' }}
-                        onClick={handleOpenNew}
-                      >
-                        <Plus size={16} />
-                        <span>إنشاء أول فاتورة</span>
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              filteredInvoices.map(inv => (
-                <tr key={inv.id}>
-                  <td><strong className="inv-code-badge">{inv.invoiceNumber}</strong></td>
-                  <td><strong>{inv.patientName}</strong></td>
-                  <td dir="ltr">{inv.patientPhone || '—'}</td>
-                  <td>{new Date(inv.createdAt).toLocaleDateString('ar-EG')}</td>
-                  <td><strong>{(Number(inv.total || inv.totalAmount || inv.amount || ((Number(inv.paidAmount || 0) + Number(inv.remainingBalance || 0))))).toLocaleString()} ج.م</strong></td>
-                  <td className="text-success">{(Number(inv.paidAmount || inv.paid || 0)).toLocaleString()} ج.م</td>
-                  <td className={((inv.remainingBalance != null ? Number(inv.remainingBalance) : Math.max(0, Number(inv.total || 0) - Number(inv.paidAmount || 0))) > 0) ? 'text-danger font-bold' : ''}>
-                    {(inv.remainingBalance != null ? Number(inv.remainingBalance) : Math.max(0, Number(inv.total || 0) - Number(inv.paidAmount || 0))).toLocaleString()} ج.م
-                  </td>
-                  <td>
-                    <span className={`status-pill ${inv.paymentStatus}`}>
-                      {inv.paymentStatus === 'paid' ? 'مدفوعة' : inv.paymentStatus === 'partial' ? 'جزئي' : 'مستحقة'}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => handleViewInvoice(inv)}
-                      className="btn-table-action"
-                      title="عرض وطباعة وسداد الفاتورة"
-                    >
-                      <Eye size={15} />
-                      <span>عرض / سداد</span>
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <FeatureErrorBoundary featureName="Invoices Data Table">
+        <InvoicesTable
+          isLoading={isLoading}
+          loadError={loadError}
+          fetchInvoices={fetchInvoices}
+          filteredInvoices={filteredInvoices}
+          searchQuery={searchQuery}
+          statusFilter={statusFilter}
+          setSearchQuery={setSearchQuery}
+          setStatusFilter={setStatusFilter}
+          handleOpenNew={handleOpenNew}
+          handleViewInvoice={handleViewInvoice}
+        />
+      </FeatureErrorBoundary>
 
       {/* Modal */}
-      <InvoiceModal
-        isOpen={isModalOpen}
-        invoice={selectedInvoice}
-        clinicInfo={currentClinic}
-        onClose={() => setIsModalOpen(false)}
-        onSaveInvoice={handleSaveInvoice}
-      />
-
+      <FeatureErrorBoundary featureName="Invoice Details Modal">
+        <InvoiceModal
+          isOpen={isModalOpen}
+          invoice={selectedInvoice}
+          clinicInfo={currentClinic}
+          onClose={() => setIsModalOpen(false)}
+          onSaveInvoice={handleSaveInvoice}
+        />
+      </FeatureErrorBoundary>
     </div>
   );
 };

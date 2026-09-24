@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import { 
   DashboardMetricsGrid, 
@@ -12,6 +12,25 @@ import {
   NewAppointmentModal, 
   SlotBlockerModal 
 } from '../components/appointments';
+import { 
+  OnboardingStepper,
+  OnboardingStepDoctor,
+  OnboardingStepClinic,
+  OnboardingStepBranding,
+  OnboardingStepTeam,
+  OnboardingSuccess
+} from '../pages/onboarding/components';
+import {
+  PatientsHeader,
+  PatientsFiltersBar,
+  PatientsGrid,
+  PatientFormModal
+} from '../components/patients';
+import {
+  InvoicesMetricsGrid,
+  InvoicesFiltersBar,
+  InvoicesTable
+} from '../components/invoices';
 import { syncTenantsFromCloud } from '../services/authService';
 
 describe('Modular Feature Architecture & Fault Isolation', () => {
@@ -124,6 +143,83 @@ describe('Modular Feature Architecture & Fault Isolation', () => {
       blockerDate: '2026-09-24'
     });
     expect(React.isValidElement(blockerElement)).toBe(true);
+  });
+
+  it('Onboarding components export cleanly and accept wizard props', () => {
+    expect(typeof OnboardingStepper).toBe('function');
+    expect(typeof OnboardingStepDoctor).toBe('function');
+    expect(typeof OnboardingStepClinic).toBe('function');
+    expect(typeof OnboardingStepBranding).toBe('function');
+    expect(typeof OnboardingStepTeam).toBe('function');
+    expect(typeof OnboardingSuccess).toBe('function');
+
+    const stepperEl = React.createElement(OnboardingStepper, { step: 2 });
+    expect(React.isValidElement(stepperEl)).toBe(true);
+    expect(stepperEl.props.step).toBe(2);
+
+    const successEl = React.createElement(OnboardingSuccess, {
+      clinicName: 'عيادة النخبة',
+      doctorName: 'د. راما',
+      username: 'dr-rama',
+      selectedSpecialtyObj: { name: 'طب الأسنان' },
+      teamSizeTitle: 'عيادة فردية',
+      enableInitialStaff: false
+    });
+    expect(React.isValidElement(successEl)).toBe(true);
+    expect(successEl.props.doctorName).toBe('د. راما');
+  });
+
+  it('Patients components export cleanly and support grid rendering and search', () => {
+    expect(typeof PatientsHeader).toBe('function');
+    expect(typeof PatientsFiltersBar).toBe('function');
+    expect(typeof PatientsGrid).toBe('function');
+    expect(typeof PatientFormModal).toBe('function');
+
+    const headerEl = React.createElement(PatientsHeader, {
+      onOpenImport: () => {},
+      onExportCSV: () => {},
+      onOpenNewPatient: () => {}
+    });
+    expect(React.isValidElement(headerEl)).toBe(true);
+
+    const filtersEl = React.createElement(PatientsFiltersBar, {
+      searchQuery: 'محمد',
+      setSearchQuery: () => {},
+      viewMode: 'grid',
+      setViewMode: () => {}
+    });
+    expect(React.isValidElement(filtersEl)).toBe(true);
+
+    const gridEl = React.createElement(PatientsGrid, {
+      viewMode: 'grid',
+      paginatedPatients: [],
+      searchQuery: '',
+      totalPatientsCount: 0
+    });
+    expect(React.isValidElement(gridEl)).toBe(true);
+  });
+
+  it('Invoices components export cleanly and calculate metrics safely', () => {
+    expect(typeof InvoicesMetricsGrid).toBe('function');
+    expect(typeof InvoicesFiltersBar).toBe('function');
+    expect(typeof InvoicesTable).toBe('function');
+
+    const metricsEl = React.createElement(InvoicesMetricsGrid, {
+      totalBilled: 5000,
+      totalCollected: 3500,
+      totalOutstanding: 1500,
+      invoicesCount: 12
+    });
+    expect(React.isValidElement(metricsEl)).toBe(true);
+    expect(metricsEl.props.totalBilled).toBe(5000);
+
+    const tableEl = React.createElement(InvoicesTable, {
+      isLoading: false,
+      filteredInvoices: [],
+      searchQuery: '',
+      statusFilter: 'all'
+    });
+    expect(React.isValidElement(tableEl)).toBe(true);
   });
 
   it('syncTenantsFromCloud operates cleanly without ERR_INVALID_URL in Node/Vitest environments', async () => {

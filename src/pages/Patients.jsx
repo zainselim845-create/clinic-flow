@@ -2,18 +2,18 @@ import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
-import { 
-  Plus, Search, LayoutGrid, List, X, Download, Upload,
-  ChevronLeft, ChevronRight, Users 
-} from 'lucide-react';
-import { Dialog } from '../components/ui/dialog';
-import { Portal } from '@ark-ui/react/portal';
-import PatientCard from '../components/PatientCard';
 import PatientRecallModal from '../components/PatientRecallModal';
 import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
 import ExcelPatientImportModal from '../components/ExcelPatientImportModal';
+import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import { patientIndex } from '../services/indexedSearchService';
 import * as patientsService from '../services/patientsService';
+import {
+  PatientsHeader,
+  PatientsFiltersBar,
+  PatientsGrid,
+  PatientFormModal
+} from '../components/patients';
 import './Patients.css';
 
 const Patients = () => {
@@ -23,7 +23,7 @@ const Patients = () => {
   const { patients = [], appointments = [], useSupabase } = state;
   const currentClinicId = tenant?.id || state.clinicInfo?.id;
 
-  // Filter patients by clinic
+  // Filter patients by clinic (Strict Tenant Isolation)
   const clinicPatients = useMemo(() => {
     if (!currentClinicId) return [];
     return patients.filter(p => {
@@ -55,25 +55,6 @@ const Patients = () => {
     patientIndex.buildIndex(clinicPatients, currentClinicId);
   }, [clinicPatients, currentClinicId]);
 
-  // Handle action=new from external navigation (e.g. from Appointments modal)
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    if (params.get('action') === 'new') {
-      setSelectedPatient(null);
-      setFormData({
-        name: '',
-        age: '',
-        gender: 'ذكر',
-        phone: '',
-        bloodType: '',
-        diagnosis: '',
-        medicalAlerts: '',
-        notes: ''
-      });
-      setIsModalOpen(true);
-    }
-  }, [location.search]);
-
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -84,6 +65,29 @@ const Patients = () => {
     medicalAlerts: '',
     notes: ''
   });
+
+  const handleOpenNewPatient = () => {
+    setSelectedPatient(null);
+    setFormData({
+      name: '',
+      age: '',
+      gender: 'ذكر',
+      phone: '',
+      bloodType: '',
+      diagnosis: '',
+      medicalAlerts: '',
+      notes: ''
+    });
+    setIsModalOpen(true);
+  };
+
+  // Handle action=new from external navigation (e.g. from Appointments modal)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('action') === 'new') {
+      handleOpenNewPatient();
+    }
+  }, [location.search]);
 
   // High-performance search for 100k+ records using deferred non-blocking query
   const searchResult = useMemo(() => {
@@ -165,14 +169,15 @@ const Patients = () => {
     return appointments.filter(a => a.patientId === patientId).sort((a, b) => new Date(b.date) - new Date(a.date));
   };
 
+  // Safe tenant-isolated CSV export (exports clinicPatients only)
   const handleExportCSV = () => {
-    if (!patients || patients.length === 0) {
+    if (!clinicPatients || clinicPatients.length === 0) {
       showToast('لا توجد بيانات مرضى للتصدير', 'info');
       return;
     }
 
     const headers = ['الاسم', 'العمر', 'الجنس', 'الهاتف', 'فصيلة الدم', 'التشخيص', 'عدد الزيارات', 'آخر زيارة', 'ملاحظات'];
-    const rows = patients.map(p => [
+    const rows = clinicPatients.map(p => [
       p.name || '',
       p.age || '',
       p.gender || '',
@@ -231,307 +236,85 @@ const Patients = () => {
         </div>
       )}
 
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <h1 style={{ margin: 0 }}>إدارة المرضى</h1>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button 
-            type="button"
-            className="btn btn-secondary" 
-            onClick={() => setIsImportModalOpen(true)} 
-            title="استيراد المرضى من ملف إكسيل قديم أو CSV"
-            style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)', fontWeight: 600 }}
-          >
-            <Upload size={18} />
-            <span>استيراد من إكسيل (النظام القديم)</span>
-          </button>
-          <button type="button" className="btn btn-secondary" onClick={handleExportCSV} title="تصدير قائمة المرضى لملف إكسيل">
-            <Download size={18} />
-            <span>تصدير إكسيل (CSV)</span>
-          </button>
-          <button type="button" className="btn btn-primary" onClick={() => {
-            setSelectedPatient(null);
-            setFormData({ name: '', age: '', gender: 'ذكر', phone: '', bloodType: '', diagnosis: '', notes: '' });
-            setIsModalOpen(true);
-          }}>
-            <Plus size={20} />
-            <span>إضافة مريض جديد</span>
-          </button>
-        </div>
-      </div>
+      {/* Header */}
+      <FeatureErrorBoundary featureName="Patients Header">
+        <PatientsHeader
+          onOpenImport={() => setIsImportModalOpen(true)}
+          onExportCSV={handleExportCSV}
+          onOpenNewPatient={handleOpenNewPatient}
+        />
+      </FeatureErrorBoundary>
 
+      {/* Filters Bar */}
+      <FeatureErrorBoundary featureName="Patients Filters Bar">
+        <PatientsFiltersBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
+      </FeatureErrorBoundary>
 
-      <div className="filters-bar glass-card">
-        <div className="search-box full-width">
-          <Search size={18} className="search-icon" aria-hidden="true" />
-          <input 
-            type="text" 
-            placeholder="بحث بالاسم أو رقم الهاتف..." 
-            aria-label="بحث بالاسم أو رقم الهاتف"
-            className="input-field"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <div className="view-toggle" role="group" aria-label="طريقة عرض المرضى">
-          <button 
-            type="button"
-            className={`toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
-            aria-label="عرض شبكي (بطاقات)"
-            aria-pressed={viewMode === 'grid'}
-            onClick={() => setViewMode('grid')}
-          >
-            <LayoutGrid size={20} aria-hidden="true" />
-          </button>
-          <button 
-            type="button"
-            className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
-            aria-label="عرض قائمة"
-            aria-pressed={viewMode === 'list'}
-            onClick={() => setViewMode('list')}
-          >
-            <List size={20} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
+      {/* Patients Grid / List */}
+      <FeatureErrorBoundary featureName="Patients Data Grid">
+        <PatientsGrid
+          viewMode={viewMode}
+          paginatedPatients={paginatedPatients}
+          searchQuery={searchQuery}
+          totalPatientsCount={totalPatientsCount}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          setCurrentPage={setCurrentPage}
+          setSearchQuery={setSearchQuery}
+          handleOpenDetail={handleOpenDetail}
+          handleEditPatient={handleEditPatient}
+          onOpenNewPatient={handleOpenNewPatient}
+        />
+      </FeatureErrorBoundary>
 
-      <div className={`patients-${viewMode}`}>
-        {paginatedPatients.length > 0 ? (
-          paginatedPatients.map(patient => (
-            <div key={patient.id} onClick={() => handleOpenDetail(patient)}>
-              <PatientCard patient={patient} onEdit={handleEditPatient} />
-            </div>
-          ))
-        ) : (
-          <div className="empty-state">
-            <Users size={48} className="empty-state-icon" aria-hidden="true" />
-            <h3 className="empty-state-title">
-              {searchQuery ? 'لا يوجد مرضى مطابقين لمعايير البحث' : 'سجل المرضى فارغ حتى الآن'}
-            </h3>
-            <p className="empty-state-desc">
-              {searchQuery 
-                ? 'جرّب كتابة اسم مريض آخر أو رقم هاتف صحيح، أو قم بإلغاء البحث.' 
-                : 'ابدأ بإضافة أول مريض في عيادتك لإنشاء ملف طبي متكامل ومتابعة الكشوفات والتقارير.'}
-            </p>
-            <div className="empty-state-action">
-              {searchQuery ? (
-                <button 
-                  type="button" 
-                  className="btn btn-secondary"
-                  onClick={() => setSearchQuery('')}
-                >
-                  إلغاء البحث
-                </button>
-              ) : (
-                <button 
-                  type="button" 
-                  className="btn btn-primary"
-                  onClick={() => {
-                    setFormData({ name: '', age: '', gender: 'ذكر', phone: '', bloodType: '', diagnosis: '', notes: '' });
-                    setIsModalOpen(true);
-                  }}
-                >
-                  <Plus size={18} />
-                  <span>إضافة أول مريض</span>
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* High-Volume Pagination Controls */}
-      {totalPages > 1 && (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '1rem',
-          margin: '2rem 0',
-          padding: '0.75rem 1.5rem',
-          background: 'var(--bg-secondary)',
-          borderRadius: 'var(--radius-xl)',
-          border: '1px solid var(--border-color)',
-          width: 'fit-content',
-          marginLeft: 'auto',
-          marginRight: 'auto'
-        }}>
-          <button
-            type="button"
-            className="btn-secondary"
-            disabled={currentPage <= 1}
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            style={{ padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <ChevronRight size={16} />
-            <span>السابق</span>
-          </button>
-          
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-            صفحة {currentPage} من {totalPages} ({totalPatientsCount} مريض إجمالي)
-          </span>
-
-
-          <button
-            type="button"
-            className="btn-secondary"
-            disabled={currentPage >= totalPages}
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            style={{ padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <span>التالي</span>
-            <ChevronLeft size={16} />
-          </button>
-        </div>
-      )}
-
-      {/* Add/Edit Modal */}
-      <Dialog.Root open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)} lazyMount unmountOnExit>
-        <Portal>
-          <Dialog.Backdrop className="modal-overlay" />
-          <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <Dialog.Content className="modal-content glass-card" style={{ maxWidth: '640px', width: '100%' }}>
-              <div className="modal-header">
-                <Dialog.Title asChild>
-                  <h3>{selectedPatient ? 'تعديل بيانات المريض' : 'إضافة مريض جديد'}</h3>
-                </Dialog.Title>
-                <Dialog.CloseTrigger asChild>
-                  <button className="close-btn" type="button" aria-label="إغلاق">
-                    <X size={24} />
-                  </button>
-                </Dialog.CloseTrigger>
-              </div>
-              
-              <form onSubmit={handleSubmit} className="modal-form">
-                <div className="form-group">
-                  <label>الاسم بالكامل</label>
-                  <input 
-                    type="text" 
-                    className="input-field"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>العمر</label>
-                    <input 
-                      type="number" 
-                      className="input-field"
-                      value={formData.age}
-                      onChange={(e) => setFormData({...formData, age: e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>الجنس</label>
-                    <select 
-                      className="input-field"
-                      value={formData.gender}
-                      onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                    >
-                      <option value="ذكر">ذكر</option>
-                      <option value="أنثى">أنثى</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>رقم الهاتف</label>
-                    <input 
-                      type="tel" 
-                      className="input-field"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>فصيلة الدم</label>
-                    <select 
-                      className="input-field"
-                      value={formData.bloodType || ''}
-                      onChange={(e) => setFormData({...formData, bloodType: e.target.value})}
-                    >
-                      <option value="">غير معروف</option>
-                      <option value="A+">A+</option>
-                      <option value="A-">A-</option>
-                      <option value="B+">B+</option>
-                      <option value="B-">B-</option>
-                      <option value="O+">O+</option>
-                      <option value="O-">O-</option>
-                      <option value="AB+">AB+</option>
-                      <option value="AB-">AB-</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>التشخيص والشكوى المبدئية</label>
-                  <input 
-                    type="text" 
-                    className="input-field"
-                    placeholder="مثال: ألم في الأسنان، فحص دوري..."
-                    value={formData.diagnosis || ''}
-                    onChange={(e) => setFormData({...formData, diagnosis: e.target.value})}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label style={{ color: '#DC2626', fontWeight: 800 }}>تنبيهات طبية وحساسيات (Medical Alerts)</label>
-                  <input 
-                    type="text" 
-                    className="input-field"
-                    placeholder="مثال: حساسية بنسلين، ضغط، سكري، أدوية سيولة..."
-                    value={formData.medicalAlerts || ''}
-                    onChange={(e) => setFormData({...formData, medicalAlerts: e.target.value})}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>ملاحظات إضافية</label>
-                  <textarea 
-                    className="input-field"
-                    rows="2"
-                    value={formData.notes || ''}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  ></textarea>
-                </div>
-
-                <div className="modal-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>إلغاء</button>
-                  <button type="submit" className="btn-primary">حفظ</button>
-                </div>
-              </form>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
+      {/* Add / Edit Patient Modal */}
+      <FeatureErrorBoundary featureName="Patient Form Modal">
+        <PatientFormModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          selectedPatient={selectedPatient}
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={handleSubmit}
+        />
+      </FeatureErrorBoundary>
 
       {/* Patient Clinical Dossier (Clinical Notes, Treatment Plans) */}
       {isDetailModalOpen && selectedPatient && (
-        <PatientDossierDrawer
-          patient={selectedPatient}
-          patientAppointments={getPatientAppointments(selectedPatient.id)}
-          onClose={() => setIsDetailModalOpen(false)}
-          onEdit={handleEditPatient}
-        />
+        <FeatureErrorBoundary featureName="Patient Dossier Drawer">
+          <PatientDossierDrawer
+            patient={selectedPatient}
+            patientAppointments={getPatientAppointments(selectedPatient.id)}
+            onClose={() => setIsDetailModalOpen(false)}
+            onEdit={handleEditPatient}
+          />
+        </FeatureErrorBoundary>
       )}
 
-      <PatientRecallModal
-        isOpen={isRecallModalOpen}
-        onClose={() => setIsRecallModalOpen(false)}
-        initialPatient={selectedPatient}
-      />
+      {/* Patient Recall Modal */}
+      <FeatureErrorBoundary featureName="Patient Recall Modal">
+        <PatientRecallModal
+          isOpen={isRecallModalOpen}
+          onClose={() => setIsRecallModalOpen(false)}
+          initialPatient={selectedPatient}
+        />
+      </FeatureErrorBoundary>
 
-      <ExcelPatientImportModal
-        isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
-        existingPatients={clinicPatients}
-        clinicId={currentClinicId}
-        onImportComplete={handleImportPatients}
-      />
+      {/* Excel Patient Import Modal */}
+      <FeatureErrorBoundary featureName="Excel Patient Import Modal">
+        <ExcelPatientImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          existingPatients={clinicPatients}
+          clinicId={currentClinicId}
+          onImportComplete={handleImportPatients}
+        />
+      </FeatureErrorBoundary>
     </div>
   );
 };
