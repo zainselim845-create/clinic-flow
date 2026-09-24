@@ -6,6 +6,7 @@ import { AppProvider } from './context/AppContext';
 import { TenantProvider } from './context/TenantContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LocaleProvider } from '@ark-ui/react/locale';
+import { Toaster } from 'sonner';
 import App from './App';
 import './index.css';
 
@@ -69,6 +70,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <AuthProvider>
               <AppProvider>
                 <App />
+                <Toaster
+                  position="bottom-right"
+                  dir="rtl"
+                  toastOptions={{
+                    style: { fontFamily: 'inherit', direction: 'rtl' }
+                  }}
+                  richColors
+                  closeButton
+                />
               </AppProvider>
             </AuthProvider>
           </TenantProvider>
