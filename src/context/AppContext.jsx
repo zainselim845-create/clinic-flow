@@ -235,10 +235,10 @@ export function AppProvider({ children }) {
         // Asynchronous Dual-Write to high-capacity IndexedDB
         try {
           if (Array.isArray(state.patients) && state.patients.length > 0) {
-            state.patients.forEach(p => localDb.savePatient(p).catch(e => console.warn('[AppContext] IndexedDB patient save note:', e)));
+            localDb.savePatientsBulk(state.patients).catch(e => console.warn('[AppContext] IndexedDB patient save note:', e));
           }
           if (Array.isArray(state.appointments) && state.appointments.length > 0) {
-            state.appointments.forEach(a => localDb.saveAppointment(a).catch(e => console.warn('[AppContext] IndexedDB appointment save note:', e)));
+            localDb.saveAppointmentsBulk(state.appointments).catch(e => console.warn('[AppContext] IndexedDB appointment save note:', e));
           }
         } catch (dbErr) {
           console.warn('[AppContext] IndexedDB dual-write warning:', dbErr);

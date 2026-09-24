@@ -134,7 +134,7 @@ export function recordJournalEntry({
       reference_id: String(referenceId),
       description,
       total_amount: totalDebits
-    }).then(({ data }) => {
+    }).select().single().then(({ data }) => {
       if (data?.id) {
         const lineRows = cleanLines.map(l => ({
           journal_entry_id: data.id,

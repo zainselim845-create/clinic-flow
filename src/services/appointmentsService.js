@@ -258,22 +258,26 @@ export async function softDeleteAppointment(id, clinicId) {
 /**
  * Update appointment status
  */
-export async function updateAppointmentStatus(id, status, extraFields = {}) {
+export async function updateAppointmentStatus(id, status, extraFields = {}, clinicId = null) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
     const updatePayload = { status, ...toDbAppointment(extraFields) };
-    const { data, error } = await supabase
-      .from('appointments')
-      .update(updatePayload)
-      .eq('id', id)
-      .select()
-      .single();
+    const targetClinicId = clinicId || extraFields?.clinicId || extraFields?.clinic_id;
+    let query = supabase.from('appointments').update(updatePayload).eq('id', id);
+    if (targetClinicId) {
+      query = query.eq('clinic_id', targetClinicId);
+    }
+    const { data, error } = await query.select().single();
 
     if (error) throw error;
-    apiCache.invalidatePrefix('appointments:');
+    if (targetClinicId) {
+      apiCache.invalidateResource('appointments', targetClinicId);
+    } else {
+      apiCache.invalidatePrefix('appointments:');
+    }
     return { data: fromDbAppointment(data), error: null };
   } catch (error) {
     console.error('Error updating appointment status:', error);
@@ -284,22 +288,22 @@ export async function updateAppointmentStatus(id, status, extraFields = {}) {
 /**
  * Full update for an appointment
  */
-export async function updateAppointment(id, updateData) {
+export async function updateAppointment(id, updateData, clinicId = null) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
     const dbPayload = toDbAppointment(updateData);
-    const { data, error } = await supabase
-      .from('appointments')
-      .update(dbPayload)
-      .eq('id', id)
-      .select()
-      .single();
+    const targetClinicId = clinicId || updateData?.clinicId || updateData?.clinic_id;
+    let query = supabase.from('appointments').update(dbPayload).eq('id', id);
+    if (targetClinicId) {
+      query = query.eq('clinic_id', targetClinicId);
+    }
+    const { data, error } = await query.select().single();
 
     if (error) throw error;
-    apiCache.invalidateResource('appointments', updateData?.clinicId || updateData?.clinic_id);
+    apiCache.invalidateResource('appointments', targetClinicId);
     return { data: fromDbAppointment(data), error: null };
   } catch (error) {
     console.error('Error updating appointment:', error);
@@ -310,19 +314,24 @@ export async function updateAppointment(id, updateData) {
 /**
  * Delete an appointment
  */
-export async function deleteAppointment(id) {
+export async function deleteAppointment(id, clinicId = null) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    const { data, error } = await supabase
-      .from('appointments')
-      .delete()
-      .eq('id', id);
+    let query = supabase.from('appointments').delete().eq('id', id);
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+    const { data, error } = await query;
 
     if (error) throw error;
-    apiCache.invalidatePrefix('appointments:');
+    if (clinicId) {
+      apiCache.invalidateResource('appointments', clinicId);
+    } else {
+      apiCache.invalidatePrefix('appointments:');
+    }
     return { data, error: null };
   } catch (error) {
     console.error('Error deleting appointment:', error);
@@ -361,18 +370,17 @@ export async function getBookedSlotsForDate(clinicId, date) {
 /**
  * Mark that a reminder has been sent for this appointment
  */
-export async function markReminderSent(id) {
+export async function markReminderSent(id, clinicId = null) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    const { data, error } = await supabase
-      .from('appointments')
-      .update({ reminder_sent: true })
-      .eq('id', id)
-      .select()
-      .single();
+    let query = supabase.from('appointments').update({ reminder_sent: true }).eq('id', id);
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+    const { data, error } = await query.select().single();
 
     if (error) throw error;
     return { data: fromDbAppointment(data), error: null };

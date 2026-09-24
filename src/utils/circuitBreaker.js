@@ -78,15 +78,18 @@ export class CircuitBreaker {
       throw new Error(`Service '${serviceName}' is temporarily unavailable (circuit open)`);
     }
 
+    let timerId = null;
     try {
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error(`Operation timed out after ${this.timeoutMs}ms`)), this.timeoutMs);
+        timerId = setTimeout(() => reject(new Error(`Operation timed out after ${this.timeoutMs}ms`)), this.timeoutMs);
       });
 
       const result = await Promise.race([actionFn(), timeoutPromise]);
+      if (timerId) clearTimeout(timerId);
       this.recordSuccess(serviceName);
       return result;
     } catch (err) {
+      if (timerId) clearTimeout(timerId);
       this.recordFailure(serviceName);
       if (fallbackFn) {
         return fallbackFn(err);

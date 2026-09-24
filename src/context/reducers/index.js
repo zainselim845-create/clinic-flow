@@ -11,21 +11,11 @@ import { notificationsReducer } from './notificationsReducer';
  */
 export function combinedAppReducer(state, action) {
   let nextState = systemReducer(state, action);
-  if (nextState !== state) return nextState;
-
-  nextState = patientsReducer(state, action);
-  if (nextState !== state) return nextState;
-
-  nextState = appointmentsReducer(state, action);
-  if (nextState !== state) return nextState;
-
-  nextState = financeReducer(state, action);
-  if (nextState !== state) return nextState;
-
-  nextState = settingsReducer(state, action);
-  if (nextState !== state) return nextState;
-
-  nextState = notificationsReducer(state, action);
+  nextState = patientsReducer(nextState, action);
+  nextState = appointmentsReducer(nextState, action);
+  nextState = financeReducer(nextState, action);
+  nextState = settingsReducer(nextState, action);
+  nextState = notificationsReducer(nextState, action);
   return nextState;
 }
 

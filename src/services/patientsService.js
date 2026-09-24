@@ -199,22 +199,26 @@ export async function addPatientsBulk(patientsList) {
 /**
  * Update an existing patient
  */
-export async function updatePatient(id, updateData) {
+export async function updatePatient(id, updateData, clinicId = null) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
     const dbPayload = toDbPatient(updateData);
-    const { data, error } = await supabase
-      .from('patients')
-      .update(dbPayload)
-      .eq('id', id)
-      .select()
-      .single();
+    const targetClinicId = clinicId || updateData?.clinicId || updateData?.clinic_id;
+    let query = supabase.from('patients').update(dbPayload).eq('id', id);
+    if (targetClinicId) {
+      query = query.eq('clinic_id', targetClinicId);
+    }
+    const { data, error } = await query.select().single();
 
     if (error) throw error;
-    apiCache.invalidateResource('patients', updateData.clinicId || updateData.clinic_id);
+    if (targetClinicId) {
+      apiCache.invalidateResource('patients', targetClinicId);
+    } else {
+      apiCache.invalidatePrefix('patients:');
+    }
     return { data: fromDbPatient(data), error: null };
   } catch (error) {
     console.error('Error updating patient:', error);
@@ -225,19 +229,24 @@ export async function updatePatient(id, updateData) {
 /**
  * Delete a patient
  */
-export async function deletePatient(id) {
+export async function deletePatient(id, clinicId = null) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    const { error } = await supabase
-      .from('patients')
-      .delete()
-      .eq('id', id);
+    let query = supabase.from('patients').delete().eq('id', id);
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+    const { error } = await query;
 
     if (error) throw error;
-    apiCache.invalidatePrefix('patients:');
+    if (clinicId) {
+      apiCache.invalidateResource('patients', clinicId);
+    } else {
+      apiCache.invalidatePrefix('patients:');
+    }
     return { data: null, error: null };
   } catch (error) {
     console.error('Error deleting patient:', error);
@@ -260,6 +269,7 @@ export async function findPatientByPhone(clinicId, phone) {
   try {
     const raw = (phone || '').trim();
     const cleanDigits = raw.replace(/\D/g, '');
+    if (!cleanDigits) return { data: null, error: null };
     const standard11 = cleanDigits.startsWith('20') ? '0' + cleanDigits.slice(2) : (cleanDigits.startsWith('0') ? cleanDigits : '0' + cleanDigits);
     const withCountry = cleanDigits.startsWith('20') ? cleanDigits : ('20' + (cleanDigits.startsWith('0') ? cleanDigits.slice(1) : cleanDigits));
 
@@ -267,7 +277,7 @@ export async function findPatientByPhone(clinicId, phone) {
       .from('patients')
       .select('*')
       .eq('clinic_id', clinicId)
-      .or(`phone.eq.${raw},phone.eq.${standard11},phone.eq.${withCountry},phone.eq.${cleanDigits}`);
+      .or(`phone.eq.${cleanDigits},phone.eq.${standard11},phone.eq.${withCountry}`);
 
     const { data, error } = await query.limit(1);
     if (error) throw error;
@@ -303,8 +313,10 @@ export async function getPatientsPaginated({ clinicId, page = 1, pageSize = 25, 
       .range(from, to);
 
     if (searchQuery && searchQuery.trim()) {
-      const q = searchQuery.trim();
-      query = query.or(`name.ilike.%${q}%,phone.ilike.%${q}%,diagnosis.ilike.%${q}%`);
+      const q = searchQuery.trim().replace(/[,()]/g, '');
+      if (q) {
+        query = query.or(`name.ilike.%${q}%,phone.ilike.%${q}%,diagnosis.ilike.%${q}%`);
+      }
     }
 
     const { data, count, error } = await query;

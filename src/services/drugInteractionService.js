@@ -71,12 +71,24 @@ export function checkPrescriptionSafety(prescriptionText = '', patientRecord = {
   const textLower = prescriptionText.toLowerCase();
 
   // Aggregate all patient health factors into a single normalized searchable string
+  const alertsStr = Array.isArray(patientRecord.medicalAlerts)
+    ? patientRecord.medicalAlerts.join(' ')
+    : (typeof patientRecord.medicalAlerts === 'string' ? patientRecord.medicalAlerts : '');
+
+  const historyStr = Array.isArray(patientRecord.medicalHistory)
+    ? patientRecord.medicalHistory.join(' ')
+    : (typeof patientRecord.medicalHistory === 'string' ? patientRecord.medicalHistory : '');
+
+  const allergiesStr = Array.isArray(patientRecord.allergies)
+    ? patientRecord.allergies.join(' ')
+    : (typeof patientRecord.allergies === 'string' ? patientRecord.allergies : '');
+
   const patientHealthFactors = [
-    patientRecord.allergies || '',
+    allergiesStr,
     patientRecord.chronicDiseases || '',
-    patientRecord.medicalHistory || '',
+    historyStr,
     patientRecord.notes || '',
-    ...(patientRecord.medicalAlerts || [])
+    alertsStr
   ].join(' ').toLowerCase();
 
   if (!patientHealthFactors.trim()) return [];

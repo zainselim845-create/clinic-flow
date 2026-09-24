@@ -2,12 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rogkodgqeowiylpckspi.supabase.co';
 
-const getServiceKey = () => {
-  if (process.env.SUPABASE_SERVICE_ROLE_KEY) return process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const k = 'c2Jfc2VjcmV0XzhDelk2WDg3OUZac045ei1CbnVQX2dfYjZwRFRGZDU=';
-  return typeof Buffer !== 'undefined' ? Buffer.from(k, 'base64').toString('utf8') : '';
-};
-const SUPABASE_SERVICE_KEY = getServiceKey();
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const BUCKET_NAME = 'tenants';
 const REGISTRY_FILE = 'sync/tenants_registry.json';
 
@@ -131,10 +126,14 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const registry = await getRegistry();
+      const sanitizedUsers = (registry.users || []).map(u => {
+        const { password, ...safeUser } = u;
+        return safeUser;
+      });
       return res.status(200).json({
         success: true,
         tenants: registry.tenants,
-        users: registry.users,
+        users: sanitizedUsers,
         updatedAt: registry.updatedAt
       });
     }

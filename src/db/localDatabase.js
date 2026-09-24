@@ -103,6 +103,25 @@ export const localDb = {
     return performTransaction('patients', 'readwrite', (store) => store.put(patient));
   },
 
+  savePatientsBulk: async (patients) => {
+    if (!Array.isArray(patients) || patients.length === 0) return true;
+    const db = await openLocalDatabase();
+    if (!db) return false;
+    return new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction('patients', 'readwrite');
+        const store = tx.objectStore('patients');
+        patients.forEach(p => {
+          if (p && p.id) store.put(p);
+        });
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  },
+
   getPatient: async (id) => {
     return performTransaction('patients', 'readonly', (store) => store.get(id));
   },
@@ -133,6 +152,25 @@ export const localDb = {
   saveAppointment: async (appointment) => {
     if (!appointment || !appointment.id) return null;
     return performTransaction('appointments', 'readwrite', (store) => store.put(appointment));
+  },
+
+  saveAppointmentsBulk: async (appointments) => {
+    if (!Array.isArray(appointments) || appointments.length === 0) return true;
+    const db = await openLocalDatabase();
+    if (!db) return false;
+    return new Promise((resolve, reject) => {
+      try {
+        const tx = db.transaction('appointments', 'readwrite');
+        const store = tx.objectStore('appointments');
+        appointments.forEach(a => {
+          if (a && a.id) store.put(a);
+        });
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => reject(tx.error);
+      } catch (err) {
+        reject(err);
+      }
+    });
   },
 
   getAllAppointments: async (clinicId) => {
