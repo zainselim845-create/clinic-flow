@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { apiCache } from './apiCacheService';
+import { appointmentSchema, validateWithSchema } from '../utils/validationSchemas';
 
 const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
@@ -24,6 +25,7 @@ export function fromDbAppointment(row) {
     consultationStartedAt: row.consultation_started_at || row.consultationStartedAt,
     notes: row.notes || '',
     reminderSent: row.reminder_sent ?? row.reminderSent ?? false,
+    deletedAt: row.deleted_at || null,
     createdAt: row.created_at || row.createdAt
   };
 }
@@ -52,6 +54,7 @@ export function toDbAppointment(data) {
   if (data.checkedInAt !== undefined) payload.checked_in_at = data.checkedInAt;
   if (data.consultationStartedAt !== undefined) payload.consultation_started_at = data.consultationStartedAt;
   if (data.reminderSent !== undefined) payload.reminder_sent = data.reminderSent;
+  if (data.deletedAt !== undefined) payload.deleted_at = data.deletedAt;
 
   return payload;
 }
@@ -178,6 +181,24 @@ export async function addAppointment(appointment) {
     return { data: null, error: new Error('Clinic ID is strictly required to add an appointment') };
   }
 
+  // Zod input validation
+  const validation = validateWithSchema(appointmentSchema, {
+    clinicId,
+    patientName: appointment?.patientName || appointment?.patient_name || '',
+    patientPhone: appointment?.patientPhone || appointment?.patient_phone || '',
+    date: appointment?.date || '',
+    time: appointment?.time || '',
+    type: appointment?.type || 'كشف عادي',
+    fee: appointment?.fee,
+    status: appointment?.status || 'booked',
+    bookingCode: appointment?.bookingCode || appointment?.booking_code,
+    notes: appointment?.notes
+  });
+
+  if (!validation.success) {
+    return { data: null, error: new Error(`Validation Error: ${validation.error}`) };
+  }
+
   try {
     const isColliding = await checkSlotCollision(clinicId, appointment.date, appointment.time);
     if (isColliding) {
@@ -199,6 +220,37 @@ export async function addAppointment(appointment) {
     return { data: fromDbAppointment(data), error: null };
   } catch (error) {
     console.error('Error adding appointment:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Soft delete an appointment (sets deleted_at timestamp and marks status as cancelled)
+ */
+export async function softDeleteAppointment(id, clinicId) {
+  if (!isSupabaseConfigured()) {
+    return { data: null, error: NOT_CONFIGURED_ERROR };
+  }
+  if (!clinicId || !id) {
+    return { data: null, error: new Error('Clinic ID and Appointment ID are strictly required for deletion') };
+  }
+  try {
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ 
+        deleted_at: new Date().toISOString(), 
+        status: 'cancelled' 
+      })
+      .eq('id', id)
+      .eq('clinic_id', clinicId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    apiCache.invalidateResource('appointments', clinicId);
+    return { data: fromDbAppointment(data), error: null };
+  } catch (error) {
+    console.error('Error soft deleting appointment:', error);
     return { data: null, error };
   }
 }

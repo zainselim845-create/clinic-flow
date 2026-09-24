@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/supabase';
+import { invoiceSchema, paymentSchema, validateWithSchema } from '../utils/validationSchemas';
 
 export function fromDbInvoice(row) {
   if (!row) return null;
@@ -19,10 +20,11 @@ export function fromDbInvoice(row) {
     patientShare: Number(row.patient_share !== undefined && row.patient_share !== null ? row.patient_share : (row.total || 0)),
     paidAmount: Number(row.paid_amount || 0),
     remainingBalance: Number(row.remaining_balance || 0),
-    paymentStatus: row.payment_status || 'unpaid', // unpaid, partial, paid, refunded
+    paymentStatus: row.payment_status || 'unpaid',
     items: row.items || [],
     notes: row.notes || '',
-    createdAt: row.created_at
+    createdAt: row.created_at,
+    deletedAt: row.deleted_at || null
   };
 }
 
@@ -45,7 +47,8 @@ export function toDbInvoice(data) {
     remaining_balance: Number(data.remainingBalance || 0),
     payment_status: data.paymentStatus || 'unpaid',
     items: data.items || [],
-    notes: data.notes || ''
+    notes: data.notes || '',
+    deleted_at: data.deletedAt || null
   };
 }
 
@@ -124,6 +127,25 @@ export async function addInvoice(invoice) {
 
   if (!invoice || (!invoice.clinicId && !invoice.clinic_id)) {
     return { data: null, error: new Error('Clinic ID is strictly required to add an invoice') };
+  }
+
+  // Zod mutation guard
+  const validation = validateWithSchema(invoiceSchema, {
+    clinicId: invoice.clinicId || invoice.clinic_id,
+    patientId: invoice.patientId || invoice.patient_id || '',
+    invoiceNumber: invoice.invoiceNumber || invoice.invoice_number || '',
+    subtotal: Number(invoice.subtotal || 0),
+    discount: Number(invoice.discount || 0),
+    taxPercentage: Number(invoice.taxPercentage || invoice.tax_percentage || 0),
+    taxAmount: Number(invoice.taxAmount || invoice.tax_amount || 0),
+    total: Number(invoice.total || 0),
+    insuranceShare: Number(invoice.insuranceShare || invoice.insurance_share || 0),
+    patientShare: Number(invoice.patientShare ?? invoice.patient_share ?? invoice.total ?? 0),
+    paymentStatus: invoice.paymentStatus || invoice.payment_status || 'unpaid',
+    items: invoice.items || []
+  });
+  if (!validation.success) {
+    return { data: null, error: new Error(`Validation Error: ${validation.error}`) };
   }
 
   try {
@@ -283,4 +305,34 @@ export function normalizeInvoiceTotals({
     remainingBalance,
     paymentStatus
   };
+}
+
+/**
+ * Soft-deletes an invoice by setting deleted_at timestamp.
+ * Financial records are never hard-deleted for audit compliance.
+ * Strictly scoped to clinic_id to prevent cross-tenant data mutation.
+ */
+export async function softDeleteInvoice(invoiceId, clinicId) {
+  if (!isSupabaseConfigured()) {
+    return { success: false, error: NOT_CONFIGURED_ERROR };
+  }
+  if (!invoiceId || !clinicId) {
+    return { success: false, error: new Error('Invoice ID and Clinic ID are both required for soft deletion') };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('invoices')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', invoiceId)
+      .eq('clinic_id', clinicId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data: fromDbInvoice(data), error: null };
+  } catch (error) {
+    console.error('Error soft-deleting invoice:', error);
+    return { success: false, error };
+  }
 }

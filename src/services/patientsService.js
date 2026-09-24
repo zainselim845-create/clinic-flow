@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/supabase';
 import { apiCache } from './apiCacheService';
+import { patientSchema, validateWithSchema } from '../utils/validationSchemas';
 
 /**
  * Format DB snake_case record to client camelCase model
@@ -22,6 +23,7 @@ export function fromDbPatient(row) {
     visitsCount: row.total_visits ?? row.visitsCount ?? 1,
     totalVisits: row.total_visits ?? row.totalVisits ?? 1,
     lastVisit: row.last_visit ? String(row.last_visit).split('T')[0] : (row.lastVisit || null),
+    deletedAt: row.deleted_at || null,
     createdAt: row.created_at || row.createdAt
   };
 }
@@ -52,6 +54,7 @@ export function toDbPatient(data) {
     payload.total_visits = data.totalVisits ?? data.visitsCount ?? 1;
   }
   if (data.lastVisit !== undefined) payload.last_visit = data.lastVisit;
+  if (data.deletedAt !== undefined) payload.deleted_at = data.deletedAt;
 
   return payload;
 }
@@ -98,8 +101,27 @@ export async function addPatient(patient) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
-  if (!patient || (!patient.clinicId && !patient.clinic_id)) {
+  const clinicId = patient?.clinicId || patient?.clinic_id;
+  if (!patient || !clinicId) {
     return { data: null, error: new Error('Clinic ID is strictly required to add a patient') };
+  }
+
+  // Zod input validation
+  const validation = validateWithSchema(patientSchema, {
+    clinicId,
+    name: patient?.name || '',
+    phone: patient?.phone || '',
+    age: patient?.age,
+    gender: patient?.gender || 'ذكر',
+    bloodType: patient?.bloodType,
+    medicalAlerts: patient?.medicalAlerts,
+    diagnosis: patient?.diagnosis,
+    notes: patient?.notes,
+    visitsCount: patient?.visitsCount || patient?.totalVisits || 1
+  });
+
+  if (!validation.success) {
+    return { data: null, error: new Error(`Validation Error: ${validation.error}`) };
   }
 
   try {
@@ -111,10 +133,38 @@ export async function addPatient(patient) {
       .single();
 
     if (error) throw error;
-    apiCache.invalidateResource('patients', patient.clinicId || patient.clinic_id);
+    apiCache.invalidateResource('patients', clinicId);
     return { data: fromDbPatient(data), error: null };
   } catch (error) {
     console.error('Error adding patient:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Soft delete a patient (sets deleted_at timestamp)
+ */
+export async function softDeletePatient(id, clinicId) {
+  if (!isSupabaseConfigured()) {
+    return { data: null, error: NOT_CONFIGURED_ERROR };
+  }
+  if (!clinicId || !id) {
+    return { data: null, error: new Error('Clinic ID and Patient ID are strictly required for deletion') };
+  }
+  try {
+    const { data, error } = await supabase
+      .from('patients')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('clinic_id', clinicId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    apiCache.invalidateResource('patients', clinicId);
+    return { data: fromDbPatient(data), error: null };
+  } catch (error) {
+    console.error('Error soft deleting patient:', error);
     return { data: null, error };
   }
 }
