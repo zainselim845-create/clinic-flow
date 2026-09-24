@@ -2,9 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
-  UserPlus, Search, FolderOpen, Share2, RotateCcw,
-  CalendarDays, Clock, Stethoscope, Wallet, Landmark, CheckCircle2,
-  BellRing, Plus, Calendar, UserX, MessageCircle, ArrowRight
+  UserPlus, Share2, CalendarDays, Clock, Wallet, Landmark, BellRing, MessageCircle 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -27,7 +25,13 @@ import { savePrescriptionToStorage } from '../services/prescriptionService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '../utils/permissions';
 import { getBookingFunnelStats, getBookingDrafts, generateLeadRecoveryWhatsAppUrl, BOOKING_FUNNEL_STEPS } from '../services/leadRecoveryService';
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import { 
+  DashboardMetricsGrid, 
+  DashboardScheduleTable, 
+  DashboardLeadRecoveryCard, 
+  DashboardQuickDock 
+} from './dashboard/components';
+import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -592,167 +596,21 @@ const Dashboard = () => {
       </div>
 
       {/* 2. Google Material 3 Unified KPI Cards Grid */}
-      <div className="cockpit-stats-grid">
-        
-        {/* Metric 1: Total Appointments */}
-        <div 
-          className={`cockpit-stat-card total-card ${activeFilterTab === 'all' ? 'active-filter-card' : ''}`}
-          onClick={() => setActiveFilterTab('all')}
-          title="انقر لتصفية جدول اليوم لعرض كافة المواعيد"
-        >
-          <div className="stat-card-header">
-            <div className="stat-icon-box total">
-              <CalendarDays size={18} />
-            </div>
-            <span className="stat-card-tag">أجندة اليوم</span>
-          </div>
-          <div className="stat-card-body">
-            <h3 className="stat-main-number">{todaysAppointments.length}</h3>
-            <span className="stat-card-label">حالة مسجلة بالجدول</span>
-          </div>
-          <div className="stat-progress-bar">
-            <div 
-              className="stat-progress-fill" 
-              style={{ width: `${attendanceRate}%` }}
-            ></div>
-          </div>
-          <div className="stat-card-footer">
-            <span>نسبة الإنجاز: {attendanceRate}%</span>
-            <span>{completedToday.length} تم الكشف</span>
-          </div>
-        </div>
-
-        {/* Metric 2: Live Waiting Queue */}
-        <div 
-          className={`cockpit-stat-card waiting-card ${activeFilterTab === 'waiting' ? 'active-filter-card' : ''}`}
-          onClick={() => setActiveFilterTab('waiting')}
-          title="انقر لتصفية الجدول لعرض حالات صالة الانتظار فقط"
-        >
-          <div className="stat-card-header">
-            <div className="stat-icon-box waiting">
-              <Clock size={18} />
-            </div>
-            <span className="stat-card-tag waiting-tag">
-              <span className="live-pulse-dot" style={{ width: 6, height: 6 }}></span>
-              <span>صالة الانتظار</span>
-            </span>
-          </div>
-          <div className="stat-card-body">
-            <h3 className="stat-main-number">{waitingToday.length}</h3>
-            <span className="stat-card-label">مرضى بانتظار الدخول</span>
-          </div>
-          <div className="stat-progress-bar">
-            <div 
-              className="stat-progress-fill" 
-              style={{ width: `${Math.min(100, waitingToday.length * 25)}%` }}
-            ></div>
-          </div>
-          <div className="stat-card-footer">
-            <span>{waitingToday.length > 0 ? 'متوسط الانتظار: 10 د' : 'لا يوجد انتظار'}</span>
-            <span>أسبقية الحضور</span>
-          </div>
-        </div>
-
-        {/* Metric 3: Active Consultation Room */}
-        <div 
-          className={`cockpit-stat-card exam-card ${activeFilterTab === 'in_progress' ? 'active-filter-card' : ''}`}
-          onClick={() => setActiveFilterTab('in_progress')}
-          title="انقر لتصفية الجدول لعرض حالة الكشف الجارية"
-        >
-          <div className="stat-card-header">
-            <div className="stat-icon-box exam">
-              <Stethoscope size={18} />
-            </div>
-            <span className={`stat-card-tag ${currentExamPatient ? 'in-session-tag' : 'vacant-tag'}`}>
-              {currentExamPatient ? (isDoctor ? 'قيد الفحص السريري' : 'داخل غرفة الكشف') : 'الغرفة شاغرة'}
-            </span>
-          </div>
-          <div className="stat-card-body">
-            {currentExamPatient ? (
-              <>
-                <h3 className="stat-main-number">{inProgressToday.length}</h3>
-                <span className="stat-card-label">{currentExamPatient.patientName}</span>
-              </>
-            ) : (
-              <>
-                <h3 className="stat-main-number" style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-secondary)' }}>شاغرة</h3>
-                <span className="stat-card-label">جاهزة لاستقبال المريض التالي</span>
-              </>
-            )}
-          </div>
-          <div className="stat-progress-bar">
-            <div 
-              className="stat-progress-fill" 
-              style={{ width: currentExamPatient ? '100%' : '0%' }}
-            ></div>
-          </div>
-          <div className="stat-card-footer exam-footer">
-            <span>{currentExamPatient ? currentExamPatient.type || 'كشف' : 'غرفة الكشف 1'}</span>
-            <span>{currentExamPatient ? 'مع الطبيب' : 'مستعدة'}</span>
-          </div>
-        </div>
-
-        {/* Metric 4: Daily Revenue (Authorized Financials) OR Completed Appointments (Staff) */}
-        {canViewRevenue ? (
-          <div 
-            className={`cockpit-stat-card revenue-card ${activeFilterTab === 'completed' ? 'active-filter-card' : ''}`}
-            onClick={() => setActiveFilterTab('completed')}
-            title="انقر لتصفية الجدول لعرض الحالات المسددة والمكتملة"
-          >
-            <div className="stat-card-header">
-              <div className="stat-icon-box revenue">
-                <Wallet size={18} />
-              </div>
-              <span className="stat-card-tag revenue-tag">
-                <span>الخزينة والتحصيل</span>
-              </span>
-            </div>
-            <div className="stat-card-body">
-              <h3 className="stat-main-number text-success">{todayRevenue.toLocaleString('en-US')} ج.م</h3>
-              <span className="stat-card-label">إجمالي التحصيل اليوم</span>
-            </div>
-            <div className="stat-progress-bar">
-              <div 
-                className="stat-progress-fill" 
-                style={{ width: `${attendanceRate}%`, background: '#10B981' }}
-              ></div>
-            </div>
-            <div className="stat-card-footer">
-              <span>{completedToday.length} كشف مسدد</span>
-              <span>مطابق وموثق</span>
-            </div>
-          </div>
-        ) : (
-          <div 
-            className={`cockpit-stat-card total-card ${activeFilterTab === 'completed' ? 'active-filter-card' : ''}`}
-            onClick={() => setActiveFilterTab('completed')}
-            title="انقر لتصفية الجدول لعرض الحالات المكتملة"
-          >
-            <div className="stat-card-header">
-              <div className="stat-icon-box total" style={{ background: '#E6F4EA', color: '#137333' }}>
-                <CheckCircle2 size={18} />
-              </div>
-              <span className="stat-card-tag" style={{ background: '#E6F4EA', color: '#137333' }}>
-                <span>كشوفات مكتملة</span>
-              </span>
-            </div>
-            <div className="stat-card-body">
-              <h3 className="stat-main-number" style={{ color: '#137333' }}>{completedToday.length}</h3>
-              <span className="stat-card-label">مريض أتموا الكشف اليوم</span>
-            </div>
-            <div className="stat-progress-bar">
-              <div 
-                className="stat-progress-fill" 
-                style={{ width: `${attendanceRate}%`, background: '#137333' }}
-              ></div>
-            </div>
-            <div className="stat-card-footer">
-              <span>نسبة الإنجاز: {attendanceRate}%</span>
-              <span>تنظيم السكرتارية</span>
-            </div>
-          </div>
-        )}
-      </div>
+      <FeatureErrorBoundary featureName="مؤشرات أداء اليوم">
+        <DashboardMetricsGrid
+          todaysAppointments={todaysAppointments}
+          completedToday={completedToday}
+          waitingToday={waitingToday}
+          inProgressToday={inProgressToday}
+          attendanceRate={attendanceRate}
+          currentExamPatient={currentExamPatient}
+          canViewRevenue={canViewRevenue}
+          todayRevenue={todayRevenue}
+          activeFilterTab={activeFilterTab}
+          onSelectFilterTab={setActiveFilterTab}
+          isDoctor={isDoctor}
+        />
+      </FeatureErrorBoundary>
 
       {/* 2. Cockpit Layout: 2-Column Responsive High-Density Grid */}
       <div className="dashboard-cockpit-grid">
@@ -772,176 +630,27 @@ const Dashboard = () => {
           />
 
           {/* Schedule Table Section */}
-          <div className="schedule-table-card compact-table-card">
-            <div className="table-card-header">
-              <div className="header-title">
-                <h3>جدول مواعيد اليوم التفصيلي ({filteredAppointments.length})</h3>
-              </div>
-              <div className="header-tools">
-                <div className="search-box compact-search">
-                  <Search size={15} aria-hidden="true" />
-                  <input
-                    type="text"
-                    placeholder="بحث سريع في جدول اليوم..."
-                    aria-label="البحث في جدول مواعيد اليوم"
-                    value={scheduleSearchQuery}
-                    onChange={(e) => setScheduleSearchQuery(e.target.value)}
-                  />
-                </div>
-                <div className="filter-tabs compact-tabs" role="tablist" aria-label="تصفية مواعيد اليوم">
-                  {['all', 'waiting', 'in_progress', 'pending_payment', 'completed', 'booked'].map((tab) => (
-                    <button
-                      key={tab}
-                      type="button"
-                      role="tab"
-                      aria-selected={activeFilterTab === tab}
-                      aria-label={`تصفية حسب ${
-                        tab === 'all' ? 'جميع الحالات' :
-                        tab === 'waiting' ? 'الانتظار' :
-                        tab === 'in_progress' ? 'في الكشف' :
-                        tab === 'pending_payment' ? 'في انتظار التحصيل' :
-                        tab === 'completed' ? 'مكتمل' : 'قادم'
-                      }`}
-                      className={`tab-pill ${activeFilterTab === tab ? 'active' : ''}`}
-                      onClick={() => setActiveFilterTab(tab)}
-                    >
-                      {tab === 'all' && 'الكل'}
-                      {tab === 'waiting' && `انتظار (${waitingToday.length})`}
-                      {tab === 'in_progress' && `في الكشف (${inProgressToday.length})`}
-                      {tab === 'pending_payment' && `تحصيل (${pendingPaymentToday.length})`}
-                      {tab === 'completed' && `مكتمل (${completedToday.length})`}
-                      {tab === 'booked' && `قادم (${bookedToday.length})`}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="table-responsive">
-              <table className="data-table compact-table">
-                <thead>
-                  <tr>
-                    <th>المريض</th>
-                    <th>الموعد</th>
-                    <th>نوع الكشف</th>
-                    <th>الحالة</th>
-                    <th>الرسوم</th>
-                    <th>الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredAppointments.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center empty-cell" style={{ padding: '2.5rem 1.5rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                          <Calendar size={36} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
-                          <p style={{ fontWeight: 700, color: 'var(--text-primary)', margin: 0, fontSize: '0.96rem' }}>
-                            {scheduleSearchQuery || activeFilterTab !== 'all' 
-                              ? 'لا توجد مواعيد مطابقة لهذا الفلتر أو البحث' 
-                              : 'لا توجد كشوفات مجدولة لهذا اليوم'}
-                          </p>
-                          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.82rem', maxWidth: '380px' }}>
-                            {scheduleSearchQuery || activeFilterTab !== 'all'
-                              ? 'جرّب كتابة اسم مريض آخر أو إعادة تعيين التصفية للعودة لكافة المواعيد.'
-                              : 'ابدأ بتسجيل كشف فوري (Walk-in) من شريط الإجراءات السريعة بالأسفل.'}
-                          </p>
-                          {scheduleSearchQuery || activeFilterTab !== 'all' ? (
-                            <button
-                              type="button"
-                              className="tab-pill active"
-                              style={{ marginTop: '0.5rem', border: '1px solid var(--border-color)', padding: '0.4rem 0.9rem' }}
-                              onClick={() => { setScheduleSearchQuery(''); setActiveFilterTab('all'); }}
-                            >
-                              إعادة ضبط الفلاتر
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn-action-primary"
-                              style={{ marginTop: '0.5rem', padding: '0.45rem 1rem' }}
-                              onClick={() => setIsWalkInModalOpen(true)}
-                            >
-                              <Plus size={15} style={{ marginLeft: '0.35rem' }} />
-                              <span>تسجيل كشف فوري (Walk-in)</span>
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredAppointments.map((appt) => (
-                      <tr key={appt.id}>
-                        <td>
-                          <div className="patient-cell">
-                            <strong>{appt.patientName}</strong>
-                            <small dir="ltr">{appt.patientPhone}</small>
-                          </div>
-                        </td>
-                        <td>{appt.time}</td>
-                        <td><span className="type-chip">{appt.type || 'كشف'}</span></td>
-                        <td>
-                          <span className={`status-badge ${appt.status}`}>
-                            {appt.status === 'completed' && 'مكتمل'}
-                            {appt.status === 'in_progress' && 'في الكشف'}
-                            {appt.status === 'waiting' && 'في الانتظار'}
-                            {appt.status === 'pending_payment' && 'في انتظار التحصيل'}
-                            {(appt.status === 'booked' || appt.status === 'upcoming') && 'محجوز'}
-                            {appt.status === 'cancelled' && 'ملغي'}
-                          </span>
-                        </td>
-                        <td>{appt.fee || '300 ج.م'}</td>
-                        <td>
-                          <div className="row-actions">
-                            {appt.status === 'waiting' && (
-                              <button
-                                type="button"
-                                onClick={() => handleStartExam(appt)}
-                                className="btn-action-primary"
-                                disabled={!!currentExamPatient}
-                                style={currentExamPatient ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                                title={currentExamPatient ? `غرفة الكشف مشغولة حالياً بـ ${currentExamPatient.patientName}` : (isDoctor ? 'بدء الكشف' : 'إدخال للطبيب')}
-                              >
-                                {isDoctor ? 'بدء الكشف' : 'إدخال للطبيب'}
-                              </button>
-                            )}
-                            {appt.status === 'in_progress' && isDoctor && (
-                              <button
-                                type="button"
-                                onClick={() => setFinishExamAppt(appt)}
-                                className="btn-action-success"
-                              >
-                                إنهاء الكشف
-                              </button>
-                            )}
-                            {appt.status === 'pending_payment' && (
-                              <button
-                                type="button"
-                                onClick={() => setPaymentModalAppt(appt)}
-                                className="btn-action-success"
-                                title="تحصيل الرسوم وإصدار الفاتورة الإلكترونية"
-                              >
-                                <Wallet size={13} style={{ marginLeft: '0.35rem' }} />
-                                <span>تحصيل الرسوم</span>
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => setDossierPatient(appt)}
-                              className="btn-action-icon"
-                              title="عرض السجل الطبي"
-                              aria-label="عرض السجل الطبي"
-                            >
-                              <FolderOpen size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <FeatureErrorBoundary featureName="جدول المواعيد">
+            <DashboardScheduleTable
+              filteredAppointments={filteredAppointments}
+              scheduleSearchQuery={scheduleSearchQuery}
+              setScheduleSearchQuery={setScheduleSearchQuery}
+              activeFilterTab={activeFilterTab}
+              setActiveFilterTab={setActiveFilterTab}
+              waitingToday={waitingToday}
+              inProgressToday={inProgressToday}
+              pendingPaymentToday={pendingPaymentToday}
+              completedToday={completedToday}
+              bookedToday={bookedToday}
+              currentExamPatient={currentExamPatient}
+              isDoctor={isDoctor}
+              onStartExam={handleStartExam}
+              onFinishExam={(appt) => setFinishExamAppt(appt)}
+              onCollectPayment={(appt) => setPaymentModalAppt(appt)}
+              onOpenDossier={(appt) => setDossierPatient(appt)}
+              onOpenWalkInModal={() => setIsWalkInModalOpen(true)}
+            />
+          </FeatureErrorBoundary>
 
         </div>
 
@@ -1015,103 +724,15 @@ const Dashboard = () => {
           )}
 
           {/* Booking Funnel & Abandoned Leads Recovery Cockpit Card */}
-          <div className="dashboard-funnel-card">
-            <div className="funnel-card-header">
-              <div className="funnel-header-title">
-                <div className="funnel-header-icon-box">
-                  <UserX size={16} />
-                </div>
-                <div>
-                  <h4 className="funnel-title">مسار الحجز واستعادة المرضى</h4>
-                  <span className="funnel-subtitle">رصد المرضى الذين بدأوا الحجز وتوقفوا</span>
-                </div>
-              </div>
-              <span className="funnel-badge-pill">
-                {bookingFunnelStats.conversionRate}% نسبة الإكمال
-              </span>
-            </div>
-
-            {/* Conversion Funnel Progress Indicators */}
-            <div className="funnel-steps-bar" role="group" aria-label="مراحل مسار الحجز الرقمي">
-              <div className="funnel-step-item" title="الخطوة 1: إدخال الهاتف والاسم">
-                <span className="step-val">{bookingFunnelStats.step1Count}</span>
-                <span className="step-lbl">بيانات</span>
-              </div>
-              <span className="funnel-step-arrow" aria-hidden="true">←</span>
-              <div className="funnel-step-item" title="الخطوة 2: اختيار نوع الخدمة">
-                <span className="step-val">{bookingFunnelStats.step2Count}</span>
-                <span className="step-lbl">الخدمة</span>
-              </div>
-              <span className="funnel-step-arrow" aria-hidden="true">←</span>
-              <div className="funnel-step-item" title="الخطوة 3: اختيار الموعد المناسب">
-                <span className="step-val">{bookingFunnelStats.step3Count}</span>
-                <span className="step-lbl">الموعد</span>
-              </div>
-              <span className="funnel-step-arrow" aria-hidden="true">←</span>
-              <div className="funnel-step-item completed" title="الخطوة 4: حجز مؤكد ومكتمل">
-                <span className="step-val">{bookingFunnelStats.completedCount}</span>
-                <span className="step-lbl">مؤكد</span>
-              </div>
-            </div>
-
-            {/* Abandoned Leads List */}
-            <div className="funnel-leads-section">
-              <div className="funnel-leads-header">
-                <span className="leads-header-title">
-                  حالات معلقة لم تكتمل ({recentAbandonedLeads.length})
-                </span>
-                {isDoctor && (
-                  <button 
-                    type="button" 
-                    onClick={() => navigate('/doctor-agent')}
-                    className="btn-link-crm"
-                    title="فتح مركز التسويق واستعادة العملاء بالكامل"
-                  >
-                    <span>مركز الاستعادة</span>
-                    <ArrowRight size={12} />
-                  </button>
-                )}
-              </div>
-
-              {recentAbandonedLeads.length === 0 ? (
-                <div className="funnel-empty-state">
-                  <CheckCircle2 size={20} className="empty-check-icon" />
-                  <span>كافة المرضى الذين بدأوا الحجز أتموا خطواتهم بنجاح.</span>
-                </div>
-              ) : (
-                <div className="funnel-leads-list">
-                  {recentAbandonedLeads.map((lead) => {
-                    const stepName = BOOKING_FUNNEL_STEPS[lead.step]?.name || lead.stepName || 'توقف أثناء الحجز';
-                    const whatsappUrl = generateLeadRecoveryWhatsAppUrl(lead, currentClinic);
-                    return (
-                      <div key={lead.id} className="funnel-lead-row">
-                        <div className="lead-row-info">
-                          <div className="lead-row-top">
-                            <strong className="lead-name">{lead.name || 'مريض جديد'}</strong>
-                            <span className="lead-phone" dir="ltr">{lead.phone}</span>
-                          </div>
-                          <div className="lead-row-meta">
-                            <span className="lead-step-badge">{stepName}</span>
-                            {lead.service && <span className="lead-service-badge">{lead.service}</span>}
-                          </div>
-                        </div>
-                        <a
-                          href={whatsappUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn-recover-lead"
-                          title="إرسال رسالة تذكيرية فورية عبر واتساب لاستكمال الحجز بنقرة واحدة"
-                        >
-                          <MessageCircle size={13} />
-                          <span>استعادة</span>
-                        </a>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
+          <FeatureErrorBoundary featureName="مسار الحجز واستعادة المرضى">
+            <DashboardLeadRecoveryCard
+              bookingFunnelStats={bookingFunnelStats}
+              recentAbandonedLeads={recentAbandonedLeads}
+              currentClinic={currentClinic}
+              isDoctor={isDoctor}
+              onNavigateToCrm={() => navigate('/doctor-agent')}
+            />
+          </FeatureErrorBoundary>
         </div>
 
       </div>

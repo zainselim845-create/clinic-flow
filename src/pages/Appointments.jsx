@@ -3,11 +3,15 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
-import { Plus, X, Search, Lock, Unlock, Download, ChevronLeft, ChevronRight, Armchair, LayoutGrid, Calendar } from 'lucide-react';
-import { Dialog } from '../components/ui/dialog';
-import { Portal } from '@ark-ui/react/portal';
+import { Plus, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import AppointmentCard from '../components/AppointmentCard';
-import MultiChairGrid from '../components/appointments/MultiChairGrid';
+import {
+  MultiChairGrid,
+  AppointmentFiltersBar,
+  NewAppointmentModal,
+  SlotBlockerModal
+} from '../components/appointments';
+import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import { availableSlots } from '../data/demoData';
 import { getTodayDateStr } from '../utils/timeSlots';
 import * as appointmentsService from '../services/appointmentsService';
@@ -256,137 +260,23 @@ const Appointments = () => {
         </div>
       )}
 
-      <div className="page-header">
-        <h1>إدارة المواعيد (لوحة السكرتير والأطباء)</h1>
-        <div className="header-actions-btns">
-          <button className="btn btn-secondary" onClick={handleExportAppointmentsCSV} title="تصدير المواعيد لملف إكسيل">
-            <Download size={16} />
-            <span>تصدير إكسيل (CSV)</span>
-          </button>
-          {isDoctor && (
-            <button className="btn btn-secondary" onClick={() => setIsBlockerModalOpen(true)} title="إغلاق/فتح مواعيد العيادة (مخصص للطبيب فقط)">
-              <Lock size={16} />
-              <span>إغلاق / حظر مواعيد</span>
-            </button>
-          )}
-          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={18} />
-            <span>موعد جديد</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="filters-bar glass-card">
-        <div className="status-filters" role="tablist" aria-label="تصفية المواعيد حسب الحالة">
-          <button 
-            type="button" 
-            role="tab" 
-            aria-selected={filterStatus === 'all'} 
-            className={filterStatus === 'all' ? 'active' : ''} 
-            onClick={() => { setFilterStatus('all'); setCurrentPage(1); }}
-          >
-            الكل ({appointments.length})
-          </button>
-          <button 
-            type="button" 
-            role="tab" 
-            aria-selected={filterStatus === 'waiting'} 
-            className={filterStatus === 'waiting' ? 'active' : ''} 
-            onClick={() => { setFilterStatus('waiting'); setCurrentPage(1); }}
-          >
-            في الانتظار ({appointments.filter(a => a.status === 'waiting').length})
-          </button>
-          <button 
-            type="button" 
-            role="tab" 
-            aria-selected={filterStatus === 'in_progress'} 
-            className={filterStatus === 'in_progress' ? 'active' : ''} 
-            onClick={() => { setFilterStatus('in_progress'); setCurrentPage(1); }}
-          >
-            في الكشف ({appointments.filter(a => a.status === 'in_progress').length})
-          </button>
-          <button 
-            type="button" 
-            role="tab" 
-            aria-selected={filterStatus === 'booked'} 
-            className={filterStatus === 'booked' ? 'active' : ''} 
-            onClick={() => { setFilterStatus('booked'); setCurrentPage(1); }}
-          >
-            محجوز ({appointments.filter(a => a.status === 'booked' || a.status === 'upcoming').length})
-          </button>
-          <button 
-            type="button" 
-            role="tab" 
-            aria-selected={filterStatus === 'completed'} 
-            className={filterStatus === 'completed' ? 'active' : ''} 
-            onClick={() => { setFilterStatus('completed'); setCurrentPage(1); }}
-          >
-            مكتمل ({appointments.filter(a => a.status === 'completed').length})
-          </button>
-          <button 
-            type="button" 
-            role="tab" 
-            aria-selected={filterStatus === 'cancelled'} 
-            className={filterStatus === 'cancelled' ? 'active' : ''} 
-            onClick={() => { setFilterStatus('cancelled'); setCurrentPage(1); }}
-          >
-            ملغي ({appointments.filter(a => a.status === 'cancelled').length})
-          </button>
-        </div>
-        
-        <div className="other-filters">
-          <div className="view-mode-toggle-group">
-            <button 
-              type="button"
-              className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-            >
-              <LayoutGrid size={14} />
-              <span>بطاقات</span>
-            </button>
-            <button 
-              type="button"
-              className={`view-mode-btn ${viewMode === 'chairs' ? 'active' : ''}`}
-              onClick={() => setViewMode('chairs')}
-            >
-              <Armchair size={14} />
-              <span>الكراسي المتزامنة</span>
-            </button>
-          </div>
-
-          <div className="date-filter-group">
-            <input 
-              type="date" 
-              className="input-field date-filter-input" 
-              value={filterDate}
-              onChange={(e) => { setFilterDate(e.target.value); setCurrentPage(1); }}
-              aria-label="تصفية المواعيد حسب التاريخ"
-              title="تصفية المواعيد حسب التاريخ المحدد"
-            />
-            {filterDate && (
-              <button
-                type="button"
-                onClick={() => { setFilterDate(''); setCurrentPage(1); }}
-                className="btn-clear-date"
-                title="إلغاء تصفية التاريخ وعرض كافة المواعيد"
-              >
-                عرض كل الأيام
-              </button>
-            )}
-          </div>
-          <div className="search-box">
-            <Search size={18} className="search-icon" aria-hidden="true" />
-            <input 
-              type="text" 
-              placeholder="بحث باسم المريض..." 
-              aria-label="بحث باسم المريض في المواعيد"
-              className="input-field"
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-            />
-          </div>
-        </div>
-      </div>
+      <FeatureErrorBoundary featureName="شريط تصفية المواعيد">
+        <AppointmentFiltersBar
+          appointments={appointments}
+          filterStatus={filterStatus}
+          onSelectFilterStatus={(status) => { setFilterStatus(status); setCurrentPage(1); }}
+          filterDate={filterDate}
+          onChangeFilterDate={(date) => { setFilterDate(date); setCurrentPage(1); }}
+          searchQuery={searchQuery}
+          onChangeSearchQuery={(q) => { setSearchQuery(q); setCurrentPage(1); }}
+          viewMode={viewMode}
+          onChangeViewMode={setViewMode}
+          isDoctor={isDoctor}
+          onExportCsv={handleExportAppointmentsCSV}
+          onOpenBlockerModal={() => setIsBlockerModalOpen(true)}
+          onOpenNewAppointmentModal={() => setIsModalOpen(true)}
+        />
+      </FeatureErrorBoundary>
 
       {viewMode === 'chairs' ? (
         <MultiChairGrid 
@@ -498,277 +388,36 @@ const Appointments = () => {
       )}
 
       {/* Modal 1: Add Appointment */}
-      <Dialog.Root open={isModalOpen} onOpenChange={(e) => setIsModalOpen(e.open)} lazyMount unmountOnExit>
-        <Portal>
-          <Dialog.Backdrop className="modal-overlay" />
-          <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <Dialog.Content className="modal-content glass-card" style={{ maxWidth: '640px', width: '100%' }}>
-              <div className="modal-header">
-                <Dialog.Title asChild>
-                  <h3>إضافة موعد جديد في العيادة</h3>
-                </Dialog.Title>
-                <Dialog.CloseTrigger asChild>
-                  <button className="close-btn" type="button" aria-label="إغلاق">
-                    <X size={24} />
-                  </button>
-                </Dialog.CloseTrigger>
-              </div>
-              
-              <form onSubmit={handleSubmit} className="modal-form">
-                <div className="form-group">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
-                    <label style={{ margin: 0 }}>اسم المريض *</label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsModalOpen(false);
-                        navigate('/patients?action=new');
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--primary)',
-                        fontSize: '0.78rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        padding: 0,
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.25rem'
-                      }}
-                      title="فتح نافذة إضافة مريض جديد"
-                    >
-                      <Plus size={13} />
-                      <span>إضافة مريض جديد</span>
-                    </button>
-                  </div>
-                  <select 
-                    className="input-field"
-                    value={formData.patientId}
-                    onChange={(e) => setFormData({...formData, patientId: e.target.value})}
-                    required
-                  >
-                    <option value="">{patients.length === 0 ? 'لا يوجد مرضى مسجلين (أضف مريضاً أولاً)' : 'اختر المريض...'}</option>
-                    {patients.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>التاريخ *</label>
-                    <input 
-                      type="date" 
-                      className="input-field"
-                      value={formData.date}
-                      onChange={(e) => setFormData({...formData, date: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>الوقت *</label>
-                    <select 
-                      className="input-field"
-                      value={formData.time}
-                      onChange={(e) => setFormData({...formData, time: e.target.value})}
-                      required
-                    >
-                      <option value="">اختر الوقت...</option>
-                      {availableSlots.map(slot => {
-                        const isBooked = (appointments || []).some(a => a.date === formData.date && a.time === slot && a.status !== 'cancelled');
-                        const isBlocked = (blockedSlots || []).some(b => b.date === formData.date && (b.time === slot || b.isFullDay || b.time === 'FULL_DAY'));
-                        const isUnavailable = isBooked || isBlocked;
-
-                        return (
-                          <option key={slot} value={slot} disabled={isUnavailable}>
-                            {slot} {isBooked ? '(محجوز )' : isBlocked ? '(مغلق )' : '(متاح )'}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-                </div>
-
-
-                <div className="form-group">
-                  <label>قيمة الكشف (ج.م)</label>
-                  <input 
-                    type="text"
-                    className="input-field"
-                    placeholder="300 ج.م"
-                    value={formData.fee || ''}
-                    onChange={(e) => setFormData({...formData, fee: e.target.value})}
-                  />
-                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem', display: 'block' }}>
-                    قيمة كشف العيادة الموحدة (يمكن تعديلها أو إضافة خدمات إضافية أثناء فحص الطبيب).
-                  </span>
-                </div>
-
-                <div className="form-group">
-                  <label>ملاحظات</label>
-                  <textarea 
-                    className="input-field"
-                    rows="3"
-                    value={formData.notes}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  ></textarea>
-                </div>
-
-                <div className="modal-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setIsModalOpen(false)}>إلغاء</button>
-                  <button type="submit" className="btn-primary">حفظ وتأكيد الموعد</button>
-                </div>
-              </form>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
+      <NewAppointmentModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        formData={formData}
+        setFormData={setFormData}
+        onSubmit={handleSubmit}
+        patients={patients}
+        appointments={appointments}
+        blockedSlots={blockedSlots}
+        availableSlots={availableSlots}
+        onNavigateToNewPatient={() => {
+          setIsModalOpen(false);
+          navigate('/patients?action=new');
+        }}
+      />
 
       {/* Modal 2: Secretary Slot Blocker */}
-      <Dialog.Root open={isBlockerModalOpen} onOpenChange={(e) => setIsBlockerModalOpen(e.open)} lazyMount unmountOnExit>
-        <Portal>
-          <Dialog.Backdrop className="modal-overlay" />
-          <Dialog.Positioner className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <Dialog.Content className="modal-content glass-card blocker-modal" style={{ maxWidth: '680px', width: '100%' }}>
-              <div className="modal-header">
-                <Dialog.Title asChild>
-                  <h3> إغلاق / حظر مواعيد العيادة (للسكرتارية)</h3>
-                </Dialog.Title>
-                <Dialog.CloseTrigger asChild>
-                  <button className="close-btn" type="button" aria-label="إغلاق">
-                    <X size={24} />
-                  </button>
-                </Dialog.CloseTrigger>
-              </div>
-              
-              <div className="blocker-body">
-                <p className="blocker-desc">
-                  يمكن للطبيب والسكرتارية إغلاق يوم كامل كإجازة/عطلة طارئة، أو حظر أوقات معينة لمنع حجزها إلكترونياً.
-                </p>
-
-                <div className="form-group" style={{ marginBottom: '1.25rem' }}>
-                  <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>اختر اليوم للتعديل والإغلاق:</label>
-                  <input 
-                    type="date" 
-                    className="input-field"
-                    value={blockerDate}
-                    onChange={(e) => setBlockerDate(e.target.value)}
-                  />
-                </div>
-
-                {/* Full Day Off Control Banner */}
-                <div style={{
-                  background: isBlockerDateFullDayBlocked ? 'rgba(239, 68, 68, 0.08)' : 'rgba(37, 99, 235, 0.06)',
-                  border: `1px solid ${isBlockerDateFullDayBlocked ? 'rgba(239, 68, 68, 0.25)' : 'rgba(37, 99, 235, 0.2)'}`,
-                  padding: '1rem 1.25rem',
-                  borderRadius: '12px',
-                  marginBottom: '1.5rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '0.75rem'
-                }}>
-                  <div>
-                    <strong style={{ display: 'block', color: isBlockerDateFullDayBlocked ? '#DC2626' : 'var(--text-primary)', fontSize: '0.95rem' }}>
-                      {isBlockerDateFullDayBlocked ? ' هذا اليوم مغلق بالكامل (إجازة للعيادة)' : ' العيادة مفتوحة وتستقبل الحجز في هذا اليوم'}
-                    </strong>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      {isBlockerDateFullDayBlocked 
-                        ? 'لا يمكن لأي مريض حجز أي موعد في هذا اليوم من صفحة الحجز العامة.' 
-                        : 'يمكنك إغلاق اليوم كاملاً بضغطة زر واحدة إذا كان الطبيب في إجازة أو مؤتمر.'}
-                    </span>
-                  </div>
-
-                  {isBlockerDateFullDayBlocked ? (
-                    <button 
-                      type="button"
-                      className="btn-unlock" 
-                      onClick={() => handleUnblockFullDay(blockerDate)}
-                      style={{ background: '#10B981', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                    >
-                      <Unlock size={16} />
-                      <span>فتح اليوم واستقبال الحجوزات </span>
-                    </button>
-                  ) : (
-                    <button 
-                      type="button"
-                      className="btn-lock" 
-                      onClick={() => handleBlockFullDay(blockerDate, 'إجازة الطبيب')}
-                      style={{ background: '#DC2626', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                    >
-                      <Lock size={16} />
-                      <span>إغلاق اليوم بالكامل (إجازة) </span>
-                    </button>
-                  )}
-
-                </div>
-
-                <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-primary)' }}>
-                  أو تحكم في كل موعد على حدة ({blockerDate}):
-                </h4>
-
-                <div className="blocker-slots-list">
-                  {availableSlots.map(slot => {
-                    const info = getSlotInfoForBlocker(slot);
-                    const isBlockedByFullDay = isBlockerDateFullDayBlocked;
-
-                    return (
-                      <div key={slot} className={`blocker-slot-item ${info.isBooked ? 'is-booked' : (info.isBlocked || isBlockedByFullDay) ? 'is-blocked' : 'is-available'}`}>
-                        <div className="slot-item-info">
-                          <span className="slot-time-badge">{slot}</span>
-                          {info.isBooked && (
-                            <span className="slot-patient-note">
-                              محجوز للمريض: <strong>{info.appointment.patientName || 'مريض عيادة'}</strong>
-                            </span>
-                          )}
-                          {!info.isBooked && (info.isBlocked || isBlockedByFullDay) && (
-                            <span className="slot-blocked-note"> مغلق من العيادة</span>
-                          )}
-                          {!info.isBooked && !info.isBlocked && !isBlockedByFullDay && (
-                            <span className="slot-available-note"> متاح للحجز الإلكتروني</span>
-                          )}
-                        </div>
-
-                        <div className="slot-item-action">
-                          {info.isBooked ? (
-                            <span className="badge-booked">حجز قائم</span>
-                          ) : (info.isBlocked || isBlockedByFullDay) ? (
-                            <button 
-                              className="btn-unlock" 
-                              onClick={() => {
-                                if (isBlockedByFullDay) {
-                                  dispatch({ type: 'UNBLOCK_FULL_DAY', payload: { date: blockerDate } });
-                                } else {
-                                  handleToggleBlockSlot(blockerDate, slot);
-                                }
-                              }}
-                            >
-                              <Unlock size={16} /> فتح الموعد
-                            </button>
-                          ) : (
-                            <button 
-                              className="btn-lock" 
-                              onClick={() => handleToggleBlockSlot(blockerDate, slot)}
-                            >
-                              <Lock size={16} /> إغلاق الموعد
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="modal-actions">
-                <button className="btn-primary" onClick={() => setIsBlockerModalOpen(false)}>تم الانتهاء</button>
-              </div>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
+      <SlotBlockerModal
+        isOpen={isBlockerModalOpen}
+        onClose={() => setIsBlockerModalOpen(false)}
+        blockerDate={blockerDate}
+        setBlockerDate={setBlockerDate}
+        isBlockerDateFullDayBlocked={isBlockerDateFullDayBlocked}
+        onBlockFullDay={handleBlockFullDay}
+        onUnblockFullDay={handleUnblockFullDay}
+        availableSlots={availableSlots}
+        getSlotInfoForBlocker={getSlotInfoForBlocker}
+        onToggleBlockSlot={handleToggleBlockSlot}
+        onUnblockFullDaySlot={(date) => dispatch({ type: 'UNBLOCK_FULL_DAY', payload: { date } })}
+      />
     </div>
   );
 };

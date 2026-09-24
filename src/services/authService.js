@@ -111,6 +111,26 @@ export function getRegisteredTenants(forceRefresh = true) {
  */
 
 /**
+ * Safe fetch wrapper for Vercel Serverless Sync API (/api/sync-tenants)
+ * Ensures absolute URL formation in non-browser or test environments to prevent ERR_INVALID_URL.
+ */
+function safeFetchSyncTenants(endpointUrl, options = {}) {
+  if (typeof fetch === 'undefined') return Promise.resolve({ ok: false, json: async () => ({}) });
+  let finalUrl = endpointUrl;
+  if (endpointUrl.startsWith('/')) {
+    if (typeof window !== 'undefined' && window.location?.origin && !window.location.origin.startsWith('null')) {
+      finalUrl = `${window.location.origin}${endpointUrl}`;
+    } else if (typeof process !== 'undefined' && process.env?.VERCEL_URL) {
+      finalUrl = `https://${process.env.VERCEL_URL}${endpointUrl}`;
+    } else {
+      // In environment without valid origin, skip relative network call safely
+      return Promise.resolve({ ok: false, json: async () => ({}) });
+    }
+  }
+  return fetch(finalUrl, options);
+}
+
+/**
  * Synchronizes registered tenants and users from the cloud registry
  * Checks both local Vercel Serverless Sync API and Supabase Storage public CDN
  */
@@ -122,8 +142,8 @@ export async function syncTenantsFromCloud() {
 
     // 1. Try local serverless endpoint first
     try {
-      const res = await fetch('/api/sync-tenants', { signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined });
-      if (res.ok) {
+      const res = await safeFetchSyncTenants('/api/sync-tenants', { signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined });
+      if (res && res.ok) {
         const data = await res.json();
         if (Array.isArray(data.tenants) && data.tenants.length > 0) {
           cloudTenants = data.tenants;
@@ -233,8 +253,8 @@ export function saveRegisteredTenant(tenant) {
 
   // Background Cloud Sync to Vercel Serverless Sync API & Supabase
   try {
-    if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
-      fetch('/api/sync-tenants', {
+    if (typeof fetch !== 'undefined') {
+      safeFetchSyncTenants('/api/sync-tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenant })
@@ -297,8 +317,8 @@ export function deleteRegisteredTenant(clinicIdOrSlug) {
 
   // Cloud Sync to Vercel Serverless Sync API & Supabase
   try {
-    if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
-      fetch('/api/sync-tenants', {
+    if (typeof fetch !== 'undefined') {
+      safeFetchSyncTenants('/api/sync-tenants', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: targetId, slug: targetSlug })
@@ -373,9 +393,9 @@ export function updateClinicSubscriptionStatus(clinicIdOrSlug, status, reason = 
     broadcastTenantUpdate('UPDATE_TENANT_STATUS', { id: clinicIdOrSlug, status, reason, tenant: updatedTenant });
 
     // Cloud Sync update
-    if (typeof window !== 'undefined' && typeof fetch !== 'undefined') {
+    if (typeof fetch !== 'undefined') {
       try {
-        fetch('/api/sync-tenants', {
+        safeFetchSyncTenants('/api/sync-tenants', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -488,7 +508,7 @@ export function saveRegisteredUser(user) {
   // Background Cloud Sync to Vercel Serverless Sync API & Supabase
   try {
     if (typeof fetch !== 'undefined' && user) {
-      fetch('/api/sync-tenants', {
+      safeFetchSyncTenants('/api/sync-tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user })

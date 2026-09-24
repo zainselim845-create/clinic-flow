@@ -9,3 +9,6 @@ export * from '../../services/systemErrorService';
 export * from '../../services/realtimeSyncService';
 export * from '../../services/webhookService';
 export * from '../../utils/circuitBreaker';
+export * from '../../services/multiTierCacheService';
+export * from '../../services/cursorPaginationService';
+export { default as FeatureErrorBoundary } from '../../components/FeatureErrorBoundary';

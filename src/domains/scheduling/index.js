@@ -10,3 +10,4 @@ export * from '../../services/recallsService';
 export * from '../../services/smsService';
 export * from '../../utils/timeSlots';
 export * from '../../utils/parseArabicTime';
+export * from '../../components/appointments';

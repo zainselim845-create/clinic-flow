@@ -132,24 +132,30 @@ export async function checkSlotCollision(clinicId, date, time, excludeAppointmen
   }
 
   // 2. Check Supabase if configured
-  if (isSupabaseConfigured()) {
+  if (isSupabaseConfigured() && typeof supabase?.from === 'function') {
     try {
-      let query = supabase
-        .from('appointments')
-        .select('id')
-        .eq('clinic_id', clinicId)
-        .eq('date', date)
-        .eq('time', time)
-        .not('status', 'in', '("cancelled","refunded")')
-        .limit(1);
-
-      if (excludeAppointmentId) {
-        query = query.neq('id', excludeAppointmentId);
-      }
-
-      const { data, error } = await query;
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return true;
+      const table = supabase.from('appointments');
+      if (typeof table?.select === 'function') {
+        let query = table.select('id');
+        if (typeof query?.eq === 'function') {
+          query = query
+            .eq('clinic_id', clinicId)
+            .eq('date', date)
+            .eq('time', time);
+          if (typeof query?.not === 'function') {
+            query = query.not('status', 'in', '("cancelled","refunded")');
+          }
+          if (excludeAppointmentId && typeof query?.neq === 'function') {
+            query = query.neq('id', excludeAppointmentId);
+          }
+          if (typeof query?.limit === 'function') {
+            query = query.limit(1);
+          }
+        }
+        const { data, error } = await query;
+        if (!error && Array.isArray(data) && data.length > 0) {
+          return true;
+        }
       }
     } catch (err) {
       console.warn('[AppointmentsService] Slot conflict check note:', err);
