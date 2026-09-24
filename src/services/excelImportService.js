@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import { cleanEgyptianPhone } from '../utils/phoneValidation';
 
 /**
@@ -45,6 +44,7 @@ const matchHeaderToField = (header) => {
  * @param {Array} existingPatients
  */
 export const parsePatientsExcelFile = async (fileBuffer, clinicId, existingPatients = []) => {
+  const XLSX = await import('xlsx');
   const workbook = XLSX.read(fileBuffer, { type: 'array' });
   const firstSheetName = workbook.SheetNames[0];
   if (!firstSheetName) {
@@ -143,7 +143,8 @@ export const parsePatientsExcelFile = async (fileBuffer, clinicId, existingPatie
 /**
  * Creates and triggers a download of a ready-to-use sample Excel template
  */
-export const downloadPatientImportTemplate = () => {
+export const downloadPatientImportTemplate = async () => {
+  const XLSX = await import('xlsx');
   const sampleData = [
     {
       'اسم المريض': 'محمد محمود إبراهيم',

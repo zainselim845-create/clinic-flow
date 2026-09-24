@@ -53,7 +53,7 @@ export function recordReferral(referralCode, referredPatientName, referredPhone,
       createdAt: new Date().toISOString()
     };
     const updated = [newEntry, ...existing];
-    safeStorage.setItem(getReferralsKey(clinicId), JSON.stringify(updated));
+    safeStorage.setItem(getReferralsKey(clinicId), updated);
     return newEntry;
   } catch (e) {
     console.error('Failed to record referral', e);

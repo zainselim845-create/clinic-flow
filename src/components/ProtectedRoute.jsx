@@ -33,8 +33,15 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
   const effectiveRole = user?.role || role || 'doctor';
   const isSuperAdmin = effectiveRole === 'super_admin' || user?.isSuperAdmin === true;
 
-  // Onboarding enforcement for doctors: if onboarding is required, force redirect to /onboarding
-  if (!isSuperAdmin && user?.needsOnboarding && location.pathname !== '/onboarding') {
+  const hasExistingClinic = Boolean(
+    (tenant?.name && tenant?.slug) ||
+    (user?.clinicSlug && user.clinicSlug !== '*') ||
+    tenant?.isOnboardingCompleted === true ||
+    user?.isOnboardingCompleted === true
+  );
+
+  // Onboarding enforcement for doctors: only redirect if truly needing onboarding AND has no configured clinic
+  if (!isSuperAdmin && user?.needsOnboarding && !hasExistingClinic && location.pathname !== '/onboarding') {
     return <Navigate to="/onboarding" replace />;
   }
 

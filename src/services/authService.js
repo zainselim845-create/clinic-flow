@@ -74,13 +74,12 @@ export function clearAuthCache() {
   registeredPhonesSet.clear();
 }
 
-const LEGACY_DEMO_SLUGS = new Set(['dr-ahmed', 'dr-sara', 'dr-zainselim845']);
+const LEGACY_DEMO_SLUGS = new Set(['dr-ahmed', 'dr-sara']);
 const LEGACY_DEMO_EMAILS = new Set([
   'doctor@clinicflow.com',
   'sara.clinic@clinicflow.com',
   'owner@clinicflow.com',
-  'reception@clinicflow.com',
-  'zainselim845@gmail.com'
+  'reception@clinicflow.com'
 ]);
 
 /**
@@ -1010,6 +1009,7 @@ export function registerDoctorAndClinic({
       brandTitle: cleanClinicName
     },
     quotas: tierQuotas[tier] || tierQuotas.pro,
+    isOnboardingCompleted: true,
     createdAt: new Date().toISOString()
   };
 
@@ -1026,6 +1026,7 @@ export function registerDoctorAndClinic({
     clinicSlug: uniqueSlug,
     clinicName: cleanClinicName,
     status: 'active',
+    needsOnboarding: false,
     allowedClinics: [uniqueSlug],
     permissions: ['*'],
     createdAt: new Date().toISOString(),

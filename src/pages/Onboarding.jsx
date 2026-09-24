@@ -97,12 +97,18 @@ export default function Onboarding() {
     }
   }, [user]);
 
-  // If user already finished onboarding previously, redirect to dashboard
+  // If user already finished onboarding previously or has a valid clinic, redirect to dashboard
   useEffect(() => {
-    if (user && !user.needsOnboarding && !completed) {
+    const hasClinic = Boolean(
+      (tenant?.name && tenant?.slug) ||
+      (user?.clinicSlug && user.clinicSlug !== '*') ||
+      tenant?.isOnboardingCompleted === true ||
+      user?.isOnboardingCompleted === true
+    );
+    if (user && (!user.needsOnboarding || user.isOnboardingCompleted || hasClinic) && !completed) {
       navigate('/dashboard', { replace: true });
     }
-  }, [user, completed, navigate]);
+  }, [user, tenant, completed, navigate]);
 
   // Handle Palette selection
   const handleSelectPalette = (palette) => {

@@ -145,3 +145,72 @@ export async function updateClinicInfo(clinicId, updateData) {
     return { data: null, error };
   }
 }
+
+/**
+ * Searches for a clinic in Supabase DB by doctor email, phone, or slug
+ * @param {string} identifier - Email, phone number, or slug
+ * @returns {Promise<{data: Object|null, error: Error|null}>}
+ */
+export async function findClinicByEmailOrIdentifier(identifier) {
+  if (!isSupabaseConfigured() || !identifier) {
+    return { data: null, error: isSupabaseConfigured() ? null : NOT_CONFIGURED_ERROR };
+  }
+
+  try {
+    const clean = String(identifier).trim();
+    const cleanLower = clean.toLowerCase();
+    const cleanPhone = clean.replace(/\D/g, '');
+
+    // 1. Check by doctor_email if it contains @
+    if (cleanLower.includes('@')) {
+      const { data, error } = await supabase
+        .from('clinics')
+        .select('*')
+        .ilike('doctor_email', cleanLower)
+        .limit(1)
+        .maybeSingle();
+
+      if (data) return { data: fromDbClinic(data), error: null };
+      if (error && error.code !== 'PGRST116') throw error;
+    }
+
+    // 2. Check by phone if phone digits are sufficient
+    if (cleanPhone.length >= 8) {
+      const { data, error } = await supabase
+        .from('clinics')
+        .select('*')
+        .ilike('phone', `%${cleanPhone}%`)
+        .limit(1)
+        .maybeSingle();
+
+      if (data) return { data: fromDbClinic(data), error: null };
+      if (error && error.code !== 'PGRST116') throw error;
+    }
+
+    // 3. Check by slug
+    const { data, error } = await supabase
+      .from('clinics')
+      .select('*')
+      .eq('slug', cleanLower)
+      .limit(1)
+      .maybeSingle();
+
+    if (data) return { data: fromDbClinic(data), error: null };
+    if (error && error.code !== 'PGRST116') throw error;
+
+    return { data: null, error: null };
+  } catch (error) {
+    console.error('Error finding clinic by identifier from DB:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Searches for a clinic strictly by doctor email
+ * @param {string} email
+ * @returns {Promise<Object|null>}
+ */
+export async function findClinicByDoctorEmail(email) {
+  const result = await findClinicByEmailOrIdentifier(email);
+  return result?.data || null;
+}

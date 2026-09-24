@@ -92,7 +92,8 @@ export default function Login() {
       if (user.role === 'super_admin' || user.isSuperAdmin) {
         navigate('/super-admin', { replace: true });
       } else {
-        navigate(from, { replace: true });
+        const targetPath = (from === '/onboarding' || from === '/login') ? '/dashboard' : from;
+        navigate(targetPath, { replace: true });
       }
     }
   }, [user, navigate, from]);
@@ -153,7 +154,8 @@ export default function Login() {
       if (loggedUser?.role === 'super_admin' || loggedUser?.isSuperAdmin) {
         navigate('/super-admin', { replace: true });
       } else {
-        navigate(from, { replace: true });
+        const targetPath = (from === '/onboarding' || from === '/login') ? '/dashboard' : from;
+        navigate(targetPath, { replace: true });
       }
     } catch (err) {
       recordFailedAttempt(err.message);
@@ -222,7 +224,13 @@ export default function Login() {
       const loggedUser = res?.data?.user;
       setSuccessMessage(`أهلاً بك يا ${profile.name}! تم تسجيل الدخول بنجاح.`);
       setTimeout(() => {
-        if (res?.needsOnboarding || loggedUser?.needsOnboarding) {
+        const hasExistingClinic = Boolean(
+          (res?.tenant?.name && res?.tenant?.slug) ||
+          (loggedUser?.clinicSlug && loggedUser.clinicSlug !== '*') ||
+          res?.tenant?.isOnboardingCompleted === true ||
+          loggedUser?.isOnboardingCompleted === true
+        );
+        if ((res?.needsOnboarding || loggedUser?.needsOnboarding) && !hasExistingClinic) {
           navigate('/onboarding', { replace: true });
         } else {
           navigate('/dashboard', { replace: true });

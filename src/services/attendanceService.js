@@ -76,10 +76,11 @@ export async function recordCheckIn(staffId, staffName, clinicId = null) {
   }
 }
 
-export async function recordCheckOut(attendanceId, checkInTime) {
+export async function recordCheckOut(attendanceId, checkInTime, clinicId = null) {
   const checkOutTime = new Date();
-  const checkInDate = new Date(checkInTime);
-  const diffHours = ((checkOutTime - checkInDate) / (1000 * 60 * 60)).toFixed(2);
+  const checkInDate = checkInTime ? new Date(checkInTime) : null;
+  const validCheckIn = checkInDate && !isNaN(checkInDate.getTime());
+  const diffHours = validCheckIn ? Math.max(0, Number(((checkOutTime - checkInDate) / (1000 * 60 * 60)).toFixed(2))) : 0;
 
   if (!isSupabaseConfigured()) {
     return { 
@@ -93,15 +94,19 @@ export async function recordCheckOut(attendanceId, checkInTime) {
   }
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('staff_attendance')
       .update({
         check_out: checkOutTime.toISOString(),
         total_hours: Number(diffHours)
       })
-      .eq('id', attendanceId)
-      .select()
-      .single();
+      .eq('id', attendanceId);
+
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+
+    const { data, error } = await query.select().single();
 
     if (error) throw error;
     return { data: fromDbAttendance(data), error: null };

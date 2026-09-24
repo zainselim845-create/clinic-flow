@@ -47,7 +47,7 @@ export function savePatientPackage(pkgData, clinicId) {
 
     const filtered = existing.filter(p => p.id !== newPkg.id);
     const updated = [newPkg, ...filtered];
-    safeStorage.setItem(key, JSON.stringify(updated));
+    safeStorage.setItem(key, updated);
     return newPkg;
   } catch (e) {
     console.error('Failed to save package', e);
@@ -56,8 +56,9 @@ export function savePatientPackage(pkgData, clinicId) {
 }
 
 export function calculateNextSessionDate(lastDate = getTodayDateStr(), intervalDays = 28) {
-  const d = new Date(lastDate);
-  d.setDate(d.getDate() + Number(intervalDays));
+  const d = new Date(lastDate || Date.now());
+  if (isNaN(d.getTime())) return getTodayDateStr();
+  d.setDate(d.getDate() + Number(intervalDays || 0));
   return d.toISOString().split('T')[0];
 }
 

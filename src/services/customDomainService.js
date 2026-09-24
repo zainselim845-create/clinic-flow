@@ -287,7 +287,7 @@ export async function saveClinicDomainSettings(clinicId, domainConfig) {
   if (!clinicId) return false;
 
   const storageKey = `clinicflow_domain_${clinicId}`;
-  safeStorage.setItem(storageKey, JSON.stringify(domainConfig));
+  safeStorage.setItem(storageKey, domainConfig);
 
   if (isSupabaseConfigured()) {
     try {

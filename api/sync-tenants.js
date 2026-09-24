@@ -13,11 +13,13 @@ const FALLBACK_CLINICS = [
     id: 'clinic-domya-auto',
     name: 'عيادة د. domya auto',
     doctorName: 'د. domya auto',
+    doctorEmail: 'domyaauto@gmail.com',
     specialty: 'جراحة العظام والمفاصل والعمود الفقري',
     slug: 'dr-domyaauto',
     senderId: 'DrDomyaauto',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
+    isOnboardingCompleted: true,
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
     createdAt: '2026-09-20T10:00:00.000Z'
   },
@@ -25,12 +27,14 @@ const FALLBACK_CLINICS = [
     id: 'clinic-mohamed-saeed-obgyn',
     name: 'عيادة د. Mohamed Saeed',
     doctorName: 'د. Mohamed Saeed',
+    doctorEmail: 'zainselim845@gmail.com',
     specialty: 'النساء والتوليد ورعاية الحوامل وعلاج العقم',
     slug: 'dr-mo1momo3mo16',
     senderId: 'DrMo1momo3m',
     subscriptionTier: 'pro',
     subscriptionStatus: 'lifetime',
     isLifetimeLicense: true,
+    isOnboardingCompleted: true,
     agreementAmount: 25000,
     customAgreedPrice: 25000,
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
@@ -40,11 +44,13 @@ const FALLBACK_CLINICS = [
     id: 'clinic-mohammed-saeed-dental',
     name: 'عيادة د. Mohamed Saeed',
     doctorName: 'د. Mohamed Saeed',
+    doctorEmail: 'zainselim845@gmail.com',
     specialty: 'طب وجراحة الفم والأسنان العام',
     slug: 'dr-mohammedsaeed6u',
     senderId: 'DrMohammeds',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
+    isOnboardingCompleted: true,
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
     createdAt: '2026-09-20T12:00:00.000Z'
   },
@@ -52,11 +58,13 @@ const FALLBACK_CLINICS = [
     id: 'clinic-rama-sarg-dental',
     name: 'عيادة د. Rama Sarg',
     doctorName: 'د. Rama Sarg',
+    doctorEmail: 'ramasarg@gmail.com',
     specialty: 'طب وجراحة الفم والأسنان العام',
     slug: 'dr-ramasarg0',
     senderId: 'DrRamaSarg',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
+    isOnboardingCompleted: true,
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
     createdAt: '2026-09-23T08:00:00.000Z'
   }
@@ -126,13 +134,25 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const registry = await getRegistry();
+      const normalizedTenants = (registry.tenants || []).map(t => {
+        const isCompleted = Boolean(t.name && t.slug);
+        return {
+          ...t,
+          isOnboardingCompleted: isCompleted ? true : (t.isOnboardingCompleted ?? true)
+        };
+      });
       const sanitizedUsers = (registry.users || []).map(u => {
         const { password, ...safeUser } = u;
-        return safeUser;
+        const hasClinic = Boolean(safeUser.clinicSlug && safeUser.clinicSlug !== '*');
+        return {
+          ...safeUser,
+          needsOnboarding: hasClinic ? false : (safeUser.needsOnboarding ?? false),
+          isOnboardingCompleted: hasClinic ? true : (safeUser.isOnboardingCompleted ?? true)
+        };
       });
       return res.status(200).json({
         success: true,
-        tenants: registry.tenants,
+        tenants: normalizedTenants,
         users: sanitizedUsers,
         updatedAt: registry.updatedAt
       });
@@ -149,6 +169,7 @@ export default async function handler(req, res) {
       const registry = await getRegistry();
 
       if (tenant && (tenant.id || tenant.slug)) {
+        tenant.isOnboardingCompleted = true;
         const tIndex = registry.tenants.findIndex(
           t => t.id === tenant.id || t.slug === tenant.slug
         );
@@ -156,17 +177,23 @@ export default async function handler(req, res) {
           registry.tenants[tIndex] = {
             ...registry.tenants[tIndex],
             ...tenant,
+            isOnboardingCompleted: true,
             updatedAt: new Date().toISOString()
           };
         } else {
           registry.tenants.push({
             ...tenant,
+            isOnboardingCompleted: true,
             createdAt: tenant.createdAt || new Date().toISOString()
           });
         }
       }
 
       if (user && (user.id || user.email)) {
+        if (user.clinicSlug && user.clinicSlug !== '*') {
+          user.needsOnboarding = false;
+          user.isOnboardingCompleted = true;
+        }
         const uIndex = registry.users.findIndex(
           u => u.id === user.id || (user.email && u.email?.toLowerCase() === user.email.toLowerCase())
         );
@@ -174,11 +201,15 @@ export default async function handler(req, res) {
           registry.users[uIndex] = {
             ...registry.users[uIndex],
             ...user,
+            needsOnboarding: user.needsOnboarding ?? false,
+            isOnboardingCompleted: user.isOnboardingCompleted ?? true,
             updatedAt: new Date().toISOString()
           };
         } else {
           registry.users.push({
             ...user,
+            needsOnboarding: user.needsOnboarding ?? false,
+            isOnboardingCompleted: user.isOnboardingCompleted ?? true,
             createdAt: user.createdAt || new Date().toISOString()
           });
         }
@@ -194,6 +225,7 @@ export default async function handler(req, res) {
             name: tenant.name,
             slug: tenant.slug,
             doctor_name: tenant.doctorName || tenant.name,
+            doctor_email: tenant.doctorEmail || tenant.email || null,
             specialty: tenant.specialty,
             phone: tenant.phone,
             subscription_tier: tenant.subscriptionTier || 'pro',

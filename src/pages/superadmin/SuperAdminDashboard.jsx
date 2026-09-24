@@ -17,6 +17,7 @@ import {
   deleteBugReport,
   clearBugReports 
 } from '../../services/systemErrorService';
+import { toast } from '../../lib/toast';
 import {
   SaasStatsGrid,
   ClinicsTable,
@@ -233,7 +234,7 @@ export default function SuperAdminDashboard() {
     if (newPass && newPass.trim()) {
       resetUserPassword(targetUser.id, newPass.trim());
       setAllUsers(getAllPlatformUsers());
-      alert(`تم تحديث كلمة مرور (${targetUser.name}) بنجاح!`);
+      toast.success(`تم تحديث كلمة مرور (${targetUser.name}) بنجاح!`);
     }
   };
 

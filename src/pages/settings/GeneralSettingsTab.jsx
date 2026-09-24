@@ -11,6 +11,7 @@ import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
 import { formatSenderId } from '../../services/smsService';
 import ClinicPalettePicker from '../../components/ClinicPalettePicker';
 import ClinicLogoUploader from '../../components/ClinicLogoUploader';
+import { toast } from '../../lib/toast';
 
 export default function GeneralSettingsTab({
   clinicForm,
@@ -114,7 +115,7 @@ export default function GeneralSettingsTab({
     const currentSpecialtyName = clinicForm.specialty || '';
     const matched = CLINIC_SPECIALTIES.find(s => s.name === currentSpecialtyName || currentSpecialtyName.includes(s.name));
     if (!matched) {
-      alert('يرجى اختيار تخصص طبي من القائمة أولاً.');
+      toast.warning('يرجى اختيار تخصص طبي من القائمة أولاً.');
       return;
     }
     const confirmReset = window.confirm(`هل أنت متأكد من رغبتك في تحميل قائمة الخدمات والأسعار النموذجية لتخصص (${matched.name})؟ سيتم تحديث قائمة الخدمات الافتراضية.`);

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { fromDbClinic } from '../services/clinicsService';
+import { fromDbClinic, findClinicByEmailOrIdentifier } from '../services/clinicsService';
 import { 
   registerDoctorAndClinic, 
   authenticateUser, 
@@ -8,7 +8,8 @@ import {
   saveRegisteredTenant, 
   slugifyClinic,
   completeClinicOnboarding,
-  saveRegisteredUser 
+  saveRegisteredUser,
+  syncTenantsFromCloud
 } from '../services/authService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import { 
@@ -47,13 +48,11 @@ export const AuthProvider = ({ children }) => {
         'sara.clinic@clinicflow.com',
         'owner@clinicflow.com',
         'reception@clinicflow.com',
-        'zainselim845@gmail.com',
         'admin@clinicflow.com'
       ];
       const legacyDemoIds = [
         'doc-master',
         'doc-sara-master',
-        'doc-zainselim-master',
         'user-multi-clinic-owner',
         'staff-reception-master',
         'admin-master'
@@ -163,18 +162,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const fetchClinic = useCallback(async (userId) => {
+  const fetchClinic = useCallback(async (userId, userEmail) => {
     try {
-      const { data, error } = await supabase
-        .from('clinics')
-        .select('*')
-        .eq('owner_id', userId)
-        .single();
+      let query = supabase.from('clinics').select('*');
+      const cleanEmail = (userEmail || '').trim().toLowerCase();
+      if (userId && cleanEmail) {
+        query = query.or(`owner_id.eq.${userId},doctor_email.ilike.${cleanEmail}`);
+      } else if (userId) {
+        query = query.eq('owner_id', userId);
+      } else if (cleanEmail) {
+        query = query.ilike('doctor_email', cleanEmail);
+      }
+      const { data, error } = await query.limit(1).maybeSingle();
         
-      if (error) throw error;
-      setClinic(fromDbClinic(data));
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) {
+        const tenantData = fromDbClinic(data);
+        tenantData.isOnboardingCompleted = true;
+        setClinic(tenantData);
+        saveRegisteredTenant(tenantData);
+      }
     } catch (error) {
-      console.error('Error fetching clinic:', error);
+      console.warn('[AuthContext] Notice fetching clinic:', error?.message || error);
     } finally {
       setLoading(false);
     }
@@ -198,7 +207,7 @@ export const AuthProvider = ({ children }) => {
           setSession(session);
           if (session?.user) {
             setUser(session.user);
-            fetchClinic(session.user.id);
+            fetchClinic(session.user.id, session.user.email);
           } else {
             const saved = getInitialUser();
             if (saved) {
@@ -233,7 +242,7 @@ export const AuthProvider = ({ children }) => {
         setSession(session);
         if (session?.user) {
           setUser(session.user);
-          fetchClinic(session.user.id);
+          fetchClinic(session.user.id, session.user.email);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           persistUser(null);
@@ -286,8 +295,37 @@ export const AuthProvider = ({ children }) => {
 
     // Priority 1: Authenticate against registered users & custom tenants
     try {
-      const authUser = authenticateUser(cleanId, cleanPass);
+      let authUser = authenticateUser(cleanId, cleanPass);
+
+      // On new device / incognito / empty local storage: sync from cloud if user was not found locally
+      if (!authUser) {
+        try {
+          await syncTenantsFromCloud();
+          authUser = authenticateUser(cleanId, cleanPass);
+        } catch (syncErr) {
+          console.warn('[AuthContext] Cloud sync notice during signIn:', syncErr);
+        }
+      }
+
+      // If still not found and Supabase is configured, check Supabase clinics directly
+      if (!authUser && isSupabaseConfigured()) {
+        try {
+          const { data: cloudClinic } = await findClinicByEmailOrIdentifier(cleanId);
+          if (cloudClinic) {
+            const tenantObj = { ...cloudClinic, isOnboardingCompleted: true };
+            saveRegisteredTenant(tenantObj);
+            authUser = authenticateUser(cleanId, cleanPass);
+          }
+        } catch (dbErr) {
+          console.warn('[AuthContext] Direct clinic DB lookup notice during signIn:', dbErr);
+        }
+      }
+
       if (authUser) {
+        if (authUser.clinicSlug && authUser.clinicSlug !== '*') {
+          authUser.needsOnboarding = false;
+          authUser.isOnboardingCompleted = true;
+        }
         persistUser(authUser);
         localStorage.setItem('clinicflow_role', authUser.role || 'doctor');
         setUser(authUser);
@@ -345,20 +383,65 @@ export const AuthProvider = ({ children }) => {
     }
 
     const assignedRole = desiredRole || 'doctor';
+    const cleanEmail = googleProfile.email.toLowerCase().trim();
 
-    // 1. Check if a dedicated clinic tenant already exists for this Google user
-    const existingTenants = getRegisteredTenants();
+    // 1. Check local registered tenants
+    let existingTenants = getRegisteredTenants();
     let userTenant = existingTenants.find(t => 
-      (t.doctorEmail && t.doctorEmail.toLowerCase() === googleProfile.email.toLowerCase()) ||
+      (t.doctorEmail && t.doctorEmail.toLowerCase() === cleanEmail) ||
+      (t.email && t.email.toLowerCase() === cleanEmail) ||
       (googleProfile.sub && t.ownerId === googleProfile.sub)
     );
 
-    const isNewUser = !userTenant;
-    const needsOnboarding = assignedRole !== 'super_admin' && (isNewUser || userTenant?.isOnboardingCompleted === false);
+    // 2. If not found locally, sync from cloud storage registry (/api/sync-tenants & CDN)
+    if (!userTenant) {
+      try {
+        const synced = await syncTenantsFromCloud();
+        if (Array.isArray(synced)) {
+          userTenant = synced.find(t => 
+            (t.doctorEmail && t.doctorEmail.toLowerCase() === cleanEmail) ||
+            (t.email && t.email.toLowerCase() === cleanEmail) ||
+            (googleProfile.sub && t.ownerId === googleProfile.sub)
+          );
+        }
+      } catch (err) {
+        console.warn('[AuthContext] syncTenantsFromCloud notice in Google login:', err);
+      }
+    }
 
-    // 2. If not, auto-provision a real, clean dedicated clinic draft for this doctor
-    if (!userTenant && assignedRole !== 'super_admin') {
-      const docRawName = googleProfile.name || googleProfile.email.split('@')[0];
+    // 3. If still not found and Supabase is configured, check database clinics directly
+    if (!userTenant && isSupabaseConfigured()) {
+      try {
+        const { data: cloudClinic } = await findClinicByEmailOrIdentifier(cleanEmail);
+        if (cloudClinic) {
+          userTenant = {
+            ...cloudClinic,
+            doctorEmail: cloudClinic.doctorEmail || cleanEmail,
+            ownerId: googleProfile.sub || null,
+            isOnboardingCompleted: true
+          };
+          saveRegisteredTenant(userTenant);
+        }
+      } catch (err) {
+        console.warn('[AuthContext] Supabase clinic lookup notice:', err);
+      }
+    }
+
+    // 4. Determine if clinic is already established
+    const hasExistingClinic = Boolean(
+      userTenant &&
+      userTenant.name &&
+      userTenant.slug &&
+      userTenant.slug !== ''
+    );
+
+    // An existing clinic NEVER needs onboarding and is NEVER a new user
+    const isNewUser = !userTenant && !hasExistingClinic;
+    const needsOnboarding = assignedRole !== 'super_admin' && isNewUser;
+
+    // 5. Auto-provision draft ONLY IF user has NO existing clinic and is NOT super_admin
+    if (!userTenant && !hasExistingClinic && assignedRole !== 'super_admin') {
+      const docRawName = googleProfile.name || cleanEmail.split('@')[0];
       const doctorDisplayName = docRawName.startsWith('د.') ? docRawName : `د. ${docRawName}`;
       const clinicDisplayName = `عيادة ${doctorDisplayName}`;
       const clinicSlug = slugifyClinic(docRawName);
@@ -368,14 +451,14 @@ export const AuthProvider = ({ children }) => {
         slug: clinicSlug,
         name: clinicDisplayName,
         doctorName: doctorDisplayName,
-        doctorEmail: googleProfile.email.toLowerCase(),
+        doctorEmail: cleanEmail,
         ownerId: googleProfile.sub || null,
         specialty: 'طب وجراحة الفم والأسنان العام',
         address: 'القاهرة، جمهورية مصر العربية',
         phone: '',
         subscriptionTier: 'pro',
         subscriptionStatus: 'active',
-        isOnboardingCompleted: false,
+        isOnboardingCompleted: true,
         branding: {
           primaryColor: '#09090B',
           accentColor: '#10B981',
@@ -389,17 +472,23 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
+    // Ensure existing tenant is explicitly marked as onboarding completed
+    if (userTenant) {
+      userTenant.isOnboardingCompleted = true;
+      saveRegisteredTenant(userTenant);
+    }
+
     const currentSlug = userTenant?.slug || (assignedRole === 'super_admin' ? '*' : '');
     const currentId = userTenant?.id || (assignedRole === 'super_admin' ? 'superadmin-root' : (currentSlug ? `clinic-${currentSlug}` : ''));
 
-    const docRawName = googleProfile.name || googleProfile.email.split('@')[0];
+    const docRawName = googleProfile.name || cleanEmail.split('@')[0];
     const doctorDisplayName = (assignedRole === 'doctor' && !docRawName.startsWith('د.')) 
       ? `د. ${docRawName}` 
       : docRawName;
 
     const realUser = {
       id: googleProfile.sub || googleProfile.id || `google-${Date.now()}`,
-      email: googleProfile.email,
+      email: cleanEmail,
       name: doctorDisplayName,
       avatar: googleProfile.picture || null,
       role: assignedRole,
@@ -407,14 +496,14 @@ export const AuthProvider = ({ children }) => {
         ? 'مدير عام المنصة (Google Verified)'
         : assignedRole === 'staff'
         ? 'سكرتارية واستقبال العيادة (Google Verified)'
-        : 'المدير الطبي / استشاري العيادة (Google Verified)',
+        : (userTenant?.specialty || 'المدير الطبي / استشاري العيادة (Google Verified)'),
       clinicSlug: currentSlug,
       clinicId: currentId,
       allowedClinics: [currentSlug],
       authProvider: 'google',
       isEmailVerified: true,
-      needsOnboarding,
-      isOnboardingCompleted: !needsOnboarding
+      needsOnboarding: hasExistingClinic ? false : needsOnboarding,
+      isOnboardingCompleted: hasExistingClinic ? true : !needsOnboarding
     };
 
     persistUser(realUser);
@@ -442,7 +531,7 @@ export const AuthProvider = ({ children }) => {
       entityType: 'auth'
     });
 
-    return { data: { user: realUser, tenant: userTenant }, isNewUser, needsOnboarding, error: null };
+    return { data: { user: realUser, tenant: userTenant }, isNewUser, needsOnboarding: realUser.needsOnboarding, error: null };
   };
 
   const completeOnboarding = async (onboardingPayload) => {
