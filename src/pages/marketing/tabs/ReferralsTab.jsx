@@ -8,7 +8,8 @@ import {
 export function ReferralsTab({ 
   patients, 
   handleCopyLink, 
-  copiedLinkIndex 
+  copiedLinkIndex,
+  currentClinic
 }) {
   return (
     <div className="crm-tab-content">
@@ -20,7 +21,7 @@ export function ReferralsTab({
       <div className="referral-cards-grid">
         {(patients || []).slice(0, 6).map((p, idx) => {
           const code = getPatientReferralCode(p.id);
-          const link = getPatientReferralLink(code);
+          const link = getPatientReferralLink(code, currentClinic?.slug);
 
           return (
             <div key={p.id} className="referral-patient-box">

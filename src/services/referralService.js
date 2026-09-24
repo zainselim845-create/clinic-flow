@@ -14,10 +14,10 @@ export function getPatientReferralCode(patientId) {
 /**
  * Get full referral link for a patient
  */
-export function getPatientReferralLink(patientId) {
+export function getPatientReferralLink(patientId, clinicSlug = null) {
   const code = getPatientReferralCode(patientId);
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow.com';
-  return `${origin}/booking?ref=${code}`;
+  return clinicSlug ? `${origin}/c/${clinicSlug}/booking?ref=${code}` : `${origin}/booking?ref=${code}`;
 }
 
 /**

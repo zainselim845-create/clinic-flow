@@ -24,7 +24,7 @@ export default function GeneralSettingsTab({
   const [copiedBookingLink, setCopiedBookingLink] = useState(false);
 
   const clinicSlug = clinicForm.slug || '';
-  const resolvedSenderId = clinicForm.senderId || (clinicSlug ? formatSenderId(clinicSlug, 'ClinicFlow') : 'ClinicFlow');
+  const resolvedSenderId = clinicForm.senderId ? formatSenderId(clinicForm.senderId) : '';
 
   const [isLocatingGps, setIsLocatingGps] = useState(false);
   const [gpsNotice, setGpsNotice] = useState(null);
@@ -510,7 +510,7 @@ export default function GeneralSettingsTab({
             title="معرّف مرسل رسائل SMS المعتمد للعيادة لدى شركات المحمول"
             >
               <MessageSquare size={13} />
-              <span>Sender ID: {resolvedSenderId}</span>
+              <span>Sender ID: {resolvedSenderId || 'لم يُحدد بعد'}</span>
             </span>
           </div>
         </div>

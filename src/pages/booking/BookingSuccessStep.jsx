@@ -26,6 +26,14 @@ export default function BookingSuccessStep({
   );
   const smsUrl = `sms:+${clinicPhoneClean || cleanPhone}?body=${smsMsg}`;
 
+  const clinicSlug = currentClinic?.slug;
+  const manageBase = typeof window !== 'undefined' 
+    ? (clinicSlug ? `${window.location.origin}/c/${clinicSlug}/manage-booking` : `${window.location.origin}/manage-booking`)
+    : (clinicSlug ? `/c/${clinicSlug}/manage-booking` : '/manage-booking');
+  const manageUrlWithParams = createdBooking?.bookingCode
+    ? `${manageBase}?code=${encodeURIComponent(createdBooking.bookingCode)}&phone=${encodeURIComponent(createdBooking.patientPhone || '')}`
+    : manageBase;
+
   const whatsAppUrl = getBookingConfirmationWhatsAppUrl({
     patientName: createdBooking?.patientName,
     phone: createdBooking?.patientPhone,
@@ -33,7 +41,7 @@ export default function BookingSuccessStep({
     time: createdBooking?.time,
     clinicName: currentClinic?.name,
     bookingCode: createdBooking?.bookingCode,
-    manageUrl: typeof window !== 'undefined' ? `${window.location.origin}/manage-booking` : '/manage-booking'
+    manageUrl: manageUrlWithParams
   });
 
   const getGoogleCalendarUrl = (booking) => {

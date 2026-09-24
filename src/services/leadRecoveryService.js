@@ -216,7 +216,10 @@ export function generateLeadRecoveryMessage(draft, clinicInfo) {
   const patientName = draft.name ? `أ / د. ${draft.name}` : 'عزيزنا المريض';
   const clinicName = clinicInfo?.name || 'العيادة';
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow.com';
-  const resumeUrl = `${origin}/booking?resume=${draft.id}`;
+  const clinicSlug = clinicInfo?.slug || draft?.clinicSlug;
+  const resumeUrl = clinicSlug 
+    ? `${origin}/c/${clinicSlug}/booking?resume=${draft.id}`
+    : `${origin}/booking?resume=${draft.id}`;
 
   return `مرحباً بك ${patientName}.\nلاحظنا أنك بدأت حجز موعد في ${clinicName} ولم تكمل الخطوة الأخيرة.\n\nيسعدنا مساعدتك لإتمام حجزك بضغطة واحدة وبدون إعادة إدخال بياناتك عبر الرابط المباشر التالي:\n${resumeUrl}\n\nفريق العيادة في انتظارك ونتشرف بخدمتك دائماً.`;
 }

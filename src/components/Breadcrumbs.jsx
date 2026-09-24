@@ -32,12 +32,18 @@ export default function Breadcrumbs({ customTrail = null, className = '' }) {
   
   // Build trail
   const trail = customTrail || segments.map((seg, index) => {
-    const url = '/' + segments.slice(0, index + 1).join('/');
+    let url = '/' + segments.slice(0, index + 1).join('/');
     let label = SEGMENT_NAMES[seg] || seg;
 
-    // If segment is clinic slug
-    if (segments[index - 1] === 'c' && tenant?.slug === seg) {
-      label = tenant.name || seg;
+    // Point 'c' segment to clinics directory
+    if (seg === 'c') {
+      url = '/booking';
+      label = 'دليل العيادات';
+    } else if (segments[index - 1] === 'c') {
+      if (tenant?.slug === seg) {
+        label = tenant.name || seg;
+      }
+      url = `/c/${seg}/booking`;
     }
 
     return {

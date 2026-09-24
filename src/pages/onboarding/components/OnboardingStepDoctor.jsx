@@ -125,7 +125,7 @@ export default function OnboardingStepDoctor({
               <span className="username-status">
                 <Check size={14} /> متاح ومناسب لعيادتك
               </span>
-              <span className="username-url">clinicflow.com/c/{username || 'username'}</span>
+              <span className="username-url">{(typeof window !== 'undefined' ? window.location.host : 'clinicflow.com')}/c/{username || 'username'}</span>
             </div>
           )}
         </div>

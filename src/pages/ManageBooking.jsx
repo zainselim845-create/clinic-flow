@@ -33,6 +33,7 @@ const ManageBooking = () => {
 
   const resolvedTenant = (clinicSlug ? allTenants.find(t => t.slug === clinicSlug) : null) || tenant;
   const clinicInfo = resolvedTenant || state.clinicInfo || {};
+  const currentSlug = clinicSlug || clinicInfo?.slug;
   const clinicAppointments = (state.appointments || []).filter(
     a => !a.clinicId || a.clinicId === clinicInfo?.id
   );
@@ -395,7 +396,7 @@ const ManageBooking = () => {
 
             <div className="new-booking-hint">
               <span>تريد حجز موعد جديد بالكامل؟</span>
-              <Link to="/booking" className="link-booking">احجز موعد جديد الآن </Link>
+              <Link to={currentSlug ? `/c/${currentSlug}/booking` : "/booking"} className="link-booking">احجز موعد جديد الآن </Link>
             </div>
           </div>
         )}

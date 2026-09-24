@@ -19,7 +19,7 @@ const initialClinics = [
     doctorName: 'د. domya auto',
     specialty: 'جراحة العظام والمفاصل والعمود الفقري',
     slug: 'dr-domyaauto',
-    senderId: 'DrDomyaauto',
+    senderId: '',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
@@ -30,7 +30,7 @@ const initialClinics = [
     doctorName: 'د. Mohamed Saeed',
     specialty: 'النساء والتوليد ورعاية الحوامل وعلاج العقم',
     slug: 'dr-mo1momo3mo16',
-    senderId: 'DrMo1momo3m',
+    senderId: '',
     subscriptionTier: 'pro',
     subscriptionStatus: 'lifetime',
     isLifetimeLicense: true,
@@ -44,7 +44,7 @@ const initialClinics = [
     doctorName: 'د. Mohamed Saeed',
     specialty: 'طب وجراحة الفم والأسنان العام',
     slug: 'dr-mohammedsaeed6u',
-    senderId: 'DrMohammeds',
+    senderId: '',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
@@ -55,7 +55,7 @@ const initialClinics = [
     doctorName: 'د. Rama Sarg',
     specialty: 'طب وجراحة الفم والأسنان العام',
     slug: 'dr-ramasarg0',
-    senderId: 'DrRamaSarg',
+    senderId: '',
     subscriptionTier: 'pro',
     subscriptionStatus: 'active',
     quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }

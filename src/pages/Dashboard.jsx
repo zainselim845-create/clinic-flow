@@ -64,11 +64,14 @@ const Dashboard = () => {
   const [copiedBookingLink, setCopiedBookingLink] = useState(false);
 
   const handleCopyBookingLink = () => {
-    const origin = window.location.origin;
-    const url = state.clinicInfo?.slug 
-      ? `${origin}/c/${state.clinicInfo.slug}/booking`
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const clinicSlug = tenant?.slug || state.clinicInfo?.slug;
+    const url = clinicSlug 
+      ? `${origin}/c/${clinicSlug}`
       : `${origin}/booking`;
-    navigator.clipboard.writeText(url);
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+    }
     setCopiedBookingLink(true);
     setTimeout(() => setCopiedBookingLink(false), 2500);
   };

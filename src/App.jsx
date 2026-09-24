@@ -226,13 +226,19 @@ function App() {
               <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
             } />
 
-            {/* Multi-Tenant Public Pages & Tenant Slugs */}
-            <Route path="/c/:clinicSlug" element={<Navigate to="booking" replace />} />
+            {/* Multi-Tenant Public Pages & Tenant Slugs (Direct Real Links for Doctors) */}
+            <Route path="/c" element={<Navigate to="/booking" replace />} />
+            <Route path="/c/:clinicSlug" element={
+              <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
+            } />
             <Route path="/c/:clinicSlug/booking" element={
               <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
             } />
             <Route path="/c/:clinicSlug/manage-booking" element={
               <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
+            } />
+            <Route path="/book/:clinicSlug" element={
+              <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
             } />
 
             {/* Super Admin Control Plane & SaaS Admin Aliases */}

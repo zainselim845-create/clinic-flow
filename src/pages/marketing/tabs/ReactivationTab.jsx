@@ -2,6 +2,7 @@ import React from 'react';
 import { CheckCircle2, MessageCircle } from 'lucide-react';
 import { 
   REACTIVATION_STAGES, 
+  REACTIVATION_STAGES_LIST,
   generateReactivationMessage 
 } from '../../../services/reactivationService';
 
@@ -48,8 +49,8 @@ export function ReactivationTab({ crmStats, segmentedPatients, currentClinic }) 
               </div>
 
               <div className="stages-actions-row">
-                {REACTIVATION_STAGES.map(stage => {
-                  const msg = generateReactivationMessage(p, stage.stage, currentClinic);
+                {(REACTIVATION_STAGES_LIST || []).map(stage => {
+                  const msg = generateReactivationMessage(stage.stage, p, currentClinic);
                   const cleanPhone = (p.phone || '').replace(/^0/, '20');
                   const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 

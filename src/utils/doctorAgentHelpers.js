@@ -42,14 +42,15 @@ export const personalizeMessage = (templateText, patient, clinicInfo) => {
   if (!templateText) return '';
   const clinicName = clinicInfo?.name || 'عيادة كلينك فلو';
   const doctorName = formatDoctorName(clinicInfo?.doctorName || clinicInfo?.name, 'طبيب العيادة');
-  const bookingLink = typeof window !== 'undefined' ? `${window.location.origin}/booking` : 'https://clinic-flow-lh3g.vercel.app/booking';
-
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow-lh3g.vercel.app';
+  const clinicSlug = clinicInfo?.slug;
+  const bookingLink = clinicSlug ? `${origin}/c/${clinicSlug}/booking` : `${origin}/booking`;
 
   return templateText
-    .replace(/{اسم_المريض}/g, patient.name || 'المريض')
+    .replace(/{اسم_المريض}/g, patient?.name || 'المريض')
     .replace(/{اسم_العيادة}/g, clinicName)
     .replace(/{اسم_الطبيب}/g, doctorName)
-    .replace(/{تاريخ_الزيارة}/g, patient.lastVisit || 'سابقاً')
+    .replace(/{تاريخ_الزيارة}/g, patient?.lastVisit || 'سابقاً')
     .replace(/{رابط_الحجز}/g, bookingLink);
 };
 

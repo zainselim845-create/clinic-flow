@@ -54,13 +54,18 @@ export function AiComposerTab({
             {(segmentedPatients || []).filter(p => p && (composerSegment === 'all' || p.lifecycle === composerSegment || p.valueTier === composerSegment)).slice(0, 3).map((p) => {
               const patientFirst = (p.name || 'مريضنا العزيز').split(' ')[0];
               const service = p.diagnosis || 'كشف الأسنان والفحص الدوري';
+              const clinicSlug = currentClinic?.slug;
+              const bookingLink = typeof window !== 'undefined' 
+                ? (clinicSlug ? `${window.location.origin}/c/${clinicSlug}/booking` : `${window.location.origin}/booking`)
+                : (clinicSlug ? `/c/${clinicSlug}/booking` : '/booking');
+
               const msg = 
                 `مرحباً بك ${patientFirst}.\n\n` +
                 `طاقم ${currentClinic?.name || 'العيادة'} يتمنى لك دوام الصحة والعافية.\n` +
                 `بما أن آخر زيارة لك كانت بخصوص (${service})، أحببنا أن نخصص لك عرضاً حصرياً يناسبك:\n\n` +
                 `${composerOffer}\n\n` +
                 `يسعدنا تشريفك ويمكنك حجز موعدك مباشرة عبر الرابط:\n` +
-                `${typeof window !== 'undefined' ? window.location.origin : ''}/booking\n\n` +
+                `${bookingLink}\n\n` +
                 `مع أطيب تمنياتنا لك بدوام العافية.`;
 
               const cleanPhone = (p.phone || '').replace(/^0/, '20');

@@ -440,6 +440,7 @@ export const MarketingCrmHub = () => {
           patients={scopedPatients}
           handleCopyLink={handleCopyLink}
           copiedLinkIndex={copiedLinkIndex}
+          currentClinic={currentClinic}
         />
       )}
 
