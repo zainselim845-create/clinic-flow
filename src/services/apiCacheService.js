@@ -66,7 +66,9 @@ class ApiCacheService {
 
     const fresh = await fetcherFn();
     if (fresh !== undefined && fresh !== null) {
-      this.set(key, fresh, ttlMs);
+      if (!fresh?.error) {
+        this.set(key, fresh, ttlMs);
+      }
     }
     return fresh;
   }

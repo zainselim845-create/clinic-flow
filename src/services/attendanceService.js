@@ -4,6 +4,7 @@ export function fromDbAttendance(row) {
   if (!row) return null;
   return {
     id: row.id,
+    clinicId: row.clinic_id || row.clinicId,
     staffId: row.staff_id,
     staffName: row.staff_name || '',
     checkIn: row.check_in,
@@ -14,17 +15,22 @@ export function fromDbAttendance(row) {
   };
 }
 
-export async function getStaffAttendance() {
+export async function getStaffAttendance(clinicId = null) {
   if (!isSupabaseConfigured()) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('staff_attendance')
       .select('*')
       .order('check_in', { ascending: false });
 
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return { data: (data || []).map(fromDbAttendance), error: null };
   } catch (error) {
@@ -33,11 +39,12 @@ export async function getStaffAttendance() {
   }
 }
 
-export async function recordCheckIn(staffId, staffName) {
+export async function recordCheckIn(staffId, staffName, clinicId = null) {
   if (!isSupabaseConfigured()) {
     return { 
       data: {
         id: 'att_' + Date.now(),
+        clinicId,
         staffId,
         staffName,
         checkIn: new Date().toISOString(),
@@ -49,12 +56,15 @@ export async function recordCheckIn(staffId, staffName) {
   }
 
   try {
+    const payload = {
+      staff_id: staffId,
+      check_in: new Date().toISOString()
+    };
+    if (clinicId) payload.clinic_id = clinicId;
+
     const { data, error } = await supabase
       .from('staff_attendance')
-      .insert({
-        staff_id: staffId,
-        check_in: new Date().toISOString()
-      })
+      .insert(payload)
       .select()
       .single();
 

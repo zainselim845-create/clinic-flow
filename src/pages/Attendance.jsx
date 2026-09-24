@@ -17,6 +17,7 @@ const Attendance = () => {
   const staffList = state.staffMembers || [];
 
   const currentSlug = tenant?.slug || state.clinicInfo?.slug || '';
+  const clinicId = tenant?.id || currentSlug;
 
   const loadScopedAttendance = () => {
     if (!currentSlug) return [];
@@ -40,7 +41,8 @@ const Attendance = () => {
 
   useEffect(() => {
     async function loadAttendance() {
-      const { data } = await getStaffAttendance();
+      if (!clinicId) return;
+      const { data } = await getStaffAttendance(clinicId);
       if (data && data.length > 0) {
         setAttendanceRecords(data);
       }
@@ -51,12 +53,12 @@ const Attendance = () => {
       setCurrentTime(new Date().toLocaleTimeString('ar-EG'));
     }, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [clinicId]);
 
 
   const handleCheckInClick = async () => {
     const staff = staffList.find(s => s.id === selectedStaffId) || { name: 'عضو الفريق' };
-    const res = await recordCheckIn(selectedStaffId, staff.name);
+    const res = await recordCheckIn(selectedStaffId, staff.name, clinicId);
     if (res.data) {
       setAttendanceRecords(prev => [
         {
