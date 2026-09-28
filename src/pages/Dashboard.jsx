@@ -17,6 +17,7 @@ import ExpensesModal from '../components/ExpensesModal';
 import PatientRecallModal from '../components/PatientRecallModal';
 import ShiftHandoverModal from '../components/ShiftHandoverModal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import BookingShareModal from '../components/BookingShareModal';
 import QuickPaymentModal from './dashboard/QuickPaymentModal';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
@@ -62,6 +63,7 @@ const Dashboard = () => {
   const [scheduleSearchQuery, setScheduleSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('all');
   const [copiedBookingLink, setCopiedBookingLink] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const handleCopyBookingLink = () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -567,12 +569,12 @@ const Dashboard = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button 
             type="button" 
-            onClick={handleCopyBookingLink} 
+            onClick={() => setIsShareModalOpen(true)} 
             className="btn btn-secondary btn-sm"
-            title="نسخ رابط حجز العيادة المباشر للمرضى"
+            title="مشاركة بوابة حجز العيادة، النطاق الرقمي، ورمز QR للمرضى"
           >
             <Share2 size={13} />
-            <span>{copiedBookingLink ? 'تم نسخ الرابط بنجاح!' : 'نسخ رابط حجز المرضى'}</span>
+            <span>مشاركة بوابة الحجز و QR</span>
           </button>
 
           {(isAdmin || user?.role === 'staff' || user?.role === 'receptionist') && (
@@ -811,6 +813,13 @@ const Dashboard = () => {
         confirmText="تأكيد إعادة الضبط"
         cancelText="إلغاء"
         isDestructive={true}
+      />
+
+      {/* Clinic Booking Share & Real Domain Modal */}
+      <BookingShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        tenant={tenant || currentClinic}
       />
 
       {/* 4. Floating Quick Actions Command Dock */}

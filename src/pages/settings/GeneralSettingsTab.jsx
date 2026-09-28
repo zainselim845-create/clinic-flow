@@ -4,11 +4,14 @@ import {
   CalendarDays, ArrowLeft, Stethoscope, Globe, 
   FileText, Printer, ShieldCheck, UserCheck, Sparkles,
   Copy, ExternalLink, MessageSquare, Layers, Package,
-  MapPin, LocateFixed, Compass, RefreshCw, AlertCircle
+  MapPin, LocateFixed, Compass, RefreshCw, AlertCircle,
+  Share2, QrCode, Link2
 } from 'lucide-react';
 
 import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
 import { formatSenderId } from '../../services/smsService';
+import { getClinicBookingUrl, getClinicDomain, SAAS_PLATFORM_DOMAIN } from '../../utils/clinicUrls';
+import BookingShareModal from '../../components/BookingShareModal';
 import ClinicPalettePicker from '../../components/ClinicPalettePicker';
 import ClinicLogoUploader from '../../components/ClinicLogoUploader';
 import { toast } from '../../lib/toast';
@@ -19,10 +22,13 @@ export default function GeneralSettingsTab({
   handleSaveClinic,
   clinicSaveSuccess,
   onNavigateToSchedule,
-  onNavigateToVisitTypes
+  onNavigateToVisitTypes,
+  onNavigateToCustomDomain
 }) {
   const [specialtyNotice, setSpecialtyNotice] = useState('');
   const [copiedBookingLink, setCopiedBookingLink] = useState(false);
+  const [copiedSubdomain, setCopiedSubdomain] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const clinicSlug = clinicForm.slug || '';
   const resolvedSenderId = clinicForm.senderId ? formatSenderId(clinicForm.senderId) : '';
@@ -108,6 +114,17 @@ export default function GeneralSettingsTab({
       navigator.clipboard.writeText(bookingUrl);
       setCopiedBookingLink(true);
       setTimeout(() => setCopiedBookingLink(false), 2500);
+    }
+  };
+
+  const automaticSubdomain = `https://${clinicSlug || 'clinic'}.${SAAS_PLATFORM_DOMAIN}`;
+
+  const handleCopySubdomain = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(automaticSubdomain);
+      setCopiedSubdomain(true);
+      toast.success('تم نسخ النطاق الفرعي التلقائي!');
+      setTimeout(() => setCopiedSubdomain(false), 2500);
     }
   };
 
@@ -424,95 +441,275 @@ export default function GeneralSettingsTab({
           )}
         </div>
 
-        {/* Clinic Digital Identity & Direct Booking Link Bar */}
+        {/* Clinic Digital Identity & Multi-Domain Presence Card */}
         <div style={{
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '0.85rem 1.15rem',
-          marginBottom: '1.25rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
+          background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.04) 0%, rgba(16, 185, 129, 0.04) 100%)',
+          border: '1.5px solid var(--border-color, #E2E8F0)',
+          borderRadius: 'var(--radius-xl, 16px)',
+          padding: '1.25rem',
+          marginBottom: '1.5rem',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{
-              background: 'var(--clinic-primary-light, #F4F4F5)',
-              color: 'var(--clinic-primary, #09090B)',
-              padding: '0.45rem',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <Globe size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>رابط صفحة حجز المرضى المباشر:</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '2px', flexWrap: 'wrap' }}>
-                <code style={{ direction: 'ltr', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 700 }}>
-                  /c/{clinicSlug}/booking
-                </code>
-                <button
-                  type="button"
-                  onClick={handleCopyBookingLink}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '2px 8px',
-                    fontSize: '0.75rem',
-                    background: copiedBookingLink ? '#ECFDF5' : 'var(--bg-primary)',
-                    color: copiedBookingLink ? '#059669' : 'var(--text-primary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '6px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {copiedBookingLink ? <CheckCircle2 size={12} /> : <Copy size={12} />}
-                  <span>{copiedBookingLink ? 'تم النسخ!' : 'نسخ الرابط'}</span>
-                </button>
-                <a
-                  href={`/c/${clinicSlug}/booking`}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '3px',
-                    fontSize: '0.75rem',
-                    color: 'var(--text-secondary)',
-                    textDecoration: 'none'
-                  }}
-                >
-                  <span>معاينة</span>
-                  <ExternalLink size={12} />
-                </a>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-color, #E2E8F0)', paddingBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #0284C7, #0369A1)',
+                color: '#FFFFFF',
+                padding: '0.45rem',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 6px rgba(2, 132, 199, 0.25)'
+              }}>
+                <Globe size={18} />
               </div>
+              <div>
+                <h5 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                  الهوية الرقمية وبوابة الحجز المباشر للعيادة
+                </h5>
+                <p style={{ margin: '2px 0 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                  نطاقات الوصول وحجز المواعيد المباشرة المخصصة لمرضى عيادتك
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="btn btn-secondary btn-sm"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  background: '#ECFDF5',
+                  color: '#059669',
+                  border: '1px solid #A7F3D0',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+                title="فتح بطاقة المشاركة الشاملة ورمز QR ومشاركة الواتساب"
+              >
+                <QrCode size={14} />
+                <span>رمز QR ومشاركة الواتساب</span>
+              </button>
+
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '0.78rem',
+                background: 'rgba(59, 130, 246, 0.08)',
+                color: '#2563eb',
+                padding: '4px 10px',
+                borderRadius: '8px',
+                border: '1px solid rgba(59, 130, 246, 0.25)',
+                fontFamily: 'monospace',
+                fontWeight: 700
+              }}
+              title="معرّف مرسل رسائل SMS المعتمد للعيادة لدى شركات المحمول"
+              >
+                <MessageSquare size={13} />
+                <span>Sender: {resolvedSenderId || 'تلقائي'}</span>
+              </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '5px',
-              fontSize: '0.8rem',
-              background: 'rgba(59, 130, 246, 0.08)',
-              color: '#2563eb',
-              padding: '4px 10px',
-              borderRadius: '8px',
-              border: '1px solid rgba(59, 130, 246, 0.25)',
-              fontFamily: 'monospace',
-              fontWeight: 700
-            }}
-            title="معرّف مرسل رسائل SMS المعتمد للعيادة لدى شركات المحمول"
-            >
-              <MessageSquare size={13} />
-              <span>Sender ID: {resolvedSenderId || 'لم يُحدد بعد'}</span>
-            </span>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '0.85rem'
+          }}>
+            {/* 1. Subdomain */}
+            <div style={{
+              background: 'var(--bg-primary, #FFFFFF)',
+              border: '1px solid var(--border-color, #E2E8F0)',
+              borderRadius: '10px',
+              padding: '0.85rem 1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  النطاق الفرعي السحابي (Subdomain)
+                </span>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#10B981', background: '#ECFDF5', padding: '1px 6px', borderRadius: '4px' }}>
+                  مفعل تلقائياً
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                <code style={{ fontSize: '0.82rem', color: '#0284C7', fontWeight: 700, direction: 'ltr', wordBreak: 'break-all' }}>
+                  https://{clinicSlug || 'clinic'}.{SAAS_PLATFORM_DOMAIN}
+                </code>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    onClick={handleCopySubdomain}
+                    style={{
+                      background: 'none',
+                      border: '1px solid var(--border-color, #E2E8F0)',
+                      borderRadius: '6px',
+                      padding: '3px 7px',
+                      cursor: 'pointer',
+                      color: copiedSubdomain ? '#10B981' : 'var(--text-secondary)'
+                    }}
+                    title="نسخ النطاق الفرعي"
+                  >
+                    {copiedSubdomain ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+                  </button>
+                  <a
+                    href={`https://${clinicSlug || 'clinic'}.${SAAS_PLATFORM_DOMAIN}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      background: 'none',
+                      border: '1px solid var(--border-color, #E2E8F0)',
+                      borderRadius: '6px',
+                      padding: '3px 7px',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="فتح الرابط"
+                  >
+                    <ExternalLink size={13} />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Direct Booking URL */}
+            <div style={{
+              background: 'var(--bg-primary, #FFFFFF)',
+              border: '1px solid var(--border-color, #E2E8F0)',
+              borderRadius: '10px',
+              padding: '0.85rem 1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  رابط الحجز المباشر (Direct Route)
+                </span>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#3B82F6', background: '#EFF6FF', padding: '1px 6px', borderRadius: '4px' }}>
+                  مسار مخصص
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                <code style={{ fontSize: '0.82rem', color: 'var(--primary, #09090B)', fontWeight: 700, direction: 'ltr', wordBreak: 'break-all' }}>
+                  /c/{clinicSlug}/booking
+                </code>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    onClick={handleCopyBookingLink}
+                    style={{
+                      background: 'none',
+                      border: '1px solid var(--border-color, #E2E8F0)',
+                      borderRadius: '6px',
+                      padding: '3px 7px',
+                      cursor: 'pointer',
+                      color: copiedBookingLink ? '#10B981' : 'var(--text-secondary)'
+                    }}
+                    title="نسخ رابط الحجز"
+                  >
+                    {copiedBookingLink ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+                  </button>
+                  <a
+                    href={`/c/${clinicSlug}/booking`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      background: 'none',
+                      border: '1px solid var(--border-color, #E2E8F0)',
+                      borderRadius: '6px',
+                      padding: '3px 7px',
+                      color: 'var(--text-secondary)',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title="معاينة صفحة الحجز"
+                  >
+                    <ExternalLink size={13} />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Custom Domain */}
+            <div style={{
+              background: 'var(--bg-primary, #FFFFFF)',
+              border: '1px solid var(--border-color, #E2E8F0)',
+              borderRadius: '10px',
+              padding: '0.85rem 1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                  الدومين الخاص المخصص (Custom Domain)
+                </span>
+                {(clinicForm.customDomain || clinicForm.custom_domain) ? (
+                  <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '1px 6px', borderRadius: '4px' }}>
+                    نطاق خاص مفعل
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
+                    غير مفعّل
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                {(clinicForm.customDomain || clinicForm.custom_domain) ? (
+                  <>
+                    <code style={{ fontSize: '0.82rem', color: '#059669', fontWeight: 700, direction: 'ltr', wordBreak: 'break-all' }}>
+                      https://{clinicForm.customDomain || clinicForm.custom_domain}
+                    </code>
+                    <a
+                      href={`https://${clinicForm.customDomain || clinicForm.custom_domain}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        background: 'none',
+                        border: '1px solid var(--border-color, #E2E8F0)',
+                        borderRadius: '6px',
+                        padding: '3px 7px',
+                        color: 'var(--text-secondary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexShrink: 0
+                      }}
+                      title="زيارة الدومين الخاص"
+                    >
+                      <ExternalLink size={13} />
+                    </a>
+                  </>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>لم يتم ربط نطاق خاص</span>
+                    {onNavigateToCustomDomain && (
+                      <button
+                        type="button"
+                        onClick={onNavigateToCustomDomain}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#0284C7',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          padding: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px'
+                        }}
+                      >
+                        <span>ربط الآن</span>
+                        <ArrowLeft size={13} />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1091,6 +1288,13 @@ export default function GeneralSettingsTab({
           </div>
         )}
       </div>
+
+      {/* Booking Share Modal */}
+      <BookingShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        tenant={{ ...clinicForm, slug: clinicSlug }}
+      />
     </form>
   );
 }

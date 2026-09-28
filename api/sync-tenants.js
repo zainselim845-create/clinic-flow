@@ -228,6 +228,7 @@ export default async function handler(req, res) {
             doctor_email: tenant.doctorEmail || tenant.email || null,
             specialty: tenant.specialty,
             phone: tenant.phone,
+            custom_domain: tenant.customDomain || tenant.custom_domain || null,
             subscription_tier: tenant.subscriptionTier || 'pro',
             subscription_status: tenant.subscriptionStatus || 'active'
           }).select().maybeSingle();
@@ -244,7 +245,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-      const { id, slug, status, reason, branding, quotas } = body;
+      const { id, slug, status, reason, branding, quotas, customDomain, custom_domain } = body;
       const targetIdentifier = id || slug;
 
       if (!targetIdentifier) {
@@ -261,6 +262,17 @@ export default async function handler(req, res) {
         if (reason) registry.tenants[tIndex].suspensionReason = reason;
         if (branding) registry.tenants[tIndex].branding = branding;
         if (quotas) registry.tenants[tIndex].quotas = quotas;
+        if (customDomain !== undefined || custom_domain !== undefined) {
+          const domainVal = customDomain || custom_domain || null;
+          registry.tenants[tIndex].customDomain = domainVal;
+          registry.tenants[tIndex].custom_domain = domainVal;
+          try {
+            await supabaseAdmin.from('clinics').update({
+              custom_domain: domainVal,
+              updated_at: new Date().toISOString()
+            }).or(`id.eq.${targetIdentifier},slug.eq.${targetIdentifier}`);
+          } catch (_) {}
+        }
         registry.tenants[tIndex].updatedAt = new Date().toISOString();
 
         await saveRegistry(registry);

@@ -219,8 +219,26 @@ export function ClinicsTable({
                           <ExternalLink size={13} />
                         </a>
                       </div>
+                      <div style={{ marginTop: '4px' }} dir="ltr">
+                        <span 
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontSize: '0.72rem',
+                            color: '#0284C7',
+                            background: 'rgba(2, 132, 199, 0.08)',
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            fontFamily: 'monospace'
+                          }}
+                          title="النطاق الفرعي السحابي المخصص"
+                        >
+                          <span>{t.slug}.clinicflow.app</span>
+                        </span>
+                      </div>
                       {t.senderId && (
-                        <div style={{ marginTop: '6px' }} dir="ltr">
+                        <div style={{ marginTop: '4px' }} dir="ltr">
                           <span 
                             style={{
                               display: 'inline-flex',
@@ -230,8 +248,8 @@ export function ClinicsTable({
                               fontFamily: 'monospace',
                               background: '#F8FAFC',
                               color: '#475569',
-                              padding: '2px 8px',
-                              borderRadius: '5px',
+                              padding: '1px 6px',
+                              borderRadius: '4px',
                               border: '1px solid #E2E8F0',
                               whiteSpace: 'nowrap'
                             }}
@@ -257,9 +275,11 @@ export function ClinicsTable({
                               fontFamily: 'monospace',
                               background: 'rgba(16, 185, 129, 0.1)',
                               padding: '1px 6px',
-                              borderRadius: '4px'
+                              borderRadius: '4px',
+                              border: '1px solid rgba(16, 185, 129, 0.25)',
+                              fontWeight: 700
                             }}
-                            title="النطاق المخصص الحصري"
+                            title="النطاق المخصص الحصري المفعل"
                           >
                             <Globe size={11} />
                             <span>{t.customDomain || t.custom_domain}</span>

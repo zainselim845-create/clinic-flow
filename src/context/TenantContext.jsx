@@ -594,40 +594,6 @@ export const TenantProvider = ({ children }) => {
     setActiveTenant(prev => (prev && (prev.id === slugOrId || prev.slug === slugOrId)) ? updater(prev) : prev);
   }, []);
 
-  // 7. Update Tenant Custom Domain
-  const updateTenantDomain = useCallback((clinicIdOrSlug, newDomain) => {
-    const cleanDomain = newDomain ? newDomain.toLowerCase().trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '') : '';
-    setAllTenants(prev => {
-      return prev.map(t => {
-        if (t.id === clinicIdOrSlug || t.slug === clinicIdOrSlug) {
-          const updatedTenant = {
-            ...t,
-            customDomain: cleanDomain || undefined,
-            custom_domain: cleanDomain || undefined
-          };
-          saveRegisteredTenant(updatedTenant);
-          saveClinicDomainSettings(t.id, {
-            domain: cleanDomain,
-            sslStatus: cleanDomain ? 'active' : 'unconfigured',
-            verifiedAt: cleanDomain ? new Date().toISOString() : null
-          });
-          return updatedTenant;
-        }
-        return t;
-      });
-    });
-    setActiveTenant(prev => {
-      if (prev && (prev.id === clinicIdOrSlug || prev.slug === clinicIdOrSlug)) {
-        return {
-          ...prev,
-          customDomain: cleanDomain || undefined,
-          custom_domain: cleanDomain || undefined
-        };
-      }
-      return prev;
-    });
-  }, []);
-
   // 8. Delete Tenant Permanently
   const deleteTenant = useCallback((clinicIdOrSlug) => {
     deleteRegisteredTenant(clinicIdOrSlug);
@@ -670,6 +636,105 @@ export const TenantProvider = ({ children }) => {
         storedList[idx] = { ...storedList[idx], ...updatedInfo };
         safeSetJSON('clinicflow_registered_tenants', storedList);
       }
+    }
+
+    // Sync to PostgreSQL clinics table if online
+    if (isSupabaseConfigured()) {
+      try {
+        const dbPayload = {};
+        if (updatedInfo.name) dbPayload.name = updatedInfo.name;
+        if (updatedInfo.doctorName) dbPayload.doctor_name = updatedInfo.doctorName;
+        if (updatedInfo.specialty) dbPayload.specialty = updatedInfo.specialty;
+        if (updatedInfo.phone) dbPayload.phone = updatedInfo.phone;
+        if (updatedInfo.address) dbPayload.address = updatedInfo.address;
+        if (updatedInfo.branding) dbPayload.branding = updatedInfo.branding;
+        if (updatedInfo.regularFee) dbPayload.regular_fee = updatedInfo.regularFee;
+        if (updatedInfo.consultationFee) dbPayload.consultation_fee = updatedInfo.consultationFee;
+        if (updatedInfo.customDomain !== undefined) dbPayload.custom_domain = updatedInfo.customDomain;
+        if (Object.keys(dbPayload).length > 0) {
+          const matchKey = targetId || targetSlug;
+          supabase
+            .from('clinics')
+            .update(dbPayload)
+            .or(`id.eq.${matchKey},slug.eq.${matchKey}`)
+            .then(() => {})
+            .catch(() => {});
+        }
+      } catch {}
+    }
+  }, [activeTenant]);
+
+  // 10. Update Tenant Custom Domain Live with Cross-Layer Persistence
+  const updateTenantDomain = useCallback(async (clinicIdOrSlug, newDomain) => {
+    const clean = (newDomain || '').trim().toLowerCase().replace(/^www\./i, '');
+    const target = clinicIdOrSlug || activeTenant?.id || activeTenant?.slug;
+    if (!target) return;
+
+    // 1. Update in-memory allTenants
+    setAllTenants(prev => prev.map(t => {
+      if (t.id === target || t.slug === target) {
+        return {
+          ...t,
+          customDomain: clean,
+          custom_domain: clean
+        };
+      }
+      return t;
+    }));
+
+    // 2. Update activeTenant
+    setActiveTenant(prev => {
+      if (prev && (prev.id === target || prev.slug === target)) {
+        return {
+          ...prev,
+          customDomain: clean,
+          custom_domain: clean
+        };
+      }
+      return prev;
+    });
+
+    // 3. Persist to registered tenants in safeStorage
+    const storedList = safeGetJSON('clinicflow_registered_tenants', []);
+    const idx = storedList.findIndex(t => t.id === target || t.slug === target);
+    if (idx >= 0) {
+      storedList[idx] = {
+        ...storedList[idx],
+        customDomain: clean,
+        custom_domain: clean
+      };
+      safeSetJSON('clinicflow_registered_tenants', storedList);
+    }
+
+    // 4. Save custom domain settings in safeStorage
+    saveClinicDomainSettings(target, {
+      domain: clean,
+      sslStatus: clean ? 'pending_dns' : 'unconfigured',
+      updatedAt: new Date().toISOString()
+    });
+
+    // 5. Persist to Supabase if configured
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase
+          .from('clinics')
+          .update({
+            custom_domain: clean || null,
+            updated_at: new Date().toISOString()
+          })
+          .or(`id.eq.${target},slug.eq.${target}`);
+      } catch (err) {
+        console.warn('Could not sync custom domain to Supabase:', err);
+      }
+    }
+
+    // 6. Broadcast across tabs
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const bc = new BroadcastChannel('clinicflow_tenant_sync');
+        bc.postMessage({ type: 'TENANT_DOMAIN_UPDATED', clinicId: target, domain: clean });
+        bc.close();
+      } catch {}
     }
   }, [activeTenant]);
 

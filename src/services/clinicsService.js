@@ -136,7 +136,7 @@ export async function updateClinicInfo(clinicId, updateData) {
 
   try {
     const dbPayload = toDbClinic(updateData);
-    let query = supabase.from('clinics').update(dbPayload).eq('id', clinicId);
+    let query = supabase.from('clinics').update(dbPayload).or(`id.eq.${clinicId},slug.eq.${clinicId}`);
     const { data, error } = await query.select().maybeSingle();
     if (error) throw error;
     return { data: data ? fromDbClinic(data) : null, error: null };

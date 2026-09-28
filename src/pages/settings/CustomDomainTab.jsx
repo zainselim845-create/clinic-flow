@@ -241,44 +241,39 @@ export default function CustomDomainTab() {
           أدخل اسم النطاق التجاري الخاص بك (مثل: <code style={{ direction: 'ltr', display: 'inline-block' }}>dr-sara.com</code> أو <code style={{ direction: 'ltr', display: 'inline-block' }}>booking.dr-sara.com</code>).
         </p>
 
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>تجربة سريعة:</span>
-          <button
-            type="button"
-            className="demo-domain-chip"
-            onClick={() => setDomainInput('dr-ahmed-dental.com')}
-            style={{
-              background: 'var(--surface-container, #F0F4F9)',
-              border: '1px solid var(--border-color, #DADCE0)',
-              borderRadius: '16px',
-              padding: '0.25rem 0.75rem',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              color: '#0B57D0',
-              fontFamily: 'monospace'
-            }}
-          >
-            dr-ahmed-dental.com
-          </button>
-          <button
-            type="button"
-            className="demo-domain-chip"
-            onClick={() => setDomainInput('drsara-clinic.com')}
-            style={{
-              background: 'var(--surface-container, #F0F4F9)',
-              border: '1px solid var(--border-color, #DADCE0)',
-              borderRadius: '16px',
-              padding: '0.25rem 0.75rem',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              color: '#0B57D0',
-              fontFamily: 'monospace'
-            }}
-          >
-            drsara-clinic.com
-          </button>
+        <div style={{
+          background: 'var(--surface-container-low, #F8FAFC)',
+          border: '1px solid var(--border-color, #E2E8F0)',
+          borderRadius: '12px',
+          padding: '0.85rem 1rem',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <Globe size={18} style={{ color: '#0284C7' }} />
+            <div>
+              <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                النطاق الفرعي التلقائي المتاح دائماً لعيادتك:
+              </div>
+              <code style={{ fontSize: '0.84rem', color: '#0369A1', direction: 'ltr', display: 'inline-block', fontWeight: 600 }}>
+                https://{tenant?.slug || 'your-clinic'}.clinicflow.app
+              </code>
+            </div>
+          </div>
+          <span style={{
+            fontSize: '0.74rem',
+            fontWeight: 700,
+            background: '#DCFCE7',
+            color: '#15803D',
+            padding: '3px 9px',
+            borderRadius: '6px'
+          }}>
+            مفعل تلقائياً ومجاني
+          </span>
         </div>
 
         <form onSubmit={handleSaveDomain}>

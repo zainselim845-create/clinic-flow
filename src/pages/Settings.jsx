@@ -290,6 +290,7 @@ const Settings = () => {
               clinicSaveSuccess={clinicSaveSuccess}
               onNavigateToSchedule={() => handleTabChange('schedule')}
               onNavigateToVisitTypes={() => handleTabChange('visitTypes')}
+              onNavigateToCustomDomain={() => handleTabChange('customDomain')}
             />
           </Tabs.Content>
 
