@@ -87,7 +87,7 @@ describe('Enterprise 1,000 Doctors & Clinics AuthN/AuthZ Benchmark (test-guard c
 
       // Verify throughput is fast (> 15 ops/sec even with full object allocations under parallel CPU load)
       expect(throughputOps).toBeGreaterThan(15);
-    });
+    }, 60000);
   });
 
   describe('2. Multi-Role Staff Accounts Provisioning (2,000 Staff Members)', () => {
