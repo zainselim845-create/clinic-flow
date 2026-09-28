@@ -1,0 +1,180 @@
+import { next, rewrite } from '@vercel/edge';
+
+export const RESERVED_SUBDOMAINS = new Set([
+  'www',
+  'app',
+  'api',
+  'admin',
+  'superadmin',
+  'staging',
+  'dev',
+  'test',
+  'demo',
+  'mail',
+  'cdn',
+  'static',
+  'status',
+  'docs',
+  'support',
+  'billing',
+  'auth'
+]);
+
+export const PLATFORM_HOSTING_SUFFIXES = [
+  '.vercel.app',
+  '.netlify.app',
+  '.pages.dev',
+  '.onrender.com',
+  '.github.io',
+  '.workers.dev'
+];
+
+/**
+ * Extracts routing metadata from a given URL or hostname.
+ * @param {string|URL} inputUrl
+ * @returns {{ type: 'subdomain'|'customDomain'|'platform', slug: string|null, customDomain: string|null }}
+ */
+export function extractEdgeRouting(inputUrl) {
+  let parsed;
+  try {
+    parsed = typeof inputUrl === 'string' ? new URL(inputUrl, 'http://localhost') : inputUrl;
+  } catch {
+    return { type: 'platform', slug: null, customDomain: null };
+  }
+
+  const hostname = (parsed.hostname || '').toLowerCase().trim();
+  const cleanHostname = hostname.replace(/^www\./i, '');
+
+  if (!cleanHostname || /^(127\.0\.0\.1|0\.0\.0\.0)$/.test(cleanHostname)) {
+    return { type: 'platform', slug: null, customDomain: null };
+  }
+
+  // Check hosting platform domains (e.g. *.vercel.app)
+  const isHostingPlatform = PLATFORM_HOSTING_SUFFIXES.some(suffix => cleanHostname.endsWith(suffix));
+  const parts = cleanHostname.split('.');
+
+  if (isHostingPlatform) {
+    // Requires >= 4 parts for a subdomain on hosting platforms
+    // e.g. dr-ahmed.clinic-flow-ten-sigma.vercel.app -> parts.length is 4, parts[0] is dr-ahmed
+    if (parts.length >= 4 && !RESERVED_SUBDOMAINS.has(parts[0])) {
+      return { type: 'subdomain', slug: parts[0], customDomain: null };
+    }
+    return { type: 'platform', slug: null, customDomain: null };
+  }
+
+  // Check primary platform domain (clinicflow.app)
+  if (cleanHostname === 'clinicflow.app') {
+    return { type: 'platform', slug: null, customDomain: null };
+  }
+
+  if (cleanHostname.endsWith('.clinicflow.app')) {
+    // Requires >= 3 parts (e.g. dr-ahmed.clinicflow.app)
+    if (parts.length >= 3 && !RESERVED_SUBDOMAINS.has(parts[0])) {
+      return { type: 'subdomain', slug: parts[0], customDomain: null };
+    }
+    return { type: 'platform', slug: null, customDomain: null };
+  }
+
+  // Check localhost subdomains (e.g. dr-ahmed.localhost)
+  if (parts.length === 2 && parts[1] === 'localhost' && !RESERVED_SUBDOMAINS.has(parts[0])) {
+    return { type: 'subdomain', slug: parts[0], customDomain: null };
+  }
+
+  if (cleanHostname === 'localhost') {
+    return { type: 'platform', slug: null, customDomain: null };
+  }
+
+  // Otherwise, it is an independent dedicated custom domain (e.g. dr-hazem-clinic.com)
+  return { type: 'customDomain', slug: null, customDomain: cleanHostname };
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - api/ (API routes)
+     * - _vercel/ (Vercel internals)
+     * - assets/ (Vite static assets)
+     * - Files with extensions (e.g. favicon.svg, robots.txt, sitemap.xml)
+     */
+    '/((?!api/|_vercel/|assets/|[\\w-]+\\.\\w+).*)',
+  ],
+};
+
+export default function middleware(request) {
+  const url = new URL(request.url);
+  const routing = extractEdgeRouting(url);
+
+  if (routing.type === 'subdomain' && routing.slug) {
+    const slug = routing.slug;
+    
+    // When hitting the root path '/', rewrite to '/index.html?clinic=:slug'
+    // so the Single Page Application boots directly into the dedicated clinic booking portal
+    if (url.pathname === '/' || url.pathname === '') {
+      const rewriteUrl = new URL('/index.html', request.url);
+      rewriteUrl.searchParams.set('clinic', slug);
+      // Preserve any query parameters passed by user (campaigns, ref, etc.)
+      for (const [key, value] of url.searchParams.entries()) {
+        if (key !== 'clinic') {
+          rewriteUrl.searchParams.set(key, value);
+        }
+      }
+
+      return rewrite(rewriteUrl, {
+        headers: {
+          'x-clinic-slug': slug,
+          'x-is-subdomain': '1',
+          'x-is-dedicated-domain': '1',
+          'x-edge-routed': 'vercel-edge',
+        },
+      });
+    }
+
+    // For other paths on the subdomain (e.g. /booking, /login, /dashboard)
+    return next({
+      headers: {
+        'x-clinic-slug': slug,
+        'x-is-subdomain': '1',
+        'x-is-dedicated-domain': '1',
+        'x-edge-routed': 'vercel-edge',
+      },
+    });
+  }
+
+  if (routing.type === 'customDomain' && routing.customDomain) {
+    const domain = routing.customDomain;
+
+    if (url.pathname === '/' || url.pathname === '') {
+      const rewriteUrl = new URL('/index.html', request.url);
+      rewriteUrl.searchParams.set('dedicatedDomain', domain);
+      for (const [key, value] of url.searchParams.entries()) {
+        if (key !== 'dedicatedDomain') {
+          rewriteUrl.searchParams.set(key, value);
+        }
+      }
+
+      return rewrite(rewriteUrl, {
+        headers: {
+          'x-clinic-custom-domain': domain,
+          'x-is-dedicated-domain': '1',
+          'x-edge-routed': 'vercel-edge',
+        },
+      });
+    }
+
+    return next({
+      headers: {
+        'x-clinic-custom-domain': domain,
+        'x-is-dedicated-domain': '1',
+        'x-edge-routed': 'vercel-edge',
+      },
+    });
+  }
+
+  // Platform root or standard shared domain routes
+  return next({
+    headers: {
+      'x-edge-routed': 'vercel-edge',
+    },
+  });
+}

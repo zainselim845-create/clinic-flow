@@ -42,6 +42,11 @@ export function getCombinedTenants(forceRefresh = true) {
   });
 }
 
+export const RESERVED_SUBDOMAINS = new Set([
+  'www', 'app', 'api', 'admin', 'superadmin', 'staging', 'dev', 'test', 'demo',
+  'mail', 'cdn', 'static', 'status', 'docs', 'support', 'billing', 'auth'
+]);
+
 /**
  * Resolves tenant and dedicated domain status based on window location.
  * Priority:
@@ -99,24 +104,23 @@ export function resolveTenantFromLocation(
     if (isHostingPlatform) {
       // On platforms like *.vercel.app, 3 parts (e.g. clinic-flow-lh3g.vercel.app) is the root platform host.
       // Subdomains require >= 4 parts (e.g. dr-sara.clinic-flow-lh3g.vercel.app).
-      if (parts.length >= 4 && parts[0] !== 'www' && parts[0] !== 'app') {
-        sub = parts[0];
+      if (parts.length >= 4 && !RESERVED_SUBDOMAINS.has(parts[0].toLowerCase())) {
+        sub = parts[0].toLowerCase();
       }
-    } else if (parts.length >= 3 && parts[0] !== 'www' && parts[0] !== 'app') {
-      sub = parts[0];
-    } else if (parts.length === 2 && parts[1] === 'localhost' && parts[0] !== 'www' && parts[0] !== 'app') {
-      sub = parts[0];
+    } else if (parts.length >= 3 && !RESERVED_SUBDOMAINS.has(parts[0].toLowerCase())) {
+      sub = parts[0].toLowerCase();
+    } else if (parts.length === 2 && parts[1] === 'localhost' && !RESERVED_SUBDOMAINS.has(parts[0].toLowerCase())) {
+      sub = parts[0].toLowerCase();
     }
 
     if (sub) {
-      const subMatch = (tenants || []).find(t => t.slug?.toLowerCase() === sub || t.id === sub);
-      if (subMatch) {
-        return {
-          slug: subMatch.slug,
-          isDedicatedDomain: true,
-          tenant: subMatch
-        };
-      }
+      const subLower = sub.toLowerCase();
+      const subMatch = (tenants || []).find(t => t.slug?.toLowerCase() === subLower || t.id === subLower);
+      return {
+        slug: subMatch?.slug || subLower,
+        isDedicatedDomain: true,
+        tenant: subMatch || null
+      };
     }
   }
 
@@ -132,15 +136,31 @@ export function resolveTenantFromLocation(
     };
   }
 
-  // 4. URL query param (e.g. ?clinic=dr-sara)
+  // 4. URL query param (e.g. ?clinic=dr-sara or ?dedicatedDomain=drhazem-eyes.com)
   const urlParams = new URLSearchParams(search);
+  const dedicatedDomainParam = urlParams.get('dedicatedDomain');
+  if (dedicatedDomainParam) {
+    const qDomain = dedicatedDomainParam.toLowerCase().trim().replace(/^www\./i, '');
+    const match = (tenants || []).find(t => {
+      const cd = (t.customDomain || t.custom_domain || '').toLowerCase().trim().replace(/^www\./i, '');
+      return cd && cd === qDomain;
+    });
+    return {
+      slug: match?.slug || '',
+      isDedicatedDomain: true,
+      tenant: match || null,
+      customDomain: qDomain
+    };
+  }
+
   const querySlug = urlParams.get('clinic');
   if (querySlug) {
     const qSlug = querySlug.toLowerCase().trim();
+    const isExplicitDedicated = urlParams.get('isDedicated') === '1' || urlParams.get('isSubdomain') === '1';
     const match = (tenants || []).find(t => t.slug?.toLowerCase() === qSlug || t.id === qSlug);
     return {
       slug: qSlug,
-      isDedicatedDomain: false,
+      isDedicatedDomain: isExplicitDedicated,
       tenant: match || null
     };
   }
@@ -265,7 +285,9 @@ export const TenantProvider = ({ children }) => {
   const applyBranding = applyTenantBranding;
   const [allTenants, setAllTenants] = useState(() => getCombinedTenants(true));
   const initialResolution = useMemo(() => resolveTenantFromLocation(allTenants), [allTenants]);
-  const [activeTenant, setActiveTenant] = useState(initialResolution.tenant || allTenants[0] || null);
+  const [activeTenant, setActiveTenant] = useState(
+    initialResolution.tenant || (initialResolution.isDedicatedDomain ? null : allTenants[0]) || null
+  );
   const [dedicatedDomainActive, setDedicatedDomainActive] = useState(initialResolution.isDedicatedDomain);
   const [isLoadingTenant, setIsLoadingTenant] = useState(true);
 
@@ -492,7 +514,7 @@ export const TenantProvider = ({ children }) => {
 
     // Fallback: Check local match for targetSlug before falling back to any generic tenant
     const localMatch = findLocalMatch(targetSlug);
-    const fallback = localMatch || locationResolution.tenant || (allTenants.length > 0 ? allTenants[0] : null);
+    const fallback = localMatch || locationResolution.tenant || (locationResolution.isDedicatedDomain ? null : (allTenants.length > 0 ? allTenants[0] : null));
     setActiveTenant(fallback);
     if (fallback?.slug && !locationResolution.isDedicatedDomain) {
       localStorage.setItem('clinicflow_active_tenant_slug', fallback.slug);

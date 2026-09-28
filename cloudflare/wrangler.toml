@@ -1,0 +1,13 @@
+name = "clinicflow-edge-router"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+[vars]
+ENVIRONMENT = "production"
+PLATFORM_DOMAIN = "clinicflow.app"
+
+# Production Routes configuration for Cloudflare for SaaS or Wildcard DNS:
+# routes = [
+#   { pattern = "*.clinicflow.app/*", zone_name = "clinicflow.app" },
+#   { pattern = "clinicflow.app/*", zone_name = "clinicflow.app" }
+# ]
