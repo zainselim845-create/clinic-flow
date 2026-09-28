@@ -91,6 +91,38 @@ const LEGACY_DEMO_EMAILS = new Set([
   'ramasarg@gmail.com'
 ]);
 
+export function isDemoOrCorruptedTenant(t) {
+  if (!t) return true;
+  const slug = (t.slug || '').toLowerCase();
+  const email = (t.doctorEmail || t.email || '').toLowerCase();
+  const name = (t.name || '').toLowerCase();
+  const id = (t.id || '').toLowerCase();
+
+  if (LEGACY_DEMO_SLUGS.has(slug)) return true;
+  if (LEGACY_DEMO_EMAILS.has(email)) return true;
+  if (slug === 'domya-auto' || slug === 'dr-domyaauto' || id === 'clinic-domya-auto' || id === 'clinic-111261498014278193869') return true;
+  if (slug.includes('domya') || name.includes('domya') || email.includes('domya') || id.includes('domya')) return true;
+  if (slug.includes('ramasarg') || email.includes('ramasarg') || id.includes('ramasarg')) return true;
+  if (slug.includes('mo1momo3mo16') || id.includes('mo1momo3mo16')) return true;
+  if (slug.includes('mohammedsaeed6u') || id.includes('mohammedsaeed6u')) return true;
+  return false;
+}
+
+export function isDemoOrCorruptedUser(u) {
+  if (!u) return true;
+  const email = (u.email || '').toLowerCase();
+  const name = (u.name || '').toLowerCase();
+  const id = (u.id || '').toLowerCase();
+  const slug = (u.clinicSlug || '').toLowerCase();
+
+  if (LEGACY_DEMO_EMAILS.has(email)) return true;
+  if (id === 'doc-master' || id === 'doc-sara-master' || id === 'user-multi-clinic-owner' || id === 'staff-reception-master') return true;
+  if (email.includes('domya') || name.includes('domya') || slug.includes('domya') || id.includes('domya')) return true;
+  if (email.includes('ramasarg') || name.includes('ramasarg') || slug.includes('ramasarg') || id.includes('ramasarg')) return true;
+  if (slug.includes('mo1momo3mo16') || slug.includes('mohammedsaeed6u')) return true;
+  return false;
+}
+
 /**
  * Retrieves all custom registered clinics from persistent storage
  */
@@ -101,7 +133,7 @@ export function getRegisteredTenants(forceRefresh = true) {
     const raw = localStorage.getItem(REGISTERED_TENANTS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
     const list = Array.isArray(parsed) ? parsed : [];
-    memoryTenantsCache = list.filter(t => !LEGACY_DEMO_SLUGS.has(t.slug) && !LEGACY_DEMO_EMAILS.has((t.doctorEmail || '').toLowerCase()));
+    memoryTenantsCache = list.filter(t => !isDemoOrCorruptedTenant(t));
     if (memoryTenantsCache.length !== list.length) {
       localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(memoryTenantsCache));
     }
@@ -189,7 +221,7 @@ export async function syncTenantsFromCloud() {
     const local = getRegisteredTenants(true);
     const merged = [...local];
     cloudTenants.forEach(ct => {
-      if (!ct || !ct.slug) return;
+      if (!ct || !ct.slug || isDemoOrCorruptedTenant(ct)) return;
       const idx = merged.findIndex(m => m.id === ct.id || m.slug === ct.slug);
       if (idx >= 0) {
         merged[idx] = { ...merged[idx], ...ct };
@@ -213,7 +245,7 @@ export async function syncTenantsFromCloud() {
       const localUsers = getRegisteredUsers(true);
       const mergedUsers = [...localUsers];
       cloudUsers.forEach(cu => {
-        if (!cu || (!cu.id && !cu.email)) return;
+        if (!cu || (!cu.id && !cu.email) || isDemoOrCorruptedUser(cu)) return;
         const idx = mergedUsers.findIndex(u => u.id === cu.id || (cu.email && u.email?.toLowerCase() === cu.email.toLowerCase()));
         if (idx >= 0) {
           mergedUsers[idx] = { ...mergedUsers[idx], ...cu };
@@ -452,12 +484,7 @@ export function getRegisteredUsers(forceRefresh = true) {
     const raw = localStorage.getItem(REGISTERED_USERS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
     const list = Array.isArray(parsed) ? parsed : [];
-    memoryUsersCache = list.filter(u => {
-      const email = (u.email || '').toLowerCase();
-      if (LEGACY_DEMO_EMAILS.has(email)) return false;
-      if (u.id === 'doc-master' || u.id === 'doc-sara-master' || u.id === 'user-multi-clinic-owner' || u.id === 'staff-reception-master') return false;
-      return true;
-    });
+    memoryUsersCache = list.filter(u => !isDemoOrCorruptedUser(u));
     if (memoryUsersCache.length !== list.length) {
       localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(memoryUsersCache));
     }
@@ -860,7 +887,7 @@ export function isUsernameAvailable(username, currentUserId = null, currentUserE
   }
 
   // Check demo clinics
-  if (clean === 'dr-ahmed' || clean === 'dr-sara') {
+  if (clean === 'dr-ahmed' || clean === 'dr-sara' || isDemoOrCorruptedTenant({ slug: clean })) {
     return {
       available: false,
       reason: 'اسم المستخدم هذا محجوز مسبقاً لعيادة أخرى، يرجى تغييره واختيار اسم متاح.',

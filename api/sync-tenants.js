@@ -27,6 +27,38 @@ const LEGACY_DEMO_EMAILS = new Set([
   'ramasarg@gmail.com'
 ]);
 
+function isDemoOrCorruptedTenant(t) {
+  if (!t) return true;
+  const slug = (t.slug || '').toLowerCase();
+  const email = (t.doctorEmail || t.email || '').toLowerCase();
+  const name = (t.name || '').toLowerCase();
+  const id = (t.id || '').toLowerCase();
+
+  if (LEGACY_DEMO_SLUGS.has(slug)) return true;
+  if (LEGACY_DEMO_EMAILS.has(email)) return true;
+  if (slug === 'domya-auto' || slug === 'dr-domyaauto' || id === 'clinic-domya-auto' || id === 'clinic-111261498014278193869') return true;
+  if (slug.includes('domya') || name.includes('domya') || email.includes('domya') || id.includes('domya')) return true;
+  if (slug.includes('ramasarg') || email.includes('ramasarg') || id.includes('ramasarg')) return true;
+  if (slug.includes('mo1momo3mo16') || id.includes('mo1momo3mo16')) return true;
+  if (slug.includes('mohammedsaeed6u') || id.includes('mohammedsaeed6u')) return true;
+  return false;
+}
+
+function isDemoOrCorruptedUser(u) {
+  if (!u) return true;
+  const email = (u.email || '').toLowerCase();
+  const name = (u.name || '').toLowerCase();
+  const id = (u.id || '').toLowerCase();
+  const slug = (u.clinicSlug || '').toLowerCase();
+
+  if (LEGACY_DEMO_EMAILS.has(email)) return true;
+  if (id === 'doc-master' || id === 'doc-sara-master' || id === 'user-multi-clinic-owner' || id === 'staff-reception-master') return true;
+  if (email.includes('domya') || name.includes('domya') || slug.includes('domya') || id.includes('domya')) return true;
+  if (email.includes('ramasarg') || name.includes('ramasarg') || slug.includes('ramasarg') || id.includes('ramasarg')) return true;
+  if (slug.includes('mo1momo3mo16') || slug.includes('mohammedsaeed6u')) return true;
+  return false;
+}
+
 async function getRegistry() {
   try {
     const { data, error } = await supabaseAdmin.storage
@@ -54,8 +86,8 @@ async function getRegistry() {
     const originalTenantsLen = parsed.tenants.length;
     const originalUsersLen = parsed.users.length;
 
-    parsed.tenants = parsed.tenants.filter(t => !LEGACY_DEMO_SLUGS.has(t.slug) && !LEGACY_DEMO_EMAILS.has((t.doctorEmail || '').toLowerCase()));
-    parsed.users = parsed.users.filter(u => !LEGACY_DEMO_EMAILS.has((u.email || '').toLowerCase()) && u.id !== 'doc-master' && u.id !== 'doc-sara-master' && u.id !== 'user-multi-clinic-owner' && u.id !== 'staff-reception-master');
+    parsed.tenants = parsed.tenants.filter(t => !isDemoOrCorruptedTenant(t));
+    parsed.users = parsed.users.filter(u => !isDemoOrCorruptedUser(u));
 
     if (parsed.tenants.length !== originalTenantsLen || parsed.users.length !== originalUsersLen) {
       saveRegistry(parsed).catch(err => console.warn('[Sync-Tenants API] Prune save notice:', err.message));
