@@ -103,7 +103,9 @@ export default {
       return fetch(request);
     }
 
-    const routing = extractCloudflareRouting(url);
+    const hostHeader = request.headers.get('x-forwarded-host') || request.headers.get('host') || url.host;
+    const effectiveUrl = new URL(url.pathname + url.search, `https://${hostHeader}`);
+    const routing = extractCloudflareRouting(effectiveUrl);
     const targetUrl = new URL(request.url);
 
     const forwardHeaders = new Headers(request.headers);

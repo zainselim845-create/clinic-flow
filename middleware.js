@@ -103,7 +103,9 @@ export const config = {
 
 export default function middleware(request) {
   const url = new URL(request.url);
-  const routing = extractEdgeRouting(url);
+  const hostHeader = request.headers.get('x-forwarded-host') || request.headers.get('host') || url.host;
+  const effectiveUrl = new URL(url.pathname + url.search, `https://${hostHeader}`);
+  const routing = extractEdgeRouting(effectiveUrl);
 
   if (routing.type === 'subdomain' && routing.slug) {
     const slug = routing.slug;

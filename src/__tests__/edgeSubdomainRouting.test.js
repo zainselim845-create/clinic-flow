@@ -106,6 +106,17 @@ describe('Edge Subdomain & Dedicated Domain Routing Architecture', () => {
       expect(response.headers.get('x-edge-routed')).toBe('vercel-edge');
     });
 
+    it('correctly resolves subdomain forwarded via Host or x-forwarded-host header', () => {
+      const request = new Request('https://clinic-flow-ten-sigma.vercel.app/', {
+        headers: { 'x-forwarded-host': 'dr-ahmed.clinicflow.app' }
+      });
+      const response = middleware(request);
+
+      expect(response.headers.get('x-middleware-rewrite')).toContain('/index.html?clinic=dr-ahmed');
+      expect(response.headers.get('x-clinic-slug')).toBe('dr-ahmed');
+      expect(response.headers.get('x-is-subdomain')).toBe('1');
+    });
+
     it('passes through platform root routes with vercel-edge header', () => {
       const request = new Request('https://clinicflow.app/');
       const response = middleware(request);
