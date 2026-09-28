@@ -31,9 +31,11 @@ const ManageBooking = () => {
     }
   }, [clinicSlug, tenant, switchTenant]);
 
-  const resolvedTenant = (clinicSlug ? allTenants.find(t => t.slug === clinicSlug) : null) || tenant;
+  const querySlug = searchParams.get('clinic');
+  const targetSlug = clinicSlug || querySlug;
+  const resolvedTenant = (targetSlug ? allTenants.find(t => t.slug === targetSlug || t.id === targetSlug) : null) || tenant;
   const clinicInfo = resolvedTenant || state.clinicInfo || {};
-  const currentSlug = clinicSlug || clinicInfo?.slug;
+  const currentSlug = targetSlug || clinicInfo?.slug;
   const clinicAppointments = (state.appointments || []).filter(
     a => !a.clinicId || a.clinicId === clinicInfo?.id
   );

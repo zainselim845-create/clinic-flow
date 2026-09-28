@@ -15,7 +15,7 @@ import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
 import { localDb } from '../db/localDatabase';
-import { safeGetItem } from '../utils/safeStorage';
+import { safeGetItem, safeGetJSON, safeSetJSON, safeRemoveItem } from '../utils/safeStorage';
 
 export const DATA_SCHEMA_VERSION = 'v5_clean_zero_state';
 
@@ -219,7 +219,7 @@ export function AppProvider({ children }) {
     saveTimeoutRef.current = setTimeout(() => {
       const scopedKey = `clinicflow_data_${currentSlug}`;
       try {
-        const payload = JSON.stringify({
+        const payload = {
           _version: DATA_SCHEMA_VERSION,
           patients: state.patients,
           appointments: state.appointments,
@@ -229,8 +229,8 @@ export function AppProvider({ children }) {
           clinicInfo: state.clinicInfo,
           expenses: state.expenses,
           recalls: state.recalls
-        });
-        localStorage.setItem(scopedKey, payload);
+        };
+        safeSetJSON(scopedKey, payload);
 
         // Asynchronous Dual-Write to high-capacity IndexedDB
         try {
@@ -244,7 +244,7 @@ export function AppProvider({ children }) {
           console.warn('[AppContext] IndexedDB dual-write warning:', dbErr);
         }
       } catch (err) {
-        console.warn('LocalStorage quota warning, executing smart compaction:', err);
+        console.warn('Storage quota warning, executing smart compaction:', err);
         try {
           const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
           const compactedState = {
@@ -258,9 +258,9 @@ export function AppProvider({ children }) {
             expenses: state.expenses,
             recalls: state.recalls
           };
-          localStorage.setItem(scopedKey, JSON.stringify(compactedState));
+          safeSetJSON(scopedKey, compactedState);
         } catch (compactErr) {
-          console.error('Fatal LocalStorage quota exceeded, keeping in-memory state:', compactErr);
+          console.error('Fatal storage quota exceeded, keeping in-memory state:', compactErr);
         }
       }
     }, 600);

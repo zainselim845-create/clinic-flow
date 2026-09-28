@@ -90,9 +90,11 @@ const Settings = () => {
 
   const handleSaveClinic = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (useSupabase) {
+    const currentSlug = tenantSlug || tenant?.slug || state.clinicInfo?.slug || state.currentTenantSlug;
+    const targetClinicId = state.clinicInfo?.id || tenant?.id || currentSlug;
+    if (useSupabase && targetClinicId) {
       try {
-        await clinicsService.updateClinicInfo(state.clinicInfo?.id, clinicForm);
+        await clinicsService.updateClinicInfo(targetClinicId, clinicForm);
       } catch (err) {
         console.error('Failed to sync clinic info to Supabase:', err);
       }
@@ -107,7 +109,6 @@ const Settings = () => {
     if (updateTenantInfo) {
       updateTenantInfo(clinicForm);
     }
-    const currentSlug = tenantSlug || tenant?.slug || state.clinicInfo?.slug || state.currentTenantSlug;
     if (currentSlug) {
       const scopedKey = `clinicflow_data_${currentSlug}`;
       const parsed = safeGetJSON(scopedKey, {});

@@ -65,21 +65,12 @@ const DoctorAssistant = ({ initialMode }) => {
     }
   ];
 
-  // Load Conversation State from scoped localStorage
+  // Load Conversation State from scoped safeStorage
   const [messages, setMessages] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.removeItem('clinicflow_doctor_chat_history'); // purge legacy leak
-        const saved = localStorage.getItem(chatStorageKey);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed;
-          }
-        }
-      } catch (e) {
-        console.error('Failed to load chat history from localStorage', e);
-      }
+    safeRemoveItem('clinicflow_doctor_chat_history'); // purge legacy leak
+    const saved = safeGetJSON(chatStorageKey, null);
+    if (Array.isArray(saved) && saved.length > 0) {
+      return saved;
     }
     return getInitialWelcome(currentSlug, doctorTitle, tenant?.name || activeClinic?.name || 'العيادة');
   });
@@ -129,10 +120,8 @@ const DoctorAssistant = ({ initialMode }) => {
         }
       ];
       setMessages(freshWelcome);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(chatStorageKey);
-        localStorage.removeItem('clinicflow_doctor_chat_history');
-      }
+      safeRemoveItem(chatStorageKey);
+      safeRemoveItem('clinicflow_doctor_chat_history');
     }
   };
 

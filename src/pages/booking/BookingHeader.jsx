@@ -31,7 +31,10 @@ export default function BookingHeader({ clinic, onNavigate }) {
         </div>
       </div>
       <div className="nebras-bar-links">
-        <button onClick={() => onNavigate('/manage-booking')} className="nebras-nav-btn">
+        <button 
+          onClick={() => onNavigate(clinic?.slug ? `/c/${clinic.slug}/manage-booking` : '/manage-booking')} 
+          className="nebras-nav-btn"
+        >
           <span>تعديل موعد سابق</span>
         </button>
         <button onClick={() => onNavigate('/login')} className="nebras-nav-btn outline">
