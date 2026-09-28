@@ -103,7 +103,11 @@ export const config = {
 
 export default function middleware(request) {
   const url = new URL(request.url);
-  const hostHeader = request.headers.get('x-forwarded-host') || request.headers.get('host') || url.host;
+  const hostHeader = 
+    request.headers.get('x-clinic-test-host') ||
+    request.headers.get('x-forwarded-host') || 
+    request.headers.get('host') || 
+    url.host;
   const effectiveUrl = new URL(url.pathname + url.search, `https://${hostHeader}`);
   const routing = extractEdgeRouting(effectiveUrl);
 
