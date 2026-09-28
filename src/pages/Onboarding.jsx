@@ -46,27 +46,28 @@ export default function Onboarding() {
 
   const [username, setUsername] = useState(() => {
     if (user?.username) return user.username;
+    if (user?.clinicSlug && user.clinicSlug !== '*') return user.clinicSlug;
     if (user?.email) {
       const prefix = user.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_-]/g, '');
       return `dr-${prefix}`;
     }
-    return 'dr-clinic';
+    return '';
   });
 
   const [phone, setPhone] = useState(user?.phone || '');
-  const [jobTitle, setJobTitle] = useState('استشاري ورئيس القسم');
+  const [jobTitle, setJobTitle] = useState('طبيب العيادة');
 
   // Step 2: Clinic & Specialty
   const [clinicName, setClinicName] = useState(() => {
     if (tenant?.name && tenant.name !== 'العيادة التخصصية') return tenant.name;
     const docClean = (user?.name || '').replace(/^د.?\s*/, '').trim();
-    return docClean ? `عيادة د. ${docClean}` : 'عيادة النخبة التخصصية';
+    return docClean ? `عيادة د. ${docClean}` : '';
   });
 
   const [specialtyCategory, setSpecialtyCategory] = useState('all');
   const [selectedSpecialtyId, setSelectedSpecialtyId] = useState('general_dentistry');
-  const [city, setCity] = useState('القاهرة - مصر الجديدة');
-  const [address, setAddress] = useState('شارع الميرغني، مبنى العيادات التخصصية');
+  const [city, setCity] = useState('');
+  const [address, setAddress] = useState('');
 
   // Step 3: Brand Colors
   const [selectedPaletteId, setSelectedPaletteId] = useState('monochrome');
@@ -75,17 +76,17 @@ export default function Onboarding() {
 
   // Step 4: Team Size & Staff Roles
   const [teamSize, setTeamSize] = useState('small');
-  const [enableInitialStaff, setEnableInitialStaff] = useState(true);
-  const [initialStaffName, setInitialStaffName] = useState('سارة محمود');
-  const [initialStaffPhone, setInitialStaffPhone] = useState('01098765432');
-  const [initialStaffPassword, setInitialStaffPassword] = useState('1234');
+  const [enableInitialStaff, setEnableInitialStaff] = useState(false);
+  const [initialStaffName, setInitialStaffName] = useState('');
+  const [initialStaffPhone, setInitialStaffPhone] = useState('');
+  const [initialStaffPassword, setInitialStaffPassword] = useState('');
   const [initialStaffRole, setInitialStaffRole] = useState('receptionist');
   const [initialStaffPerms, setInitialStaffPerms] = useState(['appointments', 'patients', 'sms']);
 
   // Real-time Username Uniqueness & Availability Check
   const usernameAvailability = useMemo(() => {
-    return isUsernameAvailable(username, user?.id);
-  }, [username, user?.id]);
+    return isUsernameAvailable(username, user?.id, user?.email);
+  }, [username, user?.id, user?.email]);
 
   // Auto-fill defaults if user object updates
   useEffect(() => {

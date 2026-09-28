@@ -8,67 +8,24 @@ const REGISTRY_FILE = 'sync/tenants_registry.json';
 
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-const FALLBACK_CLINICS = [
-  {
-    id: 'clinic-domya-auto',
-    name: 'عيادة د. domya auto',
-    doctorName: 'د. domya auto',
-    doctorEmail: 'domyaauto@gmail.com',
-    specialty: 'جراحة العظام والمفاصل والعمود الفقري',
-    slug: 'dr-domyaauto',
-    senderId: 'DrDomyaauto',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    isOnboardingCompleted: true,
-    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
-    createdAt: '2026-09-20T10:00:00.000Z'
-  },
-  {
-    id: 'clinic-mohamed-saeed-obgyn',
-    name: 'عيادة د. Mohamed Saeed',
-    doctorName: 'د. Mohamed Saeed',
-    doctorEmail: 'zainselim845@gmail.com',
-    specialty: 'النساء والتوليد ورعاية الحوامل وعلاج العقم',
-    slug: 'dr-mo1momo3mo16',
-    senderId: 'DrMo1momo3m',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'lifetime',
-    isLifetimeLicense: true,
-    isOnboardingCompleted: true,
-    agreementAmount: 25000,
-    customAgreedPrice: 25000,
-    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
-    createdAt: '2026-09-20T11:00:00.000Z'
-  },
-  {
-    id: 'clinic-mohammed-saeed-dental',
-    name: 'عيادة د. Mohamed Saeed',
-    doctorName: 'د. Mohamed Saeed',
-    doctorEmail: 'zainselim845@gmail.com',
-    specialty: 'طب وجراحة الفم والأسنان العام',
-    slug: 'dr-mohammedsaeed6u',
-    senderId: 'DrMohammeds',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    isOnboardingCompleted: true,
-    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
-    createdAt: '2026-09-20T12:00:00.000Z'
-  },
-  {
-    id: 'clinic-rama-sarg-dental',
-    name: 'عيادة د. Rama Sarg',
-    doctorName: 'د. Rama Sarg',
-    doctorEmail: 'ramasarg@gmail.com',
-    specialty: 'طب وجراحة الفم والأسنان العام',
-    slug: 'dr-ramasarg0',
-    senderId: 'DrRamaSarg',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    isOnboardingCompleted: true,
-    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
-    createdAt: '2026-09-23T08:00:00.000Z'
-  }
-];
+const FALLBACK_CLINICS = [];
+
+const LEGACY_DEMO_SLUGS = new Set([
+  'dr-ahmed', 
+  'dr-sara', 
+  'dr-domyaauto', 
+  'dr-ramasarg0', 
+  'dr-mo1momo3mo16', 
+  'dr-mohammedsaeed6u'
+]);
+const LEGACY_DEMO_EMAILS = new Set([
+  'doctor@clinicflow.com',
+  'sara.clinic@clinicflow.com',
+  'owner@clinicflow.com',
+  'reception@clinicflow.com',
+  'domyaauto@gmail.com',
+  'ramasarg@gmail.com'
+]);
 
 async function getRegistry() {
   try {
@@ -80,7 +37,7 @@ async function getRegistry() {
       return {
         version: 1,
         updatedAt: new Date().toISOString(),
-        tenants: FALLBACK_CLINICS,
+        tenants: [],
         users: []
       };
     }
@@ -88,18 +45,29 @@ async function getRegistry() {
     const text = await data.text();
     const parsed = JSON.parse(text);
     if (!Array.isArray(parsed.tenants)) {
-      parsed.tenants = FALLBACK_CLINICS;
+      parsed.tenants = [];
     }
     if (!Array.isArray(parsed.users)) {
       parsed.users = [];
     }
+
+    const originalTenantsLen = parsed.tenants.length;
+    const originalUsersLen = parsed.users.length;
+
+    parsed.tenants = parsed.tenants.filter(t => !LEGACY_DEMO_SLUGS.has(t.slug) && !LEGACY_DEMO_EMAILS.has((t.doctorEmail || '').toLowerCase()));
+    parsed.users = parsed.users.filter(u => !LEGACY_DEMO_EMAILS.has((u.email || '').toLowerCase()) && u.id !== 'doc-master' && u.id !== 'doc-sara-master' && u.id !== 'user-multi-clinic-owner' && u.id !== 'staff-reception-master');
+
+    if (parsed.tenants.length !== originalTenantsLen || parsed.users.length !== originalUsersLen) {
+      saveRegistry(parsed).catch(err => console.warn('[Sync-Tenants API] Prune save notice:', err.message));
+    }
+
     return parsed;
   } catch (err) {
     console.warn('[Sync-Tenants API] getRegistry error, using fallback:', err.message);
     return {
       version: 1,
       updatedAt: new Date().toISOString(),
-      tenants: FALLBACK_CLINICS,
+      tenants: [],
       users: []
     };
   }

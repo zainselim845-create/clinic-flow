@@ -6,8 +6,11 @@ import {
   saveRegisteredTenant, 
   getRegisteredTenants, 
   saveRegisteredUser,
+  isUsernameAvailable,
+  authenticateUser,
   clearAuthCache
 } from '../services/authService';
+import { getCombinedTenants, resolveTenantFromLocation } from '../context/TenantContext';
 
 const createStorageMock = () => {
   let store = {};
@@ -160,5 +163,85 @@ describe('Pristine Tenant Zero-State Safety & Anti-Leakage Architecture', () => 
     const storedAttendance = localStorage.getItem(`clinicflow_attendance_${customSlug}`);
     const scopedAttendance = storedAttendance ? JSON.parse(storedAttendance) : [];
     expect(scopedAttendance).toHaveLength(0);
+  });
+
+  it('guarantees getRegisteredTenants automatically purges legacy demo clinics from storage and cache', () => {
+    localStorage.setItem('clinicflow_registered_tenants', JSON.stringify([
+      { id: 'clinic-domya-auto', slug: 'dr-domyaauto', name: 'Fake Clinic', doctorEmail: 'domyaauto@gmail.com' },
+      { id: 'clinic-real-doc', slug: 'dr-real', name: 'Real Clinic', doctorEmail: 'real@clinicflow.test' }
+    ]));
+    clearAuthCache();
+
+    const tenants = getRegisteredTenants(true);
+    expect(tenants).toHaveLength(1);
+    expect(tenants[0].slug).toBe('dr-real');
+
+    // Verify localStorage was pruned
+    const stored = JSON.parse(localStorage.getItem('clinicflow_registered_tenants'));
+    expect(stored).toHaveLength(1);
+    expect(stored[0].slug).toBe('dr-real');
+  });
+
+  it('guarantees getCombinedTenants returns an empty array when no custom clinics are registered', () => {
+    clearAuthCache();
+    const combined = getCombinedTenants(true);
+    expect(combined).toEqual([]);
+  });
+
+  it('allows a doctor to retain their registered handle during onboarding validation via currentUserEmail', () => {
+    saveRegisteredTenant({
+      id: 'clinic-doc-123',
+      name: 'عيادة د. أحمد سليم',
+      doctorName: 'د. أحمد سليم',
+      doctorEmail: 'dr.ahmed.salim@example.com',
+      slug: 'dr-ahmedsalim'
+    });
+
+    // Checking availability without email -> reports taken
+    const takenCheck = isUsernameAvailable('dr-ahmedsalim');
+    expect(takenCheck.available).toBe(false);
+
+    // Checking availability with doctor email -> reports available for them
+    const selfCheck = isUsernameAvailable('dr-ahmedsalim', null, 'dr.ahmed.salim@example.com');
+    expect(selfCheck.available).toBe(true);
+  });
+
+  it('provides a descriptive guidance message when a Google OAuth user without password attempts password login', () => {
+    saveRegisteredUser({
+      id: 'user-google-456',
+      name: 'د. كريم علي',
+      email: 'dr.karim.google@gmail.com',
+      authProvider: 'google',
+      role: 'doctor',
+      clinicSlug: 'dr-karim',
+      status: 'active'
+    });
+
+    expect(() => {
+      authenticateUser('dr.karim.google@gmail.com', 'mypassword123');
+    }).toThrow('هذا الحساب مسجل عبر Google. يرجى تسجيل الدخول باستخدام زر Google.');
+  });
+
+  it('prioritizes logged-in user clinic in resolveTenantFromLocation even when localStorage slug is unset', () => {
+    sessionStorage.setItem('clinicflow_auth_user', JSON.stringify({
+      id: 'doc-user-77',
+      name: 'د. شريف',
+      email: 'dr.sherif@example.com',
+      clinicSlug: 'dr-sherif-clinic'
+    }));
+
+    const mockTenants = [
+      { id: 'clinic-other', slug: 'dr-other', name: 'Other Clinic' },
+      { id: 'clinic-sherif', slug: 'dr-sherif-clinic', name: 'Sherif Clinic' }
+    ];
+
+    const resolution = resolveTenantFromLocation(mockTenants, {
+      hostname: 'clinicflow.app',
+      pathname: '/',
+      search: ''
+    });
+
+    expect(resolution.slug).toBe('dr-sherif-clinic');
+    expect(resolution.tenant?.name).toBe('Sherif Clinic');
   });
 });

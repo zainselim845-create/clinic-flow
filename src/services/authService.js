@@ -74,12 +74,21 @@ export function clearAuthCache() {
   registeredPhonesSet.clear();
 }
 
-const LEGACY_DEMO_SLUGS = new Set(['dr-ahmed', 'dr-sara']);
+const LEGACY_DEMO_SLUGS = new Set([
+  'dr-ahmed', 
+  'dr-sara', 
+  'dr-domyaauto', 
+  'dr-ramasarg0', 
+  'dr-mo1momo3mo16', 
+  'dr-mohammedsaeed6u'
+]);
 const LEGACY_DEMO_EMAILS = new Set([
   'doctor@clinicflow.com',
   'sara.clinic@clinicflow.com',
   'owner@clinicflow.com',
-  'reception@clinicflow.com'
+  'reception@clinicflow.com',
+  'domyaauto@gmail.com',
+  'ramasarg@gmail.com'
 ]);
 
 /**
@@ -92,7 +101,10 @@ export function getRegisteredTenants(forceRefresh = true) {
     const raw = localStorage.getItem(REGISTERED_TENANTS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
     const list = Array.isArray(parsed) ? parsed : [];
-    memoryTenantsCache = list.filter(t => !LEGACY_DEMO_SLUGS.has(t.slug));
+    memoryTenantsCache = list.filter(t => !LEGACY_DEMO_SLUGS.has(t.slug) && !LEGACY_DEMO_EMAILS.has((t.doctorEmail || '').toLowerCase()));
+    if (memoryTenantsCache.length !== list.length) {
+      localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(memoryTenantsCache));
+    }
     memoryTenantsCache.forEach(t => {
       if (t.slug) registeredSlugsSet.add(t.slug);
       if (t.doctorEmail) registeredEmailsSet.add(t.doctorEmail.toLowerCase());
@@ -446,6 +458,9 @@ export function getRegisteredUsers(forceRefresh = true) {
       if (u.id === 'doc-master' || u.id === 'doc-sara-master' || u.id === 'user-multi-clinic-owner' || u.id === 'staff-reception-master') return false;
       return true;
     });
+    if (memoryUsersCache.length !== list.length) {
+      localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(memoryUsersCache));
+    }
     memoryUsersCache.forEach(u => {
       if (u.email) registeredEmailsSet.add(u.email.toLowerCase());
       if (u.phone) registeredPhonesSet.add(u.phone.replace(/\D/g, ''));
@@ -808,7 +823,7 @@ export const RESERVED_USERNAMES = new Set([
  * @param {string} [currentUserId] - ID of current user (to permit keeping their own handle)
  * @returns {{ available: boolean, reason?: string, suggestions?: string[] }}
  */
-export function isUsernameAvailable(username, currentUserId = null) {
+export function isUsernameAvailable(username, currentUserId = null, currentUserEmail = null) {
   if (!username) {
     return {
       available: false,
@@ -858,9 +873,11 @@ export function isUsernameAvailable(username, currentUserId = null) {
   }
 
   // Check registered users
+  const cleanEmail = (currentUserEmail || '').trim().toLowerCase();
   const registeredUsers = getRegisteredUsers();
   const takenByUser = registeredUsers.find(u => {
     if (currentUserId && (u.id === currentUserId || u.ownerId === currentUserId)) return false;
+    if (cleanEmail && u.email && u.email.toLowerCase() === cleanEmail) return false;
     const uUsername = (u.username || '').toLowerCase().replace(/^@/, '');
     const uSlug = (u.clinicSlug || '').toLowerCase();
     return uUsername === clean || uSlug === clean;
@@ -882,6 +899,7 @@ export function isUsernameAvailable(username, currentUserId = null) {
   const registeredTenants = getRegisteredTenants();
   const takenByTenant = registeredTenants.find(t => {
     if (currentUserId && (t.ownerId === currentUserId || t.id === `clinic-${currentUserId}`)) return false;
+    if (cleanEmail && t.doctorEmail && t.doctorEmail.toLowerCase() === cleanEmail) return false;
     const tSlug = (t.slug || '').toLowerCase();
     const tUsername = (t.username || '').toLowerCase().replace(/^@/, '');
     return tSlug === clean || tUsername === clean;
@@ -1188,6 +1206,9 @@ export function authenticateUser(identifier, password, _options = {}) {
     if (matchedUser.status === 'inactive') {
       throw new Error('هذا الحساب معطل حالياً من قِبل إدارة العيادة.');
     }
+    if ((matchedUser.authProvider === 'google' || matchedUser.provider === 'google') && !matchedUser.password) {
+      throw new Error('هذا الحساب مسجل عبر Google. يرجى تسجيل الدخول باستخدام زر Google.');
+    }
     if (matchedUser.password !== cleanPass) {
       throw new Error('كلمة المرور غير صحيحة.');
     }
@@ -1210,6 +1231,9 @@ export function authenticateUser(identifier, password, _options = {}) {
   });
 
   if (matchedTenant) {
+    if ((matchedTenant.authProvider === 'google' || matchedTenant.provider === 'google') && !matchedTenant.doctorPassword) {
+      throw new Error('هذا الحساب مسجل عبر Google. يرجى تسجيل الدخول باستخدام زر Google.');
+    }
     const validPass = matchedTenant.doctorPassword;
     if (!validPass || cleanPass !== validPass) {
       throw new Error('كلمة المرور غير صحيحة لحساب الطبيب.');

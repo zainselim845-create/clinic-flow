@@ -11,62 +11,15 @@ import { safeGetItem, safeGetJSON, safeSetJSON, safeSessionGetJSON } from '../ut
 
 const TenantContext = createContext(null);
 
-// Persistent registered clinics across all devices and sessions
-const initialClinics = [
-  {
-    id: 'clinic-domya-auto',
-    name: 'عيادة د. domya auto',
-    doctorName: 'د. domya auto',
-    specialty: 'جراحة العظام والمفاصل والعمود الفقري',
-    slug: 'dr-domyaauto',
-    senderId: '',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
-  },
-  {
-    id: 'clinic-mohamed-saeed-obgyn',
-    name: 'عيادة د. Mohamed Saeed',
-    doctorName: 'د. Mohamed Saeed',
-    specialty: 'النساء والتوليد ورعاية الحوامل وعلاج العقم',
-    slug: 'dr-mo1momo3mo16',
-    senderId: '',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'lifetime',
-    isLifetimeLicense: true,
-    agreementAmount: 25000,
-    customAgreedPrice: 25000,
-    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
-  },
-  {
-    id: 'clinic-mohammed-saeed-dental',
-    name: 'عيادة د. Mohamed Saeed',
-    doctorName: 'د. Mohamed Saeed',
-    specialty: 'طب وجراحة الفم والأسنان العام',
-    slug: 'dr-mohammedsaeed6u',
-    senderId: '',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
-  },
-  {
-    id: 'clinic-rama-sarg-dental',
-    name: 'عيادة د. Rama Sarg',
-    doctorName: 'د. Rama Sarg',
-    specialty: 'طب وجراحة الفم والأسنان العام',
-    slug: 'dr-ramasarg0',
-    senderId: '',
-    subscriptionTier: 'pro',
-    subscriptionStatus: 'active',
-    quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
-  }
-];
+// Clean zero-state: all clinics must come from real registrations and cloud synchronization
+const initialClinics = [];
 
 export function getCombinedTenants(forceRefresh = true) {
   const registered = getRegisteredTenants(forceRefresh);
-  const combined = [...initialClinics];
+  const combined = [];
 
   registered.forEach(r => {
+    if (!r || (!r.slug && !r.id)) return;
     const idx = combined.findIndex(c => c.slug === r.slug || c.id === r.id);
     if (idx >= 0) {
       combined[idx] = { ...combined[idx], ...r };
@@ -192,7 +145,19 @@ export function resolveTenantFromLocation(
     };
   }
 
-  // 5. Stored preference in localStorage
+  // 5. Check logged-in user clinic (high priority for session continuity)
+  const currentUser = safeSessionGetJSON('clinicflow_auth_user') || safeGetJSON('clinicflow_auth_user');
+  if (currentUser?.clinicSlug && currentUser.clinicSlug !== '*') {
+    const userSlug = currentUser.clinicSlug.toLowerCase().trim();
+    const match = (tenants || []).find(t => t.slug?.toLowerCase() === userSlug || t.id === userSlug);
+    return {
+      slug: userSlug,
+      isDedicatedDomain: false,
+      tenant: match || null
+    };
+  }
+
+  // 6. Stored preference in localStorage
   const saved = safeGetItem('clinicflow_active_tenant_slug');
   if (saved) {
     const savedSlug = saved.toLowerCase().trim();
@@ -204,7 +169,7 @@ export function resolveTenantFromLocation(
     };
   }
 
-  // 6. Fallback
+  // 7. Fallback to first available tenant
   const defaultFallback = (tenants && tenants[0]) ? tenants[0] : null;
   return {
     slug: defaultFallback?.slug || '',
@@ -405,13 +370,46 @@ export const TenantProvider = ({ children }) => {
     const locationResolution = resolveTenantFromLocation(allTenants);
     setDedicatedDomainActive(locationResolution.isDedicatedDomain);
 
-    const targetSlug = slug || locationResolution.slug;
+    const currentUser = safeSessionGetJSON('clinicflow_auth_user') || safeGetJSON('clinicflow_auth_user');
+    const userClinicSlug = (currentUser?.clinicSlug && currentUser.clinicSlug !== '*') ? currentUser.clinicSlug : null;
+
+    const targetSlug = slug || locationResolution.slug || userClinicSlug;
+
+    // Helper: find local match across memory, combined, and registered tenants
+    const findLocalMatch = (identifier) => {
+      if (!identifier) return null;
+      const lower = identifier.toLowerCase().trim();
+      const combined = getCombinedTenants(true);
+      const registered = getRegisteredTenants(true);
+      const found = combined.find(t => (t.slug && t.slug.toLowerCase() === lower) || t.id === lower) ||
+                    registered.find(t => (t.slug && t.slug.toLowerCase() === lower) || t.id === lower) ||
+                    allTenants.find(t => (t.slug && t.slug.toLowerCase() === lower) || t.id === lower);
+      if (found) return found;
+
+      // If user is logged in and belongs to this clinic, reconstruct from user credentials
+      if (currentUser && (currentUser.clinicSlug === identifier || currentUser.clinicId === identifier)) {
+        const reconstructed = {
+          id: currentUser.clinicId || `clinic-${currentUser.id}`,
+          name: currentUser.clinicName || (currentUser.name ? `عيادة د. ${currentUser.name.replace(/^د.?\s*/, '')}` : 'العيادة التخصصية'),
+          doctorName: currentUser.name || 'الطبيب',
+          doctorEmail: currentUser.email || '',
+          specialty: currentUser.specialty || 'الطب العام',
+          slug: currentUser.clinicSlug || identifier,
+          subscriptionTier: 'pro',
+          subscriptionStatus: 'active',
+          branding: { primaryColor: '#09090B', accentColor: '#10B981' },
+          quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
+        };
+        saveRegisteredTenant(reconstructed);
+        return reconstructed;
+      }
+      return null;
+    };
 
     if (!isSupabaseConfigured()) {
-      // Offline / Demo Mode: find in demo clinics and all registered clinics
-      const currentCombined = getCombinedTenants();
-      let match = currentCombined.find(t => t.slug === targetSlug || t.id === targetSlug);
-      if (!match) match = locationResolution.tenant || currentCombined[0] || null;
+      // Offline / Local Mode: find in registered clinics
+      let match = findLocalMatch(targetSlug);
+      if (!match) match = locationResolution.tenant || (allTenants.length > 0 ? allTenants[0] : null);
       setActiveTenant(match);
       if (!locationResolution.isDedicatedDomain && match?.slug) {
         localStorage.setItem('clinicflow_active_tenant_slug', match.slug);
@@ -428,7 +426,7 @@ export const TenantProvider = ({ children }) => {
       const isPlatformHost = !hostname || 
                              hostname.endsWith('.vercel.app') || 
                              hostname.endsWith('.netlify.app') || 
-                             hostname.endsWith('.pages.dev') ||
+                             hostname.endsWith('.pages.dev') || 
                              hostname.endsWith('.onrender.com') ||
                              hostname.endsWith('.github.io') ||
                              hostname.includes('clinicflow') ||
@@ -461,38 +459,44 @@ export const TenantProvider = ({ children }) => {
         }
       }
 
-      const { data, error } = await supabase
-        .from('clinics')
-        .select('*')
-        .or(`slug.eq.${targetSlug},id.eq.${targetSlug}`)
-        .maybeSingle();
+      if (targetSlug) {
+        const { data, error } = await supabase
+          .from('clinics')
+          .select('*')
+          .or(`slug.eq.${targetSlug},id.eq.${targetSlug}`)
+          .maybeSingle();
 
-      if (data && !error) {
-        const parsed = fromDbClinic(data);
-        const merged = {
-          ...parsed,
-          slug: data.slug || targetSlug,
-          customDomain: data.custom_domain || parsed.customDomain,
-          subscriptionTier: data.subscription_tier || 'pro',
-          subscriptionStatus: data.subscription_status || 'active',
-          branding: data.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
-          quotas: data.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
-        };
-        setActiveTenant(merged);
-        if (!locationResolution.isDedicatedDomain) {
-          localStorage.setItem('clinicflow_active_tenant_slug', merged.slug);
+        if (data && !error) {
+          const parsed = fromDbClinic(data);
+          const merged = {
+            ...parsed,
+            slug: data.slug || targetSlug,
+            customDomain: data.custom_domain || parsed.customDomain,
+            subscriptionTier: data.subscription_tier || 'pro',
+            subscriptionStatus: data.subscription_status || 'active',
+            branding: data.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
+            quotas: data.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
+          };
+          setActiveTenant(merged);
+          if (!locationResolution.isDedicatedDomain) {
+            localStorage.setItem('clinicflow_active_tenant_slug', merged.slug);
+          }
+          applyBranding(merged.branding);
+          setIsLoadingTenant(false);
+          return merged;
         }
-        applyBranding(merged.branding);
-        setIsLoadingTenant(false);
-        return merged;
       }
     } catch (err) {
       console.warn('Could not fetch tenant from Supabase, falling back to local:', err);
     }
 
-    // Fallback to first tenant
-    const fallback = locationResolution.tenant || allTenants[0] || null;
+    // Fallback: Check local match for targetSlug before falling back to any generic tenant
+    const localMatch = findLocalMatch(targetSlug);
+    const fallback = localMatch || locationResolution.tenant || (allTenants.length > 0 ? allTenants[0] : null);
     setActiveTenant(fallback);
+    if (fallback?.slug && !locationResolution.isDedicatedDomain) {
+      localStorage.setItem('clinicflow_active_tenant_slug', fallback.slug);
+    }
     applyBranding(fallback?.branding);
     setIsLoadingTenant(false);
     return fallback;
