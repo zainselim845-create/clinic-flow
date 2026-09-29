@@ -29,7 +29,7 @@ const DoctorAssistant = ({ initialMode }) => {
   const [searchParams] = useSearchParams();
   const { state, dispatch, useSupabase } = useApp();
   const { clinic, user } = useAuth();
-  const { tenant } = useTenant();
+  const { tenant, allTenants, switchTenant } = useTenant();
 
   const activeClinic = tenant || state.clinicInfo || clinic;
   const currentClinic = activeClinic;
@@ -53,8 +53,9 @@ const DoctorAssistant = ({ initialMode }) => {
     ...state,
     clinicInfo: activeClinic,
     patients: scopedPatients,
-    appointments: scopedAppointments
-  }), [state, activeClinic, scopedPatients, scopedAppointments]);
+    appointments: scopedAppointments,
+    allClinics: allTenants || []
+  }), [state, activeClinic, scopedPatients, scopedAppointments, allTenants]);
 
   const [aiConfig, setAiConfig] = useState(() => getAiConfig());
 
@@ -215,6 +216,10 @@ const DoctorAssistant = ({ initialMode }) => {
       dispatch({ type: 'UPDATE_CLINIC_INFO', payload: { consultationFee: payload.fee } });
     } else if (actionResult.actionType === 'ADD_SERVICE') {
       dispatch({ type: 'ADD_SERVICE', payload });
+    } else if (actionResult.actionType === 'SWITCH_CLINIC') {
+      if (payload?.slug && typeof switchTenant === 'function') {
+        switchTenant(payload.slug);
+      }
     } else if (actionResult.actionType === 'NAVIGATE') {
       if (payload?.path) {
         navigate(payload.path);

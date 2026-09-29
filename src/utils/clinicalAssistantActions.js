@@ -827,6 +827,74 @@ export function processDoctorIntent(message, state = {}) {
     };
   }
 
+  // 12.5. MULTI-CLINIC & BRANCH MANAGEMENT (استعلام الفروع والتبديل بين العيادات)
+  const isBranchQuery = (
+    text.includes('ايه الفروع اللي عندي') ||
+    text.includes('الفروع اللي عندي') ||
+    text.includes('قائمة الفروع') ||
+    text.includes('قائمة العيادات') ||
+    text.includes('عياداتي') ||
+    text.includes('فروعي')
+  );
+
+  if (isBranchQuery) {
+    const clinics = state.allClinics || [];
+    const currentName = state.clinicInfo?.name || 'العيادة الحالية';
+    if (clinics.length <= 1) {
+      return {
+        isAction: true,
+        actionType: 'INFO',
+        replyText: `أنت تعمل حالياً على: (${currentName}).\nالمنظومة تدعم ربط عدة فروع وعيادات معاً تحت حسابك مع عزل تام للمرضى والخزينة والمواعيد لكل فرع. يمكنك إضافة فرع جديد من تبويب إعدادات الفروع والعيادات.`
+      };
+    }
+
+    const branchList = clinics.map(c => `• ${c.name} [/${c.slug}] ${c.slug === state.clinicInfo?.slug ? '(الفرع النشط حالياً)' : ''}`).join('\n');
+    return {
+      isAction: true,
+      actionType: 'INFO',
+      replyText: `قائمة الفروع والعيادات المرتبطة بحسابك:\n\n${branchList}\n\nللتبديل بين الفروع يمكنك اختيار الفرع من القائمة بالأعلى أو أن تقول لي: (حولني لفرع ...) وسأنقلك فوراً.`
+    };
+  }
+
+  const isSwitchBranchIntent = (
+    text.includes('حول') ||
+    text.includes('بدل') ||
+    text.includes('انقل') ||
+    text.includes('افتح')
+  ) && (
+    text.includes('فرع') ||
+    text.includes('عيادة')
+  );
+
+  if (isSwitchBranchIntent) {
+    const clinics = state.allClinics || [];
+    // 1. Direct name match
+    let matched = clinics.find(c => c.name && text.includes(c.name));
+    // 2. Direct slug match
+    if (!matched) {
+      matched = clinics.find(c => c.slug && text.includes(c.slug));
+    }
+    // 3. Significant word match excluding generic tokens ('فرع', 'عيادة', 'مركز')
+    if (!matched) {
+      const stopWords = ['فرع', 'عيادة', 'عياده', 'مركز'];
+      matched = clinics.find(c => 
+        c.name && c.name.split(/\s+/).filter(w => !stopWords.includes(w)).some(w => w.length >= 3 && text.includes(w))
+      );
+    }
+
+    if (matched) {
+      return {
+        isAction: true,
+        actionType: 'SWITCH_CLINIC',
+        payload: {
+          slug: matched.slug,
+          name: matched.name
+        },
+        replyText: `تم تحويل المنظومة فوراً إلى: (${matched.name}). يتم الآن تحميل مواعيد وخزينة وسجلات هذا الفرع.`
+      };
+    }
+  }
+
   // 13. INSTANT APPOINTMENT BOOKING (حجز وإضافة موعد فوري)
   const isBookingIntent = (
     text.includes('احجز') ||

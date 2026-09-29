@@ -145,6 +145,37 @@ describe('Doctor AI Autonomous Execution & Project-Wide Authority', () => {
       expect(result.replyText).toContain('مروة الشربيني');
       expect(EMOJI_REGEX.test(result.replyText)).toBe(false);
     });
+
+    it('handles multi-branch query and clinic listing', () => {
+      const stateWithBranches = {
+        ...mockState,
+        allClinics: [
+          { id: 'c1', name: 'فرع مدينة نصر', slug: 'nasr-city' },
+          { id: 'c2', name: 'فرع الشيخ زايد', slug: 'sheikh-zayed' }
+        ]
+      };
+      const result = processDoctorIntent('ايه الفروع اللي عندي', stateWithBranches);
+      expect(result.actionType).toBe('INFO');
+      expect(result.replyText).toContain('فرع مدينة نصر');
+      expect(result.replyText).toContain('فرع الشيخ زايد');
+      expect(EMOJI_REGEX.test(result.replyText)).toBe(false);
+    });
+
+    it('handles switch branch action intent', () => {
+      const stateWithBranches = {
+        ...mockState,
+        allClinics: [
+          { id: 'c1', name: 'فرع مدينة نصر', slug: 'nasr-city' },
+          { id: 'c2', name: 'فرع الشيخ زايد', slug: 'sheikh-zayed' }
+        ]
+      };
+      const result = processDoctorIntent('حولني لفرع الشيخ زايد', stateWithBranches);
+      expect(result.isAction).toBe(true);
+      expect(result.actionType).toBe('SWITCH_CLINIC');
+      expect(result.payload.slug).toBe('sheikh-zayed');
+      expect(result.replyText).toContain('الشيخ زايد');
+      expect(EMOJI_REGEX.test(result.replyText)).toBe(false);
+    });
   });
 
   describe('2. Reducer State Transitions for Dispatched Actions', () => {

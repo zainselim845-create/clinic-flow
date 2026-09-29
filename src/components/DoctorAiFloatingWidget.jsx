@@ -22,7 +22,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
   const location = useLocation();
   const { state, dispatch, useSupabase } = useApp();
   const { user, clinic } = useAuth();
-  const { tenant } = useTenant();
+  const { tenant, allTenants, switchTenant } = useTenant();
   
   const activeClinic = tenant || state.clinicInfo || clinic;
   const currentClinic = activeClinic;
@@ -191,6 +191,10 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
       dispatch({ type: 'UPDATE_CLINIC_INFO', payload: { consultationFee: payload.fee } });
     } else if (actionResult.actionType === 'ADD_SERVICE') {
       dispatch({ type: 'ADD_SERVICE', payload });
+    } else if (actionResult.actionType === 'SWITCH_CLINIC') {
+      if (payload?.slug && typeof switchTenant === 'function') {
+        switchTenant(payload.slug);
+      }
     } else if (actionResult.actionType === 'NAVIGATE') {
       if (payload?.path) {
         navigate(payload.path);
@@ -223,7 +227,8 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
       ...state,
       clinicInfo: activeClinic,
       patients: scopedPatients,
-      appointments: scopedAppointments
+      appointments: scopedAppointments,
+      allClinics: allTenants || []
     };
 
     // 1. Direct Rule-based Clinical NLP Processing
