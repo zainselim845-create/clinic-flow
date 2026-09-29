@@ -12,7 +12,6 @@ import ConsultationModal from './dashboard/ConsultationModal';
 import WalkInRegistrationModal from './dashboard/WalkInRegistrationModal';
 import RevenueAnalytics from './dashboard/RevenueAnalytics';
 import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
-import PrescriptionPrintModal from '../components/PrescriptionPrintModal';
 import ExpensesModal from '../components/ExpensesModal';
 import PatientRecallModal from '../components/PatientRecallModal';
 import ShiftHandoverModal from '../components/ShiftHandoverModal';
@@ -22,7 +21,6 @@ import QuickPaymentModal from './dashboard/QuickPaymentModal';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
-import { savePrescriptionToStorage } from '../services/prescriptionService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '../utils/permissions';
 import { getBookingFunnelStats, getBookingDrafts, generateLeadRecoveryWhatsAppUrl, BOOKING_FUNNEL_STEPS } from '../services/leadRecoveryService';
@@ -52,7 +50,6 @@ const Dashboard = () => {
   // Modals & Drawers state
   const [isWalkInModalOpen, setIsWalkInModalOpen] = useState(false);
   const [finishExamAppt, setFinishExamAppt] = useState(null);
-  const [activePrescription, setActivePrescription] = useState(null);
   const [dossierPatient, setDossierPatient] = useState(null);
   const [isExpensesModalOpen, setIsExpensesModalOpen] = useState(false);
   const [isRecallModalOpen, setIsRecallModalOpen] = useState(false);
@@ -243,18 +240,6 @@ const Dashboard = () => {
       entityId: data.appointmentId,
       entityType: 'appointment'
     });
-
-    // Save Prescription if issued by doctor
-    if (data.prescription) {
-      try {
-        savePrescriptionToStorage(data.prescription);
-      } catch (rxErr) {
-        console.warn('Failed to save prescription:', rxErr);
-      }
-      if (data.printPrescriptionImmediate) {
-        setActivePrescription(data.prescription);
-      }
-    }
 
     setFinishExamAppt(null);
   };
@@ -755,12 +740,6 @@ const Dashboard = () => {
         appointment={finishExamAppt}
         onClose={() => setFinishExamAppt(null)}
         onComplete={handleFinishConsultation}
-      />
-
-      <PrescriptionPrintModal
-        isOpen={!!activePrescription}
-        prescription={activePrescription}
-        onClose={() => setActivePrescription(null)}
       />
 
       <PatientDossierDrawer

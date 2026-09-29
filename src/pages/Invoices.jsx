@@ -350,8 +350,8 @@ const Invoices = () => {
       {/* Header */}
       <div className="page-header">
         <div>
-          <h1>مركز الحسابات وحركة الخزينة (Cash Flow Center)</h1>
-          <p>متابعة السيولة النقدية: فلوس داخل (المقبوضات) مقابل فلوس خارج (المصروفات التشغيلية)</p>
+          <h1>مركز الحسابات وحركة الخزينة (داخل وخارج)</h1>
+          <p>متابعة السيولة النقدية: فلوس داخل (تحصيلات وكشوفات) مقابل فلوس خارج (مصروفات العيادة)</p>
         </div>
         <div className="header-actions-btns" style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
           <button onClick={handleExportCSV} className="btn btn-secondary">
@@ -360,15 +360,11 @@ const Invoices = () => {
           </button>
           <button 
             onClick={handleOpenNewExpense} 
-            className="btn btn-secondary"
-            style={{ borderColor: 'var(--danger, #DC2626)', color: 'var(--danger, #DC2626)' }}
+            className="btn btn-primary"
+            style={{ backgroundColor: 'var(--danger, #DC2626)', borderColor: 'var(--danger, #DC2626)', color: '#FFFFFF' }}
           >
             <ArrowUpRight size={17} />
             <span>تسجيل مصروف (فلوس خارج)</span>
-          </button>
-          <button onClick={handleOpenNew} onSelect={handleCreateInvoice} className="btn btn-primary">
-            <Plus size={18} />
-            <span>إصدار فاتورة (فلوس داخل)</span>
           </button>
         </div>
       </div>

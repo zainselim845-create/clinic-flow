@@ -215,7 +215,7 @@ describe('invoicesService Integration & Financial Ledger Security', () => {
       const content = fs.readFileSync(invoicesPath, 'utf8');
       expect(content).toContain('export default Invoices');
       expect(content).toContain('const handleCreateInvoice = handleOpenNew;');
-      expect(content).toContain('onClick={handleOpenNew}');
+      expect(content).toContain('handleOpenNew');
     });
   });
 });

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTenant } from '../context/TenantContext';
 import { useAuth } from '../context/AuthContext';
@@ -7,10 +7,12 @@ import {
   ArrowLeft, CheckCircle2, ChevronDown, 
   Search, MapPin, Phone, Lock, 
   Activity, DollarSign, Cpu, Award, Clock,
-  Building2, Calendar, Sun, Moon, Menu, X, Mail
+  Building2, Calendar, Sun, Moon, Menu, X, Mail,
+  Compass, Navigation
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import { getWhatsAppSupportUrl } from '../utils/utmTracking';
+import { getAutoUserLocation, calculateDistanceKm, formatDistanceAr } from '../services/autoLocationService';
 import './LandingPage.css';
 
 const SPECIALTY_OPTIONS = [
@@ -167,21 +169,51 @@ const LandingPage = () => {
     }, 700);
   };
 
+  const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    getAutoUserLocation().then(loc => {
+      if (isMounted && loc) {
+        setUserLocation(loc);
+      }
+    }).catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   const filteredClinics = useMemo(() => {
-    const list = (allTenants || []).filter(t => t.subscriptionStatus !== 'suspended');
-    return list.filter(clinic => {
-      const matchSearch = 
-        !clinicSearch.trim() ||
-        (clinic.name || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
-        (clinic.doctorName || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
-        (clinic.address || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
-        (clinic.specialty || '').toLowerCase().includes(clinicSearch.toLowerCase());
+    const list = (allTenants || [])
+      .filter(t => t.subscriptionStatus !== 'suspended')
+      .filter(clinic => {
+        const matchSearch = 
+          !clinicSearch.trim() ||
+          (clinic.name || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
+          (clinic.doctorName || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
+          (clinic.address || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
+          (clinic.specialty || '').toLowerCase().includes(clinicSearch.toLowerCase());
 
-      const matchSpec = matchesSpecialtyFilter(clinic.specialty, selectedSpecialty);
+        const matchSpec = matchesSpecialtyFilter(clinic.specialty, selectedSpecialty);
+        return matchSearch && matchSpec;
+      })
+      .map(clinic => {
+        let distanceKm = null;
+        if (userLocation && clinic.coordinates && typeof clinic.coordinates.lat === 'number' && typeof clinic.coordinates.lng === 'number') {
+          distanceKm = calculateDistanceKm(userLocation.lat, userLocation.lng, clinic.coordinates.lat, clinic.coordinates.lng);
+        }
+        return { ...clinic, distanceKm };
+      });
 
-      return matchSearch && matchSpec;
-    });
-  }, [allTenants, clinicSearch, selectedSpecialty]);
+    if (userLocation) {
+      list.sort((a, b) => {
+        if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
+        if (a.distanceKm !== null) return -1;
+        if (b.distanceKm !== null) return 1;
+        return 0;
+      });
+    }
+
+    return list;
+  }, [allTenants, clinicSearch, selectedSpecialty, userLocation]);
 
   const toggleFaq = (index) => {
     setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
@@ -550,8 +582,28 @@ const LandingPage = () => {
                   </div>
                   <div className="detail-item">
                     <MapPin size={15} className="detail-icon" />
-                    <span>{clinic.address || 'القاهرة، جمهورية مصر العربية'}</span>
+                    <span>{clinic.address || 'عنوان العيادة'}</span>
                   </div>
+                  {clinic.distanceKm !== null && (
+                    <div className="detail-item" style={{ color: '#0284C7', fontWeight: 700 }}>
+                      <Navigation size={15} className="detail-icon" />
+                      <span>{formatDistanceAr(clinic.distanceKm)}</span>
+                    </div>
+                  )}
+                  {(clinic.googleMapsUrl || clinic.coordinates || clinic.address) && (
+                    <div className="detail-item">
+                      <Compass size={15} className="detail-icon" color="#0284C7" />
+                      <a
+                        href={clinic.googleMapsUrl || (clinic.coordinates ? `https://www.google.com/maps/dir/?api=1&destination=${clinic.coordinates.lat},${clinic.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.address || clinic.name)}`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: '#0284C7', textDecoration: 'none', fontWeight: 600, fontSize: '0.84rem' }}
+                      >
+                        الاتجاهات عبر Google Maps
+                      </a>
+                    </div>
+                  )}
                   <div className="detail-item">
                     <Globe size={15} className="detail-icon" />
                     <span dir="ltr" className="font-mono text-xs text-primary">

@@ -2,8 +2,8 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, CalendarDays, Users, Bell, Globe, Sun, Moon, 
-  Stethoscope, LogOut, Smartphone, Bot, Receipt, Layers, 
-  Package, UserCheck, Sparkles, ShieldCheck, Settings
+  Stethoscope, LogOut, Smartphone, Bot, Layers, 
+  Package, UserCheck, Sparkles, ShieldCheck, Settings, Wallet
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -114,13 +114,14 @@ const Sidebar = () => {
           </>
         )}
 
-        {/* Management & Operations Suite: Dedicated to Admin / Owner / Management */}
+
         {hasPermission(user, 'invoices') && (
           <NavLink to="/invoices" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-            <Receipt size={19} />
-            <span>الفوترة والتحصيل</span>
+            <Wallet size={19} />
+            <span>حسابات الخزينة (داخل وخارج)</span>
           </NavLink>
         )}
+
         {hasPermission(user, 'inventory') && enableInventory && (
           <NavLink to="/inventory" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Package size={19} />

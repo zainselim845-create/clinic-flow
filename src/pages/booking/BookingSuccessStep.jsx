@@ -19,12 +19,15 @@ export default function BookingSuccessStep({
   const [copiedPayment, setCopiedPayment] = useState(false);
   const cleanPhone = (createdBooking?.patientPhone || '').replace(/^0/, '20').replace(/\D/g, '');
   const clinicPhoneClean = (currentClinic?.phone || '').replace(/^0/, '20').replace(/\D/g, '');
+  const clinicAddressPart = currentClinic?.address ? `\nالعنوان: ${currentClinic.address}` : '';
+  const clinicMapPart = currentClinic?.googleMapsUrl ? `\nالموقع على الخريطة: ${currentClinic.googleMapsUrl}` : '';
   const smsMsg = encodeURIComponent(
     `مرحباً، تم حجز موعد كشف باسم: ${createdBooking?.patientName}\n` +
     `كود الحجز: ${createdBooking?.bookingCode}\n` +
     `الموعد: ${createdBooking?.date} الساعة ${createdBooking?.time}\n` +
-    `الخدمة: ${createdBooking?.type}\n` +
-    `العنوان: ${currentClinic?.address}`
+    `الخدمة: ${createdBooking?.type}` +
+    clinicAddressPart +
+    clinicMapPart
   );
   const smsUrl = `sms:+${clinicPhoneClean || cleanPhone}?body=${smsMsg}`;
 
@@ -43,7 +46,9 @@ export default function BookingSuccessStep({
     time: createdBooking?.time,
     clinicName: currentClinic?.name,
     bookingCode: createdBooking?.bookingCode,
-    manageUrl: manageUrlWithParams
+    manageUrl: manageUrlWithParams,
+    address: currentClinic?.address,
+    googleMapsUrl: currentClinic?.googleMapsUrl
   });
 
   const getGoogleCalendarUrl = (booking) => {

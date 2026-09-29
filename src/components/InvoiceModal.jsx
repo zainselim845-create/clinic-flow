@@ -192,7 +192,19 @@ const InvoiceModal = ({
             <div className="clinic-meta">
               <h2>{clinicInfo.name || 'مركز طب وتجميل الأسنان'}</h2>
               <p className="dr-title">{clinicInfo.doctorName} — {clinicInfo.specialty}</p>
-              <p className="clinic-sub-info"><MapPin size={12} /> {clinicInfo.address}</p>
+              <p className="clinic-sub-info"><MapPin size={12} /> {clinicInfo.address || 'عنوان العيادة'}</p>
+              {clinicInfo.googleMapsUrl && (
+                <p className="clinic-sub-info" style={{ fontSize: '0.74rem' }}>
+                  <a
+                    href={clinicInfo.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'inherit', textDecoration: 'underline' }}
+                  >
+                    موقع العيادة على خرائط Google
+                  </a>
+                </p>
+              )}
               <p className="clinic-sub-info"><Phone size={12} /> {clinicInfo.phone}</p>
             </div>
             <div className="invoice-badge-box">

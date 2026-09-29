@@ -440,12 +440,14 @@ export async function sendReminder(nameOrOptions, phone, date, time, clinicName,
 /**
  * Generate formatted WhatsApp link for booking confirmation
  */
-export function getBookingConfirmationWhatsAppUrl({ patientName, phone, date, time, clinicName, bookingCode, manageUrl }) {
+export function getBookingConfirmationWhatsAppUrl({ patientName, phone, date, time, clinicName, bookingCode, manageUrl, address, googleMapsUrl }) {
   let msg = `${clinicName || 'عيادة كلينيك فلو'}\n`;
   msg += `أهلاً بك أ/ ${patientName || 'المريض'}،\n`;
   msg += `تم تأكيد حجز موعدك بنجاح.\n\n`;
   msg += `الموعد: ${date} الساعة ${time}\n`;
   if (bookingCode) msg += `كود الحجز: ${bookingCode}\n`;
+  if (address) msg += `العنوان: ${address}\n`;
+  if (googleMapsUrl) msg += `الموقع على الخريطة: ${googleMapsUrl}\n`;
   if (manageUrl) msg += `لإدارة أو تعديل موعدك: ${manageUrl}\n\n`;
   msg += `نتمنى لك دوام الصحة والعافية، ويُرجى الحضور قبل الموعد بـ 10 دقائق.`;
 

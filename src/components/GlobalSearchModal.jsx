@@ -5,7 +5,7 @@ import { useTenant } from '../context/TenantContext';
 import { 
   Search, User, Calendar, Clock, ArrowLeft, X, 
   Smartphone, Users, CheckCircle2, AlertCircle, ShieldCheck,
-  Receipt, Package, Layers, Bot, SunMoon, UserPlus, CalendarPlus, CreditCard
+  Package, Layers, Bot, SunMoon, UserPlus, CalendarPlus, CreditCard, ArrowUpRight
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
@@ -74,7 +74,7 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
   const quickActions = useMemo(() => [
     { id: 'act-new-patient', title: 'إضافة مريض جديد', icon: UserPlus, path: '/patients?action=new', category: 'إجراءات سريعة' },
     { id: 'act-new-appt', title: 'حجز موعد كشف جديد', icon: CalendarPlus, path: '/appointments?action=new', category: 'إجراءات سريعة' },
-    { id: 'act-new-inv', title: 'إصدار فاتورة جديدة', icon: Receipt, path: '/invoices?action=new', category: 'إجراءات سريعة' },
+    { id: 'act-new-expense', title: 'تسجيل مصروف جديد (فلوس خارج)', icon: ArrowUpRight, path: '/invoices?action=expense', category: 'إجراءات سريعة' },
     { id: 'act-new-inv-item', title: 'إضافة صنف جديد للمخزون', icon: Package, path: '/inventory?action=new', category: 'إجراءات سريعة' },
     { id: 'act-new-lab', title: 'إصدار طلب معمل وتركيبات', icon: Layers, path: '/labs?action=new', category: 'إجراءات سريعة' },
     { id: 'act-doctor-ai', title: 'المساعد السريري الذكي (Doctor AI)', icon: Bot, path: '/doctor-agent', category: 'الذكاء الاصطناعي' },

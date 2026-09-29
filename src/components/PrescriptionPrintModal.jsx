@@ -84,7 +84,7 @@ export default function PrescriptionPrintModal({
                   <div className="rx-clinic-contact">
                     <div>{prescription.clinicSpecialty || 'عيادة تخصصية'}</div>
                     <div>{prescription.clinicPhone || 'هاتف العيادة'}</div>
-                    <div>{prescription.clinicAddress || 'جمهورية مصر العربية'}</div>
+                    <div>{prescription.clinicAddress || 'عنوان العيادة'}</div>
                   </div>
                 </div>
               </div>
