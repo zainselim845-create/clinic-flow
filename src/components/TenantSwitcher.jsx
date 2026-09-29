@@ -10,7 +10,7 @@ import { copyToClipboard } from '../utils/clipboard';
 import './TenantSwitcher.css';
 
 export default function TenantSwitcher({ renderLockedOnDedicated = false }) {
-  const { tenant, allTenants, switchTenant, tenantSlug, isDedicatedDomain } = useTenant();
+  const { tenant, allTenants, switchTenant, tenantSlug, isDedicatedDomain, hasFeature } = useTenant();
   const { user } = useAuth();
   const location = useLocation();
   const [copiedSlug, setCopiedSlug] = useState(null);
@@ -68,13 +68,14 @@ export default function TenantSwitcher({ renderLockedOnDedicated = false }) {
     return null;
   }
 
-  // 2. Single-clinic lock: Regular doctors and receptionists cannot switch or see other clinics
-  if (!canSwitch || allowedTenants.length <= 1) {
+  // 2. Single-clinic lock: Regular doctors and receptionists, or accounts without multiBranch feature (Starter tier)
+  const isMultiBranchActive = isSuperAdmin || (hasFeature ? hasFeature('multiBranch') : (tenant?.subscriptionTier === 'pro' || tenant?.subscriptionTier === 'enterprise'));
+  if (!canSwitch || allowedTenants.length <= 1 || !isMultiBranchActive) {
     return (
       <div className="tenant-switcher-container">
         <div 
           className="tenant-switcher-btn tenant-locked" 
-          title="العيادة المصرح بها فقط — حساب أحادي العيادة مقفل أمنياً"
+          title={!isMultiBranchActive ? "خاصية ربط الفروع المتعددة متاحة ابتداءً من باقة Pro فما فوق" : "العيادة المصرح بها فقط — حساب أحادي العيادة مقفل أمنياً"}
         >
           <div className="tenant-avatar-badge" style={{ backgroundColor: tenant?.branding?.primaryColor || 'var(--primary)' }}>
             <Building2 size={15} color="#FFFFFF" />
@@ -83,7 +84,7 @@ export default function TenantSwitcher({ renderLockedOnDedicated = false }) {
             <span className="tenant-name-label">{tenant?.name || 'العيادة النشطة'}</span>
             <span className="tenant-slug-label">/{tenantSlug}</span>
           </div>
-          <div className="tenant-locked-tag" title="مقفل — حساب عيادة وحيدة">
+          <div className="tenant-locked-tag" title={!isMultiBranchActive ? "يتطلب باقة Pro أو Enterprise" : "مقفل — حساب عيادة وحيدة"}>
             <Lock size={13} />
           </div>
         </div>

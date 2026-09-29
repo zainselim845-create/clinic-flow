@@ -838,6 +838,15 @@ export function processDoctorIntent(message, state = {}) {
   );
 
   if (isBranchQuery) {
+    const tier = state.subscriptionTier || state.clinicInfo?.subscriptionTier;
+    if (tier === 'starter' || state.hasMultiBranch === false) {
+      return {
+        isAction: true,
+        actionType: 'INFO',
+        replyText: `أنت تعمل حالياً على: (${state.clinicInfo?.name || 'العيادة الحالية'}) باقة Starter (الأساسية).\nخاصية ربط وإدارة عدة فروع وعيادات معاً متاحة ابتداءً من باقة Pro (العيادة الذكية) فما فوق. يمكنك ترقية الاشتراك لإضافة فروع جديدة والتنقل بينها بسهولة.`
+      };
+    }
+
     const clinics = state.allClinics || [];
     const currentName = state.clinicInfo?.name || 'العيادة الحالية';
     if (clinics.length <= 1) {
@@ -867,6 +876,15 @@ export function processDoctorIntent(message, state = {}) {
   );
 
   if (isSwitchBranchIntent) {
+    const tier = state.subscriptionTier || state.clinicInfo?.subscriptionTier;
+    if (tier === 'starter' || state.hasMultiBranch === false) {
+      return {
+        isAction: true,
+        actionType: 'INFO',
+        replyText: `خاصية التبديل بين الفروع والعيادات متاحة ابتداءً من باقة Pro (العيادة الذكية) فما فوق. باقة عيادتكم الحالية (Starter) تدعم فرعاً واحداً فقط. يرجى ترقية الاشتراك لتفعيل الربط المتعدد.`
+      };
+    }
+
     const clinics = state.allClinics || [];
     // 1. Direct name match
     let matched = clinics.find(c => c.name && text.includes(c.name));

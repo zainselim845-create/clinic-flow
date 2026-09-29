@@ -16,7 +16,7 @@ export function getDefaultTierQuotas(tier = 'pro') {
   switch (tier) {
     case 'starter':
       return {
-        monthlySmsQuota: 300,
+        monthlySmsQuota: 0,
         extraSmsCredits: 0,
         smsUsed: 0,
         monthlyAiQuota: 500000,
@@ -37,7 +37,7 @@ export function getDefaultTierQuotas(tier = 'pro') {
     case 'pro':
     default:
       return {
-        monthlySmsQuota: 1000,
+        monthlySmsQuota: 0,
         extraSmsCredits: 0,
         smsUsed: 0,
         monthlyAiQuota: 2000000,
@@ -51,13 +51,13 @@ export function getDefaultTierQuotas(tier = 'pro') {
 /**
  * Retrieves the live, persistent usage state for a clinic
  */
-export function getClinicUsage(clinicId = 'default', initialQuotas = null, tier = 'pro') {
+export function getClinicUsage(clinicId = 'default', initialQuotas = null, tier = null) {
   const cleanClinicId = clinicId || 'default';
   const key = `${USAGE_STORAGE_PREFIX}${cleanClinicId}`;
   
   const saved = safeStorage.getItem(key, null);
   if (saved && typeof saved === 'object') {
-    const totalSmsAllowed = (saved.monthlySmsQuota || 1000) + (saved.extraSmsCredits || 0);
+    const totalSmsAllowed = (saved.monthlySmsQuota !== undefined ? saved.monthlySmsQuota : 1000) + (saved.extraSmsCredits || 0);
     const remainingSms = Math.max(0, totalSmsAllowed - (saved.smsUsed || 0));
     const totalAiAllowed = (saved.monthlyAiQuota || 2000000) + (saved.extraAiCredits || 0);
     const remainingAiTokens = Math.max(0, totalAiAllowed - (saved.aiTokensUsed || 0));
@@ -73,11 +73,19 @@ export function getClinicUsage(clinicId = 'default', initialQuotas = null, tier 
     };
   }
 
+  // Resolve tier: if tier passed, use it; otherwise check registered tenants, otherwise fallback to 'enterprise'
+  let resolvedTier = tier;
+  if (!resolvedTier) {
+    const registered = safeStorage.getItem('clinicflow_registered_tenants', []);
+    const match = Array.isArray(registered) ? registered.find(t => t.id === cleanClinicId || t.slug === cleanClinicId) : null;
+    resolvedTier = match?.subscriptionTier || 'enterprise';
+  }
+
   // Initialize from defaults or provided initial quotas
-  const defaults = getDefaultTierQuotas(tier);
+  const defaults = getDefaultTierQuotas(resolvedTier);
   const initialized = {
     clinicId: cleanClinicId,
-    monthlySmsQuota: initialQuotas?.monthlySmsQuota || defaults.monthlySmsQuota,
+    monthlySmsQuota: initialQuotas?.monthlySmsQuota !== undefined ? initialQuotas.monthlySmsQuota : defaults.monthlySmsQuota,
     extraSmsCredits: initialQuotas?.extraSmsCredits || 0,
     smsUsed: initialQuotas?.smsUsed || 0,
     monthlyAiQuota: initialQuotas?.aiTokensQuota || initialQuotas?.monthlyAiQuota || defaults.monthlyAiQuota,
@@ -111,12 +119,15 @@ export function getClinicUsage(clinicId = 'default', initialQuotas = null, tier 
 export function canClinicSendSms(clinicId = 'default') {
   const usage = getClinicUsage(clinicId);
   if (usage.remainingSms <= 0) {
+    const errorMsg = usage.totalSmsAllowed === 0
+      ? 'خاصية رسائل SMS وبوابات الإرسال متاحة حصرياً لباقة Enterprise (المراكز الكبرى). باقة عيادتكم الحالية لا تتضمن رصيد رسائل SMS. يرجى الترقية إلى باقة Enterprise لتفعيل الرسائل.'
+      : `رصيد رسائل SMS الخاص بعيادتكم نفد بالكامل (0 متبقي من أصل ${usage.totalSmsAllowed} رسالة). يُرجى شحن الرصيد للاستمرار في إرسال التذكيرات وتأكيدات الحجز.`;
     return {
       allowed: false,
       remaining: 0,
       totalAllowed: usage.totalSmsAllowed,
       used: usage.smsUsed,
-      error: `رصيد رسائل SMS الخاص بعيادتكم نفد بالكامل (0 متبقي من أصل ${usage.totalSmsAllowed} رسالة). يُرجى شحن الرصيد للاستمرار في إرسال التذكيرات وتأكيدات الحجز.`
+      error: errorMsg
     };
   }
 

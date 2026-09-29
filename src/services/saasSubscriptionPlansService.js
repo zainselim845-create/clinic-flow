@@ -10,19 +10,20 @@ export const DEFAULT_SAAS_PLANS = [
     nameEn: 'Starter',
     monthlyPrice: 499,
     annualPrice: 4990,
-    monthlySmsQuota: 500,
+    monthlySmsQuota: 0,
     maxDoctors: 1,
     maxAppointmentsPerMonth: 300,
     maxPatients: 1000,
     aiAssistant: false,
     customDomain: false,
+    multiBranch: false,
     whatsappBot: false,
     labModule: false,
     inventoryModule: false,
     dentalChart: false,
     badge: 'العيادات الفردية',
     accentColor: '#71717A',
-    description: 'مثالية للعيادات الفردية والأطباء المستقلين في بداية تأسيس عيادتهم الخاصة.'
+    description: 'مثالية للعيادات الفردية والأطباء المستقلين (فرع واحد، إدارة أساسية دون رسائل SMS).'
   },
   {
     id: 'pro',
@@ -30,19 +31,20 @@ export const DEFAULT_SAAS_PLANS = [
     nameEn: 'Pro',
     monthlyPrice: 999,
     annualPrice: 9990,
-    monthlySmsQuota: 2000,
+    monthlySmsQuota: 0,
     maxDoctors: 3,
     maxAppointmentsPerMonth: 1500,
     maxPatients: 5000,
     aiAssistant: true,
     customDomain: false,
-    whatsappBot: true,
+    multiBranch: true,
+    whatsappBot: false,
     labModule: true,
     inventoryModule: true,
     dentalChart: true,
     badge: 'الأكثر طلباً',
     accentColor: '#007AFF',
-    description: 'الحل الشامل للعيادات التخصصية التي تبحث عن أتمتة كاملة، ومساعد طبيب ذكي، وإدارة فواتير ومخزون.'
+    description: 'الحل الشامل للعيادات التخصصية لربط الفروع المتعددة، ومساعد طبيب ذكي، وإدارة فواتير ومخزون.'
   },
   {
     id: 'enterprise',
@@ -56,13 +58,14 @@ export const DEFAULT_SAAS_PLANS = [
     maxPatients: 50000,
     aiAssistant: true,
     customDomain: true,
+    multiBranch: true,
     whatsappBot: true,
     labModule: true,
     inventoryModule: true,
     dentalChart: true,
     badge: 'مراكز ومستشفيات VIP',
     accentColor: '#10B981',
-    description: 'للمجمعات والمراكز الطبية مع ربط دومين مخصص، صلاحيات متعددة الأطباء، وتدقيق حسابي وسحابي كامل.'
+    description: 'للمجمعات والمراكز الطبية الكبرى مع باقة رسائل SMS وواتساب متكاملة، ربط دومين مخصص، صلاحيات متعددة الأطباء، وتدقيق حسابي وسحابي كامل.'
   }
 ];
 

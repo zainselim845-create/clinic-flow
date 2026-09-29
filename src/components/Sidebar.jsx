@@ -14,10 +14,11 @@ import './Sidebar.css';
 const Sidebar = () => {
   const { state, toggleTheme, mobileNavOpen, setMobileNavOpen } = useApp();
   const { signOut, user } = useAuth();
-  const { tenant } = useTenant();
+  const { tenant, hasFeature } = useTenant();
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
   const isDoctor = isDoctorRole(user);
   const isAdmin = isAdminRole(user);
+  const canAccessSms = hasFeature ? hasFeature('sms') : (tenant?.subscriptionTier === 'enterprise');
 
   const clinicSpecialty = tenant?.specialty || state.clinicInfo?.specialty || '';
   const isDental = Boolean(clinicSpecialty && (clinicSpecialty.includes('أسنان') || clinicSpecialty.includes('فم') || clinicSpecialty.toLowerCase().includes('dental')));
@@ -142,10 +143,12 @@ const Sidebar = () => {
         {/* Strictly Administrative Features (إدارة العيادة فقط) */}
         {isAdmin && (
           <>
-            <NavLink to="/sms-integration" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
-              <Smartphone size={19} />
-              <span>بوابة الرسائل النصية (SMS)</span>
-            </NavLink>
+            {canAccessSms && (
+              <NavLink to="/sms-integration" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
+                <Smartphone size={19} />
+                <span>بوابة الرسائل النصية (SMS)</span>
+              </NavLink>
+            )}
             <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
               <Settings size={19} />
               <span>إدارة وإعدادات العيادة</span>

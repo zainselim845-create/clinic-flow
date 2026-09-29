@@ -24,17 +24,19 @@ describe('Usage Metering & Credit Enforcement Engine', () => {
   describe('Pre-flight Quota Checks & Default Tiers', () => {
     it('initializes default quotas correctly for different subscription tiers', () => {
       const starterUsage = getClinicUsage('clinic-starter', null, 'starter');
-      expect(starterUsage.totalSmsAllowed).toBe(300);
-      expect(starterUsage.remainingSms).toBe(300);
-      expect(starterUsage.isSmsDepleted).toBe(false);
+      expect(starterUsage.totalSmsAllowed).toBe(0);
+      expect(starterUsage.remainingSms).toBe(0);
+      expect(starterUsage.isSmsDepleted).toBe(true);
 
       const proUsage = getClinicUsage('clinic-pro', null, 'pro');
-      expect(proUsage.totalSmsAllowed).toBe(1000);
-      expect(proUsage.remainingSms).toBe(1000);
+      expect(proUsage.totalSmsAllowed).toBe(0);
+      expect(proUsage.remainingSms).toBe(0);
+      expect(proUsage.isSmsDepleted).toBe(true);
 
       const entUsage = getClinicUsage('clinic-ent', null, 'enterprise');
       expect(entUsage.totalSmsAllowed).toBe(5000);
       expect(entUsage.remainingSms).toBe(5000);
+      expect(entUsage.isSmsDepleted).toBe(false);
     });
 
     it('blocks sending when SMS balance is 0 or depleted', () => {

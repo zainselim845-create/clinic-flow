@@ -747,7 +747,7 @@ export const TenantProvider = ({ children }) => {
 
     const tierFeatures = {
       starter: ['appointments', 'patients', 'invoices'],
-      pro: ['appointments', 'patients', 'invoices', 'inventory', 'sms', 'aiAssistant', 'dentalChart'],
+      pro: ['appointments', 'patients', 'invoices', 'inventory', 'aiAssistant', 'dentalChart', 'multiBranch'],
       enterprise: ['appointments', 'patients', 'invoices', 'inventory', 'sms', 'aiAssistant', 'dentalChart', 'multiDoctor', 'multiBranch', 'customDomain', 'auditLogs']
     };
 
@@ -763,6 +763,9 @@ export const TenantProvider = ({ children }) => {
     const quotas = activeTenant.quotas;
     switch (quotaType) {
       case 'sms': {
+        if (!hasFeature('sms')) {
+          return { allowed: false, used: 0, limit: 0, tierRestricted: true };
+        }
         const used = quotas.smsUsed || 0;
         const limit = quotas.monthlySmsQuota || 1000;
         return { allowed: used < limit, used, limit };

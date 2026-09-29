@@ -226,6 +226,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
     const scopedState = {
       ...state,
       clinicInfo: activeClinic,
+      subscriptionTier: tenant?.subscriptionTier || activeClinic?.subscriptionTier || 'pro',
       patients: scopedPatients,
       appointments: scopedAppointments,
       allClinics: allTenants || []

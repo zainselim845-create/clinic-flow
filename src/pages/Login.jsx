@@ -693,7 +693,7 @@ export default function Login() {
                             price: '499 ج.م',
                             period: '/ شهر',
                             badge: 'العيادات الفردية',
-                            features: ['طبيب واحد', '500 رسالة SMS', 'مواعيد ومرضى وفواتير']
+                            features: ['طبيب واحد', 'عيادة واحدة (فرع واحد)', 'مواعيد ومرضى وفواتير']
                           },
                           {
                             id: 'pro',
@@ -701,7 +701,7 @@ export default function Login() {
                             price: '999 ج.م',
                             period: '/ شهر',
                             badge: 'الأكثر طلباً',
-                            features: ['حتى 3 أطباء', '2000 رسالة SMS', 'مساعد ذكي ومخزون']
+                            features: ['حتى 3 أطباء', 'ربط فروع وعيادات متعددة', 'مساعد ذكي ومخزون']
                           },
                           {
                             id: 'enterprise',
@@ -709,7 +709,7 @@ export default function Login() {
                             price: '1999 ج.م',
                             period: '/ شهر',
                             badge: 'مؤسسي متقدم',
-                            features: ['حتى 10 أطباء', '6000 رسالة SMS', 'نطاق مخصص وأفرع']
+                            features: ['حتى 10 أطباء', 'باقة رسائل SMS وواتساب', 'نطاق مخصص وتدقيق كامل']
                           }
                         ].map((plan) => {
                           const isSelected = (regForm.subscriptionTier || 'pro') === plan.id;

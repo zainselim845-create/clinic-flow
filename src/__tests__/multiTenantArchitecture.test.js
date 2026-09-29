@@ -95,7 +95,7 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
   describe('2. Subscription Tier Feature Gating Engine', () => {
     const tierFeatures = {
       starter: ['appointments', 'patients', 'invoices'],
-      pro: ['appointments', 'patients', 'invoices', 'inventory', 'sms', 'aiAssistant', 'dentalChart'],
+      pro: ['appointments', 'patients', 'invoices', 'inventory', 'aiAssistant', 'dentalChart', 'multiBranch'],
       enterprise: ['appointments', 'patients', 'invoices', 'inventory', 'sms', 'aiAssistant', 'dentalChart', 'multiDoctor', 'multiBranch', 'customDomain', 'auditLogs']
     };
 
@@ -110,18 +110,21 @@ describe('ClinicFlow Enterprise Multi-Tenant B2B SaaS Architecture', () => {
       expect(hasFeature('starter', 'aiAssistant')).toBe(false);
       expect(hasFeature('starter', 'inventory')).toBe(false);
       expect(hasFeature('starter', 'multiDoctor')).toBe(false);
+      expect(hasFeature('starter', 'multiBranch')).toBe(false);
+      expect(hasFeature('starter', 'sms')).toBe(false);
     });
 
-    it('pro tier unlocks AI assistant, inventory, SMS and specialty charts', () => {
+    it('pro tier unlocks AI assistant, inventory, multiBranch and specialty charts (SMS is restricted to Enterprise)', () => {
       expect(hasFeature('pro', 'aiAssistant')).toBe(true);
       expect(hasFeature('pro', 'inventory')).toBe(true);
-      expect(hasFeature('pro', 'sms')).toBe(true);
+      expect(hasFeature('pro', 'sms')).toBe(false);
       expect(hasFeature('pro', 'dentalChart')).toBe(true);
-      expect(hasFeature('pro', 'multiBranch')).toBe(false);
+      expect(hasFeature('pro', 'multiBranch')).toBe(true);
       expect(hasFeature('pro', 'customDomain')).toBe(false);
     });
 
-    it('enterprise tier unlocks complete multi-doctor, multi-branch, and custom domain suite', () => {
+    it('enterprise tier unlocks complete multi-doctor, multi-branch, SMS suite, and custom domain suite', () => {
+      expect(hasFeature('enterprise', 'sms')).toBe(true);
       expect(hasFeature('enterprise', 'multiDoctor')).toBe(true);
       expect(hasFeature('enterprise', 'multiBranch')).toBe(true);
       expect(hasFeature('enterprise', 'customDomain')).toBe(true);

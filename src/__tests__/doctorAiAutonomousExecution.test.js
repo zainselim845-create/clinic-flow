@@ -176,6 +176,28 @@ describe('Doctor AI Autonomous Execution & Project-Wide Authority', () => {
       expect(result.replyText).toContain('الشيخ زايد');
       expect(EMOJI_REGEX.test(result.replyText)).toBe(false);
     });
+
+    it('restricts branch switching and querying on starter tier with upgrade prompt', () => {
+      const starterState = {
+        ...mockState,
+        subscriptionTier: 'starter',
+        allClinics: [
+          { id: 'c1', name: 'فرع مدينة نصر', slug: 'nasr-city' },
+          { id: 'c2', name: 'فرع الشيخ زايد', slug: 'sheikh-zayed' }
+        ]
+      };
+      const queryRes = processDoctorIntent('ايه الفروع اللي عندي', starterState);
+      expect(queryRes.actionType).toBe('INFO');
+      expect(queryRes.replyText).toContain('Starter');
+      expect(queryRes.replyText).toContain('Pro');
+      expect(EMOJI_REGEX.test(queryRes.replyText)).toBe(false);
+
+      const switchRes = processDoctorIntent('حولني لفرع الشيخ زايد', starterState);
+      expect(switchRes.actionType).toBe('INFO');
+      expect(switchRes.replyText).toContain('Starter');
+      expect(switchRes.replyText).toContain('Pro');
+      expect(EMOJI_REGEX.test(switchRes.replyText)).toBe(false);
+    });
   });
 
   describe('2. Reducer State Transitions for Dispatched Actions', () => {

@@ -177,10 +177,10 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
       monthlySmsQuota: selectedPlan.monthlySmsQuota,
       smsUsed: 0
     } : {
-      starter: { maxDoctors: 1, monthlySmsQuota: 1000, smsUsed: 0 },
-      pro: { maxDoctors: 3, monthlySmsQuota: 2000, smsUsed: 0 },
-      enterprise: { maxDoctors: 10, monthlySmsQuota: 5000, smsUsed: 0 }
-    }[newTier] || { maxDoctors: 3, monthlySmsQuota: 2000, smsUsed: 0 };
+      starter: { maxDoctors: 1, monthlySmsQuota: 0, smsUsed: 0 },
+      pro: { maxDoctors: 3, monthlySmsQuota: 0, smsUsed: 0 },
+      enterprise: { maxDoctors: 10, monthlySmsQuota: 6000, smsUsed: 0 }
+    }[newTier] || { maxDoctors: 3, monthlySmsQuota: 0, smsUsed: 0 };
 
     updateTenantInfo({
       id: clinicId,

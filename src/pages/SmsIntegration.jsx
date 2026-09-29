@@ -88,8 +88,9 @@ const AUTO_TRIGGERS = [
 ];
 
 export default function SmsIntegration() {
-  const { tenant } = useTenant();
+  const { tenant, hasFeature } = useTenant();
   const clinicId = tenant?.id || 'default';
+  const isSmsAllowed = hasFeature ? hasFeature('sms') : (tenant?.subscriptionTier === 'enterprise');
 
   const [config, setConfig] = useState(() => getSmsConfig(clinicId));
   const [selectedProvider, setSelectedProvider] = useState(config.provider || 'clinicflow-gateway');
@@ -190,6 +191,31 @@ export default function SmsIntegration() {
           <span>البوابة نشطة</span>
         </div>
       </div>
+
+      {!isSmsAllowed && (
+        <div className="sms-tier-restriction-banner" style={{
+          backgroundColor: '#FFFBEB',
+          border: '1px solid #FCD34D',
+          color: '#92400E',
+          padding: '16px 20px',
+          borderRadius: '12px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+          lineHeight: '1.6'
+        }}>
+          <div>
+            <strong style={{ display: 'block', fontSize: '15px', marginBottom: '4px' }}>
+              بوابة الرسائل النصية وباقات الإرسال متاحة حصرياً لباقة Enterprise (المراكز الكبرى)
+            </strong>
+            <span style={{ fontSize: '13px', color: '#B45309' }}>
+              باقتكم الحالية ({tenant?.subscriptionTier === 'pro' ? 'Pro - العيادة الذكية' : 'Starter - الأساسية'}) لا تشمل رصيد إرسال رسائل SMS. يرجى الترقية إلى باقة Enterprise للحصول على باقة الرسائل الشهرية وبوابات الإرسال المعتمدة.
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Metrics Grid */}
       <div className="sms-metrics-grid">
