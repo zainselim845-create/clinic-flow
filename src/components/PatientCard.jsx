@@ -33,7 +33,7 @@ const PatientCard = ({ patient, onClick, onEdit }) => {
         <div className="patient-main-info">
           <h3 title={name}>{name}</h3>
           <span className="patient-sub-meta">
-            {patient.gender || 'ذكر'} • {patient.age || '—'} سنة
+            {patient.gender || 'ذكر'} • {patient.age || '—'} سنة {patient.governorate ? `• ${patient.governorate}` : ''}
           </span>
         </div>
 

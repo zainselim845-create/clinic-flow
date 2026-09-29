@@ -452,9 +452,11 @@ const InvoiceModal = ({
                   aria-label="طريقة سداد الدفعة"
                 >
                   <option value="cash">نقداً (Cash)</option>
-                  <option value="card">فيزا / كارت (POS)</option>
                   <option value="instapay">إنستاباي (InstaPay)</option>
-                  <option value="wallet">محفظة المريض</option>
+                  <option value="vodafone_cash">محفظة كاش إلكترونية (Cash Wallet)</option>
+                  <option value="meeza">بطاقة ميزة الوطنية (Meeza)</option>
+                  <option value="card">فيزا / ماستركارد (POS)</option>
+                  <option value="wallet">محفظة رصيد المريض</option>
                 </select>
                 <button
                   type="button"

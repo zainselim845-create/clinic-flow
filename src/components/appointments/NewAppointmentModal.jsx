@@ -69,7 +69,7 @@ const NewAppointmentModal = ({
                 >
                   <option value="">{patients.length === 0 ? 'لا يوجد مرضى مسجلين (أضف مريضاً أولاً)' : 'اختر المريض...'}</option>
                   {patients.map(p => (
-                    <option key={p.id} value={p.id}>{p.name} ({p.phone})</option>
+                    <option key={p.id} value={p.id}>{p.name} ({p.phone}){p.governorate ? ` — ${p.governorate}` : ''}</option>
                   ))}
                 </select>
               </div>
@@ -120,18 +120,30 @@ const NewAppointmentModal = ({
                 />
               </div>
 
-              <div className="form-group">
-                <label>قيمة الكشف (ج.م)</label>
-                <input 
-                  type="text"
-                  className="input-field"
-                  placeholder="300 ج.م"
-                  value={formData.fee || ''}
-                  onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
-                />
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.25rem', display: 'block' }}>
-                  قيمة كشف العيادة الموحدة (يمكن تعديلها أو إضافة خدمات إضافية أثناء فحص الطبيب).
-                </span>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>قيمة الكشف (ج.م)</label>
+                  <input 
+                    type="text"
+                    className="input-field"
+                    placeholder="300 ج.م"
+                    value={formData.fee || ''}
+                    onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>طريقة الدفع</label>
+                  <select
+                    className="input-field"
+                    value={formData.paymentMethod || 'cash'}
+                    onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
+                  >
+                    <option value="cash">نقداً بالعيادة (Cash)</option>
+                    <option value="instapay">تحويل إنستاباي (InstaPay)</option>
+                    <option value="vodafone_cash">محفظة كاش إلكترونية</option>
+                    <option value="meeza">بطاقة ميزة الوطنية</option>
+                  </select>
+                </div>
               </div>
 
               <div className="form-group">
