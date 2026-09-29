@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   Send, MessageCircle, CheckCircle2, Clock, 
-  ArrowLeft, Search, Check, RefreshCw, AlertCircle
+  ArrowLeft, Search, Check, RefreshCw, AlertCircle, Zap
 } from 'lucide-react';
 import { 
   getBookingFunnelStats, 
@@ -11,14 +11,20 @@ import {
   generateLeadRecoverySmsUrl 
 } from '../../../services/leadRecoveryService';
 import { generateNoShowRecoveryMessage } from '../../../services/noShowRecoveryService';
+import { sendSmsBatchAsync } from '../../../services/smsService';
+import { useTenant } from '../../../context/TenantContext';
 
 export function RecoveryTab({ abandonedLeads: initialAbandonedLeads, noShowAppointments, currentClinic }) {
+  const { hasFeature, tenant } = useTenant();
+  const canSendSms = hasFeature ? hasFeature('sms') : (tenant?.subscriptionTier === 'enterprise');
   const clinicId = currentClinic?.id;
 
   // Local state to allow instant reactive updates when marking drafts as recovered
   const [draftsVersion, setDraftsVersion] = useState(0);
   const [filterStatus, setFilterStatus] = useState('all'); // 'all' | 'abandoned' | 'recovered'
   const [searchQuery, setSearchQuery] = useState('');
+  const [noShowDispatchStatus, setNoShowDispatchStatus] = useState(null);
+  const [isDispatchingNoShow, setIsDispatchingNoShow] = useState(false);
 
   // Calculate live funnel stats
   const funnelStats = useMemo(() => {
@@ -57,6 +63,52 @@ export function RecoveryTab({ abandonedLeads: initialAbandonedLeads, noShowAppoi
   const handleMarkRecovered = (draftId) => {
     markDraftAsRecovered(draftId, clinicId);
     setDraftsVersion(v => v + 1);
+  };
+
+  // Bulk background recovery dispatch for no-shows
+  const handleBulkNoShowRecovery = () => {
+    if (!canSendSms) {
+      setNoShowDispatchStatus({
+        success: false,
+        error: 'خاصية إرسال حملات استعادة المواعيد الآلية عبر SMS متاحة حصرياً لباقة Enterprise (المراكز الكبرى). يرجى الترقية لتفعيل الإرسال السحابي المباشر.'
+      });
+      return;
+    }
+
+    const validNoShows = (noShowAppointments || []).filter(a => a && a.patientPhone);
+    if (validNoShows.length === 0) {
+      setNoShowDispatchStatus({
+        success: false,
+        error: 'لا توجد مواعيد غير محضورة تحتوي على أرقام هواتف صالحة حالياً.'
+      });
+      return;
+    }
+
+    setIsDispatchingNoShow(true);
+    setNoShowDispatchStatus(null);
+
+    const recipients = validNoShows.map(appt => ({
+      phone: appt.patientPhone,
+      message: generateNoShowRecoveryMessage(appt, currentClinic),
+      idempotencyKey: `noshow_${appt.id}_${appt.date || new Date().toISOString().slice(0, 10)}`
+    }));
+
+    try {
+      const result = sendSmsBatchAsync(recipients, clinicId || 'default');
+      setNoShowDispatchStatus({
+        success: true,
+        count: result.enqueuedCount,
+        batchId: result.batchId,
+        message: `تم إدراج ${result.enqueuedCount} رسالة استعادة موعد في طابور المعالجة الخلفي بنجاح (كود الدفعة: ${result.batchId})`
+      });
+    } catch (err) {
+      setNoShowDispatchStatus({
+        success: false,
+        error: err.message || 'حدث خطأ أثناء جدولة إرسال الدفعة'
+      });
+    } finally {
+      setIsDispatchingNoShow(false);
+    }
   };
 
   // Helper for step name display
@@ -395,12 +447,49 @@ export function RecoveryTab({ abandonedLeads: initialAbandonedLeads, noShowAppoi
       {/* SECTION 3: NO-SHOW APPOINTMENTS RECOVERY                 */}
       {/* ======================================================== */}
       <div className="leads-management-card">
-        <div className="funnel-header-row">
+        <div className="funnel-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div className="funnel-header-title">
             <h3>استعادة المواعيد غير المحضورة (No-Show Appointments Recovery)</h3>
             <p>إعادة التواصل مع المرضى الذين حجزوا موعداً ولم يتمكنوا من الحضور وتسهيل إعادة الجدولة</p>
           </div>
+          {(noShowAppointments || []).length > 0 && (
+            <button
+              type="button"
+              onClick={handleBulkNoShowRecovery}
+              disabled={isDispatchingNoShow}
+              className="btn btn-primary"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.6rem 1.15rem',
+                fontWeight: 700,
+                fontSize: '0.85rem'
+              }}
+            >
+              {isDispatchingNoShow ? <RefreshCw size={15} className="spin" /> : <Zap size={15} />}
+              <span>{isDispatchingNoShow ? 'جاري الجدولة...' : `إرسال استعادة للكل في الخلفية (${(noShowAppointments || []).length})`}</span>
+            </button>
+          )}
         </div>
+
+        {noShowDispatchStatus && (
+          <div style={{
+            backgroundColor: noShowDispatchStatus.success ? '#ECFDF5' : '#FEF2F2',
+            border: `1px solid ${noShowDispatchStatus.success ? '#A7F3D0' : '#FECACA'}`,
+            color: noShowDispatchStatus.success ? '#065F46' : '#991B1B',
+            padding: '0.85rem 1.25rem',
+            borderRadius: '8px',
+            margin: '1rem 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem',
+            fontSize: '0.85rem'
+          }}>
+            {noShowDispatchStatus.success ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+            <span>{noShowDispatchStatus.message || noShowDispatchStatus.error}</span>
+          </div>
+        )}
 
         {(noShowAppointments || []).length === 0 ? (
           <div className="empty-sub" style={{ padding: '2rem 1rem', textAlign: 'center' }}>
