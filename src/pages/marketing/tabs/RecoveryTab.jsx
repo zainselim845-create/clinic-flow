@@ -7,6 +7,7 @@ import {
   getBookingFunnelStats, 
   getBookingDrafts, 
   markDraftAsRecovered,
+  generateLeadRecoveryMessage,
   generateLeadRecoveryWhatsAppUrl, 
   generateLeadRecoverySmsUrl 
 } from '../../../services/leadRecoveryService';
@@ -23,6 +24,8 @@ export function RecoveryTab({ abandonedLeads: initialAbandonedLeads, noShowAppoi
   const [draftsVersion, setDraftsVersion] = useState(0);
   const [filterStatus, setFilterStatus] = useState('all'); // 'all' | 'abandoned' | 'recovered'
   const [searchQuery, setSearchQuery] = useState('');
+  const [leadsDispatchStatus, setLeadsDispatchStatus] = useState(null);
+  const [isDispatchingLeads, setIsDispatchingLeads] = useState(false);
   const [noShowDispatchStatus, setNoShowDispatchStatus] = useState(null);
   const [isDispatchingNoShow, setIsDispatchingNoShow] = useState(false);
 
@@ -63,6 +66,59 @@ export function RecoveryTab({ abandonedLeads: initialAbandonedLeads, noShowAppoi
   const handleMarkRecovered = (draftId) => {
     markDraftAsRecovered(draftId, clinicId);
     setDraftsVersion(v => v + 1);
+  };
+
+  const abandonedDrafts = useMemo(() => {
+    return allDrafts.filter(d => d.status === 'abandoned' && d.phone);
+  }, [allDrafts]);
+
+  // Bulk background recovery dispatch for abandoned leads
+  const handleBulkLeadsRecovery = () => {
+    if (!canSendSms) {
+      setLeadsDispatchStatus({
+        success: false,
+        error: 'خاصية إرسال حملات استعادة الحجوزات المتروكة عبر SMS متاحة حصرياً لباقة Enterprise (المراكز الكبرى). يرجى الترقية لتفعيل الإرسال السحابي المباشر.'
+      });
+      return;
+    }
+
+    if (abandonedDrafts.length === 0) {
+      setLeadsDispatchStatus({
+        success: false,
+        error: 'لا توجد محاولات حجز متروكة بانتظار التواصل حالياً.'
+      });
+      return;
+    }
+
+    setIsDispatchingLeads(true);
+    setLeadsDispatchStatus(null);
+
+    const recipients = abandonedDrafts.map(draft => ({
+      phone: draft.phone,
+      message: generateLeadRecoveryMessage(draft, currentClinic),
+      idempotencyKey: `lead_${draft.id}_${draft.updatedAt || new Date().toISOString().slice(0, 10)}`
+    }));
+
+    try {
+      const result = sendSmsBatchAsync(recipients, clinicId || 'default');
+      // Mark drafts as recovered
+      abandonedDrafts.forEach(d => markDraftAsRecovered(d.id, clinicId));
+      setDraftsVersion(v => v + 1);
+
+      setLeadsDispatchStatus({
+        success: true,
+        count: result.enqueuedCount,
+        batchId: result.batchId,
+        message: `تم إدراج ${result.enqueuedCount} رسالة استعادة حجز في طابور المعالجة الخلفي بنجاح وتحديث الحالات لمستعادة (كود الدفعة: ${result.batchId})`
+      });
+    } catch (err) {
+      setLeadsDispatchStatus({
+        success: false,
+        error: err.message || 'حدث خطأ أثناء جدولة إرسال الدفعة'
+      });
+    } finally {
+      setIsDispatchingLeads(false);
+    }
   };
 
   // Bulk background recovery dispatch for no-shows
@@ -300,16 +356,56 @@ export function RecoveryTab({ abandonedLeads: initialAbandonedLeads, noShowAppoi
             </button>
           </div>
 
-          <div className="leads-search-input-wrap">
-            <Search size={15} className="text-tertiary" />
-            <input 
-              type="text"
-              placeholder="بحث برقم الهاتف أو الاسم أو الخدمة..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {abandonedDrafts.length > 0 && (
+              <button
+                type="button"
+                onClick={handleBulkLeadsRecovery}
+                disabled={isDispatchingLeads}
+                className="btn btn-primary"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  padding: '0.5rem 1rem',
+                  fontWeight: 700,
+                  fontSize: '0.82rem'
+                }}
+              >
+                {isDispatchingLeads ? <RefreshCw size={14} className="spin" /> : <Zap size={14} />}
+                <span>{isDispatchingLeads ? 'جاري الجدولة...' : `استعادة المتروكين بالخلفية (${abandonedDrafts.length})`}</span>
+              </button>
+            )}
+
+            <div className="leads-search-input-wrap">
+              <Search size={15} className="text-tertiary" />
+              <input 
+                type="text"
+                placeholder="بحث برقم الهاتف أو الاسم أو الخدمة..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
         </div>
+
+        {leadsDispatchStatus && (
+          <div style={{
+            backgroundColor: leadsDispatchStatus.success ? '#ECFDF5' : '#FEF2F2',
+            border: `1px solid ${leadsDispatchStatus.success ? '#A7F3D0' : '#FECACA'}`,
+            color: leadsDispatchStatus.success ? '#065F46' : '#991B1B',
+            padding: '0.75rem 1.15rem',
+            borderRadius: '8px',
+            margin: '0.75rem 0 1rem 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem',
+            fontSize: '0.84rem'
+          }}>
+            {leadsDispatchStatus.success ? <CheckCircle2 size={17} /> : <AlertCircle size={17} />}
+            <span>{leadsDispatchStatus.message || leadsDispatchStatus.error}</span>
+          </div>
+        )}
 
         {filteredDrafts.length === 0 ? (
           <div className="empty-sub" style={{ padding: '2.5rem 1rem', textAlign: 'center' }}>
