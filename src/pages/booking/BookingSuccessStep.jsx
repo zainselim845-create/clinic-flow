@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Stethoscope, CheckCircle, Check, Copy, MapPin, 
-  MessageCircle, CalendarPlus, RefreshCw 
+  MessageCircle, CalendarPlus, RefreshCw,
+  CreditCard, Smartphone, Banknote, ShieldCheck
 } from 'lucide-react';
 import { parseArabicTime } from '../../utils/parseArabicTime';
 import { getBookingConfirmationWhatsAppUrl } from '../../services/smsService';
@@ -15,6 +16,7 @@ export default function BookingSuccessStep({
   onManageBooking,
   onNavigate
 }) {
+  const [copiedPayment, setCopiedPayment] = useState(false);
   const cleanPhone = (createdBooking?.patientPhone || '').replace(/^0/, '20').replace(/\D/g, '');
   const clinicPhoneClean = (currentClinic?.phone || '').replace(/^0/, '20').replace(/\D/g, '');
   const smsMsg = encodeURIComponent(
@@ -155,6 +157,18 @@ export default function BookingSuccessStep({
                   <span className="ticket-lbl">رقم الهاتف:</span>
                   <strong className="ticket-val" dir="ltr">{createdBooking.patientPhone}</strong>
                 </div>
+                {createdBooking.nationalId && (
+                  <div className="ticket-row">
+                    <span className="ticket-lbl">الرقم القومي:</span>
+                    <strong className="ticket-val" dir="ltr">{createdBooking.nationalId}</strong>
+                  </div>
+                )}
+                {createdBooking.governorate && (
+                  <div className="ticket-row">
+                    <span className="ticket-lbl">المحافظة:</span>
+                    <strong className="ticket-val">{createdBooking.governorate}</strong>
+                  </div>
+                )}
                 <div className="ticket-row">
                   <span className="ticket-lbl">تاريخ الموعد:</span>
                   <strong className="ticket-val">{createdBooking.date}</strong>
@@ -171,7 +185,113 @@ export default function BookingSuccessStep({
                   <span className="ticket-lbl">قيمة الكشف:</span>
                   <strong className="ticket-val text-nebras-orange">{createdBooking.fee}</strong>
                 </div>
+                <div className="ticket-row">
+                  <span className="ticket-lbl">طريقة الدفع:</span>
+                  <strong className="ticket-val" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    {createdBooking.paymentMethod === 'instapay' && <><CreditCard size={14} color="#0284c7" /> <span>إنستاباي (InstaPay)</span></>}
+                    {createdBooking.paymentMethod === 'vodafone_cash' && <><Smartphone size={14} color="#e11d48" /> <span>محفظة إلكترونية كاش</span></>}
+                    {createdBooking.paymentMethod === 'meeza' && <><CreditCard size={14} color="#16a34a" /> <span>بطاقة ميزة الوطنية</span></>}
+                    {(!createdBooking.paymentMethod || createdBooking.paymentMethod === 'cash') && <><Banknote size={14} color="#64748b" /> <span>الدفع نقداً بالعيادة</span></>}
+                  </strong>
+                </div>
               </div>
+
+              {/* Egyptian Electronic Payment Instruction Box (InstaPay / Cash Wallet) */}
+              {createdBooking.paymentMethod === 'instapay' && (
+                <div style={{
+                  background: '#f0f9ff',
+                  border: '1.5px solid #bae6fd',
+                  borderRadius: '10px',
+                  padding: '0.85rem 1rem',
+                  margin: '0.85rem 0',
+                  textAlign: 'right'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0369a1' }}>
+                      عنوان الدفع اللحظي عبر إنستاباي (InstaPay IPA):
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = currentClinic?.instapayIpa || `${currentClinic?.slug || 'clinic'}@instapay`;
+                        navigator.clipboard.writeText(target);
+                        setCopiedPayment(true);
+                        setTimeout(() => setCopiedPayment(false), 2500);
+                      }}
+                      style={{
+                        background: '#ffffff',
+                        border: '1px solid #7dd3fc',
+                        borderRadius: '6px',
+                        padding: '3px 8px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: '#0284c7',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      {copiedPayment ? <Check size={12} /> : <Copy size={12} />}
+                      <span>{copiedPayment ? 'تم النسخ' : 'نسخ العنوان'}</span>
+                    </button>
+                  </div>
+                  <code style={{ fontSize: '0.9rem', color: '#0369a1', fontWeight: 800, direction: 'ltr', display: 'inline-block' }}>
+                    {currentClinic?.instapayIpa || `${currentClinic?.slug || 'clinic'}@instapay`}
+                  </code>
+                  <p style={{ margin: '0.3rem 0 0 0', fontSize: '0.74rem', color: '#64748b' }}>
+                    يرجى كتابة كود الحجز ({createdBooking.bookingCode}) في خانة ملاحظات التحويل لتأكيد الإيصال فورياً.
+                  </p>
+                </div>
+              )}
+
+              {createdBooking.paymentMethod === 'vodafone_cash' && (
+                <div style={{
+                  background: '#fff1f2',
+                  border: '1.5px solid #fecdd3',
+                  borderRadius: '10px',
+                  padding: '0.85rem 1rem',
+                  margin: '0.85rem 0',
+                  textAlign: 'right'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#be123c' }}>
+                      رقم المحفظة الإلكترونية لتحويل الكاش:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = currentClinic?.cashWalletPhone || currentClinic?.phone || '01000000000';
+                        navigator.clipboard.writeText(target);
+                        setCopiedPayment(true);
+                        setTimeout(() => setCopiedPayment(false), 2500);
+                      }}
+                      style={{
+                        background: '#ffffff',
+                        border: '1px solid #fda4af',
+                        borderRadius: '6px',
+                        padding: '3px 8px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        color: '#be123c',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      {copiedPayment ? <Check size={12} /> : <Copy size={12} />}
+                      <span>{copiedPayment ? 'تم النسخ' : 'نسخ الرقم'}</span>
+                    </button>
+                  </div>
+                  <code style={{ fontSize: '0.95rem', color: '#be123c', fontWeight: 800, direction: 'ltr', display: 'inline-block' }}>
+                    {currentClinic?.cashWalletPhone || currentClinic?.phone || '01000000000'}
+                  </code>
+                  <p style={{ margin: '0.3rem 0 0 0', fontSize: '0.74rem', color: '#64748b' }}>
+                    بعد إتمام التحويل، يرجى إبراز رسالة التأكيد للاستقبال عند الحضور بالعيادة.
+                  </p>
+                </div>
+              )}
 
               <a 
                 href={getNavigationUrl(currentClinic)}

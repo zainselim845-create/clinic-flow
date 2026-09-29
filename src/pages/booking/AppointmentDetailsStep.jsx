@@ -1,8 +1,9 @@
 import React from 'react';
 import { 
-  ArrowRight, Sparkles, Users, UserPlus, AlertCircle, Loader2, Stethoscope 
+  ArrowRight, Sparkles, Users, UserPlus, AlertCircle, Loader2, Stethoscope, CreditCard, Banknote, Bolt, Smartphone 
 } from 'lucide-react';
 import BookingCalendar from '../../components/BookingCalendar';
+import { parseNationalId, EGYPT_PAYMENT_METHODS } from '../../features/egypt-national';
 
 const maskName = (name) => {
   if (!name) return 'عميلنا العزيز';
@@ -95,6 +96,47 @@ export default function AppointmentDetailsStep({
                     required 
                     autoFocus
                   />
+                </div>
+
+                <div className="nebras-input-group">
+                  <label htmlFor="patientNationalId" className="nebras-label">الرقم القومي المصري (اختياري - 14 رقماً لتحديد السن والمحافظة آلياً)</label>
+                  <input 
+                    type="text" 
+                    id="patientNationalId"
+                    name="nationalId"
+                    aria-label="الرقم القومي المصري"
+                    className="nebras-input"
+                    placeholder="مثال: 29504151201478"
+                    maxLength={14}
+                    value={formData.nationalId || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const parsed = parseNationalId(val);
+                      if (parsed.isValid) {
+                        setFormData(prev => ({
+                          ...prev,
+                          nationalId: parsed.nationalId,
+                          age: parsed.age,
+                          gender: parsed.genderAr,
+                          governorate: parsed.governorateNameAr,
+                          birthDate: parsed.birthDate
+                        }));
+                      } else {
+                        setFormData(prev => ({ ...prev, nationalId: val }));
+                      }
+                    }}
+                  />
+                  {formData.nationalId && (() => {
+                    const check = parseNationalId(formData.nationalId);
+                    if (check.isValid) {
+                      return (
+                        <span style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 700, marginTop: '4px', display: 'block' }}>
+                          تم التحقق: مواليد {check.governorateNameAr} ({check.birthYear}) • السن: {check.age} سنة • {check.genderAr}
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
 
                 <div className="nebras-row-2">
@@ -210,6 +252,56 @@ export default function AppointmentDetailsStep({
               availableSlots={availableSlots}
               scheduleConfig={currentClinic?.scheduleConfig}
             />
+          </div>
+
+          {/* EGYPTIAN PAYMENT METHOD PREFERENCE */}
+          <div className="nebras-section">
+            <span className="nebras-section-heading">طريقة الدفع والتسوية المفضلة</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginTop: '0.5rem' }}>
+              {EGYPT_PAYMENT_METHODS.filter(m => ['cash', 'instapay', 'vodafone_cash', 'meeza_card'].includes(m.id)).map(method => {
+                const isSelected = (formData.paymentMethod || 'cash') === method.id;
+                return (
+                  <div
+                    key={method.id}
+                    onClick={() => setFormData(prev => ({ ...prev, paymentMethod: method.id }))}
+                    style={{
+                      padding: '0.85rem 1rem',
+                      borderRadius: '10px',
+                      border: isSelected ? '2px solid #0284c7' : '1px solid #cbd5e1',
+                      background: isSelected ? '#f0f9ff' : '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.35rem'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <strong style={{ fontSize: '0.88rem', color: isSelected ? '#0369a1' : '#1e293b' }}>
+                        {method.nameAr}
+                      </strong>
+                      <span style={{
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '50%',
+                        border: isSelected ? '5px solid #0284c7' : '1.5px solid #94a3b8',
+                        background: '#ffffff'
+                      }} />
+                    </div>
+                    {method.id === 'instapay' && currentClinic?.instapayIpa && (
+                      <span style={{ fontSize: '0.75rem', color: '#0369a1', direction: 'ltr', textAlign: 'right' }}>
+                        IPA: {currentClinic.instapayIpa}
+                      </span>
+                    )}
+                    {method.id === 'vodafone_cash' && currentClinic?.cashWalletPhone && (
+                      <span style={{ fontSize: '0.75rem', color: '#0369a1', direction: 'ltr', textAlign: 'right' }}>
+                        محفظة العيادة: {currentClinic.cashWalletPhone}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* NOTES & SUBMIT */}

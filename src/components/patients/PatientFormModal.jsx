@@ -2,6 +2,7 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { Dialog } from '../ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
+import { parseNationalId, EGYPT_GOVERNORATES } from '../../features/egypt-national';
 
 export default function PatientFormModal({
   isOpen,
@@ -30,7 +31,52 @@ export default function PatientFormModal({
             
             <form onSubmit={onSubmit} className="modal-form">
               <div className="form-group">
-                <label>الاسم بالكامل</label>
+                <label>الرقم القومي المصري (14 رقماً - استخراج آلي للسن والنوع والمحافظة)</label>
+                <input 
+                  type="text" 
+                  className="input-field"
+                  placeholder="مثال: 29504151201478"
+                  maxLength={14}
+                  value={formData.nationalId || ''}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    const parsed = parseNationalId(raw);
+                    if (parsed.isValid) {
+                      setFormData(prev => ({
+                        ...prev,
+                        nationalId: parsed.nationalId,
+                        age: parsed.age,
+                        gender: parsed.genderAr,
+                        governorate: parsed.governorateNameAr,
+                        birthDate: parsed.birthDate
+                      }));
+                    } else {
+                      setFormData(prev => ({ ...prev, nationalId: raw }));
+                    }
+                  }}
+                />
+                {formData.nationalId && (() => {
+                  const check = parseNationalId(formData.nationalId);
+                  if (check.isValid) {
+                    return (
+                      <small style={{ color: '#059669', fontWeight: 700, display: 'block', marginTop: '4px' }}>
+                        تم التحقق بنجاح: مواليد {check.governorateNameAr} ({check.birthYear}) • السن: {check.age} سنة • {check.genderAr}
+                      </small>
+                    );
+                  }
+                  if (formData.nationalId.length === 14) {
+                    return (
+                      <small style={{ color: '#DC2626', fontWeight: 600, display: 'block', marginTop: '4px' }}>
+                        {check.error || 'الرقم القومي غير صالح'}
+                      </small>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+
+              <div className="form-group">
+                <label>الاسم بالكامل *</label>
                 <input 
                   type="text" 
                   className="input-field"
@@ -42,7 +88,7 @@ export default function PatientFormModal({
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>العمر</label>
+                  <label>العمر (سنة)</label>
                   <input 
                     type="number" 
                     className="input-field"
@@ -59,6 +105,19 @@ export default function PatientFormModal({
                   >
                     <option value="ذكر">ذكر</option>
                     <option value="أنثى">أنثى</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>المحافظة (مصر)</label>
+                  <select
+                    className="input-field"
+                    value={formData.governorate || ''}
+                    onChange={(e) => setFormData({...formData, governorate: e.target.value})}
+                  >
+                    <option value="">اختر المحافظة...</option>
+                    {EGYPT_GOVERNORATES.map(gov => (
+                      <option key={gov.code} value={gov.nameAr}>{gov.nameAr} ({gov.regionAr})</option>
+                    ))}
                   </select>
                 </div>
               </div>

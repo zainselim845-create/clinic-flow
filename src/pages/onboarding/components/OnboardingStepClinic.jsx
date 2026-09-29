@@ -1,5 +1,6 @@
 import React from 'react';
 import { Building2, Stethoscope, Sparkles, MapPin } from 'lucide-react';
+import { EGYPT_GOVERNORATES } from '../../../features/egypt-national/governorates';
 
 export default function OnboardingStepClinic({
   clinicName,
@@ -104,30 +105,36 @@ export default function OnboardingStepClinic({
       <div className="form-grid-2">
         <div className="form-group">
           <label className="form-label">
-            <span>المحافظة / المدينة</span>
+            <span>المحافظة (جمهورية مصر العربية) *</span>
           </label>
           <div className="form-input-wrapper">
             <MapPin className="input-prefix-icon" size={18} />
-            <input
-              type="text"
+            <select
               className="form-input has-prefix"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              placeholder="القاهرة - مصر الجديدة"
-            />
+              style={{ cursor: 'pointer' }}
+            >
+              <option value="">اختر المحافظة من 27 محافظة مصرية...</option>
+              {EGYPT_GOVERNORATES.map(gov => (
+                <option key={gov.code} value={gov.nameAr}>
+                  {gov.nameAr} — {gov.regionAr}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         <div className="form-group">
           <label className="form-label">
-            <span>العنوان التفصيلي</span>
+            <span>العنوان التفصيلي والحي *</span>
           </label>
           <input
             type="text"
             className="form-input"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="شارع الميرغني، مبنى العيادات التخصصية"
+            placeholder="مثال: شارع الميرغني، مبنى العيادات، الدور الثالث"
           />
         </div>
       </div>
