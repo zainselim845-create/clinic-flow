@@ -4,6 +4,7 @@ import { checkActionRateLimit } from '../utils/rateLimiter';
 import { circuitBreaker } from '../utils/circuitBreaker';
 import { canClinicSendSms, deductSmsCredit } from './usageMeteringService';
 import { demoClinics } from '../data/demoData';
+import { globalAsyncQueue, JOB_PRIORITY } from './asyncQueueService';
 
 /**
  * Formats and validates a Telecom-compliant Alphanumeric GSM Sender ID (Max 11 chars, Alphanumeric only)
@@ -502,3 +503,38 @@ export async function testSmsConnection({ phone, message }) {
     return { success: false, error: err.message };
   }
 }
+
+/**
+ * Enqueues a batch of SMS dispatches to the background worker queue.
+ * Returns immediately in < 20ms with batch tracking metadata (HTTP 202 Accepted equivalent).
+ * Prevents browser thread freezing, throttles delivery, and handles retries with DLQ.
+ * 
+ * @param {Array<{ phone: string, message: string, idempotencyKey?: string }>} recipients
+ * @param {string} clinicId
+ * @param {Object} [options]
+ * @returns {{ batchId: string, enqueuedCount: number, status: string, message: string }}
+ */
+export function sendSmsBatchAsync(recipients = [], clinicId = 'default', options = {}) {
+  const configs = recipients.map(r => ({
+    type: 'sms_dispatch',
+    payload: { phone: r.phone, message: r.message },
+    clinicId,
+    priority: options.priority || JOB_PRIORITY.NORMAL,
+    idempotencyKey: r.idempotencyKey || `sms_${clinicId}_${r.phone}_${Date.now()}`
+  }));
+
+  const batch = globalAsyncQueue.enqueueBatch(configs, { clinicId });
+
+  return {
+    batchId: batch.batchId,
+    enqueuedCount: batch.total,
+    status: 'accepted',
+    message: 'تم إدراج الرسائل في طابور المعالجة الخلفي فائق السرعة'
+  };
+}
+
+// Register SMS worker handler with the global async queue
+globalAsyncQueue.registerHandler('sms_dispatch', async (payload, context) => {
+  return await sendSMS(payload.phone, payload.message, context.clinicId);
+});
+
