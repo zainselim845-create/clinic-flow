@@ -30,7 +30,9 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
   const [suspensionReason, setSuspensionReason] = useState(
     tenant.suspensionReason || 'عدم سداد الاشتراك الدوري المستحق'
   );
-  const [smsQuota, setSmsQuota] = useState(tenant.quotas?.monthlySmsQuota || 1000);
+  const [smsQuota, setSmsQuota] = useState(
+    tenant.quotas?.monthlySmsQuota !== undefined ? tenant.quotas.monthlySmsQuota : (tenant.subscriptionTier === 'enterprise' ? 6000 : 0)
+  );
   const [extraSmsCredits, setExtraSmsCredits] = useState(tenant.quotas?.extraSmsCredits || 0);
   const [maxDoctors, setMaxDoctors] = useState(tenant.quotas?.maxDoctors || 3);
   
@@ -38,7 +40,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
   const [enableLabs, setEnableLabs] = useState(Boolean(tenant.enableLabs ?? tenant.modules?.labs));
   const [enableInventory, setEnableInventory] = useState(Boolean(tenant.enableInventory ?? tenant.modules?.inventory));
   const [enableAiAssistant, setEnableAiAssistant] = useState(Boolean(tenant.enableAiAssistant ?? tenant.modules?.aiAssistant ?? true));
-  const [enableSms, setEnableSms] = useState(Boolean(tenant.enableSms ?? tenant.modules?.sms ?? true));
+  const [enableSms, setEnableSms] = useState(Boolean(tenant.enableSms ?? tenant.modules?.sms ?? (tenant.subscriptionTier === 'enterprise')));
 
   // Payment recording state
   const [paymentType, setPaymentType] = useState(isInitialLifetime ? 'lifetime_buyout' : 'recurring');
@@ -56,13 +58,13 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
     setBillingCycle(isLife ? 'lifetime' : (tenant.billingCycle || 'monthly'));
     setNextBillingDate(isLife ? 'مدى الحياة' : (tenant.nextBillingDate || ''));
     setSuspensionReason(tenant.suspensionReason || 'عدم سداد الاشتراك الدوري المستحق');
-    setSmsQuota(tenant.quotas?.monthlySmsQuota || 1000);
+    setSmsQuota(tenant.quotas?.monthlySmsQuota !== undefined ? tenant.quotas.monthlySmsQuota : (tenant.subscriptionTier === 'enterprise' ? 6000 : 0));
     setExtraSmsCredits(tenant.quotas?.extraSmsCredits || 0);
     setMaxDoctors(tenant.quotas?.maxDoctors || 3);
     setEnableLabs(Boolean(tenant.enableLabs ?? tenant.modules?.labs));
     setEnableInventory(Boolean(tenant.enableInventory ?? tenant.modules?.inventory));
     setEnableAiAssistant(Boolean(tenant.enableAiAssistant ?? tenant.modules?.aiAssistant ?? true));
-    setEnableSms(Boolean(tenant.enableSms ?? tenant.modules?.sms ?? true));
+    setEnableSms(Boolean(tenant.enableSms ?? tenant.modules?.sms ?? (tenant.subscriptionTier === 'enterprise')));
   }, [tenant]);
 
   // Quick Action Handlers
@@ -118,7 +120,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
       suspensionReason: (!isLifetimeLicense && status === 'suspended') ? suspensionReason : undefined,
       quotas: {
         ...(tenant.quotas || {}),
-        monthlySmsQuota: Number(smsQuota) || 1000,
+        monthlySmsQuota: Number(smsQuota) || 0,
         extraSmsCredits: Number(extraSmsCredits) || 0,
         maxDoctors: Number(maxDoctors) || 3
       },
@@ -410,7 +412,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
                   key={p.id}
                   onClick={() => {
                     setTier(p.id);
-                    setSmsQuota(p.monthlySmsQuota || 1000);
+                    setSmsQuota(p.monthlySmsQuota !== undefined ? p.monthlySmsQuota : (p.id === 'enterprise' ? 6000 : 0));
                     setMaxDoctors(p.maxDoctors || 3);
                   }}
                   style={{

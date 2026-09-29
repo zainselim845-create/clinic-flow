@@ -18,9 +18,9 @@ export default function SubscriptionPlanTab() {
   const ledger = getClinicUsageLedger(clinicId);
 
   const smsUsed = usage.smsUsed || 0;
-  const smsTotal = usage.totalSmsAllowed || 1000;
+  const smsTotal = usage.totalSmsAllowed !== undefined ? usage.totalSmsAllowed : (tier === 'enterprise' ? 6000 : 0);
   const remainingSms = usage.remainingSms ?? Math.max(0, smsTotal - smsUsed);
-  const smsPercent = Math.min(100, Math.round((smsUsed / Math.max(1, smsTotal)) * 100));
+  const smsPercent = smsTotal > 0 ? Math.min(100, Math.round((smsUsed / smsTotal) * 100)) : 0;
 
   const aiUsed = usage.aiTokensUsed || 0;
   const aiTotal = usage.totalAiAllowed || 2000000;
@@ -56,7 +56,7 @@ export default function SubscriptionPlanTab() {
               <Crown size={14} color="#D97706" />
               <span>ترخيص دائم مدى الحياة ∞</span>
             </span>
-          ) : usage.isSmsDepleted ? (
+          ) : (smsTotal > 0 && usage.isSmsDepleted) ? (
             <span style={{
               background: '#FEE2E2',
               color: '#DC2626',
@@ -147,11 +147,15 @@ export default function SubscriptionPlanTab() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
             <strong style={{ fontSize: '1.35rem', color: 'var(--text-primary)' }}>
-              {tier === 'enterprise' ? 'باقة المستشفيات والمراكز الكبرى (Enterprise)' : 'باقة العيادة الذكية المتكاملة (Pro)'}
+              {tier === 'enterprise'
+                ? 'باقة المستشفيات والمراكز الكبرى (Enterprise)'
+                : tier === 'starter'
+                  ? 'باقة العيادات الفردية (Starter)'
+                  : 'باقة العيادة الذكية المتكاملة (Pro)'}
             </strong>
             <span style={{
-              background: tier === 'enterprise' ? '#EDE9FE' : '#E0F2FE',
-              color: tier === 'enterprise' ? '#6D28D9' : '#0284C7',
+              background: tier === 'enterprise' ? '#EDE9FE' : tier === 'starter' ? '#FEF3C7' : '#E0F2FE',
+              color: tier === 'enterprise' ? '#6D28D9' : tier === 'starter' ? '#B45309' : '#0284C7',
               fontSize: '0.78rem',
               fontWeight: 800,
               padding: '0.2rem 0.6rem',
@@ -223,24 +227,72 @@ export default function SubscriptionPlanTab() {
               </div>
               <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>رسائل الـ SMS والتذكيرات</strong>
             </div>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
-              {remainingSms} رسالة متبقية
-            </span>
+            {smsTotal > 0 ? (
+              <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                {remainingSms} رسالة متبقية
+              </span>
+            ) : (
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#6D28D9',
+                background: '#EDE9FE',
+                padding: '0.2rem 0.6rem',
+                borderRadius: '6px'
+              }}>
+                باقة Enterprise فقط
+              </span>
+            )}
           </div>
 
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-              <span>تم إرسال {smsUsed} من {smsTotal} رسالة</span>
-              <span>{smsPercent}%</span>
-            </div>
-            <div style={{ width: '100%', height: 8, background: 'var(--bg-tertiary)', borderRadius: 999, overflow: 'hidden' }}>
-              <div style={{ width: `${smsPercent}%`, height: '100%', background: smsPercent > 85 ? '#EF4444' : '#2563EB', borderRadius: 999 }}></div>
-            </div>
-          </div>
+          {smsTotal > 0 ? (
+            <>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                  <span>تم إرسال {smsUsed} من {smsTotal} رسالة</span>
+                  <span>{smsPercent}%</span>
+                </div>
+                <div style={{ width: '100%', height: 8, background: 'var(--bg-tertiary)', borderRadius: 999, overflow: 'hidden' }}>
+                  <div style={{ width: `${smsPercent}%`, height: '100%', background: smsPercent > 85 ? '#EF4444' : '#2563EB', borderRadius: 999 }}></div>
+                </div>
+              </div>
 
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.4 }}>
-            تُستخدم تلقائياً في تذكير المرضى بمواعيدهم قبلها بـ 24 ساعة، وإرسال تأكيدات الحجز الرقمية.
-          </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', lineHeight: 1.4 }}>
+                تُستخدم تلقائياً في تذكير المرضى بمواعيدهم قبلها بـ 24 ساعة، وإرسال تأكيدات الحجز الرقمية.
+              </div>
+            </>
+          ) : (
+            <div style={{
+              background: 'var(--bg-secondary, #F9FAFB)',
+              border: '1px dashed var(--border-color)',
+              borderRadius: '8px',
+              padding: '0.85rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem'
+            }}>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                خاصية رسائل SMS وتذكيرات الحجز الآلية وبوابات الاتصالات متاحة حصرياً في <strong>باقة المراكز الكبرى (Enterprise)</strong>.
+              </p>
+              <a
+                href="https://wa.me/201006285031?text=مرحباً، أود ترقية باقة عيادتي إلى Enterprise لتفعيل رسائل SMS"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  color: 'var(--primary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  textDecoration: 'none'
+                }}
+              >
+                <span>ترقية الباقة وتفعيل الرسائل</span>
+                <ArrowUpRight size={14} />
+              </a>
+            </div>
+          )}
         </div>
 
         {/* AI Assistant Quota Card */}
@@ -309,9 +361,16 @@ export default function SubscriptionPlanTab() {
             <strong style={{ color: 'var(--text-primary)' }}>{staffCount} موظفين مسجلين</strong>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: '1px solid var(--border-color)' }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>إجمالي سجلات المرضى النشطة</span>
             <strong style={{ color: 'var(--text-primary)' }}>{activePatientsCount} مريض</strong>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.2rem 0' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>ربط الفروع المتعددة (Multi-Branch)</span>
+            <strong style={{ color: tier === 'starter' ? '#9CA3AF' : '#059669', fontSize: '0.82rem' }}>
+              {tier === 'starter' ? 'غير مشمول (متاح من باقة Pro)' : 'مفعّل ومتاح'}
+            </strong>
           </div>
 
           <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>

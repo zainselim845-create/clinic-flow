@@ -128,6 +128,32 @@ export default function SmsConfigTab() {
         </span>
       </div>
 
+      {tenant?.subscriptionTier && tenant.subscriptionTier !== 'enterprise' && (
+        <div style={{
+          backgroundColor: '#FFFBEB',
+          border: '1px solid #FCD34D',
+          color: '#92400E',
+          padding: '1rem 1.25rem',
+          borderRadius: '8px',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          fontSize: '0.85rem',
+          lineHeight: '1.5'
+        }}>
+          <AlertCircle size={20} color="#D97706" style={{ flexShrink: 0 }} />
+          <div>
+            <strong style={{ display: 'block', marginBottom: '0.2rem' }}>
+              تنبيه باقة العيادة: خاصية رسائل SMS متاحة حصرياً لباقة Enterprise
+            </strong>
+            <span>
+              العيادة المحددة حالياً مسجلة على باقة ({tenant.subscriptionTier === 'pro' ? 'Pro - العيادة الذكية' : 'Starter - العيادات الفردية'}). إرسال رسائل SMS والتذكيرات الفعلية يتطلب باقة Enterprise أو ترقية الباقة وتخصيص رصيد رسائل من لوحة إدارة الساس.
+            </span>
+          </div>
+        </div>
+      )}
+
       {smsSaveSuccess && (
         <div className="settings-alert success">
           <CheckCircle2 size={18} />

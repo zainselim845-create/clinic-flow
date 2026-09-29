@@ -12,13 +12,14 @@ export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess
     nameEn: plan?.nameEn || 'Custom',
     monthlyPrice: plan?.monthlyPrice !== undefined ? plan.monthlyPrice : 799,
     annualPrice: plan?.annualPrice !== undefined ? plan.annualPrice : 7990,
-    monthlySmsQuota: plan?.monthlySmsQuota !== undefined ? plan.monthlySmsQuota : 1000,
+    monthlySmsQuota: plan?.monthlySmsQuota !== undefined ? plan.monthlySmsQuota : 0,
     maxDoctors: plan?.maxDoctors !== undefined ? plan.maxDoctors : 2,
     maxAppointmentsPerMonth: plan?.maxAppointmentsPerMonth || 1000,
     maxPatients: plan?.maxPatients || 3000,
     aiAssistant: plan?.aiAssistant !== undefined ? plan.aiAssistant : true,
     customDomain: plan?.customDomain !== undefined ? plan.customDomain : false,
-    whatsappBot: plan?.whatsappBot !== undefined ? plan.whatsappBot : true,
+    multiBranch: plan?.multiBranch !== undefined ? plan.multiBranch : false,
+    whatsappBot: plan?.whatsappBot !== undefined ? plan.whatsappBot : false,
     labModule: plan?.labModule !== undefined ? plan.labModule : true,
     inventoryModule: plan?.inventoryModule !== undefined ? plan.inventoryModule : true,
     dentalChart: plan?.dentalChart !== undefined ? plan.dentalChart : true,
@@ -37,12 +38,13 @@ export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess
         nameEn: plan.nameEn || '',
         monthlyPrice: plan.monthlyPrice || 0,
         annualPrice: plan.annualPrice || 0,
-        monthlySmsQuota: plan.monthlySmsQuota || 1000,
+        monthlySmsQuota: plan.monthlySmsQuota !== undefined ? plan.monthlySmsQuota : 0,
         maxDoctors: plan.maxDoctors || 1,
         maxAppointmentsPerMonth: plan.maxAppointmentsPerMonth || 1000,
         maxPatients: plan.maxPatients || 3000,
         aiAssistant: Boolean(plan.aiAssistant),
         customDomain: Boolean(plan.customDomain),
+        multiBranch: Boolean(plan.multiBranch),
         whatsappBot: Boolean(plan.whatsappBot),
         labModule: Boolean(plan.labModule),
         inventoryModule: Boolean(plan.inventoryModule),
@@ -275,6 +277,15 @@ export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess
                   onChange={(e) => setFormData({ ...formData, customDomain: e.target.checked })}
                 />
                 <span>ربط دومين مخصص (Custom Domain & SSL)</span>
+              </label>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 0.8rem', background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>
+                <input
+                  type="checkbox"
+                  checked={formData.multiBranch}
+                  onChange={(e) => setFormData({ ...formData, multiBranch: e.target.checked })}
+                />
+                <span>ربط وإدارة الفروع المتعددة (Multi-Branch)</span>
               </label>
 
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 0.8rem', background: 'var(--surface)', border: '1px solid var(--border-color)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600 }}>

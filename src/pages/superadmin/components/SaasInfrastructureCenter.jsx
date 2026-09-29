@@ -1127,7 +1127,9 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
                         </div>
                         <div style={{ background: 'var(--surface)', padding: '0.45rem 0.65rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                           <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.7rem' }}>رصيد SMS شهري:</span>
-                          <strong style={{ color: '#059669' }}>{Number(plan.monthlySmsQuota || 1000).toLocaleString()} رسالة</strong>
+                          <strong style={{ color: Number(plan.monthlySmsQuota || 0) > 0 ? '#059669' : '#9CA3AF' }}>
+                            {Number(plan.monthlySmsQuota || 0) > 0 ? `${Number(plan.monthlySmsQuota).toLocaleString()} رسالة` : 'غير مشمول'}
+                          </strong>
                         </div>
                         <div style={{ background: 'var(--surface)', padding: '0.45rem 0.65rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                           <span style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.7rem' }}>أقصى مواعيد / شهر:</span>
@@ -1141,6 +1143,12 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
 
                       {/* Feature Checklist */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
+                          {plan.multiBranch ? <Check size={14} color="#10B981" /> : <X size={14} color="#9CA3AF" />}
+                          <span style={{ color: plan.multiBranch ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                            ربط وإدارة الفروع المتعددة (Multi-Branch)
+                          </span>
+                        </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.78rem' }}>
                           {plan.aiAssistant ? <Check size={14} color="#10B981" /> : <X size={14} color="#9CA3AF" />}
                           <span style={{ color: plan.aiAssistant ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
