@@ -3,6 +3,8 @@
  * Cryptographic Merkle Hash Chaining compliant with healthcare governance regulations (HIPAA/GDPR).
  */
 
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+
 const AUDIT_STORAGE_KEY = 'clinicflow_audit_log';
 let inMemoryAuditLogs = [];
 
@@ -169,16 +171,13 @@ export function recordAuditEvent({
   };
 
   inMemoryAuditLogs.unshift(newEntry);
-
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const existing = getAuditLogs();
-      const trimmed = [newEntry, ...existing.filter(e => e.id !== newEntry.id)].slice(0, 10000);
-      localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(trimmed));
-    } catch (err) {
-      console.warn('Could not record audit log to localStorage:', err);
-    }
+  if (inMemoryAuditLogs.length > 5000) {
+    inMemoryAuditLogs = inMemoryAuditLogs.slice(0, 5000);
   }
+
+  const existing = getAuditLogs();
+  const trimmed = [newEntry, ...existing.filter(e => e.id !== newEntry.id)].slice(0, 500);
+  safeSetJSON(AUDIT_STORAGE_KEY, trimmed);
 
   return newEntry;
 }
@@ -203,18 +202,11 @@ export function logAuditEvent(params = {}) {
  * @param {number} [limit]
  * @returns {Array} List of audit records
  */
-export function getAuditLogs(clinicId = null, limit = 10000) {
+export function getAuditLogs(clinicId = null, limit = 5000) {
   let list = inMemoryAuditLogs;
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const raw = localStorage.getItem(AUDIT_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) list = parsed;
-      }
-    } catch (err) {
-      console.warn('[AuditLogger] Failed to read audit logs from storage:', err);
-    }
+  const stored = safeGetJSON(AUDIT_STORAGE_KEY, null);
+  if (Array.isArray(stored) && stored.length > 0) {
+    list = inMemoryAuditLogs.length > 0 ? inMemoryAuditLogs : stored;
   }
   if (clinicId) {
     list = list.filter(e => !e.clinicId || e.clinicId === clinicId);

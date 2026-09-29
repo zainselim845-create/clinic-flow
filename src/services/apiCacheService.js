@@ -5,8 +5,9 @@
  */
 
 class ApiCacheService {
-  constructor() {
+  constructor(maxSize = 1000) {
     this.cache = new Map();
+    this.maxSize = maxSize;
     this.defaultTtl = 30000; // 30 seconds default TTL
   }
 
@@ -22,7 +23,7 @@ class ApiCacheService {
   }
 
   /**
-   * Retrieve cached value if still valid
+   * Retrieve cached value if still valid (refreshes recency for LRU)
    * @param {string} key
    * @returns {*|null}
    */
@@ -35,16 +36,33 @@ class ApiCacheService {
       return null;
     }
 
+    // Refresh key order for LRU recency
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+
     return entry.value;
   }
 
   /**
-   * Set a cached value with TTL
+   * Set a cached value with TTL and LRU capacity bounding
    * @param {string} key
    * @param {*} value
    * @param {number} [ttlMs]
    */
   set(key, value, ttlMs = this.defaultTtl) {
+    // Evict oldest entry if capacity reached
+    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
+      }
+    }
+
+    // Ensure recency
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+
     this.cache.set(key, {
       value,
       expiry: Date.now() + ttlMs

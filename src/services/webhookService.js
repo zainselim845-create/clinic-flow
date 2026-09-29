@@ -4,6 +4,7 @@
  * (e.g. WhatsApp Meta Cloud API, Odoo/SAP ERP, Marketing CRMs).
  */
 import { computeSha256 } from './auditLoggerService';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 
 export const WEBHOOK_EVENT_TYPES = {
   APPOINTMENT_CREATED: 'appointment.created',
@@ -88,14 +89,8 @@ export function registerWebhookEndpoint({
 
   inMemoryEndpoints.push(newEndpoint);
 
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const stored = getWebhookEndpoints(clinicId);
-      localStorage.setItem(`${WEBHOOK_STORAGE_KEY}_${clinicId}`, JSON.stringify([...stored, newEndpoint]));
-    } catch (err) {
-      console.warn('[WebhookService] Failed to persist webhook endpoint:', err);
-    }
-  }
+  const stored = getWebhookEndpoints(clinicId);
+  safeSetJSON(`${WEBHOOK_STORAGE_KEY}_${clinicId}`, [...stored, newEndpoint]);
 
   return newEndpoint;
 }
@@ -104,17 +99,8 @@ export function registerWebhookEndpoint({
  * Retrieves registered endpoints for a clinic
  */
 export function getWebhookEndpoints(clinicId = 'default') {
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const raw = localStorage.getItem(`${WEBHOOK_STORAGE_KEY}_${clinicId}`);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (err) {
-      console.warn('[WebhookService] Failed to read webhook endpoints:', err);
-    }
-  }
+  const stored = safeGetJSON(`${WEBHOOK_STORAGE_KEY}_${clinicId}`, null);
+  if (Array.isArray(stored)) return stored;
   return inMemoryEndpoints.filter(e => e.clinicId === clinicId);
 }
 
@@ -161,6 +147,9 @@ export async function dispatchWebhookEvent({
 
     deliveries.push(deliveryRecord);
     inMemoryDeliveries.unshift(deliveryRecord);
+    if (inMemoryDeliveries.length > 500) {
+      inMemoryDeliveries = inMemoryDeliveries.slice(0, 500);
+    }
   }
 
   return {

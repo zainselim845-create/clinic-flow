@@ -4,6 +4,7 @@
  * Enforces fundamental accounting invariant: Sum(Debits) === Sum(Credits).
  */
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 
 export const CHART_OF_ACCOUNTS = {
   // 1xxx Assets (أصول)
@@ -37,14 +38,8 @@ export function getNextJournalEntryNumber(clinicId, year = new Date().getFullYea
   const prefix = `JRN-${year}-`;
   let entries = inMemoryJournalEntries;
 
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const stored = localStorage.getItem(`clinicflow_journal_${clinicId}`);
-      if (stored) entries = JSON.parse(stored);
-    } catch (err) {
-      console.warn('[GeneralLedger] Failed to read journal entries:', err);
-    }
-  }
+  const stored = safeGetJSON(`clinicflow_journal_${clinicId}`, null);
+  if (Array.isArray(stored)) entries = stored;
 
   let maxSeq = 0;
   const regex = new RegExp(`^JRN-${year}-(\\d+)$`);
@@ -114,16 +109,13 @@ export function recordJournalEntry({
   };
 
   inMemoryJournalEntries.unshift(entry);
-
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const stored = localStorage.getItem(`clinicflow_journal_${clinicId}`);
-      const list = stored ? JSON.parse(stored) : [];
-      localStorage.setItem(`clinicflow_journal_${clinicId}`, JSON.stringify([entry, ...list].slice(0, 5000)));
-    } catch (err) {
-      console.warn('[GeneralLedger] Failed to persist journal entry:', err);
-    }
+  if (inMemoryJournalEntries.length > 2000) {
+    inMemoryJournalEntries = inMemoryJournalEntries.slice(0, 2000);
   }
+
+  const stored = safeGetJSON(`clinicflow_journal_${clinicId}`, []);
+  const list = Array.isArray(stored) ? stored : [];
+  safeSetJSON(`clinicflow_journal_${clinicId}`, [entry, ...list].slice(0, 500));
 
   if (isSupabaseConfigured()) {
     supabase.from('journal_entries').insert({
@@ -232,14 +224,8 @@ export function recordPaymentJournalEntry(payment) {
 export function getClinicTrialBalance(clinicId = 'default') {
   let entries = inMemoryJournalEntries.filter(e => e.clinicId === clinicId);
 
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const stored = localStorage.getItem(`clinicflow_journal_${clinicId}`);
-      if (stored) entries = JSON.parse(stored);
-    } catch (err) {
-      console.warn('[GeneralLedger] Failed to read trial balance entries:', err);
-    }
-  }
+  const stored = safeGetJSON(`clinicflow_journal_${clinicId}`, null);
+  if (Array.isArray(stored) && stored.length > 0) entries = stored;
 
   const accountBalances = {};
 

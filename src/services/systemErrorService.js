@@ -115,13 +115,15 @@ export function captureSystemError({
   };
 
   const errors = getSystemErrors();
-  inMemoryErrors = [errorEntry, ...errors].slice(0, 500); // Keep last 500 records
+  inMemoryErrors = [errorEntry, ...errors].slice(0, 200); // Keep last 200 records in memory
 
   if (typeof localStorage !== 'undefined') {
     try {
-      localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(inMemoryErrors));
-    } catch (storageErr) {
-      console.warn('[SystemErrorService] Failed to persist system errors to localStorage:', storageErr);
+      // Store compact window of last 50 errors to prevent QuotaExceeded collisions
+      const toStore = inMemoryErrors.slice(0, 50);
+      localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(toStore));
+    } catch (_) {
+      // Preserved in inMemoryErrors; silent fallback avoids recursive quota loops
     }
   }
 
@@ -216,13 +218,14 @@ export function reportUserBug({
   };
 
   const currentReports = getBugReports();
-  inMemoryBugReports = [report, ...currentReports];
+  inMemoryBugReports = [report, ...currentReports].slice(0, 100);
 
   if (typeof localStorage !== 'undefined') {
     try {
-      localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(inMemoryBugReports));
-    } catch (err) {
-      console.warn('[SystemErrorService] Failed to persist bug reports to storage:', err);
+      const toStore = inMemoryBugReports.slice(0, 30);
+      localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(toStore));
+    } catch (_) {
+      // In-memory fallback
     }
   }
 
