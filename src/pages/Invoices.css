@@ -160,3 +160,75 @@
 }
 
 .font-bold { font-weight: 800; }
+
+/* Cash Flow Center & Quick Date Presets */
+.btn-quick-date {
+  border: 1px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-quick-date:hover {
+  background: var(--bg-tertiary);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.badge-expense-category {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.badge-payment-rail {
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.expense-form-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.expense-form-alert.error {
+  background: var(--error-light, #FEE2E2);
+  color: var(--danger, #DC2626);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+@media (max-width: 768px) {
+  .invoices-filter-panel {
+    padding: 0.75rem;
+  }
+  .date-range-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .date-range-controls .input-field {
+    flex: 1;
+  }
+}
