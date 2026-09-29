@@ -2,7 +2,6 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { Dialog } from '../ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { EGYPT_GOVERNORATES } from '../../features/egypt-national';
 
 export default function PatientFormModal({
   isOpen,
@@ -63,17 +62,14 @@ export default function PatientFormModal({
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>المحافظة (مصر)</label>
-                  <select
+                  <label>المدينة / المنطقة</label>
+                  <input
+                    type="text"
                     className="input-field"
-                    value={formData.governorate || ''}
-                    onChange={(e) => setFormData({...formData, governorate: e.target.value})}
-                  >
-                    <option value="">اختر المحافظة...</option>
-                    {EGYPT_GOVERNORATES.map(gov => (
-                      <option key={gov.code} value={gov.nameAr}>{gov.nameAr} ({gov.regionAr})</option>
-                    ))}
-                  </select>
+                    placeholder="مثال: القاهرة، الدقي، المنصورة..."
+                    value={formData.city || formData.governorate || ''}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value, governorate: e.target.value })}
+                  />
                 </div>
               </div>
 

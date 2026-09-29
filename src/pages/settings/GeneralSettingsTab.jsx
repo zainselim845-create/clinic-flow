@@ -95,14 +95,25 @@ export default function GeneralSettingsTab({
   const handleGoogleMapsUrlChange = (url) => {
     let lat = null;
     let lng = null;
-    const match = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (match) {
-      lat = parseFloat(match[1]);
-      lng = parseFloat(match[2]);
+    const trimmed = (url || '').trim();
+
+    // Check direct coordinates (e.g. 30.0444, 31.2357)
+    const directCoords = trimmed.match(/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/);
+    if (directCoords) {
+      lat = parseFloat(directCoords[1]);
+      lng = parseFloat(directCoords[2]);
+    } else {
+      const match = trimmed.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || 
+                    trimmed.match(/[?&](?:q|destination|ll)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+      if (match) {
+        lat = parseFloat(match[1]);
+        lng = parseFloat(match[2]);
+      }
     }
+
     setClinicForm(prev => ({
       ...prev,
-      googleMapsUrl: url,
+      googleMapsUrl: trimmed,
       ...(lat && lng ? { coordinates: { lat, lng } } : {})
     }));
   };
@@ -817,22 +828,15 @@ export default function GeneralSettingsTab({
           </div>
 
           <div className="form-group">
-            <label htmlFor="clinicGovernorate">المحافظة (جمهورية مصر العربية) *</label>
-            <select
+            <label htmlFor="clinicGovernorate">المدينة / المنطقة</label>
+            <input
               id="clinicGovernorate"
               name="clinicGovernorate"
-              value={clinicForm.governorate || ''}
-              onChange={(e) => setClinicForm({ ...clinicForm, governorate: e.target.value })}
-              className="saas-filter-select"
-              style={{ height: '42px', width: '100%' }}
-            >
-              <option value="">اختر المحافظة من 27 محافظة مصرية...</option>
-              {EGYPT_GOVERNORATES.map(gov => (
-                <option key={gov.code} value={gov.nameAr}>
-                  {gov.nameAr} — {gov.regionAr} (كود الاتصال: {gov.dialCode})
-                </option>
-              ))}
-            </select>
+              type="text"
+              value={clinicForm.governorate || clinicForm.city || ''}
+              onChange={(e) => setClinicForm({ ...clinicForm, governorate: e.target.value, city: e.target.value })}
+              placeholder="مثال: القاهرة، الجيزة، الإسكندرية..."
+            />
           </div>
 
           <div className="form-group full-width">
@@ -945,6 +949,26 @@ export default function GeneralSettingsTab({
                     style={{ fontSize: '0.82rem' }}
                   />
                 </div>
+                {clinicForm.googleMapsUrl && (
+                  <a
+                    href={clinicForm.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '0.78rem',
+                      color: '#0284C7',
+                      textDecoration: 'none',
+                      marginTop: '0.4rem',
+                      fontWeight: 600
+                    }}
+                  >
+                    <Globe size={13} />
+                    <span>تجربة ومعاينة الرابط في Google Maps</span>
+                  </a>
+                )}
               </div>
 
               <div>

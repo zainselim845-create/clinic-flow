@@ -13,6 +13,7 @@ import { validateEgyptianPhone, cleanEgyptianPhone } from '../utils/phoneValidat
 import { patientIndex } from '../services/indexedSearchService';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { checkActionRateLimit } from '../utils/rateLimiter';
+import { getAutoUserLocation } from '../services/autoLocationService';
 
 import BookingHeader from './booking/BookingHeader';
 import ClinicDiscoveryView from './booking/ClinicDiscoveryView';
@@ -40,6 +41,18 @@ const Booking = () => {
 
   const [discoverySearch, setDiscoverySearch] = useState('');
   const [discoverySpecialty, setDiscoverySpecialty] = useState('الكل');
+  const [detectedUserLocation, setDetectedUserLocation] = useState(null);
+
+  // Silently detect user location without interrupting the user
+  useEffect(() => {
+    let isMounted = true;
+    getAutoUserLocation().then(loc => {
+      if (isMounted && loc) {
+        setDetectedUserLocation(loc);
+      }
+    }).catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
   useEffect(() => {
     if (clinicSlug && tenant?.slug !== clinicSlug) {
@@ -317,7 +330,9 @@ const Booking = () => {
           clinic_id: currentClinic?.id,
           name: formData.name.trim(),
           phone: cleanedPhone,
-          governorate: formData.governorate || '',
+          city: detectedUserLocation?.city || detectedUserLocation?.region || formData.city || formData.governorate || '',
+          governorate: formData.governorate || detectedUserLocation?.region || '',
+          detectedLocation: detectedUserLocation || null,
           age: formData.age || 'غير محدد',
           gender: formData.gender || 'ذكر',
           bloodType: 'غير محدد',
@@ -350,7 +365,9 @@ const Booking = () => {
         patientId: patientId,
         patientName: formData.name.trim(),
         patientPhone: cleanedPhone,
-        governorate: formData.governorate || '',
+        city: detectedUserLocation?.city || detectedUserLocation?.region || formData.city || formData.governorate || '',
+        governorate: formData.governorate || detectedUserLocation?.region || '',
+        detectedLocation: detectedUserLocation || null,
         paymentMethod: formData.paymentMethod || 'cash',
         patientAge: formData.age || '',
         patientGender: formData.gender || 'ذكر',

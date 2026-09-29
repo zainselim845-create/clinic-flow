@@ -647,6 +647,8 @@ export const TenantProvider = ({ children }) => {
         if (updatedInfo.specialty) dbPayload.specialty = updatedInfo.specialty;
         if (updatedInfo.phone) dbPayload.phone = updatedInfo.phone;
         if (updatedInfo.address) dbPayload.address = updatedInfo.address;
+        if (updatedInfo.googleMapsUrl !== undefined) dbPayload.google_maps_url = updatedInfo.googleMapsUrl;
+        if (updatedInfo.coordinates !== undefined) dbPayload.coordinates = updatedInfo.coordinates;
         if (updatedInfo.branding) dbPayload.branding = updatedInfo.branding;
         if (updatedInfo.regularFee) dbPayload.regular_fee = updatedInfo.regularFee;
         if (updatedInfo.consultationFee) dbPayload.consultation_fee = updatedInfo.consultationFee;

@@ -15,6 +15,7 @@ import ScrollProgressBar from './components/ui/ScrollProgressBar';
 import ScrollToTopButton from './components/ui/ScrollToTopButton';
 import CookieBanner from './components/CookieBanner';
 import FloatingContactButton from './components/FloatingContactButton';
+import NetworkStatusBanner from './components/NetworkStatusBanner';
 import { initGlobalErrorListeners } from './services/systemErrorService';
 import { safeSessionGetJSON, safeSessionSetJSON } from './utils/safeStorage';
 import './App.css';
@@ -186,6 +187,7 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <NetworkStatusBanner />
       <a href="#main-content" className="skip-to-content">الانتقال إلى المحتوى الرئيسي</a>
       <ScrollProgressBar />
       <SeoHeadManager />

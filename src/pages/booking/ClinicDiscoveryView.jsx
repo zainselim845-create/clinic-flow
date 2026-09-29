@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  Building2, Search, Stethoscope, Award, MapPin, Globe, ArrowLeft 
+  Building2, Search, Stethoscope, Award, MapPin, Globe, ArrowLeft, Navigation, Compass 
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../../utils/specialtyUtils';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import { getAutoUserLocation, calculateDistanceKm, formatDistanceAr } from '../../services/autoLocationService';
 
 export default function ClinicDiscoveryView({
   allTenants,
@@ -14,18 +15,53 @@ export default function ClinicDiscoveryView({
   onSelectClinic,
   onNavigate
 }) {
-  const filteredClinics = allTenants.filter(c => {
-    if (c.subscriptionStatus === 'suspended') return false;
-    const q = discoverySearch.trim().toLowerCase();
-    const matchesQuery = !q || (
-      (c.name && c.name.toLowerCase().includes(q)) ||
-      (c.doctorName && c.doctorName.toLowerCase().includes(q)) ||
-      (c.specialty && c.specialty.toLowerCase().includes(q)) ||
-      (c.address && c.address.toLowerCase().includes(q))
-    );
-    const matchesSpec = matchesSpecialtyFilter(c.specialty, discoverySpecialty);
-    return matchesQuery && matchesSpec;
-  });
+  const [userLocation, setUserLocation] = useState(null);
+
+  // Silently detect user location in the background without prompting or blocking
+  useEffect(() => {
+    let isMounted = true;
+    getAutoUserLocation().then(loc => {
+      if (isMounted && loc) {
+        setUserLocation(loc);
+      }
+    }).catch(() => {
+      // Never throw or show errors to user
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const filteredClinics = useMemo(() => {
+    const list = allTenants.filter(c => {
+      if (c.subscriptionStatus === 'suspended') return false;
+      const q = discoverySearch.trim().toLowerCase();
+      const matchesQuery = !q || (
+        (c.name && c.name.toLowerCase().includes(q)) ||
+        (c.doctorName && c.doctorName.toLowerCase().includes(q)) ||
+        (c.specialty && c.specialty.toLowerCase().includes(q)) ||
+        (c.address && c.address.toLowerCase().includes(q))
+      );
+      const matchesSpec = matchesSpecialtyFilter(c.specialty, discoverySpecialty);
+      return matchesQuery && matchesSpec;
+    }).map(c => {
+      let distanceKm = null;
+      if (userLocation && c.coordinates && typeof c.coordinates.lat === 'number' && typeof c.coordinates.lng === 'number') {
+        distanceKm = calculateDistanceKm(userLocation.lat, userLocation.lng, c.coordinates.lat, c.coordinates.lng);
+      }
+      return { ...c, distanceKm };
+    });
+
+    // If user location is detected, sort closest clinics first
+    if (userLocation) {
+      list.sort((a, b) => {
+        if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
+        if (a.distanceKm !== null) return -1;
+        if (b.distanceKm !== null) return 1;
+        return 0;
+      });
+    }
+
+    return list;
+  }, [allTenants, discoverySearch, discoverySpecialty, userLocation]);
 
   return (
     <div className="nebras-booking-page" dir="rtl" style={{ minHeight: '100vh', background: 'var(--bg-primary, #f8fafc)' }}>
@@ -211,6 +247,37 @@ export default function ClinicDiscoveryView({
                     <MapPin size={15} color="#0284c7" />
                     <span>{clinic.address}</span>
                   </div>
+                  {clinic.distanceKm !== null && (
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      color: '#0284c7',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      background: 'rgba(2, 132, 199, 0.08)',
+                      padding: '0.25rem 0.6rem',
+                      borderRadius: '6px',
+                      alignSelf: 'flex-start'
+                    }}>
+                      <Navigation size={13} />
+                      <span>{formatDistanceAr(clinic.distanceKm)}</span>
+                    </div>
+                  )}
+                  {(clinic.googleMapsUrl || clinic.coordinates || clinic.address) && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Compass size={15} color="#0284c7" />
+                      <a
+                        href={clinic.googleMapsUrl || (clinic.coordinates ? `https://www.google.com/maps/dir/?api=1&destination=${clinic.coordinates.lat},${clinic.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.address || clinic.name)}`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ color: '#0284c7', textDecoration: 'none', fontWeight: 600, fontSize: '0.8rem' }}
+                      >
+                        الاتجاهات عبر Google Maps
+                      </a>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <Globe size={15} color="#0284c7" />
                     <span dir="ltr" style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: '#0284c7' }}>

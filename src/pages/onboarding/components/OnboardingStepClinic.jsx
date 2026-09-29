@@ -1,6 +1,5 @@
 import React from 'react';
-import { Building2, Stethoscope, Sparkles, MapPin } from 'lucide-react';
-import { EGYPT_GOVERNORATES } from '../../../features/egypt-national/governorates';
+import { Building2, Stethoscope, Sparkles, MapPin, Compass } from 'lucide-react';
 
 export default function OnboardingStepClinic({
   clinicName,
@@ -13,7 +12,9 @@ export default function OnboardingStepClinic({
   city,
   setCity,
   address,
-  setAddress
+  setAddress,
+  googleMapsUrl,
+  setGoogleMapsUrl
 }) {
   return (
     <div className="wizard-step-content">
@@ -105,38 +106,53 @@ export default function OnboardingStepClinic({
       <div className="form-grid-2">
         <div className="form-group">
           <label className="form-label">
-            <span>المحافظة (جمهورية مصر العربية) *</span>
+            <span>المدينة / المنطقة</span>
           </label>
           <div className="form-input-wrapper">
             <MapPin className="input-prefix-icon" size={18} />
-            <select
+            <input
+              type="text"
               className="form-input has-prefix"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              style={{ cursor: 'pointer' }}
-            >
-              <option value="">اختر المحافظة من 27 محافظة مصرية...</option>
-              {EGYPT_GOVERNORATES.map(gov => (
-                <option key={gov.code} value={gov.nameAr}>
-                  {gov.nameAr} — {gov.regionAr}
-                </option>
-              ))}
-            </select>
+              placeholder="مثال: القاهرة، مدينة نصر، المعادي، الإسكندرية..."
+            />
           </div>
         </div>
 
         <div className="form-group">
           <label className="form-label">
-            <span>العنوان التفصيلي والحي *</span>
+            <span>عنوان العيادة بالتفصيل *</span>
           </label>
           <input
             type="text"
             className="form-input"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="مثال: شارع الميرغني، مبنى العيادات، الدور الثالث"
+            placeholder="مثال: 15 شارع مصدق، برج الأطباء، الدور الرابع"
+            required
           />
         </div>
+      </div>
+
+      <div className="form-group" style={{ marginTop: '1rem' }}>
+        <label className="form-label">
+          <span>رابط موقع العيادة على خرائط Google (اختياري)</span>
+        </label>
+        <div className="form-input-wrapper">
+          <Compass className="input-prefix-icon" size={18} />
+          <input
+            type="url"
+            dir="ltr"
+            className="form-input has-prefix"
+            value={googleMapsUrl || ''}
+            onChange={(e) => setGoogleMapsUrl(e.target.value)}
+            placeholder="https://maps.app.goo.gl/... أو https://www.google.com/maps?q=..."
+          />
+        </div>
+        <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary, #64748b)', marginTop: '0.35rem', display: 'block' }}>
+          ألصق رابط موقع العيادة من Google Maps لتمكين المرضى من الوصول للعيادة مباشرة بنقرة واحدة عبر GPS
+        </span>
       </div>
     </div>
   );

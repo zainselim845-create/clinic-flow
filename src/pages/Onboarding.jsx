@@ -68,6 +68,7 @@ export default function Onboarding() {
   const [selectedSpecialtyId, setSelectedSpecialtyId] = useState('general_dentistry');
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
+  const [googleMapsUrl, setGoogleMapsUrl] = useState('');
 
   // Step 3: Brand Colors
   const [selectedPaletteId, setSelectedPaletteId] = useState('monochrome');
@@ -236,7 +237,8 @@ export default function Onboarding() {
         phone: phone.trim(),
         clinicName: clinicName.trim(),
         specialty: selectedSpecialtyObj?.name || 'طب وجراحة الفم والأسنان العام',
-        address: `${city} - ${address}`,
+        address: [city, address].filter(Boolean).join(' - ') || address,
+        googleMapsUrl: googleMapsUrl.trim(),
         primaryColor,
         accentColor,
         teamSize,
@@ -372,6 +374,8 @@ export default function Onboarding() {
                     setCity={setCity}
                     address={address}
                     setAddress={setAddress}
+                    googleMapsUrl={googleMapsUrl}
+                    setGoogleMapsUrl={setGoogleMapsUrl}
                   />
                 </FeatureErrorBoundary>
               )}

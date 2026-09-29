@@ -23,6 +23,8 @@ export function fromDbClinic(row) {
     subscriptionStatus: row.subscription_status || 'active',
     branding: row.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
     quotas: row.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
+    googleMapsUrl: row.google_maps_url || row.googleMapsUrl || '',
+    coordinates: row.coordinates || null,
     createdAt: row.created_at
   };
 }
@@ -49,6 +51,10 @@ export function toDbClinic(data) {
   if (data.subscriptionStatus !== undefined) payload.subscription_status = data.subscriptionStatus;
   if (data.branding !== undefined) payload.branding = data.branding;
   if (data.quotas !== undefined) payload.quotas = data.quotas;
+  if (data.googleMapsUrl !== undefined || data.google_maps_url !== undefined) {
+    payload.google_maps_url = data.googleMapsUrl || data.google_maps_url;
+  }
+  if (data.coordinates !== undefined) payload.coordinates = data.coordinates;
 
   return payload;
 }
