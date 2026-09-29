@@ -146,6 +146,19 @@ export class MultiTierCacheService {
   }
 
   /**
+   * Clears all cache entries across L1 memory and resets stats
+   */
+  clear() {
+    this.l1.clear();
+    this.stats = {
+      l1Hits: 0,
+      l2Hits: 0,
+      misses: 0,
+      revalidations: 0
+    };
+  }
+
+  /**
    * Transparent fetch-with-cache featuring Stale-While-Revalidate and Circuit Breaker
    * @param {string} key 
    * @param {Function} fetcherFn 
