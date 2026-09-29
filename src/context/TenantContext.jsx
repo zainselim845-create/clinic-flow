@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useInRouterContext } from 'react-router-dom';
-import { demoClinics as fallbackDemoClinics } from '../data/demoData';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { fromDbClinic, getAllClinicsFromDb } from '../services/clinicsService';
 import { canSwitchTenants } from '../utils/permissions';
@@ -10,9 +9,6 @@ import { getClinicDomainSettings, saveClinicDomainSettings } from '../services/c
 import { safeGetItem, safeGetJSON, safeSetJSON, safeSessionGetJSON } from '../utils/safeStorage';
 
 const TenantContext = createContext(null);
-
-// Clean zero-state: all clinics must come from real registrations and cloud synchronization
-const initialClinics = [];
 
 export function getCombinedTenants(forceRefresh = true) {
   const registered = getRegisteredTenants(forceRefresh);
@@ -282,7 +278,9 @@ export const TenantProvider = ({ children }) => {
   const [currentPath, setCurrentPath] = useState(() => 
     typeof window !== 'undefined' ? window.location.pathname : ''
   );
-  const applyBranding = applyTenantBranding;
+  const applyBranding = useCallback((branding) => {
+    applyTenantBranding(branding);
+  }, []);
   const [allTenants, setAllTenants] = useState(() => getCombinedTenants(true));
   const initialResolution = useMemo(() => resolveTenantFromLocation(allTenants), [allTenants]);
   const [activeTenant, setActiveTenant] = useState(
@@ -522,7 +520,7 @@ export const TenantProvider = ({ children }) => {
     applyBranding(fallback?.branding);
     setIsLoadingTenant(false);
     return fallback;
-  }, [allTenants]);
+  }, [allTenants, applyBranding]);
 
   useEffect(() => {
     loadTenant();
@@ -574,7 +572,7 @@ export const TenantProvider = ({ children }) => {
       localStorage.setItem('clinicflow_active_tenant_slug', newTenant.slug);
     }
     applyBranding(newTenant.branding);
-  }, []);
+  }, [applyBranding]);
 
   // 6. Update Tenant Subscription Status (Active, Suspended, Pending Approval, Past Due)
   const updateTenantStatus = useCallback((slugOrId, newStatus, reason = '') => {
@@ -664,7 +662,7 @@ export const TenantProvider = ({ children }) => {
         }
       } catch {}
     }
-  }, [activeTenant]);
+  }, [activeTenant, applyBranding]);
 
   // 10. Update Tenant Custom Domain Live with Cross-Layer Persistence
   const updateTenantDomain = useCallback(async (clinicIdOrSlug, newDomain) => {
@@ -783,7 +781,7 @@ export const TenantProvider = ({ children }) => {
       default:
         return { allowed: true, used: 0, limit: Infinity };
     }
-  }, [activeTenant]);
+  }, [activeTenant, hasFeature]);
 
   const isSuperAdminRoute = useMemo(() => {
     const path = currentPath || (typeof window !== 'undefined' ? window.location.pathname : '');
