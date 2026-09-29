@@ -257,7 +257,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
             <Sparkles size={20} className="fab-sparkle-icon" />
             <Bot size={22} className="fab-bot-icon" />
           </div>
-          <span className="fab-label">المساعد الذكي</span>
+          <span className="fab-label">المساعد الذكي (AI Agent)</span>
           <span className="fab-shortcut-badge">Alt+A</span>
         </button>
       )}
@@ -341,6 +341,14 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
               onClick={() => handleSendMessage('ايه الايام والمواعيد المقفولة؟')}
             >
               جدول الإجازات
+            </button>
+            <button 
+              type="button" 
+              className="quick-pill" 
+              style={{ borderColor: 'rgba(37, 211, 102, 0.45)', color: '#15803d' }}
+              onClick={() => handleSendMessage('وكيل واتساب الذكي')}
+            >
+              وكيل واتساب الذكي
             </button>
           </div>
 
@@ -443,6 +451,38 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
                         <ArrowUpRight size={14} />
                         <span>فتح {m.action.payload.label} فوراً</span>
                       </button>
+                    </div>
+                  )}
+
+                  {/* Interactive Action Card: WhatsApp Agent / Messaging */}
+                  {(m.action?.actionType === 'WHATSAPP_AGENT_STATUS' || m.action?.actionType === 'SEND_WHATSAPP') && m.action.payload?.url && (
+                    <div className="action-card whatsapp-card" style={{ borderColor: 'rgba(37, 211, 102, 0.4)', background: 'rgba(37, 211, 102, 0.08)' }}>
+                      <div className="action-card-header" style={{ color: '#15803d' }}>
+                        <MessageSquare size={16} />
+                        <strong>{m.action.actionType === 'WHATSAPP_AGENT_STATUS' ? 'وكيل واتساب الذكي للعيادة' : 'محادثة واتساب للمريض'}</strong>
+                      </div>
+                      <div className="action-card-body">
+                        <span>{m.action.payload.patient ? `المريض: ${m.action.payload.patient.name} (${m.action.payload.phone})` : `رقم الواتساب: ${m.action.payload.clinicPhone || 'رقم العيادة'}`}</span>
+                      </div>
+                      <div className="action-card-buttons">
+                        <a
+                          href={m.action.payload.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-card-primary"
+                          style={{
+                            backgroundColor: '#25D366',
+                            color: '#ffffff',
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <MessageSquare size={14} />
+                          <span>فتح محادثة واتساب الآن</span>
+                        </a>
+                      </div>
                     </div>
                   )}
 

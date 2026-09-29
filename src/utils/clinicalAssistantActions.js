@@ -761,7 +761,28 @@ export function processDoctorIntent(message, state = {}) {
     }
   }
 
-  // 11. 1-CLICK WHATSAPP MESSAGING (إرسال رسالة واتساب مباشرة)
+  // 11. CLINIC WHATSAPP AI AGENT (وكيل واتساب الذكي للعيادة)
+  if (text.includes('وكيل واتساب') || text.includes('بوت واتساب') || text.includes('روبوت واتساب') || text.includes('واتساب الذكي') || text.includes('whatsapp bot') || text.includes('whatsapp agent')) {
+    const clinicName = state.clinicInfo?.name || 'العيادة';
+    const clinicPhone = state.clinicInfo?.phone || state.clinicInfo?.whatsappNumber || '';
+    const cleanPhone = clinicPhone.replace(/\D/g, '');
+    const waUrl = cleanPhone 
+      ? `https://wa.me/20${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}?text=${encodeURIComponent(`مرحباً، أود الاستفسار والحجز عبر وكيل واتساب الذكي لـ ${clinicName}`)}`
+      : null;
+
+    return {
+      isAction: true,
+      actionType: 'WHATSAPP_AGENT_STATUS',
+      payload: { clinicName, clinicPhone, url: waUrl },
+      replyText: `تم ربط وتفعيل وكيل واتساب الذكي لـ (${clinicName}).\n\n` +
+        `• حالة الوكيل: متصل وجاهز للرد على مدار الساعة.\n` +
+        (clinicPhone ? `• رقم واتساب العيادة: ${clinicPhone}\n` : '') +
+        `• المهام التلقائية: الرد الفوري على استفسارات المرضى، توضيح أسعار الكشوفات والخدمات، وتسجيل المواعيد المؤكدة آلياً في جدول العيادة.\n\n` +
+        (waUrl ? `يمكنك تجربة محادثة وكيل واتساب الذكي مباشرة عبر الزر أدناه.` : `يمكنك إضافة رقم هاتف العيادة من الإعدادات لربط المحادثات المباشرة.`)
+    };
+  }
+
+  // 12. 1-CLICK WHATSAPP MESSAGING (إرسال رسالة واتساب مباشرة لمريض)
   if (text.includes('واتساب') || text.includes('واتس اب') || text.includes('whatsapp')) {
     const matchedPatient = findPatientInText(text, state.patients);
     if (matchedPatient && matchedPatient.phone) {
@@ -773,10 +794,10 @@ export function processDoctorIntent(message, state = {}) {
         isAction: true,
         actionType: 'SEND_WHATSAPP',
         payload: { patient: matchedPatient, phone: cleanPhone, url: waUrl },
-        replyText: ` **تم إعداد رسالة الواتساب للمريض: ${matchedPatient.name}**\n\n` +
-          `• **الهاتف:** ${matchedPatient.phone}\n` +
-          `• **الرابط:** [فتح محادثة واتساب الآن](${waUrl})\n\n` +
-          `يمكنك الضغط على الرابط بالأسفل لفتح المحادثة وإرسالها فوراً. `
+        replyText: `تم إعداد رسالة الواتساب للمريض: ${matchedPatient.name}\n\n` +
+          `• الهاتف: ${matchedPatient.phone}\n` +
+          `• الرابط: [فتح محادثة واتساب الآن](${waUrl})\n\n` +
+          `يمكنك الضغط على الرابط بالأسفل لفتح المحادثة وإرسالها فوراً.`
       };
     }
   }

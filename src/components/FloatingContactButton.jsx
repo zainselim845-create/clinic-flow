@@ -1,14 +1,105 @@
 import React, { useState } from 'react';
-import { MessageCircle, Phone, HelpCircle, X, ChevronUp } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { MessageCircle, Phone, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useTenant } from '../context/TenantContext';
+import { useApp } from '../context/AppContext';
 import { getWhatsAppSupportUrl } from '../utils/utmTracking';
+import DoctorAiFloatingWidget from './DoctorAiFloatingWidget';
 
 /**
- * Floating contact & customer support action button.
- * Expands to show WhatsApp chat, phone emergency hotline, and support options.
+ * Floating action button that adapts intelligently across the platform:
+ * 1. On any client clinic system: transforms into the clinic AI Agent (DoctorAiFloatingWidget).
+ * 2. On a clinic public portal: connects directly to that clinic WhatsApp AI Agent.
+ * 3. On the platform landing page: displays platform sales and technical support.
  */
 export const FloatingContactButton = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const { user, clinic } = useAuth();
+  const { tenant, isDedicatedDomain } = useTenant();
+  const { state } = useApp();
 
+  const activeClinic = tenant || state.clinicInfo || clinic;
+  const isDoctorOrStaff = Boolean(
+    user && ['doctor', 'receptionist', 'accountant', 'assistant', 'associate_doctor', 'super_admin'].includes(user.role)
+  );
+
+  const isInternalClinicRoute = (
+    location.pathname.startsWith('/dashboard') ||
+    location.pathname.startsWith('/appointments') ||
+    location.pathname.startsWith('/patients') ||
+    location.pathname.startsWith('/settings') ||
+    location.pathname.startsWith('/attendance') ||
+    location.pathname.startsWith('/inventory') ||
+    location.pathname.startsWith('/labs') ||
+    location.pathname.startsWith('/invoices') ||
+    location.pathname.startsWith('/doctor-agent') ||
+    location.pathname.startsWith('/doctor-assistant') ||
+    location.pathname.startsWith('/growth') ||
+    location.pathname.startsWith('/marketing') ||
+    location.pathname.startsWith('/onboarding')
+  );
+
+  const isClientSystem = isDoctorOrStaff || isInternalClinicRoute;
+
+  // 1. If on any client system: This button is the AI Agent for that clinic
+  if (isClientSystem) {
+    return <DoctorAiFloatingWidget />;
+  }
+
+  // 2. If on a clinic public booking or portal: Connect to that clinic WhatsApp AI Agent
+  const isClinicPublicPortal = location.pathname.startsWith('/c/') || isDedicatedDomain;
+  if (isClinicPublicPortal && activeClinic) {
+    const clinicPhone = activeClinic.phone || activeClinic.whatsappNumber || '';
+    const cleanPhone = clinicPhone.replace(/\D/g, '');
+    const clinicDoctorName = activeClinic.doctorName || activeClinic.name || 'طبيب العيادة';
+    const clinicWaUrl = cleanPhone 
+      ? `https://wa.me/20${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}?text=${encodeURIComponent(`مرحباً د. ${clinicDoctorName}، أود الاستفسار وحجز موعد عبر المساعد الذكي`)}`
+      : null;
+
+    if (!clinicWaUrl) return null;
+
+    return (
+      <div 
+        className="floating-contact-container"
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          left: '24px',
+          zIndex: 900,
+          direction: 'rtl'
+        }}
+      >
+        <a
+          href={clinicWaUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`تواصل مع وكيل واتساب الذكي لـ ${activeClinic.name || 'العيادة'}`}
+          title={`وكيل واتساب الذكي لـ ${activeClinic.name || 'العيادة'}`}
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            backgroundColor: '#25D366',
+            color: '#FFFFFF',
+            border: 'none',
+            boxShadow: '0 4px 16px rgba(37, 211, 102, 0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            textDecoration: 'none'
+          }}
+        >
+          <MessageCircle size={24} />
+        </a>
+      </div>
+    );
+  }
+
+  // 3. Platform Public Landing Page: Platform sales and support
   const whatsappUrl = getWhatsAppSupportUrl('مرحباً فريق كلينيك فلو، أحتاج لمساعدة في استخدام النظام');
 
   return (
