@@ -343,12 +343,6 @@ export default function PatientDossierDrawer({
                 <span>السن والنوع:</span>
                 <strong>{patient?.age ? `${patient.age} سنة` : 'غير محدد'} • {patient?.gender || 'ذكر'}</strong>
               </div>
-              {(patient?.nationalId || patient?.national_id) && (
-                <div className="dossier-stat">
-                  <span>الرقم القومي:</span>
-                  <strong dir="ltr">{patient?.nationalId || patient?.national_id}</strong>
-                </div>
-              )}
               {patient?.governorate && (
                 <div className="dossier-stat">
                   <span>المحافظة:</span>

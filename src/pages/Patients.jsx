@@ -60,7 +60,6 @@ const Patients = () => {
     age: '',
     gender: 'ذكر',
     phone: '',
-    nationalId: '',
     governorate: '',
     bloodType: '',
     diagnosis: '',
@@ -75,7 +74,6 @@ const Patients = () => {
       age: '',
       gender: 'ذكر',
       phone: '',
-      nationalId: '',
       governorate: '',
       bloodType: '',
       diagnosis: '',
@@ -115,7 +113,6 @@ const Patients = () => {
       age: patient.age || '',
       gender: patient.gender || 'ذكر',
       phone: patient.phone || '',
-      nationalId: patient.nationalId || patient.national_id || '',
       governorate: patient.governorate || '',
       bloodType: patient.bloodType || '',
       diagnosis: patient.diagnosis || '',
@@ -168,7 +165,7 @@ const Patients = () => {
     
     setIsModalOpen(false);
     setSelectedPatient(null);
-    setFormData({ name: '', age: '', gender: 'ذكر', phone: '', nationalId: '', governorate: '', bloodType: '', diagnosis: '', medicalAlerts: '', notes: '' });
+    setFormData({ name: '', age: '', gender: 'ذكر', phone: '', governorate: '', bloodType: '', diagnosis: '', medicalAlerts: '', notes: '' });
   };
 
   const getPatientAppointments = (patientId) => {
@@ -182,10 +179,9 @@ const Patients = () => {
       return;
     }
 
-    const headers = ['الاسم', 'الرقم القومي', 'المحافظة', 'العمر', 'الجنس', 'الهاتف', 'فصيلة الدم', 'التشخيص', 'عدد الزيارات', 'آخر زيارة', 'ملاحظات'];
+    const headers = ['الاسم', 'المحافظة', 'العمر', 'الجنس', 'الهاتف', 'فصيلة الدم', 'التشخيص', 'عدد الزيارات', 'آخر زيارة', 'ملاحظات'];
     const rows = clinicPatients.map(p => [
       p.name || '',
-      p.nationalId || p.national_id || '',
       p.governorate || '',
       p.age || '',
       p.gender || '',

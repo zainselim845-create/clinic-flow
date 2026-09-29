@@ -157,12 +157,6 @@ export default function BookingSuccessStep({
                   <span className="ticket-lbl">رقم الهاتف:</span>
                   <strong className="ticket-val" dir="ltr">{createdBooking.patientPhone}</strong>
                 </div>
-                {createdBooking.nationalId && (
-                  <div className="ticket-row">
-                    <span className="ticket-lbl">الرقم القومي:</span>
-                    <strong className="ticket-val" dir="ltr">{createdBooking.nationalId}</strong>
-                  </div>
-                )}
                 {createdBooking.governorate && (
                   <div className="ticket-row">
                     <span className="ticket-lbl">المحافظة:</span>

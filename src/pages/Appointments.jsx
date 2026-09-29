@@ -149,7 +149,6 @@ const Appointments = () => {
       patientId: formData.patientId,
       patientName: patient ? patient.name : 'مريض العيادة',
       patientPhone: patient ? patient.phone : '',
-      nationalId: patient?.nationalId || patient?.national_id || '',
       governorate: patient?.governorate || '',
       paymentMethod: formData.paymentMethod || 'cash',
       date: formData.date,

@@ -3,7 +3,7 @@ import {
   ArrowRight, Sparkles, Users, UserPlus, AlertCircle, Loader2, Stethoscope, CreditCard, Banknote, Bolt, Smartphone 
 } from 'lucide-react';
 import BookingCalendar from '../../components/BookingCalendar';
-import { parseNationalId, EGYPT_PAYMENT_METHODS } from '../../features/egypt-national';
+import { EGYPT_PAYMENT_METHODS } from '../../features/egypt-national';
 
 const maskName = (name) => {
   if (!name) return 'عميلنا العزيز';
@@ -96,47 +96,6 @@ export default function AppointmentDetailsStep({
                     required 
                     autoFocus
                   />
-                </div>
-
-                <div className="nebras-input-group">
-                  <label htmlFor="patientNationalId" className="nebras-label">الرقم القومي المصري (اختياري - 14 رقماً لتحديد السن والمحافظة آلياً)</label>
-                  <input 
-                    type="text" 
-                    id="patientNationalId"
-                    name="nationalId"
-                    aria-label="الرقم القومي المصري"
-                    className="nebras-input"
-                    placeholder="مثال: 29504151201478"
-                    maxLength={14}
-                    value={formData.nationalId || ''}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      const parsed = parseNationalId(val);
-                      if (parsed.isValid) {
-                        setFormData(prev => ({
-                          ...prev,
-                          nationalId: parsed.nationalId,
-                          age: parsed.age,
-                          gender: parsed.genderAr,
-                          governorate: parsed.governorateNameAr,
-                          birthDate: parsed.birthDate
-                        }));
-                      } else {
-                        setFormData(prev => ({ ...prev, nationalId: val }));
-                      }
-                    }}
-                  />
-                  {formData.nationalId && (() => {
-                    const check = parseNationalId(formData.nationalId);
-                    if (check.isValid) {
-                      return (
-                        <span style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 700, marginTop: '4px', display: 'block' }}>
-                          تم التحقق: مواليد {check.governorateNameAr} ({check.birthYear}) • السن: {check.age} سنة • {check.genderAr}
-                        </span>
-                      );
-                    }
-                    return null;
-                  })()}
                 </div>
 
                 <div className="nebras-row-2">

@@ -2,7 +2,7 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { Dialog } from '../ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { parseNationalId, EGYPT_GOVERNORATES } from '../../features/egypt-national';
+import { EGYPT_GOVERNORATES } from '../../features/egypt-national';
 
 export default function PatientFormModal({
   isOpen,
@@ -30,51 +30,6 @@ export default function PatientFormModal({
             </div>
             
             <form onSubmit={onSubmit} className="modal-form">
-              <div className="form-group">
-                <label>الرقم القومي المصري (14 رقماً - استخراج آلي للسن والنوع والمحافظة)</label>
-                <input 
-                  type="text" 
-                  className="input-field"
-                  placeholder="مثال: 29504151201478"
-                  maxLength={14}
-                  value={formData.nationalId || ''}
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    const parsed = parseNationalId(raw);
-                    if (parsed.isValid) {
-                      setFormData(prev => ({
-                        ...prev,
-                        nationalId: parsed.nationalId,
-                        age: parsed.age,
-                        gender: parsed.genderAr,
-                        governorate: parsed.governorateNameAr,
-                        birthDate: parsed.birthDate
-                      }));
-                    } else {
-                      setFormData(prev => ({ ...prev, nationalId: raw }));
-                    }
-                  }}
-                />
-                {formData.nationalId && (() => {
-                  const check = parseNationalId(formData.nationalId);
-                  if (check.isValid) {
-                    return (
-                      <small style={{ color: '#059669', fontWeight: 700, display: 'block', marginTop: '4px' }}>
-                        تم التحقق بنجاح: مواليد {check.governorateNameAr} ({check.birthYear}) • السن: {check.age} سنة • {check.genderAr}
-                      </small>
-                    );
-                  }
-                  if (formData.nationalId.length === 14) {
-                    return (
-                      <small style={{ color: '#DC2626', fontWeight: 600, display: 'block', marginTop: '4px' }}>
-                        {check.error || 'الرقم القومي غير صالح'}
-                      </small>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-
               <div className="form-group">
                 <label>الاسم بالكامل *</label>
                 <input 

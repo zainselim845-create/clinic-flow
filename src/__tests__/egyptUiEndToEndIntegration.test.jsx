@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { 
   parseNationalId, 
@@ -65,13 +65,12 @@ describe('Egyptian National Scale UI & End-to-End Architecture Verification', ()
       phone: '01006285031',
       age: 32,
       gender: 'ذكر',
-      governorate: 'الدقهلية',
-      nationalId: '29504151201478'
+      governorate: 'الدقهلية'
     };
     const el = React.createElement(PatientCard, { patient: mockPatient });
     expect(React.isValidElement(el)).toBe(true);
     expect(el.props.patient.governorate).toBe('الدقهلية');
-    expect(el.props.patient.nationalId).toBe('29504151201478');
+    expect(el.props.patient.phone).toBe('01006285031');
   });
 
   it('validates AppointmentCard component element creation with Egyptian payment rails', () => {
@@ -111,21 +110,21 @@ describe('Egyptian National Scale UI & End-to-End Architecture Verification', ()
     expect(el.props.formData.paymentMethod).toBe('vodafone_cash');
   });
 
-  it('validates PatientFormModal element creation with 14-digit National ID and governorate', () => {
+  it('validates PatientFormModal element creation with phone-first registration and governorate', () => {
     expect(typeof PatientFormModal).toBe('function');
     const el = React.createElement(PatientFormModal, {
       isOpen: true,
       formData: {
         name: 'إبراهيم حسن',
         phone: '01200000000',
-        nationalId: '29504151201478',
         governorate: 'الدقهلية',
         age: 30,
         gender: 'ذكر'
       }
     });
     expect(React.isValidElement(el)).toBe(true);
-    expect(el.props.formData.nationalId).toBe('29504151201478');
+    expect(el.props.formData.phone).toBe('01200000000');
+    expect(el.props.formData.governorate).toBe('الدقهلية');
   });
 
   it('validates OnboardingStepClinic element creation with 27 governorates selector', () => {
@@ -142,36 +141,32 @@ describe('Egyptian National Scale UI & End-to-End Architecture Verification', ()
     expect(el.props.city).toBe('القاهرة');
   });
 
-  it('supports CSV export headers containing National ID and Governorate', () => {
-    const headers = ['الاسم', 'الرقم القومي', 'المحافظة', 'العمر', 'الجنس', 'الهاتف', 'فصيلة الدم', 'التشخيص', 'عدد الزيارات', 'آخر زيارة', 'ملاحظات'];
-    expect(headers).toContain('الرقم القومي');
+  it('supports CSV export headers containing Governorate without National ID friction', () => {
+    const headers = ['الاسم', 'المحافظة', 'العمر', 'الجنس', 'الهاتف', 'فصيلة الدم', 'التشخيص', 'عدد الزيارات', 'آخر زيارة', 'ملاحظات'];
     expect(headers).toContain('المحافظة');
+    expect(headers).not.toContain('الرقم القومي');
   });
 
   it('end-to-end appointment payload enriches patient demographics correctly', () => {
     const rawPatient = {
       name: 'سارة عبد الله',
-      nationalId: '29811250102348', // Cairo female born 25/11/1998
+      governorate: 'القاهرة',
       phone: '01099887766'
     };
-    const parsed = parseNationalId(rawPatient.nationalId);
-    expect(parsed.isValid).toBe(true);
-    expect(parsed.governorateNameAr).toBe('القاهرة');
-    expect(parsed.genderAr).toBe('أنثى');
 
     const appointmentPayload = {
       id: 'appt-999',
       patientName: rawPatient.name,
       patientPhone: rawPatient.phone,
-      nationalId: parsed.nationalId,
-      governorate: parsed.governorateNameAr,
+      governorate: rawPatient.governorate,
       paymentMethod: 'meeza',
       status: 'booked'
     };
 
-    expect(appointmentPayload.nationalId).toBe('29811250102348');
+    expect(appointmentPayload.patientName).toBe('سارة عبد الله');
     expect(appointmentPayload.governorate).toBe('القاهرة');
     expect(appointmentPayload.paymentMethod).toBe('meeza');
   });
 
 });
+
