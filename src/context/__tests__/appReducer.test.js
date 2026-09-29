@@ -122,7 +122,7 @@ describe('appReducer Clinical Lifecycle', () => {
     expect(nextState.appointments[0].status).toBe('completed');
     expect(nextState.patients[0].totalVisits).toBe(3);
     expect(nextState.patients[0].lastVisit).toBe('2026-08-24');
-    expect(nextState.notifications[0].title).toBe('إتمام كشف ');
+    expect(nextState.notifications[0].title).toBe('إتمام كشف');
   });
 
   it('caps in-memory notifications to a maximum of 100 items under rapid booking', () => {

@@ -12,6 +12,8 @@ import { processDoctorIntent } from '../utils/clinicalAssistantActions';
 import { askDoctorAiAssistant } from '../services/aiAssistantService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
 import * as appointmentsService from '../services/appointmentsService';
+import * as patientsService from '../services/patientsService';
+import * as expensesService from '../services/expensesService';
 import { safeGetJSON, safeSetJSON, safeRemoveItem } from '../utils/safeStorage';
 import './DoctorAiFloatingWidget.css';
 
@@ -109,35 +111,89 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
   // Execute clinical actions dispatched by agent
   const executeDoctorAction = (actionResult) => {
     const activeClinicId = currentClinic?.id || null;
+    const payload = actionResult?.payload || {};
 
     if (actionResult.actionType === 'BLOCK_FULL_DAY') {
-      dispatch({ type: 'BLOCK_FULL_DAY', payload: actionResult.payload });
+      dispatch({ type: 'BLOCK_FULL_DAY', payload });
       if (useSupabase) {
-        blockedSlotsService.blockSlotInDb(actionResult.payload.date, 'FULL_DAY', actionResult.payload.reason || 'إجازة الطبيب', true, activeClinicId).catch(console.error);
+        blockedSlotsService.blockSlotInDb(payload.date, 'FULL_DAY', payload.reason || 'إجازة الطبيب', true, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'UNBLOCK_FULL_DAY') {
-      dispatch({ type: 'UNBLOCK_FULL_DAY', payload: actionResult.payload });
+      dispatch({ type: 'UNBLOCK_FULL_DAY', payload });
       if (useSupabase) {
-        blockedSlotsService.unblockFullDayInDb(actionResult.payload.date, activeClinicId).catch(console.error);
+        blockedSlotsService.unblockFullDayInDb(payload.date, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'BLOCK_SLOT') {
-      dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: actionResult.payload });
+      dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload });
       if (useSupabase) {
-        blockedSlotsService.blockSlotInDb(actionResult.payload.date, actionResult.payload.time, actionResult.payload.reason || 'حظر مخصص', false, activeClinicId).catch(console.error);
+        blockedSlotsService.blockSlotInDb(payload.date, payload.time, payload.reason || 'حظر مخصص', false, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'UNBLOCK_SLOT') {
-      dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: actionResult.payload });
+      dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload });
       if (useSupabase) {
-        blockedSlotsService.unblockSlotInDb(actionResult.payload.date, actionResult.payload.time, activeClinicId).catch(console.error);
+        blockedSlotsService.unblockSlotInDb(payload.date, payload.time, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'BOOK_APPOINTMENT') {
-      dispatch({ type: 'ADD_APPOINTMENT', payload: actionResult.payload });
+      dispatch({ type: 'ADD_APPOINTMENT', payload });
       if (useSupabase) {
-        appointmentsService.addAppointment({ ...actionResult.payload, clinicId: activeClinicId }).catch(console.error);
+        appointmentsService.addAppointment({ ...payload, clinicId: activeClinicId }).catch(console.error);
       }
+    } else if (actionResult.actionType === 'CANCEL_APPOINTMENT') {
+      const apptId = payload.id || payload.appointmentId;
+      dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: { id: apptId, status: 'cancelled' } });
+      if (useSupabase) {
+        appointmentsService.softDeleteAppointment(apptId, activeClinicId).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'RESCHEDULE_APPOINTMENT') {
+      const apptId = payload.id || payload.appointmentId;
+      const existing = (state.appointments || []).find(a => a.id === apptId);
+      if (existing) {
+        const updated = { ...existing, date: payload.date, time: payload.time };
+        dispatch({ type: 'UPDATE_APPOINTMENT', payload: updated });
+        if (useSupabase) {
+          appointmentsService.updateAppointment(apptId, updated, activeClinicId).catch(console.error);
+        }
+      }
+    } else if (actionResult.actionType === 'UPDATE_APPOINTMENT_STATUS') {
+      const apptId = payload.id || payload.appointmentId;
+      dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: { id: apptId, status: payload.status } });
+      if (useSupabase) {
+        appointmentsService.updateAppointmentStatus(apptId, payload.status, {}, activeClinicId).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'ADD_PATIENT') {
+      dispatch({ type: 'ADD_PATIENT', payload });
+      if (useSupabase) {
+        patientsService.addPatient({ ...payload, clinicId: activeClinicId }).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'UPDATE_PATIENT') {
+      dispatch({ type: 'UPDATE_PATIENT', payload });
+      if (useSupabase) {
+        patientsService.updatePatient(payload.id, payload, activeClinicId).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'ADD_EXPENSE') {
+      dispatch({ type: 'ADD_EXPENSE', payload });
+      if (useSupabase) {
+        expensesService.addExpense({ ...payload, clinicId: activeClinicId }).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'RECORD_PAYMENT') {
+      if (payload.patientId) {
+        const targetPat = (state.patients || []).find(p => p.id === payload.patientId);
+        if (targetPat) {
+          const currentBal = Number(targetPat.balance) || 0;
+          const updatedPat = { ...targetPat, balance: Math.max(0, currentBal - (Number(payload.amount) || 0)) };
+          dispatch({ type: 'UPDATE_PATIENT', payload: updatedPat });
+          if (useSupabase) {
+            patientsService.updatePatient(targetPat.id, updatedPat, activeClinicId).catch(console.error);
+          }
+        }
+      }
+    } else if (actionResult.actionType === 'UPDATE_CLINIC_FEE') {
+      dispatch({ type: 'UPDATE_CLINIC_INFO', payload: { consultationFee: payload.fee } });
+    } else if (actionResult.actionType === 'ADD_SERVICE') {
+      dispatch({ type: 'ADD_SERVICE', payload });
     } else if (actionResult.actionType === 'NAVIGATE') {
-      if (actionResult.payload?.path) {
-        navigate(actionResult.payload.path);
+      if (payload?.path) {
+        navigate(payload.path);
         setIsOpen(false);
       }
     }
@@ -186,14 +242,32 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
       return;
     }
 
-    // 2. OpenRouter AI Fallback with live clinic context
+    // 2. OpenRouter AI Fallback with live clinic context & structured action parsing
     try {
       const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, scopedPatients, scopedState);
       let replyText = '';
+      let detectedAction = null;
+
       if (aiRes.isQuotaExceeded) {
-        replyText = `**تنبيه استهلاك الرصيد**: ${aiRes.error}`;
+        replyText = `تنبيه استهلاك الرصيد: ${aiRes.error}`;
       } else if (aiRes.success && aiRes.content) {
-        replyText = aiRes.content;
+        const contentStr = aiRes.content;
+        // Parse structured action block if generated by LLM
+        const actionMatch = contentStr.match(/```(?:action|json)?\s*(\{[\s\S]*?"actionType"[\s\S]*?\})\s*```/);
+        if (actionMatch) {
+          try {
+            detectedAction = JSON.parse(actionMatch[1]);
+            executeDoctorAction(detectedAction);
+            replyText = contentStr.replace(/```(?:action|json)?\s*\{[\s\S]*?"actionType"[\s\S]*?\}\s*```/, '').trim();
+            if (!replyText) {
+              replyText = 'تم تنفيذ طلبك بنجاح في سيستم العيادة.';
+            }
+          } catch (_) {
+            replyText = contentStr;
+          }
+        } else {
+          replyText = contentStr;
+        }
       } else {
         replyText = `أهلاً دكتور، تلقيت طلبك بخصوص: "${query}". يمكنك استعراض الملفات أو المواعيد عبر الأوامر السريعة.`;
       }
@@ -202,6 +276,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
         id: 'agent-' + Date.now(),
         sender: 'agent',
         text: replyText,
+        action: detectedAction,
         timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, agentMsg]);

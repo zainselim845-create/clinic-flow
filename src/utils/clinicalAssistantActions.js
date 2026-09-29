@@ -2,16 +2,14 @@ import { formatLocalDate, getTodayDateStr } from './timeSlots';
 
 /**
  * Clinical Assistant Action & Intelligence Engine for ClinicFlow
- * Empowers the Doctor AI Assistant with direct operational access across:
- * - Patient Records & Medical Dossiers
- * - Instant Appointment Booking & Rescheduling
- * - Live Clinic Schedule & Waiting Room Queries
- * - Pharmacy & Medical Supplies Inventory Stock Alerts
- * - Laboratory & Diagnostic Orders
- * - Financial Ledgers, Debts, & Invoicing
- * - Doctor Schedule Blocking / Unblocking
- * - 1-Click WhatsApp & SMS Outreach
- * - Smart In-App Navigation
+ * Empowers the Doctor AI Assistant with full operational execution authority across:
+ * - Appointments: Booking, Cancelling, Rescheduling, Status Workflow (waiting -> in_progress -> pending_payment -> completed)
+ * - Patient Records & Medical Dossiers: Registration, Allergies, Chronic Diseases, Diagnosis
+ * - Cash Flow & Treasury: Expenses, Payments, Live Net Balances
+ * - Schedule & Blocks: Full-day & Slot Blocking/Unblocking, Working Hours
+ * - Clinic Settings & Services: Fee updates, New Services
+ * - Staff: Duty Roster & Attendance
+ * - Strict Zero Emojis compliance
  */
 
 const ARABIC_DAYS_MAP = {
@@ -148,11 +146,12 @@ export function resolveTimeFromText(text) {
   }
 
   // "الساعة X مساء/صباحا"
-  const hourMatch = text.match(/الساعة\s*([0-1]?[0-9])(?::([0-5][0-9]))?\s*(مساء|صباحا|م|ص)?/);
+  const hourMatch = text.match(/(?:للساعة|الساعة|الساعه|ساعة)\s*([0-1]?[0-9])(?::([0-5][0-9]))?\s*(مساء|صباحا|م|ص|المغرب|العصر|الظهر|العشا|العشاء|بالليل|الصبح)?/);
   if (hourMatch) {
     const hour = parseInt(hourMatch[1], 10);
     const minute = hourMatch[2] || '00';
-    const isPm = hourMatch[3]?.includes('مساء') || hourMatch[3] === 'م' || (hour >= 1 && hour <= 11 && !hourMatch[3]?.includes('صباح'));
+    const period = hourMatch[3] || '';
+    const isPm = period.includes('مساء') || period === 'م' || period.includes('المغرب') || period.includes('العصر') || period.includes('الظهر') || period.includes('العشا') || period.includes('بالليل') || (hour >= 1 && hour <= 11 && !period.includes('صباح') && !period.includes('الصبح'));
     const formattedHour = String(hour > 12 ? hour - 12 : hour).padStart(2, '0');
     return `${formattedHour}:${minute} ${isPm ? 'م' : 'ص'}`;
   }
@@ -222,7 +221,7 @@ export function findPatientInText(text, patients = []) {
  */
 export function extractCandidateName(text) {
   if (!text) return null;
-  const match = text.match(/(?:لمريض|للمريض|لـ|كشف|ملف المريض|بيانات المريض|مريض اسمه|عن المريض|عن مريض|احجز لـ|احجزلي لـ|احجز ل|ضيف موعد لـ|ضيف موعد ل)\s+([^\s,.:;]+(?:\s+[^\s,.:;]+){0,2})/);
+  const match = text.match(/(?:لمريض|للمريض|لـ|كشف|ملف المريض|بيانات المريض|مريض اسمه|عن المريض|عن مريض|احجز لـ|احجزلي لـ|احجز ل|ضيف موعد لـ|ضيف موعد ل|الغي كشف|الغي موعد|كنسل موعد|كنسل كشف|دخل|خلصت كشف|انقل موعد|أجل كشف|اجل كشف)\s+([^\s,.:;]+(?:\s+[^\s,.:;]+){0,2})/);
   if (match && match[1]) {
     const name = match[1].replace(/(?:بكرة|غدا|النهاردة|اليوم|الساعة|يوم|تاريخ|\d+).*/g, '').trim();
     if (name.length >= 2) return name;
@@ -238,6 +237,26 @@ export function extractCandidateName(text) {
  */
 export function processDoctorIntent(message, state = {}) {
   const text = message.trim();
+
+  // Special Staff on duty check (must precede general unblock)
+  const isStaffQuery = text.includes('مين شغال') || text.includes('شغال مين') || text.includes('مين من التمريض') || text.includes('طاقم العيادة') || text.includes('حضور الطاقم');
+  if (isStaffQuery) {
+    const staff = state.staffMembers || [];
+    if (staff.length === 0) {
+      return {
+        isAction: true,
+        actionType: 'INFO',
+        replyText: `لا يوجد أعضاء طاقم مسجلين حالياً في سيستم العيادة. يمكنك إضافة أعضاء الفريق من شاشة إدارة الطاقم.`
+      };
+    }
+    const activeStaff = staff.filter(s => s.status !== 'inactive');
+    const list = activeStaff.map(s => `• ${s.name} (${s.role || 'طاقم العمل'} - هاتف: ${s.phone || 'غير مسجل'})`).join('\n');
+    return {
+      isAction: true,
+      actionType: 'INFO',
+      replyText: `طاقم العيادة على رأس العمل اليوم (${activeStaff.length} موظف):\n\n${list}\n\nالجميع متواجدون وجاهزون لخدمة العيادة والمرضى.`
+    };
+  }
 
   // 1. UNBLOCK INTENTS (الأيام والمواعيد المغلقة)
   const isUnblockIntent = 
@@ -271,7 +290,7 @@ export function processDoctorIntent(message, state = {}) {
         isAction: true,
         actionType: 'UNBLOCK_SLOT',
         payload: { date: targetDate, time: targetTime },
-        replyText: ` **تمام دكتور! تم فتح الموعد فوراً!**\nتم إلغاء حظر موعد **(${targetTime})** بتاريخ **${targetDate}** وأصبح متاحاً الآن للمرضى في جدول الحجز الأونلاين. `
+        replyText: `تمام دكتور، تم فتح الموعد فوراً.\nتم إلغاء حظر موعد (${targetTime}) بتاريخ ${targetDate} وأصبح متاحاً الآن للمرضى في جدول الحجز.`
       };
     }
 
@@ -280,7 +299,7 @@ export function processDoctorIntent(message, state = {}) {
         isAction: true,
         actionType: 'UNBLOCK_FULL_DAY',
         payload: { date: targetDate },
-        replyText: ` **أهلاً دكتور! تم تأكيد فتح اليوم بالكامل!**\nتم إلغاء الإجازة وفتح يوم **${targetDate}** بنجاح، وجميع المواعيد الآن متاحة للمرضى في جدول الحجز الأونلاين للعيادة. `
+        replyText: `أهلاً دكتور، تم تأكيد فتح اليوم بالكامل.\nتم إلغاء الإجازة وفتح يوم ${targetDate} بنجاح، وجميع المواعيد الآن متاحة للحجز بالعيادة.`
       };
     }
   }
@@ -315,7 +334,7 @@ export function processDoctorIntent(message, state = {}) {
         isAction: true,
         actionType: 'BLOCK_SLOT',
         payload: { date: targetDate, time: targetTime, reason: 'حظر مخصص من الطبيب عبر المساعد الذكي' },
-        replyText: ` **تم تنفيذ طلبك وإغلاق الموعد!**\nتم حظر موعد **(${targetTime})** يوم **${targetDate}** ولن يظهر للمرضى في جدول الحجز الأونلاين. `
+        replyText: `تم تنفيذ طلبك وإغلاق الموعد.\nتم حظر موعد (${targetTime}) يوم ${targetDate} ولن يظهر للمرضى في جدول الحجز.`
       };
     }
 
@@ -324,33 +343,482 @@ export function processDoctorIntent(message, state = {}) {
         isAction: true,
         actionType: 'BLOCK_FULL_DAY',
         payload: { date: targetDate, reason: 'إجازة / عطلة محددة من الطبيب عبر المساعد الذكي' },
-        replyText: ` **تم تنفيذ طلبك وإغلاق اليوم بالكامل!**\nتم حظر يوم **${targetDate}** بالكامل في سيستم العيادة بنجاح ولن يتمكن أي مريض من حجز مواعيد في هذا اليوم أونلاين. `
+        replyText: `تم تنفيذ طلبك وإغلاق اليوم بالكامل.\nتم حظر يوم ${targetDate} بالكامل في سيستم العيادة بنجاح ولن يتمكن أي مريض من حجز مواعيد في هذا اليوم أونلاين.`
       };
     }
   }
 
-  // 3. QUERY BLOCKED DAYS (استعلام الأيام المغلقة)
+  // 3. CANCEL / DELETE APPOINTMENT INTENTS (إلغاء وحذف المواعيد)
+  const isCancelApptIntent = (
+    text.includes('الغي') ||
+    text.includes('ألغي') ||
+    text.includes('إلغاء') ||
+    text.includes('الغاء') ||
+    text.includes('كنسل') ||
+    text.includes('احذف') ||
+    text.includes('حذف') ||
+    text.includes('شيل') ||
+    text.includes('مسح')
+  ) && (
+    text.includes('كشف') ||
+    text.includes('موعد') ||
+    text.includes('ميعاد') ||
+    text.includes('حجز')
+  );
+
+  if (isCancelApptIntent) {
+    const matchedPatient = findPatientInText(text, state.patients);
+    const candidateName = matchedPatient ? matchedPatient.name : extractCandidateName(text);
+    const targetDate = resolveDateFromText(text);
+
+    const appts = state.appointments || [];
+    let targetAppt = null;
+
+    if (matchedPatient) {
+      targetAppt = appts.find(a => 
+        (a.patientId === matchedPatient.id || a.patientName === matchedPatient.name) &&
+        (!targetDate || a.date === targetDate) &&
+        a.status !== 'cancelled'
+      );
+    } else if (candidateName) {
+      targetAppt = appts.find(a => 
+        a.patientName && a.patientName.includes(candidateName) &&
+        (!targetDate || a.date === targetDate) &&
+        a.status !== 'cancelled'
+      );
+    } else if (targetDate) {
+      targetAppt = appts.find(a => a.date === targetDate && a.status !== 'cancelled');
+    }
+
+    if (targetAppt) {
+      return {
+        isAction: true,
+        actionType: 'CANCEL_APPOINTMENT',
+        payload: {
+          appointmentId: targetAppt.id,
+          id: targetAppt.id,
+          patientName: targetAppt.patientName,
+          date: targetAppt.date,
+          time: targetAppt.time
+        },
+        replyText: `تم إلغاء الموعد للمريض (${targetAppt.patientName}) بتاريخ ${targetAppt.date} الساعة ${targetAppt.time} بنجاح وإخلاؤه من جدول العيادة.`
+      };
+    }
+
+    return {
+      isAction: true,
+      actionType: 'INFO',
+      replyText: `لم أتمكن من العثور على موعد قادم مسجل باسم ${candidateName || 'المريض المحدد'} لإلغائه. يرجى التأكد من الاسم أو التاريخ.`
+    };
+  }
+
+  // 4. RESCHEDULE APPOINTMENT INTENTS (تأجيل وتعديل مواعيد الكشوفات)
+  const isRescheduleIntent = (
+    text.includes('أجل') ||
+    text.includes('اجل') ||
+    text.includes('تأجيل') ||
+    text.includes('تاجيل') ||
+    text.includes('انقل') ||
+    text.includes('نقل') ||
+    text.includes('غير') ||
+    text.includes('تعديل')
+  ) && (
+    text.includes('كشف') ||
+    text.includes('موعد') ||
+    text.includes('ميعاد') ||
+    text.includes('حجز')
+  );
+
+  if (isRescheduleIntent) {
+    const matchedPatient = findPatientInText(text, state.patients);
+    const candidateName = matchedPatient ? matchedPatient.name : extractCandidateName(text);
+    const appts = state.appointments || [];
+
+    const targetAppt = appts.find(a => 
+      ((matchedPatient && (a.patientId === matchedPatient.id || a.patientName === matchedPatient.name)) ||
+      (candidateName && a.patientName && a.patientName.includes(candidateName))) &&
+      a.status !== 'cancelled'
+    );
+
+    const newDate = resolveDateFromText(text) || getTodayDateStr();
+    const newTime = resolveTimeFromText(text) || '07:00 م';
+
+    if (targetAppt) {
+      return {
+        isAction: true,
+        actionType: 'RESCHEDULE_APPOINTMENT',
+        payload: {
+          appointmentId: targetAppt.id,
+          id: targetAppt.id,
+          patientId: targetAppt.patientId,
+          patientName: targetAppt.patientName,
+          date: newDate,
+          time: newTime,
+          type: targetAppt.type || 'كشف عادي'
+        },
+        replyText: `تم تعديل وتأجيل موعد المريض (${targetAppt.patientName}) إلى تاريخ ${newDate} الساعة ${newTime} بنجاح وتحديث الجدول السريري.`
+      };
+    }
+
+    return {
+      isAction: true,
+      actionType: 'INFO',
+      replyText: `لم يتم العثور على موعد حالي للمريض (${candidateName || 'المحدد'}) لنقله. يمكنك إنشاء حجز جديد مباشرة.`
+    };
+  }
+
+  // 5. APPOINTMENT STATUS PROGRESSION (تحريك مسار الكشف: انتظار -> داخل الكشف -> محاسبة -> مكتمل)
+  const isStatusProgressionIntent = (
+    text.includes('غرفة الكشف') ||
+    text.includes('داخل يكشف') ||
+    text.includes('دخل كشف') ||
+    text.includes('ادخل كشف') ||
+    text.includes('بدء كشف') ||
+    text.includes('ابدأ كشف') ||
+    (text.includes('دخل') && (text.includes('كشف') || text.includes('غرفة') || text.includes('فحص'))) ||
+    text.includes('خلصت كشف') ||
+    text.includes('أنهيت كشف') ||
+    text.includes('خلص كشف') ||
+    text.includes('انتهى من الكشف') ||
+    text.includes('حول للمحاسبة') ||
+    text.includes('حول للخزنة') ||
+    text.includes('جاهز للمحاسبة') ||
+    text.includes('تم تحصيل كشف') ||
+    text.includes('أتم الزيارة') ||
+    text.includes('اتم الزيارة') ||
+    text.includes('وصل العيادة') ||
+    text.includes('حطه في الانتظار') ||
+    text.includes('في صالة الانتظار') ||
+    text.includes('سجل وصول')
+  );
+
+  if (isStatusProgressionIntent) {
+    const matchedPatient = findPatientInText(text, state.patients);
+    const candidateName = matchedPatient ? matchedPatient.name : extractCandidateName(text);
+    const appts = state.appointments || [];
+    const today = getTodayDateStr();
+
+    const targetAppt = appts.find(a => 
+      ((matchedPatient && (a.patientId === matchedPatient.id || a.patientName === matchedPatient.name)) ||
+      (candidateName && a.patientName && a.patientName.includes(candidateName))) &&
+      (a.date === today || a.status !== 'completed')
+    );
+
+    let nextStatus = 'in_progress';
+    let statusLabel = 'في غرفة الفحص';
+
+    if (text.includes('خلصت كشف') || text.includes('أنهيت كشف') || text.includes('خلص كشف') || text.includes('حول للمحاسبة') || text.includes('حول للخزنة') || text.includes('جاهز للمحاسبة')) {
+      nextStatus = 'pending_payment';
+      statusLabel = 'في انتظار المحاسبة والخزنة';
+    } else if (text.includes('تم تحصيل') || text.includes('أتم الزيارة') || text.includes('اتم الزيارة')) {
+      nextStatus = 'completed';
+      statusLabel = 'مكتمل ومسدد بالكامل';
+    } else if (text.includes('وصل العيادة') || text.includes('في الانتظار') || text.includes('سجل وصول')) {
+      nextStatus = 'waiting';
+      statusLabel = 'في صالة الانتظار';
+    }
+
+    if (targetAppt) {
+      return {
+        isAction: true,
+        actionType: 'UPDATE_APPOINTMENT_STATUS',
+        payload: {
+          id: targetAppt.id,
+          status: nextStatus,
+          patientName: targetAppt.patientName,
+          date: targetAppt.date,
+          time: targetAppt.time
+        },
+        replyText: `تم تحديث حالة المريض (${targetAppt.patientName}) بنجاح إلى: [${statusLabel}].`
+      };
+    }
+
+    return {
+      isAction: true,
+      actionType: 'INFO',
+      replyText: `لم يتم العثور على كشف نشط اليوم للمريض (${candidateName || 'المحدد'}) لتحديث حالته.`
+    };
+  }
+
+  // 6. REGISTER NEW PATIENT (تسجيل مريض جديد)
+  const isRegisterPatientIntent = (
+    text.includes('سجل مريض جديد') ||
+    text.includes('ضيف مريض جديد') ||
+    text.includes('إضافة مريض جديد') ||
+    text.includes('اضافة مريض جديد') ||
+    text.includes('تسجيل مريض جديد') ||
+    text.includes('افتح ملف لمريض جديد')
+  );
+
+  if (isRegisterPatientIntent) {
+    const nameMatch = text.match(/(?:اسمه|اسم المريض|المريض)\s+([^\s,.:;]+(?:\s+[^\s,.:;]+){0,2})/);
+    let patientName = 'مريض جديد';
+    if (nameMatch) {
+      patientName = nameMatch[1].replace(/(?:و\s*)?(?:تليفون|تليفونه|هاتف|موبايل|عمر|عمره|سن|سنة|ذكر|أنثى|انثى|عنده|حساسية|رقم).*/, '').trim();
+      patientName = patientName.replace(/\s+و\s*$/, '').trim();
+    }
+
+    const phoneMatch = text.match(/01[0125][0-9]{8}/);
+    const ageMatch = text.match(/(?:عمره|سن|عمر|سنة)\s*(\d+)/);
+    const genderMatch = text.match(/(ذكر|أنثى|انثى)/);
+    const allergyMatch = text.match(/حساسية\s+(?:من\s+|ضد\s+)?([^\s,.:;]+)/);
+    const chronicMatch = text.match(/(سكر|ضغط|قلب|ربو|كلى)/);
+
+    const patientPhone = phoneMatch ? phoneMatch[0] : '';
+    const patientAge = ageMatch ? ageMatch[1] : '30';
+    const patientGender = genderMatch ? (genderMatch[1].includes('أنثى') || genderMatch[1].includes('انثى') ? 'أنثى' : 'ذكر') : 'ذكر';
+    const allergies = allergyMatch ? allergyMatch[1].replace(/(?:وعنده|عنده|مع).*/, '').trim() : 'لا يوجد';
+    const chronic = chronicMatch ? chronicMatch[1].trim() : 'سليم طبياً';
+
+    const newPatient = {
+      id: 'pat-' + Date.now(),
+      name: patientName,
+      phone: patientPhone,
+      age: patientAge,
+      gender: patientGender,
+      allergies,
+      chronicDiseases: chronic,
+      medicalAlerts: allergies !== 'لا يوجد' ? `حساسية من ${allergies}` : '',
+      diagnosis: '',
+      notes: 'تم التسجيل تلقائياً عبر المساعد الطبي الذكي',
+      balance: 0,
+      totalVisits: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    return {
+      isAction: true,
+      actionType: 'ADD_PATIENT',
+      payload: newPatient,
+      replyText: `تم تسجيل المريض الجديد (${patientName}) في سيستم العيادة بنجاح وفتح الملف الطبي الخاص به.\n` +
+        `• الهاتف: ${patientPhone || 'غير محدد'}\n` +
+        `• السن والنوع: ${patientAge} سنة | ${patientGender}\n` +
+        `• الحساسيات: ${allergies}\n` +
+        `• الأمراض المزمنة: ${chronic}`
+    };
+  }
+
+  // 7. UPDATE PATIENT DOSSIER (تحديث ملف المريض، الحساسيات، والتشخيص)
+  const isUpdatePatientIntent = (
+    text.includes('سجل حساسية') ||
+    text.includes('ضيف حساسية') ||
+    text.includes('عنده حساسية') ||
+    text.includes('سجل تشخيص') ||
+    text.includes('تشخيص المريض') ||
+    text.includes('عدل تليفون') ||
+    text.includes('تحديث هاتف')
+  );
+
+  if (isUpdatePatientIntent) {
+    const matchedPatient = findPatientInText(text, state.patients);
+    if (matchedPatient) {
+      const updates = { ...matchedPatient };
+      let changeDesc = [];
+
+      const allergyMatch = text.match(/حساسية\s+([^\s,.:;]+)/);
+      if (allergyMatch) {
+        updates.allergies = allergyMatch[1].replace(/(?:للمريض|لمريض|لـ|عنده|من|في).*/, '').trim();
+        updates.medicalAlerts = `حساسية من ${updates.allergies}`;
+        changeDesc.push(`تسجيل حساسية: ${updates.allergies}`);
+      }
+
+      const phoneMatch = text.match(/01[0125][0-9]{8}/);
+      if (phoneMatch) {
+        updates.phone = phoneMatch[0];
+        changeDesc.push(`تعديل الهاتف: ${updates.phone}`);
+      }
+
+      const diagMatch = text.match(/(?:تشخيص|تشخيصه|سجل تشخيص)\s+([^\n.]+)/);
+      if (diagMatch) {
+        updates.diagnosis = diagMatch[1].trim();
+        changeDesc.push(`تسجيل تشخيص: ${updates.diagnosis}`);
+      }
+
+      return {
+        isAction: true,
+        actionType: 'UPDATE_PATIENT',
+        payload: updates,
+        replyText: `تم تحديث الملف الطبي للمريض (${matchedPatient.name}) بنجاح.\n• التعديلات: ${changeDesc.join(' | ')}.`
+      };
+    }
+  }
+
+  // 8. RECORD EXPENSE INTENTS (تسجيل المصروفات بالخزنة)
+  const isExpenseIntent = (
+    text.includes('سجل مصروف') ||
+    text.includes('تسجيل مصروف') ||
+    text.includes('صرفنا') ||
+    text.includes('سجل مصاريف') ||
+    text.includes('دفعنا مصروف') ||
+    text.includes('خرجنا من الخزنة')
+  );
+
+  if (isExpenseIntent) {
+    const amountMatch = text.match(/(\d+)\s*(?:جنيه|ج\.م|ج|egp)?/);
+    const amount = amountMatch ? parseInt(amountMatch[1], 10) : 100;
+    
+    let category = 'نثريات';
+    if (text.includes('مستلزمات') || text.includes('أدوات') || text.includes('ادوات')) category = 'مستلزمات طبية';
+    else if (text.includes('كهرباء') || text.includes('مياه') || text.includes('فواتير')) category = 'فواتير ومرافق';
+    else if (text.includes('صيانة')) category = 'صيانة';
+    else if (text.includes('شاي') || text.includes('ضيافة')) category = 'ضيافة وبوفيه';
+    else if (text.includes('إيجار') || text.includes('ايجار')) category = 'إيجار';
+
+    const titleClean = text.replace(/(?:سجل مصروف|تسجيل مصروف|صرفنا|دفعنا مصروف|خرجنا من الخزنة|\d+|جنيه|ج\.م)/g, '').trim() || category;
+
+    const newExpense = {
+      id: 'exp-' + Date.now(),
+      amount,
+      title: titleClean,
+      category,
+      date: getTodayDateStr(),
+      createdAt: new Date().toISOString()
+    };
+
+    return {
+      isAction: true,
+      actionType: 'ADD_EXPENSE',
+      payload: newExpense,
+      replyText: `تم تسجيل المصروف بقيمة ${amount} ج.م [${titleClean} - ${category}] وخصمه من الخزنة بنجاح.`
+    };
+  }
+
+  // 9. RECORD PAYMENT / CASH INFLOW (تحصيل الدفعات وإيرادات الكشف)
+  const isPaymentIntent = (
+    text.includes('حصلت') ||
+    text.includes('سجل دفعة') ||
+    text.includes('سجل تحصيل') ||
+    text.includes('دفع كشف') ||
+    text.includes('حصل من') ||
+    (text.includes('حصل') && (text.includes('من') || text.includes('جنيه') || text.includes('مديونية'))) ||
+    (text.includes('تحصيل') && (text.includes('من') || text.includes('جنيه') || text.includes('مديونية')))
+  );
+
+  if (isPaymentIntent) {
+    const amountMatch = text.match(/(\d+)\s*(?:جنيه|ج\.م|ج|egp)?/);
+    const amount = amountMatch ? parseInt(amountMatch[1], 10) : 300;
+    const matchedPatient = findPatientInText(text, state.patients);
+    const patientName = matchedPatient ? matchedPatient.name : 'مريض العيادة';
+
+    return {
+      isAction: true,
+      actionType: 'RECORD_PAYMENT',
+      payload: {
+        patientId: matchedPatient?.id || null,
+        patientName,
+        amount,
+        date: getTodayDateStr()
+      },
+      replyText: `تم تسجيل تحصيل مبلغ ${amount} ج.م من (${patientName}) وإيداعه في الخزنة النقدية للعيادة بنجاح.`
+    };
+  }
+
+  // 10. LIVE CASH FLOW & TREASURY QUERY (استعلام حركة الخزنة وصافي الدخل)
+  const isTreasuryQuery = (
+    text.includes('رصيد الخزنة') ||
+    text.includes('الخزنة كام') ||
+    text.includes('حساب الخزنة') ||
+    text.includes('إيرادات ومصروفات') ||
+    text.includes('ايرادات ومصروفات') ||
+    text.includes('صافي الدخل') ||
+    text.includes('التدفق النقدي') ||
+    text.includes('دخل الخزنة') ||
+    text.includes('صافي الخزينة') ||
+    text.includes('السيولة النقدية') ||
+    (text.includes('الخزينة') && (text.includes('احسب') || text.includes('صافي') || text.includes('كام') || text.includes('تقرير')))
+  );
+
+  if (isTreasuryQuery) {
+    const today = getTodayDateStr();
+    const appts = state.appointments || [];
+    const expenses = state.expenses || [];
+
+    const todayAppts = appts.filter(a => a.date === today && a.status === 'completed');
+    const todayRevenues = todayAppts.reduce((sum, a) => sum + (parseInt(String(a.fee || '0').replace(/\D/g, ''), 10) || 0), 0);
+    const todayExpenses = expenses.filter(e => e.date === today).reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const netCash = todayRevenues - todayExpenses;
+
+    return {
+      isAction: true,
+      actionType: 'INFO',
+      replyText: `تقرير حركة الخزنة لليوم (${today}):\n\n` +
+        `• إجمالي الإيرادات المحصلة: ${todayRevenues} ج.م (${todayAppts.length} كشف مكتمل)\n` +
+        `• إجمالي المصروفات: ${todayExpenses} ج.م\n` +
+        `• صافي التدفق النقدي بالخزنة (صافي السيولة النقدية): ${netCash >= 0 ? `+${netCash}` : netCash} ج.م\n\n` +
+        `كافة العمليات مسجلة لحظياً في مركز التدفقات النقدية.`
+    };
+  }
+
+  // 11. UPDATE CLINIC FEE & ADD SERVICE (تعديل الأسعار وإضافة الخدمات)
+  const isFeeUpdateIntent = (
+    text.includes('خلي سعر الكشف') ||
+    text.includes('عدل سعر الكشف') ||
+    text.includes('سعر الاستشارة') ||
+    text.includes('سعر الكشف بقى') ||
+    text.includes('غير سعر الكشف')
+  );
+
+  if (isFeeUpdateIntent) {
+    const amountMatch = text.match(/(\d+)\s*(?:جنيه|ج\.م|ج|egp)?/);
+    const newFee = amountMatch ? parseInt(amountMatch[1], 10) : 350;
+    const isConsultation = text.includes('استشارة') || text.includes('استشاره');
+    const serviceType = isConsultation ? 'استشارة' : 'كشف عادي';
+
+    return {
+      isAction: true,
+      actionType: 'UPDATE_CLINIC_FEE',
+      payload: {
+        fee: newFee,
+        feeFormatted: `${newFee} ج.م`,
+        price: newFee,
+        type: serviceType
+      },
+      replyText: `تم تحديث سعر (${serviceType}) في إعدادات العيادة إلى ${newFee} ج.م بنجاح، وسيتم اعتماده تلقائياً في الكشوفات القادمة.`
+    };
+  }
+
+  if (text.includes('ضيف خدمة') || text.includes('إضافة خدمة') || text.includes('اضافة خدمة')) {
+    const nameMatch = text.match(/(?:خدمة جديدة|خدمة)\s+([^\d]+?)(?:\s+بـ|\s+بسعر|\s+وسعرها|\s+سعرها|\s+\d|$)/);
+    const priceMatch = text.match(/(\d+)\s*(?:جنيه|ج\.م|ج|egp)?/);
+    const serviceName = nameMatch ? nameMatch[1].trim() : 'خدمة طبية';
+    const servicePrice = priceMatch ? parseInt(priceMatch[1], 10) : 200;
+
+    return {
+      isAction: true,
+      actionType: 'ADD_SERVICE',
+      payload: {
+        id: 'srv-' + Date.now(),
+        name: serviceName,
+        price: servicePrice,
+        priceNumber: servicePrice,
+        priceFormatted: `${servicePrice} ج.م`
+      },
+      replyText: `تمت إضافة خدمة (${serviceName}) بسعر ${servicePrice} ج.م إلى قائمة خدمات العيادة بنجاح.`
+    };
+  }
+
+  // 12. QUERY BLOCKED DAYS (استعلام الأيام المغلقة)
   if (text.includes('الايام المقفولة') || text.includes('الأيام المقفولة') || text.includes('الايام المحظورة') || text.includes('المواعيد المحظورة') || text.includes('جدول الاجازات') || text.includes('ايه اللي مقفول')) {
     const blocked = state.blockedSlots || [];
     if (blocked.length === 0) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: ` **لا توجد أي أيام أو مواعيد مغلقة حالياً.**\nجدول العيادة يعمل بكامل طاقته وفق أوقات العمل الرسمية. إذا أردت إغلاق أي يوم فقط قل لي: *(اقفل يوم ...)* وسأتولى ذلك فوراً! `
+        replyText: `لا توجد أي أيام أو مواعيد مغلقة حالياً.\nجدول العيادة يعمل بكامل طاقته وفق أوقات العمل الرسمية. إذا أردت إغلاق أي يوم فقط قل لي: (اقفل يوم ...) وسأتولى ذلك فوراً.`
       };
     }
 
-    const fullDays = blocked.filter(b => b.isFullDay || b.time === 'FULL_DAY').map(b => `• يوم **${b.date}** (${b.reason || 'إجازة الطبيب'})`);
-    const slots = blocked.filter(b => !b.isFullDay && b.time !== 'FULL_DAY').map(b => `• يوم **${b.date}** الساعة **${b.time}**`);
+    const fullDays = blocked.filter(b => b.isFullDay || b.time === 'FULL_DAY').map(b => `• يوم ${b.date} (${b.reason || 'إجازة الطبيب'})`);
+    const slots = blocked.filter(b => !b.isFullDay && b.time !== 'FULL_DAY').map(b => `• يوم ${b.date} الساعة ${b.time}`);
 
-    let listText = ` **قائمة الأيام والمواعيد المغلقة حالياً في العيادة:**\n\n`;
+    let listText = `قائمة الأيام والمواعيد المغلقة حالياً في العيادة:\n\n`;
     if (fullDays.length > 0) {
-      listText += `**الأيام المغلقة بالكامل:**\n${fullDays.join('\n')}\n\n`;
+      listText += `الأيام المغلقة بالكامل:\n${fullDays.join('\n')}\n\n`;
     }
     if (slots.length > 0) {
-      listText += `**المواعيد الفردية المحظورة:**\n${slots.join('\n')}\n\n`;
+      listText += `المواعيد الفردية المحظورة:\n${slots.join('\n')}\n\n`;
     }
-    listText += `يمكنك فتح أي يوم في أي وقت بقول: *(افتح يوم YYYY-MM-DD)* أو *(أنا شغال يوم ...)* `;
+    listText += `يمكنك فتح أي يوم في أي وقت بقول: (افتح يوم YYYY-MM-DD) أو (أنا شغال يوم ...)`;
 
     return {
       isAction: true,
@@ -359,7 +827,7 @@ export function processDoctorIntent(message, state = {}) {
     };
   }
 
-  // 4. INSTANT APPOINTMENT BOOKING (حجز وإضافة موعد فوري)
+  // 13. INSTANT APPOINTMENT BOOKING (حجز وإضافة موعد فوري)
   const isBookingIntent = (
     text.includes('احجز') ||
     text.includes('احجزلي') ||
@@ -402,16 +870,16 @@ export function processDoctorIntent(message, state = {}) {
       isAction: true,
       actionType: 'BOOK_APPOINTMENT',
       payload: newAppointment,
-      replyText: ` **تم حجز الموعد بنجاح في سيستم العيادة!**\n\n` +
-        `• **المريض:** ${patientName} (${patientPhone})\n` +
-        `• **التاريخ:** ${resolvedDate}\n` +
-        `• **الوقت:** ${resolvedTime}\n` +
-        `• **الحالة:** مؤكد ومسجل بالجدول\n\n` +
+      replyText: `تم حجز الموعد بنجاح في سيستم العيادة.\n\n` +
+        `• المريض: ${patientName} (${patientPhone})\n` +
+        `• التاريخ: ${resolvedDate}\n` +
+        `• الوقت: ${resolvedTime}\n` +
+        `• الحالة: مؤكد ومسجل بالجدول\n\n` +
         `تم تحديث جدول المواعيد السريرية فوراً وإرسال إشعار لطاقم الاستقبال.`
     };
   }
 
-  // 5. PATIENT PROFILE & MEDICAL HISTORY (ملف المريض وبياناته)
+  // 14. PATIENT PROFILE & MEDICAL HISTORY (ملف المريض وبياناته)
   const isPatientQueryIntent = (
     text.includes('ملف المريض') ||
     text.includes('بيانات المريض') ||
@@ -449,15 +917,15 @@ export function processDoctorIntent(message, state = {}) {
           return {
             isAction: true,
             actionType: 'INFO',
-            replyText: ` لا يوجد مرضى مسجل لديهم حالة **(${condition})** في السجلات الطبية الحالية.`
+            replyText: `لا يوجد مرضى مسجل لديهم حالة (${condition}) في السجلات الطبية الحالية.`
           };
         }
 
-        const list = matched.map(p => `• **${p.name}** (هاتف: ${p.phone || 'غير مسجل'}${p.allergies ? ` - حساسية: ${p.allergies}` : ''})`).join('\n');
+        const list = matched.map(p => `• ${p.name} (هاتف: ${p.phone || 'غير مسجل'}${p.allergies ? ` - حساسية: ${p.allergies}` : ''})`).join('\n');
         return {
           isAction: true,
           actionType: 'INFO',
-          replyText: ` **وجدت ${matched.length} مريض لديهم حالة (${condition}):**\n\n${list}\n\nيمكنك طلب استعراض الملف الكامل لأي مريض منهم بالاسم مباشرة.`
+          replyText: `وجدت ${matched.length} مريض لديهم حالة (${condition}):\n\n${list}\n\nيمكنك طلب استعراض الملف الكامل لأي مريض منهم بالاسم مباشرة.`
         };
       }
     }
@@ -473,14 +941,14 @@ export function processDoctorIntent(message, state = {}) {
         isAction: true,
         actionType: 'SHOW_PATIENT',
         payload: matchedPatient,
-        replyText: `**الملف الطبي للمريض: ${matchedPatient.name}**\n\n` +
-          `• **الهاتف:** ${matchedPatient.phone || 'غير مسجل'}\n` +
-          `• **العمر / فصيلة الدم:** ${matchedPatient.age || 'غير محدد'} سنة | ${matchedPatient.bloodType || 'غير مسجل'}\n` +
-          `• **الحساسيات المعروفة:** ${matchedPatient.allergies || 'لا توجد حساسية مسجلة'}\n` +
-          `• **الأمراض المزمنة:** ${matchedPatient.chronicDiseases || 'سليم طبياً'}\n` +
-          `• **عدد الزيارات:** ${patientAppts.length || matchedPatient.totalVisits || 1} زيارات\n` +
-          `• **آخر كشف:** ${lastAppt ? `${lastAppt.date} (${lastAppt.type})` : (matchedPatient.lastVisit || 'لا توجد زيارة سابقة')}\n` +
-          `• **الموقف المالي:** ${balanceText}\n\n` +
+        replyText: `الملف الطبي للمريض: ${matchedPatient.name}\n\n` +
+          `• الهاتف: ${matchedPatient.phone || 'غير مسجل'}\n` +
+          `• العمر / فصيلة الدم: ${matchedPatient.age || 'غير محدد'} سنة | ${matchedPatient.bloodType || 'غير مسجل'}\n` +
+          `• الحساسيات المعروفة: ${matchedPatient.allergies || 'لا توجد حساسية مسجلة'}\n` +
+          `• الأمراض المزمنة: ${matchedPatient.chronicDiseases || 'سليم طبياً'}\n` +
+          `• عدد الزيارات: ${patientAppts.length || matchedPatient.totalVisits || 1} زيارات\n` +
+          `• آخر كشف: ${lastAppt ? `${lastAppt.date} (${lastAppt.type})` : (matchedPatient.lastVisit || 'لا توجد زيارة سابقة')}\n` +
+          `• الموقف المالي: ${balanceText}\n\n` +
           `يمكنك النقر بالأسفل لفتح الملف الطبي الشامل أو التواصل معه عبر واتساب مباشرة.`
       };
     } else {
@@ -488,12 +956,12 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: ` لم أتمكن من العثور على مريض باسم **${candidate || text}** في سجلات العيادة.\nيمكنك البحث برقم الهاتف أو التأكد من كتابة الاسم ثلاثياً.`
+        replyText: `لم أتمكن من العثور على مريض باسم ${candidate || text} في سجلات العيادة.\nيمكنك البحث برقم الهاتف أو التأكد من كتابة الاسم ثلاثياً.`
       };
     }
   }
 
-  // 6. SCHEDULE & WAITING ROOM QUERY (استعلام المواعيد وقاعة الانتظار)
+  // 15. SCHEDULE & WAITING ROOM QUERY (استعلام المواعيد وقاعة الانتظار)
   const isScheduleQuery = (
     text.includes('مين عنده كشف') ||
     text.includes('مواعيد النهاردة') ||
@@ -519,14 +987,14 @@ export function processDoctorIntent(message, state = {}) {
         return {
           isAction: true,
           actionType: 'INFO',
-          replyText: ` **صالة الانتظار فارغة حالياً.**\nلا يوجد مرضى بانتظار الدخول في الوقت الراهن.`
+          replyText: `صالة الانتظار فارغة حالياً.\nلا يوجد مرضى بانتظار الدخول في الوقت الراهن.`
         };
       }
-      const list = waitingList.map(a => `• **${a.patientName}** (موعد: ${a.time} - ${a.type})`).join('\n');
+      const list = waitingList.map(a => `• ${a.patientName} (موعد: ${a.time} - ${a.type})`).join('\n');
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: ` **المرضى المتواجدون في صالة الانتظار الآن (${waitingList.length}):**\n\n${list}\n\nجاهزون للدخول إلى غرفة الفحص.`
+        replyText: `المرضى المتواجدون في صالة الانتظار الآن (${waitingList.length}):\n\n${list}\n\nجاهزون للدخول إلى غرفة الفحص.`
       };
     }
 
@@ -535,7 +1003,7 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: ` **لا توجد مواعيد مسجلة بتاريخ (${targetDate}).**\nالجدول فارغ ومتاح للحجز بالكامل.`
+        replyText: `لا توجد مواعيد مسجلة بتاريخ (${targetDate}).\nالجدول فارغ ومتاح للحجز بالكامل.`
       };
     }
 
@@ -547,15 +1015,15 @@ export function processDoctorIntent(message, state = {}) {
       'pending_payment': 'في انتظار المحاسبة'
     };
 
-    const list = filtered.map(a => `• **${a.time}** - ${a.patientName} (${a.type || 'كشف'} | ${statusMap[a.status] || a.status})`).join('\n');
+    const list = filtered.map(a => `• ${a.time} - ${a.patientName} (${a.type || 'كشف'} | ${statusMap[a.status] || a.status})`).join('\n');
     return {
       isAction: true,
       actionType: 'INFO',
-      replyText: `**جدول مواعيد العيادة لتاريخ (${targetDate}) - إجمالي ${filtered.length} مريض:**\n\n${list}\n\nهل ترغب في تعديل أو حظر أي من هذه المواعيد؟`
+      replyText: `جدول مواعيد العيادة لتاريخ (${targetDate}) - إجمالي ${filtered.length} مريض:\n\n${list}\n\nهل ترغب في تعديل أو حظر أي من هذه المواعيد؟`
     };
   }
 
-  // 7. INVENTORY & PHARMACY STOCK ALERTS (نواقص المخزن والأدوية والمستلزمات - وحدة اختيارية)
+  // 16. INVENTORY & PHARMACY STOCK ALERTS (نواقص المخزن والأدوية والمستلزمات - وحدة اختيارية)
   const isInventoryQuery = (
     text.includes('نواقص المخزن') ||
     text.includes('الادوية الناقصة') ||
@@ -582,18 +1050,17 @@ export function processDoctorIntent(message, state = {}) {
       };
     }
 
-    // Specific item query
     const specificItemMatch = inventory.find(i => text.includes(i.name));
     if (specificItemMatch) {
       const isLow = specificItemMatch.quantity <= (specificItemMatch.minQuantity || 5);
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: `(وحدة اختيارية بالعيادة)\n**بيانات الصنف بالمخزن (${specificItemMatch.name}):**\n\n` +
-          `• **الكمية المتوفرة:** ${specificItemMatch.quantity} ${specificItemMatch.unit || ''}\n` +
-          `• **الحد الأدنى للأمان:** ${specificItemMatch.minQuantity || 5}\n` +
-          `• **تاريخ الصلاحية:** ${specificItemMatch.expiryDate || 'ساري'}\n` +
-          `• **الحالة:** ${isLow ? 'نقص في المخزون (تحت الحد الأدنى)' : 'متوفر ومستقر'}`
+        replyText: `(وحدة اختيارية بالعيادة)\nبيانات الصنف بالمخزن (${specificItemMatch.name}):\n\n` +
+          `• الكمية المتوفرة: ${specificItemMatch.quantity} ${specificItemMatch.unit || ''}\n` +
+          `• الحد الأدنى للأمان: ${specificItemMatch.minQuantity || 5}\n` +
+          `• تاريخ الصلاحية: ${specificItemMatch.expiryDate || 'ساري'}\n` +
+          `• الحالة: ${isLow ? 'نقص في المخزون (تحت الحد الأدنى)' : 'متوفر ومستقر'}`
       };
     }
 
@@ -602,19 +1069,19 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: `(وحدة اختيارية بالعيادة)\n**المخزون الطبي في حالة ممتازة:**\nكافة الأدوية والمستلزمات الطبية (${inventory.length} صنف) متوفرة بنسب أعلى من الحد الأدنى للأمان ولا يوجد أي عجز.`
+        replyText: `(وحدة اختيارية بالعيادة)\nالمخزون الطبي في حالة ممتازة:\nكافة الأدوية والمستلزمات الطبية (${inventory.length} صنف) متوفرة بنسب أعلى من الحد الأدنى للأمان ولا يوجد أي عجز.`
       };
     }
 
-    const list = lowItems.map(i => `• **${i.name}**: متوفر **${i.quantity} ${i.unit || ''}** (الحد الأدنى: ${i.minQuantity})`).join('\n');
+    const list = lowItems.map(i => `• ${i.name}: متوفر ${i.quantity} ${i.unit || ''} (الحد الأدنى: ${i.minQuantity})`).join('\n');
     return {
       isAction: true,
       actionType: 'INFO',
-      replyText: `(وحدة اختيارية بالعيادة)\n**تنبيه نواقص المخزن الطبي (${lowItems.length} صنف قارب على النفاد):**\n\n${list}\n\nيُنصح بإصدار أمر شراء عاجل لتفادي انقطاع المستلزمات الطبية.`
+      replyText: `(وحدة اختيارية بالعيادة)\nتنبيه نواقص المخزن الطبي (${lowItems.length} صنف قارب على النفاد):\n\n${list}\n\nيُنصح بإصدار أمر شراء عاجل لتفادي انقطاع المستلزمات الطبية.`
     };
   }
 
-  // 8. LABS, RADIOLOGY & DENTAL LAB ORDERS (التحاليل والأشعة والمعامل والتركيبات - وحدة اختيارية)
+  // 17. LABS, RADIOLOGY & DENTAL LAB ORDERS (التحاليل والأشعة والمعامل والتركيبات - وحدة اختيارية)
   const isLabsQuery = (
     text.includes('تحاليل معلقة') ||
     text.includes('التحاليل المعلقة') ||
@@ -642,26 +1109,26 @@ export function processDoctorIntent(message, state = {}) {
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: `(وحدة اختيارية بالعيادة)\n**لا توجد أي تحاليل أو أشعة أو طلبيات تركيبات معلقة حالياً.**\nكافة نتائج المختبر والمعامل مكتملة أو لم يتم تسجيل طلبيات بعد.`
+        replyText: `(وحدة اختيارية بالعيادة)\nلا توجد أي تحاليل أو أشعة أو طلبيات تركيبات معلقة حالياً.\nكافة نتائج المختبر والمعامل مكتملة أو لم يتم تسجيل طلبيات بعد.`
       };
     }
 
-    const labList = pendingLabs.map(l => `• **${l.patientName}**: فحص *(${l.testName || l.test})* لدى معمل *(${l.labName || 'المختبر'})* - التاريخ: ${l.dateRequested || l.date}`).join('\n');
-    const dentalList = pendingDental.map(d => `• **${d.patientName}**: تركيبة *(${d.type || d.appliance || 'تركيبة سنية'})* لدى معمل *(${d.labName || 'معمل التركيبات'})* - التسليم المتوقع: ${d.deliveryDate || d.expectedDate || 'قريباً'}`).join('\n');
+    const labList = pendingLabs.map(l => `• ${l.patientName}: فحص (${l.testName || l.test}) لدى معمل (${l.labName || 'المختبر'}) - التاريخ: ${l.dateRequested || l.date}`).join('\n');
+    const dentalList = pendingDental.map(d => `• ${d.patientName}: تركيبة (${d.type || d.appliance || 'تركيبة سنية'}) لدى معمل (${d.labName || 'معمل التركيبات'}) - التسليم المتوقع: ${d.deliveryDate || d.expectedDate || 'قريباً'}`).join('\n');
 
     const combined = [
-      labList ? `**التحاليل والفحوصات المعلقة:**\n${labList}` : '',
-      dentalList ? `**طلبيات المعامل والتركيبات المعلقة:**\n${dentalList}` : ''
+      labList ? `التحاليل والفحوصات المعلقة:\n${labList}` : '',
+      dentalList ? `طلبيات المعامل والتركيبات المعلقة:\n${dentalList}` : ''
     ].filter(Boolean).join('\n\n');
 
     return {
       isAction: true,
       actionType: 'INFO',
-      replyText: `(وحدة اختيارية بالعيادة)\n**قائمة المعامل والتحاليل والتركيبات المعلقة (${pendingLabs.length + pendingDental.length}):**\n\n${combined}\n\nيمكنك متابعة حالاتها واستلام التقارير من شاشات المعامل والمختبرات.`
+      replyText: `(وحدة اختيارية بالعيادة)\nقائمة المعامل والتحاليل والتركيبات المعلقة (${pendingLabs.length + pendingDental.length}):\n\n${combined}\n\nيمكنك متابعة حالاتها واستلام التقارير من شاشات المعامل والمختبرات.`
     };
   }
 
-  // 9. FINANCIALS, INVOICES & DEBTS (الفواتير والمديونيات والإيرادات)
+  // 18. FINANCIALS, INVOICES & DEBTS (الفواتير والمديونيات والإيرادات)
   const isFinanceQuery = (
     text.includes('مين عليه فلوس') ||
     text.includes('المديونيات') ||
@@ -687,20 +1154,20 @@ export function processDoctorIntent(message, state = {}) {
         return {
           isAction: true,
           actionType: 'INFO',
-          replyText: `**الحسابات المالية ممتازة:**\nلا توجد أي مديونيات معلقة على المرضى، وكافة الفواتير محصلة بالكامل.`
+          replyText: `الحسابات المالية ممتازة:\nلا توجد أي مديونيات معلقة على المرضى، وكافة الفواتير محصلة بالكامل.`
         };
       }
 
       const totalDebt = debtors.reduce((sum, p) => sum + (Number(p.balance) || 0), 0);
-      const list = debtors.map(p => `• **${p.name}** (هاتف: ${p.phone || 'غير مسجل'}) - المتبقي: **${p.balance} ج.م**`).join('\n');
+      const list = debtors.map(p => `• ${p.name} (هاتف: ${p.phone || 'غير مسجل'}) - المتبقي: ${p.balance} ج.م`).join('\n');
 
       return {
         isAction: true,
         actionType: 'INFO',
-        replyText: `**تقرير المديونيات المعلقة في العيادة:**\n\n` +
-          `• **إجمالي المبالغ المستحقة:** **${totalDebt} ج.م**\n` +
-          `• **عدد المرضى المدينين:** ${debtors.length} مريض\n\n` +
-          `**قائمة المرضى المستحق عليهم سداد:**\n${list}\n\n` +
+        replyText: `تقرير المديونيات المعلقة في العيادة:\n\n` +
+          `• إجمالي المبالغ المستحقة: ${totalDebt} ج.م\n` +
+          `• عدد المرضى المدينين: ${debtors.length} مريض\n\n` +
+          `قائمة المرضى المستحق عليهم سداد:\n${list}\n\n` +
           `يمكنك إرسال رسائل تذكير بالمستحقات عبر واتساب بضغطة زر واحدة.`
       };
     }
@@ -710,15 +1177,15 @@ export function processDoctorIntent(message, state = {}) {
     return {
       isAction: true,
       actionType: 'INFO',
-      replyText: ` **التقرير المالي العام للعيادة:**\n\n` +
-        `• **إجمالي التحصيلات المسجلة:** **${totalRev} ج.م**\n` +
-        `• **إجمالي الفواتير المصدرة:** ${invoices.length} فاتورة\n` +
-        `• **الكشوفات المكتملة:** ${completedAppts.length} كشف\n\n` +
+      replyText: `التقرير المالي العام للعيادة:\n\n` +
+        `• إجمالي التحصيلات المسجلة: ${totalRev} ج.م\n` +
+        `• إجمالي الفواتير المصدرة: ${invoices.length} فاتورة\n` +
+        `• الكشوفات المكتملة: ${completedAppts.length} كشف\n\n` +
         `للاطلاع على كشوف الحساب التفصيلية ودفتر الأستاذ، يمكنك زيارة شاشة الفواتير.`
     };
   }
 
-  // 10. SMART IN-APP NAVIGATION (التنقل السريع داخل النظام)
+  // 19. SMART IN-APP NAVIGATION (التنقل السريع داخل النظام)
   const isNavIntent = (
     text.includes('وديني') ||
     text.includes('افتح شاشة') ||
@@ -743,7 +1210,7 @@ export function processDoctorIntent(message, state = {}) {
     } else if (text.includes('مريض') || text.includes('مرضى') || text.includes('سجلات')) {
       targetPath = '/patients';
       pageLabel = 'السجلات الطبية للمرضى';
-    } else if (text.includes('فاتورة') || text.includes('فواتير') || text.includes('حسابات') || text.includes('ماليات')) {
+    } else if (text.includes('فاتورة') || text.includes('فواتير') || text.includes('حسابات') || text.includes('ماليات') || text.includes('خزنة')) {
       targetPath = '/invoices';
       pageLabel = 'الفوترة والتحصيلات المالية';
     } else if (text.includes('حضور') || text.includes('طاقم') || text.includes('موظفين')) {
@@ -756,12 +1223,12 @@ export function processDoctorIntent(message, state = {}) {
         isAction: true,
         actionType: 'NAVIGATE',
         payload: { path: targetPath, label: pageLabel },
-        replyText: ` **جاري نقلك فوراً إلى ${pageLabel}...** `
+        replyText: `جاري نقلك فوراً إلى ${pageLabel}...`
       };
     }
   }
 
-  // 11. CLINIC WHATSAPP AI AGENT (وكيل واتساب الذكي للعيادة)
+  // 20. CLINIC WHATSAPP AI AGENT (وكيل واتساب الذكي للعيادة)
   if (text.includes('وكيل واتساب') || text.includes('بوت واتساب') || text.includes('روبوت واتساب') || text.includes('واتساب الذكي') || text.includes('whatsapp bot') || text.includes('whatsapp agent')) {
     const clinicName = state.clinicInfo?.name || 'العيادة';
     const clinicPhone = state.clinicInfo?.phone || state.clinicInfo?.whatsappNumber || '';
@@ -782,7 +1249,7 @@ export function processDoctorIntent(message, state = {}) {
     };
   }
 
-  // 12. 1-CLICK WHATSAPP MESSAGING (إرسال رسالة واتساب مباشرة لمريض)
+  // 21. 1-CLICK WHATSAPP MESSAGING (إرسال رسالة واتساب مباشرة لمريض)
   if (text.includes('واتساب') || text.includes('واتس اب') || text.includes('whatsapp')) {
     const matchedPatient = findPatientInText(text, state.patients);
     if (matchedPatient && matchedPatient.phone) {
@@ -802,7 +1269,7 @@ export function processDoctorIntent(message, state = {}) {
     }
   }
 
-  // 12. DAILY CLINIC SUMMARY (ملخص اليوم وأداء العيادة)
+  // 22. DAILY CLINIC SUMMARY (ملخص اليوم وأداء العيادة)
   if (text.includes('ملخص اليوم') || text.includes('احصائيات اليوم') || text.includes('تقرير اليوم') || text.includes('شغل النهاردة')) {
     const today = getTodayDateStr();
     const appts = (state.appointments || []).filter(a => a.date === today && a.status !== 'cancelled');
@@ -814,13 +1281,13 @@ export function processDoctorIntent(message, state = {}) {
     return {
       isAction: true,
       actionType: 'INFO',
-      replyText: ` **ملخص أداء العيادة لليوم (${today}):**\n\n` +
-        `• **إجمالي مواعيد اليوم:** ${appts.length} مريض\n` +
-        `• **الكشوفات المكتملة:** ${completed.length}\n` +
-        `• **في صالة الانتظار:** ${waiting.length}\n` +
-        `• **في غرفة الكشف حالياً:** ${inProgress.length}\n` +
-        `• **إجمالي الإيرادات المحصلة:** ${revenue} ج.م\n\n` +
-        `هل ترغب في صياغة رسائل متابعة للمرضى الذين أتموا كشوفاتهم اليوم؟ `
+      replyText: `ملخص أداء العيادة لليوم (${today}):\n\n` +
+        `• إجمالي مواعيد اليوم: ${appts.length} مريض\n` +
+        `• الكشوفات المكتملة: ${completed.length}\n` +
+        `• في صالة الانتظار: ${waiting.length}\n` +
+        `• في غرفة الكشف حالياً: ${inProgress.length}\n` +
+        `• إجمالي الإيرادات المحصلة: ${revenue} ج.م\n\n` +
+        `هل ترغب في صياغة رسائل متابعة للمرضى الذين أتموا كشوفاتهم اليوم؟`
     };
   }
 

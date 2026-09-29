@@ -165,24 +165,75 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
     .map(p => `${p.name}${p.phone ? ` (${p.phone})` : ''}${p.allergies && p.allergies !== 'لا يوجد' ? ` [حساسية: ${p.allergies}]` : ''}`)
     .join(' | ');
 
-  // Contextual Clinical System Prompt with Full Clinic Intelligence
+  const waitingCount = todayAppts.filter(a => a.status === 'waiting').length;
+  const inProgressCount = todayAppts.filter(a => a.status === 'in_progress').length;
+  const pendingPaymentCount = todayAppts.filter(a => a.status === 'pending_payment').length;
+  const completedCount = todayAppts.filter(a => a.status === 'completed').length;
+
+  const allExpenses = systemState?.expenses || [];
+  const scopedExpenses = clinicId ? allExpenses.filter(e => !e.clinicId || e.clinicId === clinicId) : allExpenses;
+  const todayExpenses = scopedExpenses.filter(e => (e.date || '').startsWith(todayStr));
+  const todayExpensesTotal = todayExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+  const todayRevenue = todayAppts
+    .filter(a => a.status === 'completed' || a.paid)
+    .reduce((sum, a) => sum + (Number(a.cost || a.fee || a.price || 0)), 0);
+  const netCashFlow = todayRevenue - todayExpensesTotal;
+
+  const clinicFee = clinicContext?.consultationFee || systemState?.clinicInfo?.consultationFee || 200;
+  const services = (systemState?.services || clinicContext?.services || [])
+    .map(s => `${s.name} (${s.price} ج.م)`)
+    .join(', ') || 'كشف عادي، استشارة';
+
+  const staff = (systemState?.staffMembers || systemState?.staff || [])
+    .map(s => `${s.name} (${s.role || 'طاقم العيادة'})`)
+    .join(', ') || 'فريق العمل المسجل';
+
+  // Contextual Clinical System Prompt with Full Clinic Intelligence & Action Protocol
   const systemPrompt = `أنت "المساعد السريري والإداري الذكي" المخصص لـ ${doctorName} في ${clinicName} (${specialty}).
 تاريخ اليوم في النظام: ${todayStr}.
 
 بيانات وسجلات العيادة اللحظية:
 • جدول مواعيد اليوم (${todayAppts.length} مواعيد): ${todayScheduleStr}
+• حالة صالة الانتظار اليوم: الانتظار: ${waitingCount} | في غرفة الكشف: ${inProgressCount} | بانتظار الحساب: ${pendingPaymentCount} | مكتمل: ${completedCount}
+• الخزينة والسيولة النقدية اليوم: إيرادات اليوم: ${todayRevenue} ج.م | مصاريف اليوم: ${todayExpensesTotal} ج.م | صافي الخزينة: ${netCashFlow} ج.م
+• قائمة الخدمات والأسعار: سعر الكشف الأساسي: ${clinicFee} ج.م | الخدمات: ${services}
+• طاقم العمل والتمريض: ${staff}
 • الأيام والمواعيد المغلقة حالياً: ${blockedList}
 • عينة من المرضى المسجلين: ${samplePatients || 'لا توجد سجلات'}
 • نواقص المستلزمات الطبية بالمخزن: ${lowStockStr}
 • المديونيات المعلقة على المرضى: ${debtorsStr}
 • ملاحظة خاصة: وحدة التحاليل والأشعة اختيارية بالعيادة ولا يتم التطرق إليها إلا إذا سأل الطبيب عنها تحديداً.
 
-قواعد الاستجابة والتعامل:
-1. تحدث مع الطبيب كشريك سريري وإداري ذكي يفهم فوراً كل تفاصيل العيادة بالعامية المصرية الراقية أو الفصحى المبسطة.
-2. لديك وصول كامل لكل ما يذكره الطبيب: ملفات المرضى، المواعيد، الإجازات، المخزن، الفواتير، وحجز المواعيد.
-3. إذا طلب الطبيب حجز موعد، أكد له تسجيل الموعد وبياناته فوراً.
-4. إذا سأل عن مريض، قدم ملخصاً سريرياً دقيقاً (الهاتف، الحساسيات، آخر كشف، المديونية).
-5. كن ذكياً وموجزاً ومباشراً ولا تكرر المقدمات الطويلة، واعرض الأرقام والأسماء بدقة كما هي في سجلات العيادة.${config.customInstructions ? `\n\nإرشادات وبروتوكول الطبيب الخاص بالعيادة:\n${config.customInstructions}` : ''}`;
+قواعد الاستجابة والتعامل التنفيذي:
+1. تحدث مع الطبيب كشريك سريري وإداري ذكي يفهم فوراً كل تفاصيل العيادة بالعامية المصرية الراقية أو الفصحى المبسطة دون استخدام أي إيموجي على الإطلاق.
+2. لديك صلاحية تنفيذية مطلقة لكافة طلبات الطبيب: حجز مواعيد، إلغاء مواعيد، تعديل مواعيد، تغيير حالة الكشف (دخول كشف، انتظار، إنهاء، تحصيل)، إضافة وتعديل بيانات المرضى والحساسيات، تسجيل المصروفات، تحصيل المديونيات، تعديل سعر الكشف وإضافة خدمات، وقفل/فتح المواعيد والإجازات.
+3. لتنفيذ أي إجراء تنفيذي طلبه الطبيب، يجب أن ترفق في نهاية ردك كود تنفيذي بصيغة JSON داخل بلوك \`\`\`action ... \`\`\` بالشكل التالي:
+\`\`\`action
+{
+  "actionType": "اسم_الإجراء",
+  "payload": { ... }
+}
+\`\`\`
+أنواع الإجراءات التنفيذية المتاحة:
+- إلغاء موعد: CANCEL_APPOINTMENT مع payload: { "id": "معرف_الموعد" }
+- تغيير موعد: RESCHEDULE_APPOINTMENT مع payload: { "id": "معرف_الموعد", "date": "YYYY-MM-DD", "time": "HH:MM" }
+- تحديث حالة كشف: UPDATE_APPOINTMENT_STATUS مع payload: { "id": "معرف_الموعد", "status": "waiting"|"in_progress"|"pending_payment"|"completed"|"cancelled" }
+- حجز موعد: BOOK_APPOINTMENT مع payload: { "patientName": "...", "patientPhone": "...", "date": "YYYY-MM-DD", "time": "HH:MM", "type": "كشف"|"استشارة" }
+- إضافة مريض: ADD_PATIENT مع payload: { "name": "...", "phone": "...", "allergies": "..." }
+- تعديل مريض: UPDATE_PATIENT مع payload: { "id": "...", "allergies": "..." }
+- تسجيل مصروف: ADD_EXPENSE مع payload: { "title": "...", "amount": 100, "category": "..." }
+- تحصيل دفعة مريض: RECORD_PAYMENT مع payload: { "patientId": "...", "amount": 150 }
+- حظر يوم كامل: BLOCK_FULL_DAY مع payload: { "date": "YYYY-MM-DD", "reason": "..." }
+- إلغاء حظر يوم: UNBLOCK_FULL_DAY مع payload: { "date": "YYYY-MM-DD" }
+- حظر موعد: BLOCK_SLOT مع payload: { "date": "YYYY-MM-DD", "time": "HH:MM" }
+- إلغاء حظر موعد: UNBLOCK_SLOT مع payload: { "date": "YYYY-MM-DD", "time": "HH:MM" }
+- تعديل سعر الكشف: UPDATE_CLINIC_FEE مع payload: { "fee": 300 }
+- إضافة خدمة: ADD_SERVICE مع payload: { "name": "...", "price": 250 }
+- تنقل في المنظومة: NAVIGATE مع payload: { "path": "/appointments" }
+
+4. إذا سأل الطبيب فقط عن معلومة أو استفسار دون طلب تنفيذ، أجب بدقة واختصار ودون إرفاق بلوك action.
+5. ممنوع منعاً باتاً استخدام أي رموز تعبيرية (إيموجي) في أي رد نهائياً.${config.customInstructions ? `\n\nإرشادات وبروتوكول الطبيب الخاص بالعيادة:\n${config.customInstructions}` : ''}`;
 
   const formattedMessages = [
     { role: 'system', content: systemPrompt },

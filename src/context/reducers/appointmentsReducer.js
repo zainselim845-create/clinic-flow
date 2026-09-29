@@ -95,7 +95,7 @@ export function appointmentsReducer(state, action) {
           {
             id: 'notif-' + Date.now(),
             type: 'completed',
-            title: 'إتمام كشف ',
+            title: 'إتمام كشف',
             message: `تم تحصيل رسوم المريض ${targetAppt.patientName || 'مريض'} وإتمام الزيارة بالكامل`,
             timestamp: new Date().toISOString(),
             read: false,

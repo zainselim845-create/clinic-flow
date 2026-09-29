@@ -61,7 +61,7 @@ export function settingsReducer(state, action) {
           {
             id: 'notif-' + Date.now(),
             type: 'staff',
-            title: 'إضافة موظف جديد ',
+            title: 'إضافة موظف جديد',
             message: `تم إضافة ${incoming.name} (${incoming.role}) إلى فريق العيادة`,
             timestamp: new Date().toISOString(),
             read: false

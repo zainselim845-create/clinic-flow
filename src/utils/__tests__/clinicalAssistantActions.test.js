@@ -189,6 +189,163 @@ describe('Clinical Assistant Actions & NLP Intent Processing', () => {
       expect(res.replyText).toContain('لا توجد أي تحاليل');
     });
 
+    it('detects CANCEL_APPOINTMENT intent and resolves matching appointment', () => {
+      const stateWithAppts = {
+        ...mockState,
+        patients: [{ id: 'p-1', name: 'أحمد سعيد', phone: '01012345678' }],
+        appointments: [
+          { id: 'appt-10', patientId: 'p-1', patientName: 'أحمد سعيد', date: '2026-08-30', time: '07:00 م', status: 'confirmed' }
+        ]
+      };
+      const res = processDoctorIntent('الغي كشف أحمد سعيد', stateWithAppts);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('CANCEL_APPOINTMENT');
+      expect(res.payload.id).toBe('appt-10');
+      expect(res.payload.patientName).toBe('أحمد سعيد');
+      expect(res.replyText).toContain('تم إلغاء الموعد للمريض');
+    });
+
+    it('detects RESCHEDULE_APPOINTMENT intent with new date and time', () => {
+      const stateWithAppts = {
+        ...mockState,
+        patients: [{ id: 'p-1', name: 'طارق علي', phone: '01122334455' }],
+        appointments: [
+          { id: 'appt-20', patientId: 'p-1', patientName: 'طارق علي', date: '2026-08-30', time: '05:00 م', status: 'confirmed' }
+        ]
+      };
+      const res = processDoctorIntent('أجل كشف طارق علي لبكرة الساعة 08:00 م', stateWithAppts);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('RESCHEDULE_APPOINTMENT');
+      expect(res.payload.id).toBe('appt-20');
+      expect(res.payload.time).toBe('08:00 م');
+      expect(res.replyText).toContain('تم تعديل وتأجيل موعد المريض');
+    });
+
+    it('detects UPDATE_APPOINTMENT_STATUS for workflow transitions: in_progress, pending_payment, completed', () => {
+      const today = getTodayDateStr();
+      const stateWithAppts = {
+        ...mockState,
+        patients: [{ id: 'p-1', name: 'سيف الدين', phone: '01234567890' }],
+        appointments: [
+          { id: 'appt-30', patientId: 'p-1', patientName: 'سيف الدين', date: today, time: '06:00 م', status: 'waiting' }
+        ]
+      };
+
+      // 1. in_progress
+      const resStart = processDoctorIntent('دخل سيف الدين غرفة الكشف', stateWithAppts);
+      expect(resStart.isAction).toBe(true);
+      expect(resStart.actionType).toBe('UPDATE_APPOINTMENT_STATUS');
+      expect(resStart.payload.status).toBe('in_progress');
+
+      // 2. pending_payment
+      const resFinish = processDoctorIntent('خلصت كشف سيف الدين وحول للمحاسبة', stateWithAppts);
+      expect(resFinish.isAction).toBe(true);
+      expect(resFinish.actionType).toBe('UPDATE_APPOINTMENT_STATUS');
+      expect(resFinish.payload.status).toBe('pending_payment');
+
+      // 3. completed
+      const resComplete = processDoctorIntent('تم تحصيل كشف سيف الدين وأتم الزيارة', stateWithAppts);
+      expect(resComplete.isAction).toBe(true);
+      expect(resComplete.actionType).toBe('UPDATE_APPOINTMENT_STATUS');
+      expect(resComplete.payload.status).toBe('completed');
+    });
+
+    it('detects ADD_PATIENT intent with demographics and allergies', () => {
+      const res = processDoctorIntent('سجل مريض جديد اسمه حسام البدري تليفونه 01098765432 عمره 42 ذكر حساسية بنسلين وعنده سكر', mockState);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('ADD_PATIENT');
+      expect(res.payload.name).toBe('حسام البدري');
+      expect(res.payload.phone).toBe('01098765432');
+      expect(res.payload.age).toBe('42');
+      expect(res.payload.gender).toBe('ذكر');
+      expect(res.payload.allergies).toBe('بنسلين');
+      expect(res.payload.chronicDiseases).toBe('سكر');
+      expect(res.replyText).toContain('تم تسجيل المريض الجديد (حسام البدري)');
+    });
+
+    it('detects UPDATE_PATIENT intent to update allergies, phone, diagnosis', () => {
+      const stateWithPatients = {
+        ...mockState,
+        patients: [{ id: 'p-99', name: 'ياسر جلال', phone: '01011112222', allergies: 'لا يوجد' }]
+      };
+      const res = processDoctorIntent('سجل حساسية أسبرين للمريض ياسر جلال', stateWithPatients);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('UPDATE_PATIENT');
+      expect(res.payload.id).toBe('p-99');
+      expect(res.payload.allergies).toBe('أسبرين');
+      expect(res.replyText).toContain('تم تحديث الملف الطبي للمريض (ياسر جلال)');
+    });
+
+    it('detects ADD_EXPENSE intent with category and amount', () => {
+      const res = processDoctorIntent('سجل مصروف 450 جنيه مستلزمات طبية للعيادة', mockState);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('ADD_EXPENSE');
+      expect(res.payload.amount).toBe(450);
+      expect(res.payload.category).toBe('مستلزمات طبية');
+      expect(res.replyText).toContain('تم تسجيل المصروف بقيمة 450 ج.م');
+    });
+
+    it('detects RECORD_PAYMENT intent and returns payment payload', () => {
+      const stateWithPatients = {
+        ...mockState,
+        patients: [{ id: 'p-1', name: 'عمرو دياب', phone: '01012345678' }]
+      };
+      const res = processDoctorIntent('حصلت 300 جنيه من عمرو دياب كشف', stateWithPatients);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('RECORD_PAYMENT');
+      expect(res.payload.amount).toBe(300);
+      expect(res.payload.patientName).toBe('عمرو دياب');
+      expect(res.replyText).toContain('تم تسجيل تحصيل مبلغ 300 ج.م');
+    });
+
+    it('detects treasury and live cash flow calculation query', () => {
+      const today = getTodayDateStr();
+      const stateWithCash = {
+        ...mockState,
+        appointments: [
+          { id: '1', date: today, status: 'completed', fee: '400 ج.م' },
+          { id: '2', date: today, status: 'completed', fee: '300 ج.م' }
+        ],
+        expenses: [
+          { id: 'e1', date: today, amount: 200, category: 'نثريات' }
+        ]
+      };
+      const res = processDoctorIntent('رصيد الخزنة وصافي الدخل كام النهاردة؟', stateWithCash);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('INFO');
+      expect(res.replyText).toContain('تقرير حركة الخزنة لليوم');
+      expect(res.replyText).toContain('700 ج.م');
+      expect(res.replyText).toContain('200 ج.م');
+      expect(res.replyText).toContain('+500 ج.م');
+    });
+
+    it('detects UPDATE_CLINIC_FEE and ADD_SERVICE intents', () => {
+      const resFee = processDoctorIntent('خلي سعر الكشف 400 جنيه', mockState);
+      expect(resFee.isAction).toBe(true);
+      expect(resFee.actionType).toBe('UPDATE_CLINIC_FEE');
+      expect(resFee.payload.price).toBe(400);
+
+      const resSrv = processDoctorIntent('ضيف خدمة جديدة جلسة ليزر بسعر 800 جنيه', mockState);
+      expect(resSrv.isAction).toBe(true);
+      expect(resSrv.actionType).toBe('ADD_SERVICE');
+      expect(resSrv.payload.name).toBe('جلسة ليزر');
+      expect(resSrv.payload.priceNumber).toBe(800);
+    });
+
+    it('detects staff on duty roster check', () => {
+      const stateWithStaff = {
+        ...mockState,
+        staffMembers: [
+          { id: 's1', name: 'مروة السعيد', role: 'تمريض', status: 'active', phone: '01012345678' }
+        ]
+      };
+      const res = processDoctorIntent('مين شغال النهاردة من التمريض؟', stateWithStaff);
+      expect(res.isAction).toBe(true);
+      expect(res.actionType).toBe('INFO');
+      expect(res.replyText).toContain('مروة السعيد');
+      expect(res.replyText).toContain('تمريض');
+    });
+
     it('returns isAction: false for general conversation', () => {
       const res = processDoctorIntent('ازيك يا مساعد', mockState);
       expect(res.isAction).toBe(false);

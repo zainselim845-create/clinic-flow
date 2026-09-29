@@ -11,6 +11,8 @@ import { sendSMS } from '../services/smsService';
 import { askDoctorAiAssistant, getAiConfig } from '../services/aiAssistantService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
 import * as appointmentsService from '../services/appointmentsService';
+import * as patientsService from '../services/patientsService';
+import * as expensesService from '../services/expensesService';
 import { processDoctorIntent } from '../utils/clinicalAssistantActions';
 import { 
   CAMPAIGN_TEMPLATES, 
@@ -133,34 +135,89 @@ const DoctorAssistant = ({ initialMode }) => {
   // Execute Clinical Action helper
   const executeDoctorAction = (actionResult) => {
     const activeClinicId = currentClinic?.id || null;
+    const payload = actionResult?.payload || {};
+
     if (actionResult.actionType === 'BLOCK_FULL_DAY') {
-      dispatch({ type: 'BLOCK_FULL_DAY', payload: actionResult.payload });
+      dispatch({ type: 'BLOCK_FULL_DAY', payload });
       if (useSupabase) {
-        blockedSlotsService.blockSlotInDb(actionResult.payload.date, 'FULL_DAY', actionResult.payload.reason || 'إجازة الطبيب', true, activeClinicId).catch(console.error);
+        blockedSlotsService.blockSlotInDb(payload.date, 'FULL_DAY', payload.reason || 'إجازة الطبيب', true, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'UNBLOCK_FULL_DAY') {
-      dispatch({ type: 'UNBLOCK_FULL_DAY', payload: actionResult.payload });
+      dispatch({ type: 'UNBLOCK_FULL_DAY', payload });
       if (useSupabase) {
-        blockedSlotsService.unblockFullDayInDb(actionResult.payload.date, activeClinicId).catch(console.error);
+        blockedSlotsService.unblockFullDayInDb(payload.date, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'BLOCK_SLOT') {
-      dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: actionResult.payload });
+      dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload });
       if (useSupabase) {
-        blockedSlotsService.blockSlotInDb(actionResult.payload.date, actionResult.payload.time, actionResult.payload.reason || 'حظر مخصص', false, activeClinicId).catch(console.error);
+        blockedSlotsService.blockSlotInDb(payload.date, payload.time, payload.reason || 'حظر مخصص', false, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'UNBLOCK_SLOT') {
-      dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload: actionResult.payload });
+      dispatch({ type: 'TOGGLE_BLOCK_SLOT', payload });
       if (useSupabase) {
-        blockedSlotsService.unblockSlotInDb(actionResult.payload.date, actionResult.payload.time, activeClinicId).catch(console.error);
+        blockedSlotsService.unblockSlotInDb(payload.date, payload.time, activeClinicId).catch(console.error);
       }
     } else if (actionResult.actionType === 'BOOK_APPOINTMENT') {
-      dispatch({ type: 'ADD_APPOINTMENT', payload: actionResult.payload });
+      dispatch({ type: 'ADD_APPOINTMENT', payload });
       if (useSupabase) {
-        appointmentsService.addAppointment({ ...actionResult.payload, clinicId: activeClinicId }).catch(console.error);
+        appointmentsService.addAppointment({ ...payload, clinicId: activeClinicId }).catch(console.error);
       }
+    } else if (actionResult.actionType === 'CANCEL_APPOINTMENT') {
+      const apptId = payload.id || payload.appointmentId;
+      dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: { id: apptId, status: 'cancelled' } });
+      if (useSupabase) {
+        appointmentsService.softDeleteAppointment(apptId, activeClinicId).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'RESCHEDULE_APPOINTMENT') {
+      const apptId = payload.id || payload.appointmentId;
+      const existing = (state.appointments || []).find(a => a.id === apptId);
+      if (existing) {
+        const updated = { ...existing, date: payload.date, time: payload.time };
+        dispatch({ type: 'UPDATE_APPOINTMENT', payload: updated });
+        if (useSupabase) {
+          appointmentsService.updateAppointment(apptId, updated, activeClinicId).catch(console.error);
+        }
+      }
+    } else if (actionResult.actionType === 'UPDATE_APPOINTMENT_STATUS') {
+      const apptId = payload.id || payload.appointmentId;
+      dispatch({ type: 'UPDATE_APPOINTMENT_STATUS', payload: { id: apptId, status: payload.status } });
+      if (useSupabase) {
+        appointmentsService.updateAppointmentStatus(apptId, payload.status, {}, activeClinicId).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'ADD_PATIENT') {
+      dispatch({ type: 'ADD_PATIENT', payload });
+      if (useSupabase) {
+        patientsService.addPatient({ ...payload, clinicId: activeClinicId }).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'UPDATE_PATIENT') {
+      dispatch({ type: 'UPDATE_PATIENT', payload });
+      if (useSupabase) {
+        patientsService.updatePatient(payload.id, payload, activeClinicId).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'ADD_EXPENSE') {
+      dispatch({ type: 'ADD_EXPENSE', payload });
+      if (useSupabase) {
+        expensesService.addExpense({ ...payload, clinicId: activeClinicId }).catch(console.error);
+      }
+    } else if (actionResult.actionType === 'RECORD_PAYMENT') {
+      if (payload.patientId) {
+        const targetPat = (state.patients || []).find(p => p.id === payload.patientId);
+        if (targetPat) {
+          const currentBal = Number(targetPat.balance) || 0;
+          const updatedPat = { ...targetPat, balance: Math.max(0, currentBal - (Number(payload.amount) || 0)) };
+          dispatch({ type: 'UPDATE_PATIENT', payload: updatedPat });
+          if (useSupabase) {
+            patientsService.updatePatient(targetPat.id, updatedPat, activeClinicId).catch(console.error);
+          }
+        }
+      }
+    } else if (actionResult.actionType === 'UPDATE_CLINIC_FEE') {
+      dispatch({ type: 'UPDATE_CLINIC_INFO', payload: { consultationFee: payload.fee } });
+    } else if (actionResult.actionType === 'ADD_SERVICE') {
+      dispatch({ type: 'ADD_SERVICE', payload });
     } else if (actionResult.actionType === 'NAVIGATE') {
-      if (actionResult.payload?.path) {
-        navigate(actionResult.payload.path);
+      if (payload?.path) {
+        navigate(payload.path);
       }
     }
   };
@@ -186,6 +243,7 @@ const DoctorAssistant = ({ initialMode }) => {
         id: 'agent-' + Date.now(),
         sender: 'agent',
         text: actionResult.replyText,
+        action: actionResult,
         timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, agentMsg]);
@@ -200,14 +258,31 @@ const DoctorAssistant = ({ initialMode }) => {
     try {
       const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, matched, scopedState);
       let agentReply = '';
+      let detectedAction = null;
+
       if (aiRes.isQuotaExceeded) {
         agentReply = `**تنبيه استهلاك الرصيد**: ${aiRes.error}`;
       } else if (aiRes.success && aiRes.content) {
-        agentReply = aiRes.content;
+        const contentStr = aiRes.content;
+        const actionMatch = contentStr.match(/```(?:action|json)?\s*(\{[\s\S]*?"actionType"[\s\S]*?\})\s*```/);
+        if (actionMatch) {
+          try {
+            detectedAction = JSON.parse(actionMatch[1]);
+            executeDoctorAction(detectedAction);
+            agentReply = contentStr.replace(/```(?:action|json)?\s*\{[\s\S]*?"actionType"[\s\S]*?\}\s*```/, '').trim();
+            if (!agentReply) {
+              agentReply = 'تم تنفيذ طلبك بنجاح في سيستم العيادة.';
+            }
+          } catch (_) {
+            agentReply = contentStr;
+          }
+        } else {
+          agentReply = contentStr;
+        }
       } else {
         const count = matched.length;
         agentReply = count > 0 
-          ? `${doctorTitle}، قمت بمسح السجلات السريرية لـ (${tenant?.name || activeClinic?.name || 'العيادة'}) ووجدت **${count} مريضاً** مطابقين لمعايير (${promptText}). يمكنك استعراضهم بالأسفل وتخصيص رسالة الرعاية! `
+          ? `${doctorTitle}، قمت بمسح السجلات السريرية لـ (${tenant?.name || activeClinic?.name || 'العيادة'}) ووجدت **${count} مريضاً** مطابقين لمعايير (${promptText}). يمكنك استعراضهم بالأسفل وتخصيص رسالة الرعاية!` 
           : `${doctorTitle}، لم أجد حالياً مرضى مطابقين لمعايير (${promptText}) بسجل العيادة.`;
       }
 
@@ -215,6 +290,7 @@ const DoctorAssistant = ({ initialMode }) => {
         id: 'agent-' + Date.now(),
         sender: 'agent',
         text: agentReply,
+        action: detectedAction,
         timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, agentMsg]);
@@ -258,6 +334,7 @@ const DoctorAssistant = ({ initialMode }) => {
         id: 'agent-' + Date.now(),
         sender: 'agent',
         text: actionResult.replyText,
+        action: actionResult,
         timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, agentMsg]);
@@ -278,14 +355,30 @@ const DoctorAssistant = ({ initialMode }) => {
     try {
       const aiRes = await askDoctorAiAssistant(newHistory, activeClinic, matched, scopedState);
       let replyText = '';
+      let detectedAction = null;
       if (aiRes.isQuotaExceeded) {
         replyText = `**تنبيه استهلاك الرصيد**: ${aiRes.error}`;
       } else if (aiRes.success && aiRes.content) {
-        replyText = aiRes.content;
+        const contentStr = aiRes.content;
+        const actionMatch = contentStr.match(/```(?:action|json)?\s*(\{[\s\S]*?"actionType"[\s\S]*?\})\s*```/);
+        if (actionMatch) {
+          try {
+            detectedAction = JSON.parse(actionMatch[1]);
+            executeDoctorAction(detectedAction);
+            replyText = contentStr.replace(/```(?:action|json)?\s*\{[\s\S]*?"actionType"[\s\S]*?\}\s*```/, '').trim();
+            if (!replyText) {
+              replyText = 'تم تنفيذ طلبك بنجاح في سيستم العيادة.';
+            }
+          } catch (_) {
+            replyText = contentStr;
+          }
+        } else {
+          replyText = contentStr;
+        }
       } else {
         const count = matched.length;
         replyText = count > 0 
-          ? `${doctorTitle}، قمت بتحليل السجلات ووجدت **${count} مريضاً** مطابقين لطلبك (${query}). يمكنك استعراضهم بالأسفل واختيار القالب المناسب لإرسال الرسائل! `
+          ? `${doctorTitle}، قمت بتحليل السجلات ووجدت **${count} مريضاً** مطابقين لطلبك (${query}). يمكنك استعراضهم بالأسفل واختيار القالب المناسب لإرسال الرسائل!` 
           : `${doctorTitle}، لم أجد حالياً مرضى مطابقين لهذا الفلتر في سجل العيادة.`;
       }
 
@@ -293,6 +386,7 @@ const DoctorAssistant = ({ initialMode }) => {
         id: 'agent-' + Date.now(),
         sender: 'agent',
         text: replyText,
+        action: detectedAction,
         timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, agentMsg]);
@@ -399,7 +493,7 @@ const DoctorAssistant = ({ initialMode }) => {
       payload: {
         id: 'notif-' + Date.now(),
         type: 'campaign',
-        title: 'إرسال حملة متابعة ورعاية مرضى ',
+        title: 'إرسال حملة متابعة ورعاية مرضى',
         message: `تم إرسال حملة رسائل إلى ${sentCount} مريض بنجاح (فشل: ${failedCount}).`,
         timestamp: new Date().toISOString(),
         read: false
@@ -506,6 +600,12 @@ const DoctorAssistant = ({ initialMode }) => {
                     {msg.text.split('\n').map((line, i) => (
                       <p key={i}>{line}</p>
                     ))}
+                    {msg.action && (
+                      <div className="action-pill-executed" style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.2rem 0.5rem', background: 'rgba(16,185,129,0.1)', color: '#059669', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                        <CheckCircle2 size={13} />
+                        <span>تم تنفيذ الإجراء في النظام تلقائياً</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
