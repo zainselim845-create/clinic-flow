@@ -14,6 +14,7 @@ import { patientIndex } from '../services/indexedSearchService';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { checkActionRateLimit } from '../utils/rateLimiter';
 import { getAutoUserLocation } from '../services/autoLocationService';
+import { copyToClipboard } from '../utils/clipboard';
 
 import BookingHeader from './booking/BookingHeader';
 import ClinicDiscoveryView from './booking/ClinicDiscoveryView';
@@ -417,7 +418,7 @@ const Booking = () => {
 
   const copyBookingCode = () => {
     if (createdBooking?.bookingCode) {
-      navigator.clipboard.writeText(createdBooking.bookingCode);
+      copyToClipboard(createdBooking.bookingCode);
       setCopiedCode(true);
       setTimeout(() => setCopiedCode(false), 2500);
     }
@@ -544,6 +545,7 @@ const Booking = () => {
             isSubmitting={isSubmitting}
             onSubmit={handleFinalSubmit}
             onBackToPhone={() => setCurrentStep('phone_check')}
+            detectedUserLocation={detectedUserLocation}
           />
         )}
       </div>

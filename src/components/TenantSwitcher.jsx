@@ -6,6 +6,7 @@ import { useTenant } from '../context/TenantContext';
 import { useAuth } from '../context/AuthContext';
 import { canSwitchTenants, getUserAllowedClinics } from '../utils/permissions';
 import { Building2, ChevronDown, Check, ShieldCheck, Copy, CheckCheck, Lock } from 'lucide-react';
+import { copyToClipboard } from '../utils/clipboard';
 import './TenantSwitcher.css';
 
 export default function TenantSwitcher({ renderLockedOnDedicated = false }) {
@@ -20,12 +21,14 @@ export default function TenantSwitcher({ renderLockedOnDedicated = false }) {
     ? (tenant ? [tenant] : [])
     : getUserAllowedClinics(user, allTenants, isDedicatedDomain);
 
-  const handleCopyBookingLink = (e, slug) => {
+  const handleCopyBookingLink = async (e, slug) => {
     e.stopPropagation();
     const link = `${window.location.origin}/c/${slug}/booking`;
-    navigator.clipboard.writeText(link);
-    setCopiedSlug(slug);
-    setTimeout(() => setCopiedSlug(null), 2500);
+    const success = await copyToClipboard(link);
+    if (success) {
+      setCopiedSlug(slug);
+      setTimeout(() => setCopiedSlug(null), 2500);
+    }
   };
 
   const getTierBadge = (tier) => {

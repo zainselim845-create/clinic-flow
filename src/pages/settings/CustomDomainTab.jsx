@@ -23,6 +23,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { useTenant } from '../../context/TenantContext';
 import CodeSnippet from '../../components/CodeSnippet';
+import { copyToClipboard } from '../../utils/clipboard';
 import './CustomDomainTab.css';
 
 export default function CustomDomainTab() {
@@ -60,9 +61,9 @@ export default function CustomDomainTab() {
   const isInputValid = isValidDomain(cleanDomain);
   const requiredRecords = cleanDomain ? getRequiredDnsRecords(cleanDomain, clinicId) : [];
 
-  const handleCopy = (text, key) => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(text);
+  const handleCopy = async (text, key) => {
+    const success = await copyToClipboard(text);
+    if (success) {
       setCopiedKey(key);
       setTimeout(() => setCopiedKey(null), 2000);
     }

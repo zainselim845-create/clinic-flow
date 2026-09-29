@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Database, Server, HardDrive, Copy, Check, RefreshCw, CheckCircle2, AlertCircle, Download, KeyRound, Eye, EyeOff, Save, Trash2 } from 'lucide-react';
 import { getSupabaseConfig, saveSupabaseConfig, supabase } from '../../lib/supabase';
+import { copyToClipboard } from '../../utils/clipboard';
 
 export default function DatabaseSyncTab({ state, dispatch }) {
   const initialDb = getSupabaseConfig();
@@ -129,9 +130,11 @@ CREATE TABLE IF NOT EXISTS blocked_slots (
     is_full_day BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );`;
-    navigator.clipboard.writeText(sqlScript);
-    setCopiedSql(true);
-    setTimeout(() => setCopiedSql(false), 2500);
+    const success = await copyToClipboard(sqlScript);
+    if (success) {
+      setCopiedSql(true);
+      setTimeout(() => setCopiedSql(false), 2500);
+    }
   };
 
   return (

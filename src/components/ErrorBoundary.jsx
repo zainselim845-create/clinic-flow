@@ -1,6 +1,7 @@
 import React from 'react';
 import { captureSystemError, reportUserBug } from '../services/systemErrorService';
 import { AlertTriangle, RefreshCw, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
+import { copyToClipboard } from '../utils/clipboard';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -39,7 +40,7 @@ class ErrorBoundary extends React.Component {
     window.location.href = url.toString();
   };
 
-  handleCopyError = () => {
+  handleCopyError = async () => {
     const errorPayload = {
       errorId: this.state.errorId,
       message: this.state.error?.message || String(this.state.error),
@@ -48,7 +49,7 @@ class ErrorBoundary extends React.Component {
       path: typeof window !== 'undefined' ? window.location.pathname : '',
       timestamp: new Date().toISOString()
     };
-    navigator.clipboard?.writeText(JSON.stringify(errorPayload, null, 2));
+    await copyToClipboard(JSON.stringify(errorPayload, null, 2));
     this.setState({ copied: true });
     setTimeout(() => this.setState({ copied: false }), 3000);
   };

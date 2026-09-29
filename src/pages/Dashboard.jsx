@@ -31,6 +31,7 @@ import {
   DashboardQuickDock 
 } from './dashboard/components';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
+import { copyToClipboard } from '../utils/clipboard';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -68,9 +69,7 @@ const Dashboard = () => {
     const url = clinicSlug 
       ? `${origin}/c/${clinicSlug}`
       : `${origin}/booking`;
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(url);
-    }
+    copyToClipboard(url);
     setCopiedBookingLink(true);
     setTimeout(() => setCopiedBookingLink(false), 2500);
   };

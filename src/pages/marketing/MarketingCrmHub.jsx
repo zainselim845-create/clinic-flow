@@ -39,6 +39,7 @@ import {
   AiComposerTab
 } from './tabs';
 import { AddPackageModal } from './tabs/AddPackageModal';
+import { copyToClipboard } from '../../utils/clipboard';
 import './MarketingCrmHub.css';
 
 export const MarketingCrmHub = () => {
@@ -169,11 +170,13 @@ export const MarketingCrmHub = () => {
     return list;
   }, [segmentedPatients, selectedSegment, searchQuery]);
 
-  const handleCopyLink = (text, index) => {
-    navigator.clipboard.writeText(text);
-    setCopiedLinkIndex(index);
-    showToast('تم نسخ الرابط بنجاح');
-    setTimeout(() => setCopiedLinkIndex(null), 2500);
+  const handleCopyLink = async (text, index) => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopiedLinkIndex(index);
+      showToast('تم نسخ الرابط بنجاح');
+      setTimeout(() => setCopiedLinkIndex(null), 2500);
+    }
   };
 
   const handleSimulateFeedbackRating = (patientName, rating) => {

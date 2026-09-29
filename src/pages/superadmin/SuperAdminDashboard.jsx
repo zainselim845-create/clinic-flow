@@ -18,6 +18,7 @@ import {
   clearBugReports 
 } from '../../services/systemErrorService';
 import { toast } from '../../lib/toast';
+import { copyToClipboard } from '../../utils/clipboard';
 import {
   SaasStatsGrid,
   ClinicsTable,
@@ -157,11 +158,13 @@ export default function SuperAdminDashboard() {
     handleRefreshAll();
   };
 
-  const handleCopyLink = (slug) => {
+  const handleCopyLink = async (slug) => {
     const link = `${window.location.origin}/c/${slug}/booking`;
-    navigator.clipboard.writeText(link);
-    setCopiedSlug(slug);
-    setTimeout(() => setCopiedSlug(null), 2500);
+    const success = await copyToClipboard(link);
+    if (success) {
+      setCopiedSlug(slug);
+      setTimeout(() => setCopiedSlug(null), 2500);
+    }
   };
 
   const handleSwitchAndVisit = (slug) => {

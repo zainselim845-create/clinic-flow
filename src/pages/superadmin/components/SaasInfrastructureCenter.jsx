@@ -23,6 +23,7 @@ import {
   isValidDomain 
 } from '../../../services/customDomainService';
 import { getDefaultTierQuotas, getClinicUsage } from '../../../services/usageMeteringService';
+import { copyToClipboard } from '../../../utils/clipboard';
 import { getGoogleClientId, saveGoogleClientId, getGoogleOAuthSetupInfo } from '../../../services/googleAuthService';
 import {
   getSaaSSubscriptionPlans,
@@ -90,10 +91,12 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
     setTimeout(() => setGoogleSaveSuccess(false), 2500);
   };
 
-  const handleCopyText = (key, text) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2000);
+  const handleCopyText = async (key, text) => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    }
   };
 
   const handleSaveDomain = (clinicId, domain) => {

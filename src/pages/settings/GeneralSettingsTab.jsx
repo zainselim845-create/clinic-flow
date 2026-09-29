@@ -16,6 +16,7 @@ import BookingShareModal from '../../components/BookingShareModal';
 import ClinicPalettePicker from '../../components/ClinicPalettePicker';
 import ClinicLogoUploader from '../../components/ClinicLogoUploader';
 import { toast } from '../../lib/toast';
+import { copyToClipboard } from '../../utils/clipboard';
 
 export default function GeneralSettingsTab({
   clinicForm,
@@ -118,12 +119,12 @@ export default function GeneralSettingsTab({
     }));
   };
 
-  const handleCopyBookingLink = () => {
+  const handleCopyBookingLink = async () => {
     const bookingUrl = typeof window !== 'undefined' 
       ? (clinicSlug ? `${window.location.origin}/c/${clinicSlug}/booking` : `${window.location.origin}/booking`)
       : (clinicSlug ? `/c/${clinicSlug}/booking` : '/booking');
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(bookingUrl);
+    const success = await copyToClipboard(bookingUrl);
+    if (success) {
       setCopiedBookingLink(true);
       setTimeout(() => setCopiedBookingLink(false), 2500);
     }
@@ -131,11 +132,11 @@ export default function GeneralSettingsTab({
 
   const automaticSubdomain = `https://${clinicSlug || 'clinic'}.${SAAS_PLATFORM_DOMAIN}`;
 
-  const handleCopySubdomain = () => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(automaticSubdomain);
+  const handleCopySubdomain = async () => {
+    const success = await copyToClipboard(automaticSubdomain);
+    if (success) {
       setCopiedSubdomain(true);
-      toast.success('تم نسخ النطاق الفرعي التلقائي!');
+      toast.success('تم نسخ النطاق الفرعي بنجاح');
       setTimeout(() => setCopiedSubdomain(false), 2500);
     }
   };

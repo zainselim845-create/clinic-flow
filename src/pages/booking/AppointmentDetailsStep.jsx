@@ -1,9 +1,11 @@
 import React from 'react';
 import { 
-  ArrowRight, Sparkles, Users, UserPlus, AlertCircle, Loader2, Stethoscope, CreditCard, Banknote, Bolt, Smartphone 
+  ArrowRight, Sparkles, Users, UserPlus, AlertCircle, Loader2, Stethoscope, CreditCard, Banknote, Bolt, Smartphone,
+  MapPin, ExternalLink
 } from 'lucide-react';
 import BookingCalendar from '../../components/BookingCalendar';
 import { EGYPT_PAYMENT_METHODS } from '../../features/egypt-national';
+import { calculateDistanceKm, formatDistanceAr } from '../../services/autoLocationService';
 
 const maskName = (name) => {
   if (!name) return 'عميلنا العزيز';
@@ -28,8 +30,18 @@ export default function AppointmentDetailsStep({
   setBookingError,
   isSubmitting,
   onSubmit,
-  onBackToPhone
+  onBackToPhone,
+  detectedUserLocation = null
 }) {
+  const distanceKm = (detectedUserLocation && currentClinic?.coordinates?.lat && currentClinic?.coordinates?.lng)
+    ? calculateDistanceKm(detectedUserLocation.lat, detectedUserLocation.lng, currentClinic.coordinates.lat, currentClinic.coordinates.lng)
+    : null;
+
+  const mapUrl = currentClinic?.googleMapsUrl || (
+    currentClinic?.coordinates?.lat && currentClinic?.coordinates?.lng
+      ? `https://www.google.com/maps/dir/?api=1&destination=${currentClinic.coordinates.lat},${currentClinic.coordinates.lng}`
+      : (currentClinic?.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentClinic.address)}` : null)
+  );
   return (
     <div className="nebras-card details-card">
       {/* Dark Navy Header */}
@@ -183,6 +195,74 @@ export default function AppointmentDetailsStep({
               </div>
             </div>
           </div>
+
+          {/* CLINIC ADDRESS & GOOGLE MAPS LOCATION */}
+          {(currentClinic?.address || mapUrl) && (
+            <div className="nebras-section">
+              <span className="nebras-section-heading">موقع العيادة</span>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+                padding: '0.85rem 1.1rem',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                marginTop: '0.35rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    background: '#e0f2fe',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#0284c7',
+                    flexShrink: 0
+                  }}>
+                    <MapPin size={18} />
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#1e293b', display: 'block' }}>
+                      {currentClinic?.address || 'عنوان العيادة'}
+                    </span>
+                    {distanceKm !== null && (
+                      <span style={{ fontSize: '0.76rem', color: '#0284c7', fontWeight: 600 }}>
+                        {formatDistanceAr(distanceKm)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {mapUrl && (
+                  <a
+                    href={mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      color: '#0284c7',
+                      background: '#e0f2fe',
+                      padding: '0.4rem 0.75rem',
+                      borderRadius: '8px',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <span>عرض الموقع على الخريطة</span>
+                    <ExternalLink size={13} />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* CALENDAR & TIME SLOTS SELECTION */}
           <div className="nebras-section">

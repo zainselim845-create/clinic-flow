@@ -11,6 +11,7 @@ import {
   SAAS_PLATFORM_DOMAIN
 } from '../utils/clinicUrls';
 import { toast } from '../lib/toast';
+import { copyToClipboard } from '../utils/clipboard';
 
 export default function BookingShareModal({ isOpen, onClose, tenant }) {
   if (!isOpen || !tenant) return null;
@@ -27,20 +28,20 @@ export default function BookingShareModal({ isOpen, onClose, tenant }) {
   const customDomain = (tenant.customDomain || tenant.custom_domain || '').trim();
   const automaticSubdomain = `https://${slug}.${SAAS_PLATFORM_DOMAIN}`;
 
-  const handleCopyLink = () => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(bookingUrl);
+  const handleCopyLink = async () => {
+    const success = await copyToClipboard(bookingUrl);
+    if (success) {
       setCopiedLink(true);
-      toast.success('تم نسخ رابط حجز العيادة بنجاح!');
+      toast.success('تم نسخ رابط حجز العيادة بنجاح');
       setTimeout(() => setCopiedLink(false), 2500);
     }
   };
 
-  const handleCopySubdomain = () => {
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(automaticSubdomain);
+  const handleCopySubdomain = async () => {
+    const success = await copyToClipboard(automaticSubdomain);
+    if (success) {
       setCopiedSubdomain(true);
-      toast.success('تم نسخ النطاق الفرعي التلقائي!');
+      toast.success('تم نسخ النطاق الفرعي بنجاح');
       setTimeout(() => setCopiedSubdomain(false), 2500);
     }
   };

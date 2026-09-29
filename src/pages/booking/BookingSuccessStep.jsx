@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { parseArabicTime } from '../../utils/parseArabicTime';
 import { getBookingConfirmationWhatsAppUrl } from '../../services/smsService';
+import { copyToClipboard } from '../../utils/clipboard';
 
 export default function BookingSuccessStep({
   createdBooking,
@@ -213,7 +214,7 @@ export default function BookingSuccessStep({
                       type="button"
                       onClick={() => {
                         const target = currentClinic?.instapayIpa || `${currentClinic?.slug || 'clinic'}@instapay`;
-                        navigator.clipboard.writeText(target);
+                        copyToClipboard(target);
                         setCopiedPayment(true);
                         setTimeout(() => setCopiedPayment(false), 2500);
                       }}
@@ -261,7 +262,7 @@ export default function BookingSuccessStep({
                       type="button"
                       onClick={() => {
                         const target = currentClinic?.cashWalletPhone || currentClinic?.phone || '01000000000';
-                        navigator.clipboard.writeText(target);
+                        copyToClipboard(target);
                         setCopiedPayment(true);
                         setTimeout(() => setCopiedPayment(false), 2500);
                       }}
