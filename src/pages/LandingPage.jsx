@@ -1,46 +1,32 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useTenant } from '../context/TenantContext';
 import { useAuth } from '../context/AuthContext';
 import { 
-  Stethoscope, ShieldCheck, Sparkles, Globe, 
+  Stethoscope, ShieldCheck, Sparkles, 
   ArrowLeft, CheckCircle2, ChevronDown, 
-  Search, MapPin, Phone, Lock, 
-  Activity, DollarSign, Cpu, Award, Clock,
-  Building2, Calendar, Sun, Moon, Menu, X, Mail,
-  Compass, Navigation
+  Phone, Lock, Activity, DollarSign, Cpu, 
+  Clock, Building2, Calendar, Sun, Moon, 
+  Menu, X, Mail
 } from 'lucide-react';
-import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import { getWhatsAppSupportUrl } from '../utils/utmTracking';
-import { getAutoUserLocation, calculateDistanceKm, formatDistanceAr } from '../services/autoLocationService';
 import { safeSetItem } from '../utils/safeStorage';
 import './LandingPage.css';
-
-const SPECIALTY_OPTIONS = [
-  'الكل',
-  'طب وجراحة الأسنان',
-  'الأمراض الجلدية والتجميل',
-  'طب الأطفال وحديثي الولادة',
-  'جراحة العظام والمفاصل',
-  'طب وجراحة العيون',
-  'أمراض الباطنة والقلب'
-];
 
 const PRICING_PLANS = [
   {
     id: 'starter',
     name: 'باقة البداية (Starter)',
-    badge: 'للأطباء الاستشاريين والعيادات الفردية',
+    badge: 'للأطباء والعيادات الفردية',
     price: '990',
     currency: 'ج.م / شهرياً',
-    description: 'مثالية للأطباء الراغبين في إنهاء فوضى الأوراق والدفاتر، وتنظيم صالة الانتظار والروشتات بهدوء تام.',
+    description: 'تنظيم صالة الانتظار والروشتات وإنهاء السجلات الورقية والدفاتر تماماً.',
     features: [
-      'طبيب أساسي + حساب موظف استقبال',
-      'رابط وسب دومين مستقل بهويتك واسمك الطبي',
-      'حجز إلكتروني ذكي برقم الهاتف يمنع تكدس العيادة',
-      'سجل طبي إلكتروني EMR وروشتات رقمية بباركود',
-      'إشعارات SMS تلقائية لتأكيد المواعيد (500 رسالة/شهر)',
-      'خزينة مبسطة لضبط الإيرادات وسندات القبض',
+      'طبيب أساسي + حساب سكرتارية واستقبال',
+      'رابط حجز مستقل باسم عيادتك',
+      'تنظيم صالة الانتظار وقائمة المواعيد',
+      'سجل مرضي إلكتروني وروشتات رقمية بباركود',
+      'إشعارات SMS وواتساب لتأكيد الحضور (500 رسالة)',
+      'إغلاق الخزينة اليومي وسندات القبض',
       'دعم فني استشاري مباشر عبر واتساب'
     ],
     highlight: false,
@@ -49,19 +35,19 @@ const PRICING_PLANS = [
   {
     id: 'pro',
     name: 'باقة الاحتراف (Pro)',
-    badge: 'الخيار المفضل للعيادات التخصصية المتوسعة',
+    badge: 'الأكثر طلباً للعيادات التخصصية',
     price: '1,990',
     currency: 'ج.م / شهرياً',
-    description: 'صممت للعيادات والمراكز التي تبحث عن أقصى انضباط: منع غياب المرضى، وتصفية نسب الأطباء والشركاء بدقة.',
+    description: 'القضاء على غياب المرضى، كشف التعارضات، وتصفية حسابات الأطباء الشركاء.',
     features: [
-      'حتى 5 أطباء + طاقم تمريض واستقبال غير محدود',
-      'دومين مخصص كامل باسم عيادتك (yourclinic.com) مع حماية بنكية',
-      'مخطط أسنان وسجلات تخصصية متطورة لكل زيارة',
-      'مساعد الذكاء الاصطناعي لكشف التعارضات وتلخيص التاريخ المرضي',
-      'محرك القضاء على المواعيد المهدرة وتقليل الغياب لأقل من 3%',
-      'إدارة مخزون المستهلكات والأدوات ومعامل التركيبات',
+      'حتى 5 أطباء + طاقم سكرتارية وتمريض غير محدود',
+      'دومين مخصص كامل باسم عيادتك (yourclinic.com)',
+      'محرك منع غياب المرضى (تقليل الغياب لأقل من 3%)',
+      'فحص التعارضات الدوائية الذكي (AI Copilot)',
+      'مخطط أسنان وسجلات تخصصية متقدمة',
+      'حساب تلقائي لنسب وأرباح الأطباء الشركاء',
       'رسائل SMS وواتساب تذكيرية غير محدودة',
-      'حساب تلقائي لنسب وأرباح الأطباء الزائرين والشركاء'
+      'إدارة مخزون المستهلكات وأوامر المعامل'
     ],
     highlight: true,
     cta: 'اختر باقة الاحتراف الآن'
@@ -69,18 +55,18 @@ const PRICING_PLANS = [
   {
     id: 'enterprise',
     name: 'باقة المراكز والمستشفيات (Enterprise)',
-    badge: 'للمجمعات الطبية والمراكز الكبرى متعددة الفروع',
+    badge: 'للمجمعات الطبية والمراكز متعددة الفروع',
     price: '3,990',
     currency: 'ج.م / شهرياً',
-    description: 'حلول مؤسسية متكاملة لربط الفروع، نقل السجلات التاريخية، وتنسيق العمل بين الأقسام الطبية المختلفة.',
+    description: 'ربط الفروع، نقل السجلات التاريخية، وصلاحيات مخصصة لكل قسم.',
     features: [
-      'أطباء وفروع متعددة بدون أي قيود على الاستخدام',
-      'نقل وتفريغ كافة السجلات الورقية وملفات الإكسيل مجاناً',
-      'صلاحيات إدارية مشددة (RBAC) تفصل الرؤية الطبية عن الإدارية',
-      'مساعد ذكاء اصطناعي سريري مخصص لبروتوكولات المركز',
-      'ربط مالي مباشر مع شركات التأمين وبوابات الدفع الإلكتروني',
-      'مدير حساب طبي تقني متاح لخدمتك على مدار الساعة',
-      'ضمان استقرار الخدمة وتشغيل متواصل بنسبة 99.99%'
+      'أطباء وفروع متعددة بدون أي حدود على الاستخدام',
+      'نقل وتفريغ كافة السجلات الورقية والإكسيل مجاناً',
+      'صلاحيات إدارية مشددة (RBAC) تفصل الطبي عن المالي',
+      'ذكاء اصطناعي سريري مدرب على بروتوكولات المركز',
+      'ربط مالي مباشر مع شركات التأمين وبوابات الدفع',
+      'مدير حساب طبي مخصص على مدار الساعة',
+      'اتفاقية تشغيل متواصل SLA بنسبة 99.99%'
     ],
     highlight: false,
     cta: 'تواصل مع فريق المبيعات'
@@ -89,46 +75,43 @@ const PRICING_PLANS = [
 
 const FAQ_ITEMS = [
   {
-    q: 'هل بيانات مرضاي وسجلاتي الطبية في أمان وخصوصية تامة؟',
-    a: 'أمان وسرية بياناتك ومرضاك خط أحمر. المنظومة مبنية بمعمارية عزل صارمة (Multi-Tenant Isolation) وسياسات حماية بنكية (Row-Level Security) مع تشفير AES-256. لا يمكن لأي طرف خارجي أو عيادة أخرى الاطلاع على ملفاتك، كما أننا لا نطلع على أسرار مرضاك السريرية أبداً.'
+    q: 'هل بيانات مرضاي وسجلاتي الطبية في أمان تام؟',
+    a: 'نعم، 100%. النظام مطبق عليه معايير تشفير بنكية (AES-256) وعزل تام لقواعد البيانات (Multi-Tenant Isolation). لا يمكن لأي عيادة أخرى أو طرف ثالث الاطلاع على سجلاتك أو أسرار مرضاك.'
   },
   {
-    q: 'هل سأفقد السيطرة على ملفات مرضاي إذا قررت إلغاء الاشتراك مستقبلاً؟',
-    a: 'بياناتك ملك خالص لك بنسبة 100%. يمكنك في أي لحظة وبضغطة زر واحدة تصدير كافة سجلات المرضى، المواعيد، الفواتير، والملفات بصيغة Excel و CSV منظمة، دون أي تعقيد أو قيود.'
+    q: 'هل أقدر أصدر بياناتي لو حبيت أوقف الاشتراك في أي وقت؟',
+    a: 'بياناتك ملكك بالكامل. بضغطة زر واحدة يمكنك تحميل كل سجلات المرضى، المواعيد، والفواتير بملفات Excel و CSV جاهزة بدون أي قيود أو شروط جزائية.'
   },
   {
-    q: 'عيادتنا تعمل بالسجلات الورقية والدفاتر منذ سنوات، فكيف سننقل هذا الأرشيف؟',
-    a: 'نوفر أداة استيراد ذكية تنقل قوائم مرضاك القديمة من ملفات الإكسيل تلقائياً في دقائق. كما يقدم فريق الدعم لدينا خدمة المساعدة في نقل السجلات والتهيئة المبدئية لضمان بدء العمل دون أي ارتباك في عيادتك.'
+    q: 'عيادتنا تعمل بالدفاتر والورق، كيف سننقل السجلات القديمة؟',
+    a: 'المنظومة تحتوي على أداة استيراد إكسيل ذكية تنقل آلاف المرضى في ثوانٍ. كما يقدم فريق الدعم الفني خدمة المساعدة في نقل السجلات والتهيئة المبدئية مجاناً.'
   },
   {
-    q: 'ماذا يحدث إذا انقطع الإنترنت فجأة في العيادة أثناء الكشف؟',
-    a: 'صممت المنظومة بتقنية PWA وتخزين محلي ذكي، بحيث يمكنك الاستمرار في استعراض جدول مواعيد اليوم، قائمة صالة الانتظار، وكتابة الملاحظات أثناء انقطاع الشبكة، ثم تتم المزامنة تلقائياً بمجرد عودة الاتصال دون فقدان أي حرف.'
+    q: 'إذا انقطع الإنترنت فجأة في العيادة، هل يتوقف العمل؟',
+    a: 'لا، المنظومة تعمل بتقنية PWA وتحفظ البيانات محلياً على جهازك. يمكنك متابعة الكشف وتسجيل الملاحظات واستعراض قائمة الانتظار، وتتم المزامنة تلقائياً بمجرد عودة الاتصال.'
   },
   {
-    q: 'هل يرى موظف الاستقبال أو التمريض أرباح العيادة أو تفاصيل الكشف السريري؟',
-    a: 'إطلاقاً. المنظومة تطبق نظام صلاحيات دقيق (RBAC). يرى موظف الاستقبال صالة الانتظار وجدول المواعيد فقط، بينما تبقى التشخيصات والروشتات وأرقام الخزينة والأرباح محصورة بالطبيب والمسؤول المالي فقط.'
+    q: 'هل يرى موظف الاستقبال أو التمريض أرباح العيادة أو تفاصيل الكشف؟',
+    a: 'إطلاقاً. النظام يعتمد صلاحيات دقيقة (RBAC). الاستقبال يرى صالة الانتظار والمواعيد فقط، بينما الروشتات، التشخيصات، ودخل الخزينة محجوبة ومخصصة للطبيب والمدير المالي.'
   },
   {
-    q: 'كيف تساعدني المنظومة في القضاء على ظاهرة غياب المرضى عن مواعيدهم (No-Shows)؟',
-    a: 'يرسل محرك كلينيك فلو رسائل تذكير آلية لطيفة عبر SMS والواتساب قبل الموعد بـ 24 ساعة، مع رابط مباشر لتأكيد الحضور أو الاعتذار المبكر. يتيح ذلك للعيادة استغلال الوقت الشاغر فوراً وتقليل نسبة الغياب لأقل من 3%.'
+    q: 'كيف تساعد المنظومة في القضاء على غياب المرضى عن مواعيدهم (No-Shows)؟',
+    a: 'النظام يرسل رسائل تذكير آلية لطيفة عبر الواتساب وSMS قبل الموعد بـ 24 ساعة برابط مباشر لتأكيد الحضور أو الاعتذار، مما يتيح للعيادة استغلال الوقت الشاغر فوراً.'
   },
   {
-    q: 'هل نحتاج لشراء أجهزة حاسوب باهظة لتشغيل المنظومة؟',
-    a: 'لا على الإطلاق. كلينيك فلو يعمل بسلاسة عبر متصفح الإنترنت على أي جهاز يتوفر لديك: جهاز كمبيوتر مكتبي، لابتوب، جهاز لوحي (آيباد/تابلت)، أو حتى من هاتفك الذكي وأنت خارج العيادة.'
+    q: 'هل نحتاج لشراء أجهزة حاسوب باهظة أو سيرفر خاص؟',
+    a: 'نهائياً. كلينيك فلو سحابي بالكامل ويعمل مباشرة من المتصفح على أي لابتوب، جهاز كمبيوتر مكتبي، تابلت، أو حتى من هاتفك الذكي.'
   },
   {
     q: 'هل توجد عقود سنوية إلزامية أو شروط جزائية عند الإلغاء؟',
-    a: 'لا توجد أي التزامات معقدة. الاشتراكات شهرية أو سنوية بمرونة تامة وبدون أي رسوم خفية. نحن نعتمد على جودة المنظومة وراحة الطبيب لاستمرار الشراكة، وليس على العقود الملزمة.'
+    a: 'لا توجد أي التزامات معقدة. الاشتراكات شهرية أو سنوية بمرونة تامة وبدون أي رسوم خفية. يمكنك إلغاء الاشتراك في أي وقت تشاء.'
   }
 ];
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { allTenants } = useTenant();
 
-  const [clinicSearch, setClinicSearch] = useState('');
-  const [selectedSpecialty, setSelectedSpecialty] = useState('الكل');
   const [faqOpen, setFaqOpen] = useState({ 0: true });
   const [expandAllFaqs, setExpandAllFaqs] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -150,7 +133,7 @@ const LandingPage = () => {
 
   // Newsletter Signup State
   const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterStatus, setNewsletterStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
+  const [newsletterStatus, setNewsletterStatus] = useState('idle');
   const [newsletterError, setNewsletterError] = useState('');
 
   const handleNewsletterSubmit = (e) => {
@@ -167,52 +150,6 @@ const LandingPage = () => {
       setNewsletterEmail('');
     }, 700);
   };
-
-  const [userLocation, setUserLocation] = useState(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    getAutoUserLocation().then(loc => {
-      if (isMounted && loc) {
-        setUserLocation(loc);
-      }
-    }).catch(() => {});
-    return () => { isMounted = false; };
-  }, []);
-
-  const filteredClinics = useMemo(() => {
-    const list = (allTenants || [])
-      .filter(t => t.subscriptionStatus !== 'suspended')
-      .filter(clinic => {
-        const matchSearch = 
-          !clinicSearch.trim() ||
-          (clinic.name || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
-          (clinic.doctorName || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
-          (clinic.address || '').toLowerCase().includes(clinicSearch.toLowerCase()) ||
-          (clinic.specialty || '').toLowerCase().includes(clinicSearch.toLowerCase());
-
-        const matchSpec = matchesSpecialtyFilter(clinic.specialty, selectedSpecialty);
-        return matchSearch && matchSpec;
-      })
-      .map(clinic => {
-        let distanceKm = null;
-        if (userLocation && clinic.coordinates && typeof clinic.coordinates.lat === 'number' && typeof clinic.coordinates.lng === 'number') {
-          distanceKm = calculateDistanceKm(userLocation.lat, userLocation.lng, clinic.coordinates.lat, clinic.coordinates.lng);
-        }
-        return { ...clinic, distanceKm };
-      });
-
-    if (userLocation) {
-      list.sort((a, b) => {
-        if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
-        if (a.distanceKm !== null) return -1;
-        if (b.distanceKm !== null) return 1;
-        return 0;
-      });
-    }
-
-    return list;
-  }, [allTenants, clinicSearch, selectedSpecialty, userLocation]);
 
   const toggleFaq = (index) => {
     setFaqOpen(prev => ({ ...prev, [index]: !prev[index] }));
@@ -247,10 +184,8 @@ const LandingPage = () => {
           </Link>
 
           <nav className="landing-nav-links" aria-label="أقسام الصفحة الرئيسية">
-            <a href="#features" className="nav-link">المميزات</a>
-            <a href="#specialties" className="nav-link">التخصصات</a>
-            <a href="#discovery" className="nav-link">دليل العيادات</a>
-            <a href="#pricing" className="nav-link">الأسعار</a>
+            <a href="#features" className="nav-link">المميزات الأساسية</a>
+            <a href="#pricing" className="nav-link">باقات الاشتراك</a>
             <a href="#faq" className="nav-link">الأسئلة الشائعة</a>
           </nav>
 
@@ -265,7 +200,7 @@ const LandingPage = () => {
                     </button>
                     <button onClick={() => navigate('/dashboard')} className="btn-nav-dashboard">
                       <Building2 size={15} />
-                      <span>معاينة العيادات</span>
+                      <span>لوحة العيادات</span>
                     </button>
                   </>
                 ) : (
@@ -277,26 +212,18 @@ const LandingPage = () => {
               </div>
             ) : (
               <div className="guest-nav-group">
-                <button onClick={() => navigate('/booking')} className="btn-nav-booking" title="بوابة حجز واستعلام المرضى">
-                  <Search size={14} />
-                  <span>بوابة المرضى</span>
-                </button>
-                <button onClick={() => navigate('/manage-booking')} className="btn-nav-manage" title="متابعة أو تعديل موعد حجزك">
-                  <Calendar size={14} />
-                  <span>متابعة الحجز</span>
-                </button>
                 <button onClick={() => navigate('/login?portal=clinic')} className="btn-nav-login" title="تسجيل دخول الأطباء وطاقم العيادات">
                   <Building2 size={14} />
                   <span>دخول العيادات</span>
                 </button>
                 <button onClick={() => navigate('/login?tab=register')} className="btn-nav-register">
                   <Sparkles size={14} />
-                  <span>سجل عيادتك</span>
+                  <span>ابدأ تجربتك المجانية</span>
                 </button>
               </div>
             )}
 
-            {/* Dark Mode Toggle (Item 1) */}
+            {/* Dark Mode Toggle */}
             <button
               type="button"
               onClick={toggleLandingTheme}
@@ -307,7 +234,7 @@ const LandingPage = () => {
               {isDarkMode ? <Sun size={17} /> : <Moon size={17} />}
             </button>
 
-            {/* Mobile Hamburger Button (Item 3) */}
+            {/* Mobile Hamburger Button */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -320,28 +247,22 @@ const LandingPage = () => {
           </div>
         </div>
 
-        {/* Mobile Slide-down Menu Drawer (Item 3) */}
+        {/* Mobile Slide-down Menu Drawer */}
         {isMobileMenuOpen && (
           <div className="landing-mobile-menu-drawer">
             <nav className="mobile-nav-links">
-              <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>المميزات</a>
-              <a href="#specialties" onClick={() => setIsMobileMenuOpen(false)}>التخصصات</a>
-              <a href="#discovery" onClick={() => setIsMobileMenuOpen(false)}>دليل العيادات</a>
-              <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)}>الأسعار</a>
+              <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>المميزات الأساسية</a>
+              <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)}>باقات الاشتراك</a>
               <a href="#faq" onClick={() => setIsMobileMenuOpen(false)}>الأسئلة الشائعة</a>
             </nav>
             <div className="mobile-nav-actions">
-              <button onClick={() => { navigate('/booking'); setIsMobileMenuOpen(false); }} className="btn-hero-secondary">
-                <Search size={15} />
-                <span>بوابة حجز المرضى</span>
-              </button>
-              <button onClick={() => { navigate('/manage-booking'); setIsMobileMenuOpen(false); }} className="btn-hero-secondary">
-                <Calendar size={15} />
-                <span>متابعة وتعديل الحجز</span>
-              </button>
-              <button onClick={() => { navigate('/login?portal=clinic'); setIsMobileMenuOpen(false); }} className="btn-hero-primary">
+              <button onClick={() => { navigate('/login?portal=clinic'); setIsMobileMenuOpen(false); }} className="btn-hero-secondary">
                 <Building2 size={15} />
-                <span>دخول العيادات وطاقم العمل</span>
+                <span>دخول العيادات</span>
+              </button>
+              <button onClick={() => { navigate('/login?tab=register'); setIsMobileMenuOpen(false); }} className="btn-hero-primary">
+                <Sparkles size={15} />
+                <span>ابدأ تجربتك المجانية</span>
               </button>
             </div>
           </div>
@@ -354,37 +275,34 @@ const LandingPage = () => {
         <div className="hero-content">
           <div className="hero-badge">
             <Sparkles size={14} className="badge-sparkle-icon" />
-            <span>المنظومة السحابية الموثوقة • للأطباء الاستشاريين والمراكز التخصصية</span>
+            <span>المنظومة السحابية المخصصة للأطباء والمراكز الطبية</span>
           </div>
 
           <h1 className="hero-headline">
-            راحة بالك السريرية، <br />
-            <span className="google-hero-focus gradient-text">وانضباط عيادتك الكامل.</span>
+            عيادتك بنظام رقمي متكامل. <br />
+            <span className="google-hero-focus gradient-text">بدون فوضى مواعيد، ولا أوراق تضيع.</span>
           </h1>
 
           <p className="hero-subheadline">
-            وداعاً لطوابير الانتظار العشوائية، والمواعيد الضائعة، وتكدس الملفات الورقية. 
-            كلينيك فلو ينظم تدفق مرضاك بدقة متناهية، يحمي وقت كشفك الثمين، 
-            ويمنحك عيادة رقمية بهوية مستقلة تليق بمكانتك الطبية وتريح بالك.
+            نظّم صالة الانتظار، اقضِ على غياب المرضى عن المواعيد، واطبع روشتات وسجلات طبية إلكترونية بضغطة زر واحدة. مع تصفية يومية للخزينة وحساب تلقائي لنسب الأطباء الشركاء.
           </p>
 
           <div className="hero-cta-group">
             <button onClick={() => navigate('/login?tab=register')} className="btn-hero-primary">
               <Sparkles size={18} />
-              <span>ابدأ تنظيم عيادتك مجاناً (14 يوماً)</span>
+              <span>ابدأ تجربتك المجانية (14 يوماً)</span>
               <ArrowLeft size={18} />
             </button>
-            <button onClick={() => navigate('/booking')} className="btn-hero-secondary">
-              <Search size={18} />
-              <span>دليل العيادات وحجز موعد (المرضى)</span>
-            </button>
+            <a href="#features" className="btn-hero-secondary" style={{ textDecoration: 'none' }}>
+              <span>استكشف مميزات النظام</span>
+            </a>
           </div>
 
           <div className="hero-portal-pills-row">
             <span className="pills-label">بوابات الدخول السريع:</span>
-            <button onClick={() => navigate('/login?portal=clinic')} className="hero-portal-pill clinic-pill" title="دخول أطباء وموظفي العيادات المشتركة">
+            <button onClick={() => navigate('/login?portal=clinic')} className="hero-portal-pill clinic-pill" title="دخول أطباء وموظفي العيادات">
               <Building2 size={13} />
-              <span>بوابة العيادات والأطباء (العملاء)</span>
+              <span>دخول الأطباء وطاقم العيادة</span>
             </button>
             <span className="pill-dot">•</span>
             <button onClick={() => navigate('/login?portal=admin')} className="hero-portal-pill saas-pill" title="لوحة التحكم السحابية للمدير العام">
@@ -396,15 +314,15 @@ const LandingPage = () => {
           <div className="hero-trust-metrics">
             <div className="trust-item">
               <CheckCircle2 size={16} className="text-emerald-500" />
-              <span>استعادة 97% من وقت الكشف والحد من غياب المرضى</span>
+              <span>تقليل غياب المرضى لأقل من 3% بتذكيرات الواتساب</span>
             </div>
             <div className="trust-item">
               <CheckCircle2 size={16} className="text-emerald-500" />
-              <span>عزل سريري ومالي بنكي تام لكل طبيب وعيادة</span>
+              <span>روشتة وسجل طبي إلكتروني مع فحص التعارضات الدوائية</span>
             </div>
             <div className="trust-item">
               <CheckCircle2 size={16} className="text-emerald-500" />
-              <span>روشتة إلكترونية وسجل مرضي متكامل بضغطة زر</span>
+              <span>إغلاق يومي للخزينة وحساب تلقائي لنسب الأطباء الشركاء</span>
             </div>
           </div>
         </div>
@@ -438,17 +356,17 @@ const LandingPage = () => {
                 <div className="c-card-body">
                   <div className="c-patient-row in-exam">
                     <span className="c-row-badge">جاري الفحص</span>
-                    <span className="c-row-name">عمر عبد العزيز محمود</span>
+                    <span className="c-row-name">عمر عبد العزيز</span>
                     <span className="c-row-time">منذ 15 د</span>
                   </div>
                   <div className="c-patient-row waiting">
                     <span className="c-row-badge wait">انتظار #1</span>
-                    <span className="c-row-name">مينا سمير غالي</span>
+                    <span className="c-row-name">مينا سمير</span>
                     <span className="c-row-time">05:30 م</span>
                   </div>
                   <div className="c-patient-row waiting">
                     <span className="c-row-badge wait">انتظار #2</span>
-                    <span className="c-row-name">ياسمين عادل إبراهيم</span>
+                    <span className="c-row-name">ياسمين عادل</span>
                     <span className="c-row-time">06:00 م</span>
                   </div>
                 </div>
@@ -460,17 +378,17 @@ const LandingPage = () => {
                   <div className="c-icon-badge purple">
                     <Stethoscope size={16} />
                   </div>
-                  <strong>الفحص السريري المباشر</strong>
+                  <strong>الفحص السريري والروشتة</strong>
                   <span className="c-active-pill">غرفة الكشف 1</span>
                 </div>
                 <div className="c-card-body">
                   <div className="c-diagnosis-box">
-                    <span className="c-lbl">التشخيص الطبي:</span>
-                    <strong>تسوس عميق بالضرس 46 مع التهاب عصب حاد</strong>
+                    <span className="c-lbl">التشخيص:</span>
+                    <strong>تسوس عميق بالضرس 46 مع التهاب عصب</strong>
                   </div>
                   <div className="c-treatment-tags">
                     <span className="c-tag">علاج جذور روتاري</span>
-                    <span className="c-tag">حشو ليزر تجميلي</span>
+                    <span className="c-tag">حشو تجميلي</span>
                     <span className="c-tag">طربوش زيركون</span>
                   </div>
                   <div className="c-exam-footer-note">
@@ -485,7 +403,7 @@ const LandingPage = () => {
                   <div className="c-icon-badge green">
                     <DollarSign size={16} />
                   </div>
-                  <strong>الخزينة والتحصيل الفوري</strong>
+                  <strong>الخزينة وتصفية الإيراد</strong>
                   <span className="c-status-pill-green">مسدد وموثق</span>
                 </div>
                 <div className="c-card-body">
@@ -497,8 +415,8 @@ const LandingPage = () => {
                     <div className="c-stat-progress-fill" style={{ width: '85%' }}></div>
                   </div>
                   <div className="c-meta-notes">
-                    <span>رسائل SMS التأكيد: 18 مرسلة</span>
-                    <span>استدعاءات المتابعة: 4 مجدولة</span>
+                    <span>تأكيد المواعيد: 18 رسالة</span>
+                    <span>نسب الأطباء: محسوبة تلقائياً</span>
                   </div>
                 </div>
               </div>
@@ -507,149 +425,24 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* 3. PATIENT CLINIC DISCOVERY & SEARCH DIRECTORY */}
-      <section id="discovery" className="discovery-section">
-        <div className="section-header">
-          <span className="section-pill">دليل العيادات المعتمدة</span>
-          <h2 className="section-title">ابحث عن عيادتك أو طبيبك لحجز موعد فوري</h2>
-          <p className="section-desc">
-            اختر عيادتك المفضلة من بين مئات العيادات المعتمدة على منظومة كلينيك فلو وانتقل مباشرة لصفحة حجزك المستقلة:
-          </p>
-        </div>
-
-        <div className="discovery-controls">
-          <div className="search-input-box">
-            <Search size={20} className="search-icon" />
-            <input 
-              type="text" 
-              id="clinic-search-input"
-              name="clinicSearch"
-              aria-label="ابحث باسم العيادة، اسم الطبيب، أو التخصص"
-              placeholder="ابحث باسم العيادة، اسم الطبيب، التخصص، أو العنوان..."
-              value={clinicSearch}
-              onChange={(e) => setClinicSearch(e.target.value)}
-              className="discovery-input"
-            />
-            {clinicSearch && (
-              <button 
-                type="button"
-                onClick={() => setClinicSearch('')} 
-                className="btn-clear-search"
-                aria-label="مسح حقل البحث وإظهار كافة العيادات"
-              >
-                إلغاء
-              </button>
-            )}
-          </div>
-
-          <div className="specialty-chips" id="specialties" role="tablist" aria-label="تصنيفات التخصصات الطبية">
-            {SPECIALTY_OPTIONS.map(spec => (
-              <button 
-                key={spec}
-                type="button"
-                role="tab"
-                aria-selected={selectedSpecialty === spec}
-                onClick={() => setSelectedSpecialty(spec)}
-                className={`spec-chip ${selectedSpecialty === spec ? 'active' : ''}`}
-              >
-                {spec}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* CLINIC CARDS GRID */}
-        <div className="clinics-cards-grid">
-          {filteredClinics.length > 0 ? (
-            filteredClinics.map(clinic => (
-              <div key={clinic.id || clinic.slug} className="clinic-card">
-                <div className="clinic-card-header">
-                  <div className="clinic-avatar">
-                    <Stethoscope size={24} />
-                  </div>
-                  <div className="clinic-meta">
-                    <h3 className="clinic-name">{clinic.name}</h3>
-                    <span className="clinic-doc">{clinic.doctorName}</span>
-                  </div>
-                  <span className="clinic-badge-status">معتمدة</span>
-                </div>
-
-                <div className="clinic-card-details">
-                  <div className="detail-item">
-                    <Award size={15} className="detail-icon" />
-                    <span>{clinic.specialty || 'عيادة تخصصية'}</span>
-                  </div>
-                  <div className="detail-item">
-                    <MapPin size={15} className="detail-icon" />
-                    <span>{clinic.address || 'عنوان العيادة'}</span>
-                  </div>
-                  {clinic.distanceKm !== null && (
-                    <div className="detail-item" style={{ color: '#0284C7', fontWeight: 700 }}>
-                      <Navigation size={15} className="detail-icon" />
-                      <span>{formatDistanceAr(clinic.distanceKm)}</span>
-                    </div>
-                  )}
-                  {(clinic.googleMapsUrl || clinic.coordinates || clinic.address) && (
-                    <div className="detail-item">
-                      <Compass size={15} className="detail-icon" color="#0284C7" />
-                      <a
-                        href={clinic.googleMapsUrl || (clinic.coordinates ? `https://www.google.com/maps/dir/?api=1&destination=${clinic.coordinates.lat},${clinic.coordinates.lng}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.address || clinic.name)}`)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{ color: '#0284C7', textDecoration: 'none', fontWeight: 600, fontSize: '0.84rem' }}
-                      >
-                        الاتجاهات عبر Google Maps
-                      </a>
-                    </div>
-                  )}
-                  <div className="detail-item">
-                    <Globe size={15} className="detail-icon" />
-                    <span dir="ltr" className="font-mono text-xs text-primary">
-                      {clinic.customDomain || `${clinic.slug}.clinicflow.app`}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="clinic-card-footer">
-                  <Link to={`/c/${clinic.slug}/booking`} className="btn-book-clinic">
-                    <span>احجز موعد بالعيادة</span>
-                    <ArrowLeft size={16} />
-                  </Link>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="empty-clinics-notice">
-              <Search size={36} className="text-gray-400" />
-              <p>لم يتم العثور على عيادات تطابق البحث "{clinicSearch}".</p>
-              <button onClick={() => { setClinicSearch(''); setSelectedSpecialty('الكل'); }} className="btn-reset-filter">
-                إعادة ضبط الفلتر
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* 4. ENTERPRISE SAAS FEATURES GRID */}
+      {/* 3. ENTERPRISE SAAS FEATURES GRID */}
       <section id="features" className="features-section">
         <div className="section-header">
-          <span className="section-pill">المعايير والمميزات السريرية</span>
-          <h2 className="section-title">صُمم لينهي فوضى العيادات ويمنحك السيطرة والهدوء</h2>
+          <span className="section-pill">المميزات الأساسية للعيادة</span>
+          <h2 className="section-title">كل ما يحتاجه يومك الطبي، في شاشة واحدة وبدون تعقيد</h2>
           <p className="section-desc">
-            كل أداة في المنظومة صممت بعد دراسة عميقة لروتين الطبيب الاستشاري داخل عيادته:
+            أدوات عملية ومصممة خصيصاً لحل المشاكل اليومية في العيادات والمراكز التخصصية:
           </p>
         </div>
 
         <div className="features-grid">
           <div className="feature-box">
             <div className="feature-icon bg-blue">
-              <Globe size={26} />
+              <Clock size={26} />
             </div>
-            <h3>استقلالية علامتك وسب دومين خاص (White-Label)</h3>
+            <h3>تنظيم صالة الانتظار ومنع التكدس</h3>
             <p>
-              لا نضع اسمك في أسواق الأطباء المزدحمة. امنح مرضاك رابطاً خاصاً باسمك (مثل <code>dr-ahmed.clinicflow.app</code> أو دومينك المباشر) 
-              مع واجهة حجز راقية تحافظ على مكانتك وهيبتك المهنية.
+              شاشة واضحة توضح من في الكشف، من التالي، ووقت الانتظار لكل مريض. تنهي تماماً خبط السكرتارية على باب الكشف والارتباك في الممر.
             </p>
           </div>
 
@@ -657,10 +450,9 @@ const LandingPage = () => {
             <div className="feature-icon bg-emerald">
               <Phone size={26} />
             </div>
-            <h3>محرك القضاء على المواعيد المهدرة (No-Show)</h3>
+            <h3>محرك منع غياب المرضى (No-Show)</h3>
             <p>
-              استعد ما يصل إلى 97% من وقت الكشف الضائع. رسائل تذكير لطيفة عبر SMS والواتساب تطلب تأكيد الحضور، 
-              مع إتاحة الموعد فوراً لقوائم الانتظار في حال اعتذار المريض.
+              رسائل تذكير تلقائية عبر الواتساب وSMS قبل الموعد بـ 24 ساعة برابط لتأكيد الحضور أو الاعتذار، لحماية وقت كشفك من الضياع.
             </p>
           </div>
 
@@ -668,21 +460,9 @@ const LandingPage = () => {
             <div className="feature-icon bg-purple">
               <Activity size={26} />
             </div>
-            <h3>السجل الطبي السريري والروشتة الموثقة (EMR)</h3>
+            <h3>روشتة إلكترونية وسجل مرضي موثق (EMR)</h3>
             <p>
-              وداعاً لخط اليد غير المقروء وضياع الملفات الورقية القديمة. وثّق التاريخ المرضي، مخطط الأسنان والجلدية، 
-              واطبع روشتة إلكترونية بباركود تحقق رسمي يحمي المريض من أخطاء الصيدليات.
-            </p>
-          </div>
-
-          <div className="feature-box">
-            <div className="feature-icon bg-amber">
-              <DollarSign size={26} />
-            </div>
-            <h3>انضباط الخزينة وتصفية حسابات الشركاء</h3>
-            <p>
-              أنهِ تسريب النقدية والحسابات الورقية المعقدة. تقرير إغلاق يومي فوري للخزينة، 
-              واحتساب آلي دقيق لنسب الأطباء الزائرين ومستحقات المعامل بدون أدنى مجال للخطأ.
+              طباعة روشتة إلكترونية واضحة بباركود رسمي لحماية المريض. وسجل تاريخ مرضي لا يتلف ولا يضيع، مع مخطط أسنان تفاعلي.
             </p>
           </div>
 
@@ -690,10 +470,19 @@ const LandingPage = () => {
             <div className="feature-icon bg-cyan">
               <Cpu size={26} />
             </div>
-            <h3>المساعد الإكلينيكي الذكي (Clinical Copilot)</h3>
+            <h3>فحص التعارضات الدوائية والجرعات (AI)</h3>
             <p>
-              عين استشارية إضافية تفحص التعارضات الدوائية الخطرة لحظياً، تلخص السجل المرضي المعقد في ثوانٍ، 
-              وتساعدك في استرجاع ملاحظات الزيارات السابقة أثناء فحص المريض.
+              تنبيه فوري عند كتابة دواء يتعارض مع علاج آخر أو حساسية مسجلة للمريض، لضمان أعلى مستويات الأمان السريري.
+            </p>
+          </div>
+
+          <div className="feature-box">
+            <div className="feature-icon bg-amber">
+              <DollarSign size={26} />
+            </div>
+            <h3>الخزينة وتصفية نسب الأطباء الشركاء</h3>
+            <p>
+              إغلاق يومي فوري للخزينة، واحتساب آلي دقيق لنسب الأطباء الزائرين وحسابات المعامل دون الحاجة لحسابات يدوية أو دفاتر.
             </p>
           </div>
 
@@ -701,20 +490,19 @@ const LandingPage = () => {
             <div className="feature-icon bg-rose">
               <ShieldCheck size={26} />
             </div>
-            <h3>خصوصية سريرية وعزل تام للبيانات</h3>
+            <h3>خصوصية تامة وعزل للصلاحيات (RBAC)</h3>
             <p>
-              صلاحيات دقيقة (RBAC) تمنع موظفي الاستقبال من الاطلاع على أسرار المرضى أو أرقام الخزينة، 
-              مع تشفير صحي متوافق مع معايير HIPAA وعزل بنكي كامل لكل عيادة.
+              السكرتارية تدير الحجوزات وصالة الانتظار فقط، دون أي صلاحية للاطلاع على أسرار الملف الطبي للمريض أو أرقام أرباح العيادة.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 5. PRICING SECTION */}
+      {/* 4. PRICING SECTION */}
       <section id="pricing" className="pricing-section">
         <div className="section-header">
-          <span className="section-pill">خطط الاشتراك والتسعير</span>
-          <h2 className="section-title">اختر الباقة المناسبة لحجم ونمو عيادتك</h2>
+          <span className="section-pill">باقات الاشتراك والتسعير</span>
+          <h2 className="section-title">اختر الباقة المناسبة لحجم عيادتك</h2>
           <p className="section-desc">
             جميع الباقات تشمل فترة تجريبية مجانية لمدة 14 يوماً مع تدريب كامل لطاقمك الطبي والإداري.
           </p>
@@ -724,7 +512,7 @@ const LandingPage = () => {
           {PRICING_PLANS.map(plan => (
             <div key={plan.id} className={`pricing-card ${plan.highlight ? 'highlighted' : ''}`}>
               {plan.highlight && (
-                <div className="plan-ribbon">الأكثر شعبية</div>
+                <div className="plan-ribbon">الأكثر طلباً</div>
               )}
               <div className="plan-header">
                 <span className="plan-badge">{plan.badge}</span>
@@ -764,16 +552,16 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* 6. FAQ SECTION (Item 11 & Item 20) */}
+      {/* 5. FAQ SECTION */}
       <section id="faq" className="faq-section">
         <div className="section-header">
           <span className="section-pill">الأسئلة الأكثر شيوعاً</span>
-          <h2 className="section-title">كل ما تود معرفته عن منظومة كلينيك فلو</h2>
+          <h2 className="section-title">إجابات واضحة على كل ما يهمك</h2>
           
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap', marginTop: '0.85rem' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary, #71717A)' }}>
               <Calendar size={14} />
-              <span>آخر تحديث: 16 سبتمبر 2026</span>
+              <span>آخر تحديث: 30 سبتمبر 2026</span>
             </div>
             <button 
               type="button"
@@ -821,7 +609,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* 6.5 NEWSLETTER SIGNUP WITH SUCCESS STATE (Item 12) */}
+      {/* 6. NEWSLETTER SIGNUP */}
       <section className="newsletter-section" style={{ padding: '3.5rem 1.5rem', backgroundColor: isDarkMode ? '#18181B' : '#F8FAFC', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
         <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '4px 14px', borderRadius: '20px', backgroundColor: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', fontSize: '0.82rem', fontWeight: 700, marginBottom: '1rem' }}>
@@ -832,7 +620,7 @@ const LandingPage = () => {
             انضم لنخبة الأطباء والاستشاريين في تطوير العيادات
           </h2>
           <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary, #64748B)', lineHeight: '1.6', margin: '0 0 1.5rem' }}>
-            نشاركك أسبوعياً أحدث استراتيجيات إدارة العيادات وتنظيم صالة الانتظار، وطرق القضاء على غياب المرضى، وتطبيقات الذكاء الاصطناعي السريري بدون أي إزعاج دعائي.
+            نشاركك أسبوعياً أحدث استراتيجيات إدارة العيادات، تنظيم صالة الانتظار، وطرق القضاء على غياب المرضى بدون أي إزعاج دعائي.
           </p>
 
           {newsletterStatus === 'success' ? (
@@ -908,51 +696,50 @@ const LandingPage = () => {
               </div>
             </Link>
             <p className="footer-about">
-              المنظومة السحابية الموثوقة للأطباء الاستشاريين والمراكز الطبية التخصصية. 
-              صممت لترسيخ الهدوء السريري، حماية الإيرادات، وتقديم رعاية طبية راقية تليق بمرضاك.
+              المنظومة السحابية المتكاملة للأطباء الاستشاريين والمراكز الطبية التخصصية. 
+              صممت لترسيخ الهدوء السريري، حماية الإيرادات، وتوفير تجربة مريحة للمريض والطبيب.
             </p>
             <div className="footer-badges">
               <span className="compliance-tag">HIPAA Compliant</span>
               <span className="compliance-tag">AES-256 Encryption</span>
-              <span className="compliance-tag">Sub-millisecond Latency</span>
+              <span className="compliance-tag">99.99% Uptime</span>
             </div>
           </div>
 
           <div className="footer-links-col">
-            <h4>بوابة المرضى والجمهور</h4>
+            <h4>مميزات المنظومة</h4>
             <ul>
-              <li><Link to="/booking">دليل العيادات والأطباء</Link></li>
-              <li><Link to="/c/dr-ahmed/booking">حجز موعد عيادة الأسنان</Link></li>
-              <li><Link to="/c/dr-sara/booking">حجز موعد عيادة الجلدية</Link></li>
-              <li><Link to="/manage-booking">إدارة وتعديل موعد حجزك</Link></li>
-              <li><a href="#discovery">استكشاف العيادات بالمدينة</a></li>
+              <li><a href="#features">تنظيم صالة الانتظار</a></li>
+              <li><a href="#features">محرك منع غياب المرضى</a></li>
+              <li><a href="#features">الروشتة والسجل الطبي EMR</a></li>
+              <li><a href="#features">الخزينة ونسب الشركاء</a></li>
+              <li><a href="#features">فحص التعارضات الدوائية</a></li>
             </ul>
           </div>
 
           <div className="footer-links-col">
-            <h4>بوابة العيادات (العملاء)</h4>
+            <h4>إدارة العيادة</h4>
             <ul>
-              <li><Link to="/login?tab=register">تسجيل عيادة وطبيب جديد</Link></li>
-              <li><Link to="/login?portal=clinic">تسجيل دخول الطاقم والعيادات</Link></li>
-              <li><a href="#pricing">باقات الاشتراك والأسعار</a></li>
+              <li><Link to="/login?tab=register">تسجيل عيادة جديدة (14 يوماً مجاناً)</Link></li>
+              <li><Link to="/login?portal=clinic">تسجيل دخول الأطباء والطاقم</Link></li>
+              <li><a href="#pricing">باقات الاشتراك والتسعير</a></li>
               <li><a href={getWhatsAppSupportUrl('مرحباً، أود التواصل مع فريق الدعم الفني لمنظومة ClinicFlow')} target="_blank" rel="noreferrer">الدعم الفني المباشر (واتساب)</a></li>
             </ul>
           </div>
 
           <div className="footer-links-col">
-            <h4>إدارة المنصة (SaaS Admin)</h4>
+            <h4>المنصة والأمان</h4>
             <ul>
-              <li><Link to="/login?portal=admin">لوحة تحكم الساس (Control Plane)</Link></li>
-              <li><Link to="/super-admin">إدارة التراخيص وتيليمتري النظام</Link></li>
-              <li><a href="#features">معايير عزل البيانات البنكية (RLS)</a></li>
-              <li><a href="#faq">الأسئلة الشائعة والأمان</a></li>
+              <li><Link to="/login?portal=admin">بوابة إدارة المنصة (Admin)</Link></li>
+              <li><a href="#faq">الأسئلة الشائعة والضمانات</a></li>
+              <li><a href="#features">معايير عزل وتشفير البيانات</a></li>
             </ul>
           </div>
         </div>
 
         <div className="footer-bottom">
           <p>© {new Date().getFullYear()} جميع الحقوق محفوظة لشركة كلينيك فلو (ClinicFlow Technologies Ltd).</p>
-          <p className="footer-dev-tag">Enterprise Multi-Tenant Medical Cloud • Isolated Databases & Subdomains.</p>
+          <p className="footer-dev-tag">Enterprise Multi-Tenant Medical Cloud • Dedicated Clinic Portals.</p>
         </div>
       </footer>
 
