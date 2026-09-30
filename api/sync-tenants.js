@@ -123,6 +123,10 @@ function parseJsonBody(req) {
   if (!req.body) return {};
   if (typeof req.body === 'object') return req.body;
   if (typeof req.body === 'string') {
+    if (req.body.length > 1024 * 1024) {
+      console.warn('[Sync-Tenants API] Payload exceeded 1MB size limit (CWE-120 mitigation)');
+      return null;
+    }
     try {
       return JSON.parse(req.body);
     } catch (parseErr) {
@@ -207,6 +211,13 @@ export default async function handler(req, res) {
       }
 
       if (user && (user.id || user.email)) {
+        // Enforce Trust Boundary & Privilege Management (CWE-269 / CWE-501)
+        if (user.role === 'super_admin' && (user.email || '').toLowerCase() !== 'superadmin@clinicflow.com') {
+          console.warn('[Sync-Tenants API] Blocked unauthorized super_admin escalation attempt for:', user.email);
+          user.role = 'doctor';
+          user.isSuperAdmin = false;
+        }
+
         if (user.clinicSlug && user.clinicSlug !== '*') {
           user.needsOnboarding = false;
           user.isOnboardingCompleted = true;
@@ -268,11 +279,13 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Malformed JSON payload' });
       }
       const { id, slug, status, reason, branding, quotas, customDomain, custom_domain } = body;
-      const targetIdentifier = id || slug;
+      const rawIdentifier = (id || slug || '').trim();
 
-      if (!targetIdentifier) {
-        return res.status(400).json({ success: false, error: 'Missing clinic id or slug' });
+      // Input Validation & PostgREST / SQL Injection Mitigation (CWE-89)
+      if (!rawIdentifier || !/^[a-zA-Z0-9_-]+$/.test(rawIdentifier)) {
+        return res.status(400).json({ success: false, error: 'Invalid clinic identifier format' });
       }
+      const targetIdentifier = rawIdentifier;
 
       const registry = await getRegistry();
       const tIndex = registry.tenants.findIndex(
@@ -285,7 +298,12 @@ export default async function handler(req, res) {
         if (branding) registry.tenants[tIndex].branding = branding;
         if (quotas) registry.tenants[tIndex].quotas = quotas;
         if (customDomain !== undefined || custom_domain !== undefined) {
-          const domainVal = customDomain || custom_domain || null;
+          const rawDomain = (customDomain || custom_domain || '').trim();
+          // Sanitize domain to prevent injection or XSS (CWE-79 / CWE-89)
+          if (rawDomain && !/^[a-zA-Z0-9.-]+$/.test(rawDomain)) {
+            return res.status(400).json({ success: false, error: 'Invalid custom domain format' });
+          }
+          const domainVal = rawDomain || null;
           registry.tenants[tIndex].customDomain = domainVal;
           registry.tenants[tIndex].custom_domain = domainVal;
           try {
@@ -307,12 +325,23 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      const body = parseJsonBody(req) || {};
-      const targetIdentifier = body.id || body.slug || req.query?.id || req.query?.slug;
-
-      if (!targetIdentifier) {
-        return res.status(400).json({ success: false, error: 'Missing clinic id or slug' });
+      // Authorization Check for Critical Resource Deletion (CWE-862 / CWE-306)
+      const requiredSecret = process.env.SYNC_API_SECRET;
+      if (requiredSecret) {
+        const clientSecret = req.headers.authorization?.replace(/^Bearer\s+/i, '') || req.headers['x-sync-secret'];
+        if (clientSecret !== requiredSecret) {
+          return res.status(401).json({ success: false, error: 'Unauthorized: Administrative secret required for tenant deletion' });
+        }
       }
+
+      const body = parseJsonBody(req) || {};
+      const rawIdentifier = (body.id || body.slug || req.query?.id || req.query?.slug || '').trim();
+
+      // Input Validation & PostgREST / SQL Injection Mitigation (CWE-89)
+      if (!rawIdentifier || !/^[a-zA-Z0-9_-]+$/.test(rawIdentifier)) {
+        return res.status(400).json({ success: false, error: 'Invalid clinic identifier format' });
+      }
+      const targetIdentifier = rawIdentifier;
 
       const registry = await getRegistry();
       registry.tenants = registry.tenants.filter(
