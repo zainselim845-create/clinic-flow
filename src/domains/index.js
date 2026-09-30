@@ -9,5 +9,5 @@ export * as BillingDomain from './billing';
 export * as SchedulingDomain from './scheduling';
 export * as PatientsDomain from './patients';
 export * as PlatformDomain from './platform';
+export * as MarketingDomain from '../features/marketing';
 export * as NationalEgyptDomain from '../features/egypt-national';
-

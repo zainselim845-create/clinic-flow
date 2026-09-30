@@ -3,14 +3,24 @@
  * Ensures every service function returns a consistent shape.
  * Eliminates ad-hoc { data, error } / { success, error } inconsistencies.
  */
-export function ok(data) {
-  return { success: true, data, error: null };
+export function ok(data, meta = null) {
+  return { success: true, data, error: null, ...(meta ? { meta } : {}) };
 }
 
-export function fail(error, data = null) {
+export function fail(error, data = null, code = null, details = null) {
   const message = error instanceof Error ? error.message : String(error || 'Unknown error');
-  return { success: false, data, error: new Error(message) };
+  return {
+    success: false,
+    data,
+    error: new Error(message),
+    ...(code ? { code } : {}),
+    ...(details ? { details } : {})
+  };
 }
+
+export const createSuccessResult = ok;
+export const createFailureResult = (error, code = null, details = null, data = null) =>
+  fail(error, data, code, details);
 
 /**
  * Wraps an async operation with consistent error handling.
