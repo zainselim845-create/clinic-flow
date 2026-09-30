@@ -4,7 +4,8 @@ import {
   getRegisteredTenants, 
   getRegisteredUsers, 
   getAllPlatformUsers,
-  clearAuthCache 
+  clearAuthCache,
+  updateClinicSubscriptionStatus
 } from '../services/authService';
 import { getCombinedTenants } from '../context/TenantContext';
 
@@ -77,5 +78,32 @@ describe('Registration to SuperAdmin Pipeline Verification', () => {
     const { tenant } = registerDoctorAndClinic(regPayload);
     const combined = getCombinedTenants(true);
     expect(combined.some(t => t.slug === tenant.slug)).toBe(true);
+  });
+
+  it('should initialize registered clinic with pending_approval and activate upon superadmin approval', () => {
+    const regPayload = {
+      doctorName: 'د. خالد يوسف',
+      email: 'dr.khaled@example.com',
+      phone: '01233445566',
+      password: 'password123',
+      clinicName: 'عيادة الأمل لجراحة العظام',
+      specialty: 'جراحة العظام والمفاصل',
+      address: 'الإسكندرية'
+    };
+
+    const { tenant, user } = registerDoctorAndClinic(regPayload);
+    
+    // 1. Must be pending_approval initially
+    expect(tenant.subscriptionStatus).toBe('pending_approval');
+
+    // 2. SuperAdmin approves the clinic
+    const approvedTenant = updateClinicSubscriptionStatus(tenant.slug, 'active');
+    expect(approvedTenant).toBeDefined();
+    expect(approvedTenant.subscriptionStatus).toBe('active');
+
+    // 3. Registered tenant in list is now active
+    const tenants = getRegisteredTenants(true);
+    const updated = tenants.find(t => t.slug === tenant.slug);
+    expect(updated.subscriptionStatus).toBe('active');
   });
 });

@@ -17,7 +17,7 @@ const LEGACY_DEMO_SLUGS = new Set([
   'dr-mohammedsaeed6u'
 ]);
 
-const ALLOWED_SUBSCRIPTION_STATUSES = new Set(['active', 'trial', 'suspended', 'cancelled', 'lifetime']);
+const ALLOWED_SUBSCRIPTION_STATUSES = new Set(['active', 'trial', 'suspended', 'cancelled', 'lifetime', 'pending_approval']);
 const ALLOWED_SUBSCRIPTION_TIERS = new Set(['free', 'basic', 'pro', 'enterprise', 'lifetime']);
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const IDENTIFIER_REGEX = /^[a-zA-Z0-9_-]+$/;

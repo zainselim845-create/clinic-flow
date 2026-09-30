@@ -3,7 +3,7 @@ import { Navigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
 import { hasPermission, isDoctorRole } from '../utils/permissions';
-import { Loader2, AlertOctagon, LogOut, PhoneCall, ShieldAlert } from 'lucide-react';
+import { Loader2, AlertOctagon, LogOut, PhoneCall, ShieldAlert, Clock } from 'lucide-react';
 
 const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
   const { user, loading, role, signOut } = useAuth();
@@ -135,6 +135,98 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
               >
                 <LogOut size={16} />
                 <span>تسجيل الخروج من الحساب</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Account Pending Approval by Super Admin (Doctor cannot access system until approved)
+    if (subStatus === 'pending_approval') {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'var(--bg-primary, #f8fafc)',
+          padding: '1.5rem',
+          direction: 'rtl'
+        }}>
+          <div style={{
+            maxWidth: '520px',
+            width: '100%',
+            background: 'var(--bg-secondary, #ffffff)',
+            borderRadius: '16px',
+            border: '1px solid #fed7aa',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.08)',
+            padding: '2.5rem',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 1.25rem',
+              borderRadius: '50%',
+              background: '#ffedd5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ea580c'
+            }}>
+              <Clock size={36} />
+            </div>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#9a3412', marginBottom: '0.75rem' }}>
+              طلب تسجيل العيادة قيد المراجعة والاعتماد
+            </h2>
+            <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+              مرحباً بك د. <strong>{user?.name || tenant.doctorName || 'الفاضل'}</strong>، تم استلام بيانات عيادة <strong>{tenant.name}</strong> بنجاح.
+              حسابكم حالياً بانتظار الاعتماد من قِبل إدارة منصة ClinicFlow وسيتم تفعيله بالكامل فوراً.
+            </p>
+            <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '0.88rem', color: '#c2410c' }}>
+              لتسريع تفعيل حساب عيادتكم والبدء في إدارة المواعيد والمرضى، يمكنك التواصل المباشر مع فريق الدعم والإدارة.
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <a 
+                href={`https://wa.me/201006285031?text=${encodeURIComponent(`مرحباً إدارة كلينيك فلو، قمت بتسجيل عيادة (${tenant.name}) وأود اعتماد وتفعيل الحساب.`)}`} 
+                target="_blank" 
+                rel="noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1.25rem',
+                  background: '#09090B',
+                  color: '#fff',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  textDecoration: 'none'
+                }}
+              >
+                <PhoneCall size={18} />
+                <span>التواصل عبر واتساب لاعتماد العيادة فوراً</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => signOut()}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  background: 'transparent',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  borderRadius: '10px',
+                  color: 'var(--text-secondary, #64748b)',
+                  cursor: 'pointer',
+                  fontWeight: 600
+                }}
+              >
+                <LogOut size={16} />
+                <span>تسجيل الخروج والعودة لاحقاً</span>
               </button>
             </div>
           </div>

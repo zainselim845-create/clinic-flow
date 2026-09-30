@@ -143,6 +143,7 @@ export default function SuperAdminDashboard() {
   const handleApproveClinic = (slug) => {
     updateTenantStatus(slug, 'active');
     handleRefreshAll();
+    toast.success(`تم اعتماد وتفعيل العيادة (${slug}) بنجاح. أصبحت العيادة الآن نشطة ويمكن للطبيب الدخول واستخدام النظام.`);
   };
 
   const handleSuspendClinic = (slug) => {
