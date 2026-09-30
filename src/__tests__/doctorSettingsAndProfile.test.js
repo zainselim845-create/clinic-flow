@@ -154,5 +154,14 @@ describe('Doctor Settings, Professional Profile & Schedule Persistence', () => {
     expect(combinedCode).toContain('updateTenantDomain');
     expect(combinedCode).toContain('handleUpgradeTier');
   });
+
+  it('verifies GeneralSettingsTab imports SAAS_PLATFORM_DOMAIN and guards clinicForm against null/undefined', () => {
+    const generalTabPath = path.join(__dirname, '../pages/settings/GeneralSettingsTab.jsx');
+    const code = fs.readFileSync(generalTabPath, 'utf8');
+
+    expect(code).toContain("import { SAAS_PLATFORM_DOMAIN } from '../../utils/clinicUrls';");
+    expect(code).toContain('clinicForm = {}');
+    expect(code).toContain('const safeForm = clinicForm || {};');
+  });
 });
 

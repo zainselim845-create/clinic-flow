@@ -15,9 +15,10 @@ import ClinicPalettePicker from '../../components/ClinicPalettePicker';
 import ClinicLogoUploader from '../../components/ClinicLogoUploader';
 import { toast } from '../../lib/toast';
 import { copyToClipboard } from '../../utils/clipboard';
+import { SAAS_PLATFORM_DOMAIN } from '../../utils/clinicUrls';
 
 export default function GeneralSettingsTab({
-  clinicForm,
+  clinicForm = {},
   setClinicForm,
   handleSaveClinic,
   clinicSaveSuccess,
@@ -30,8 +31,9 @@ export default function GeneralSettingsTab({
   const [copiedSubdomain, setCopiedSubdomain] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
-  const clinicSlug = clinicForm.slug || '';
-  const resolvedSenderId = clinicForm.senderId ? formatSenderId(clinicForm.senderId) : '';
+  const safeForm = clinicForm || {};
+  const clinicSlug = safeForm.slug || '';
+  const resolvedSenderId = safeForm.senderId ? formatSenderId(safeForm.senderId) : '';
 
   const [isLocatingGps, setIsLocatingGps] = useState(false);
   const [gpsNotice, setGpsNotice] = useState(null);

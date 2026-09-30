@@ -62,9 +62,20 @@ const Settings = () => {
   const useSupabase = isSupabaseConfigured();
 
   // Clinic Profile State
-  const initialClinicInfo = state.clinicInfo || tenant || defaultClinicInfo;
+  const fallbackClinicInfo = {
+    id: tenant?.id || (tenantSlug ? `clinic-${tenantSlug}` : 'clinic-default'),
+    slug: tenantSlug || tenant?.slug || 'clinic',
+    name: tenant?.name || (user?.name ? `عيادة ${user.name}` : 'العيادة التخصصية'),
+    doctorName: tenant?.doctorName || user?.name || 'طبيب العيادة',
+    specialty: tenant?.specialty || 'طب وجراحة الفم والأسنان العام',
+    phone: tenant?.phone || '',
+    address: tenant?.address || 'القاهرة، مصر',
+    branding: tenant?.branding || { primaryColor: '#09090B', accentColor: '#10B981' }
+  };
 
-  const [clinicForm, setClinicForm] = useState(initialClinicInfo);
+  const initialClinicInfo = state.clinicInfo || tenant || defaultClinicInfo || fallbackClinicInfo;
+
+  const [clinicForm, setClinicForm] = useState(initialClinicInfo || fallbackClinicInfo);
   const [clinicSaveSuccess, setClinicSaveSuccess] = useState(false);
 
   // Sync clinicForm when active tenant identity changes (switch clinic or initial load)
@@ -74,7 +85,7 @@ const Settings = () => {
       setClinicForm(prev => {
         // Only initialize or preserve local user edits
         if (!prev || prev.id !== source.id || prev.slug !== source.slug) {
-          return source;
+          return { ...fallbackClinicInfo, ...source };
         }
         return {
           ...source,
