@@ -72,6 +72,7 @@ describe('Monochrome Black & White Core & Curated Client Palette', () => {
       expect(uploaderSource).toContain('MEDICAL_PRESET_LOGOS');
       expect(uploaderSource).toContain('handleFile');
       expect(uploaderSource).toContain('logoUrl');
+      expect(uploaderSource).toContain('resizeImageToDataUrl');
     });
   });
 

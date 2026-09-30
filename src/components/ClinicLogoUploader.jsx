@@ -20,6 +20,65 @@ export const MEDICAL_PRESET_LOGOS = [
   { id: 'shield', name: 'درع واعتماد', icon: ShieldCheck, label: 'مجمعات ومراكز معتمدة' }
 ];
 
+
+/**
+ * Optimizes and resizes an uploaded image file before saving to prevent localStorage QuotaExceededError.
+ * Raster images (PNG, JPG, WebP) are downscaled to a max dimension of 320px preserving aspect ratio.
+ * Vector images (SVG) are preserved in their native format.
+ */
+function resizeImageToDataUrl(file, maxDimension = 320) {
+  return new Promise((resolve, reject) => {
+    if (file.type === 'image/svg+xml') {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (typeof Image === 'undefined') {
+        // Fallback for SSR/testing environments without Image constructor
+        resolve(e.target.result);
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        if (typeof document === 'undefined') {
+          resolve(e.target.result);
+          return;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(e.target.result);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.85));
+      };
+      img.onerror = () => resolve(e.target.result);
+      img.src = e.target.result;
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ClinicLogoUploader({
   value,
   onChange,
@@ -60,15 +119,14 @@ export default function ClinicLogoUploader({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      applyLogo(dataUrl);
-    };
-    reader.onerror = () => {
-      setUploadError('حدث خطأ أثناء قراءة ملف الصورة');
-    };
-    reader.readAsDataURL(file);
+    resizeImageToDataUrl(file, 320)
+      .then(optimizedDataUrl => {
+        applyLogo(optimizedDataUrl);
+      })
+      .catch(err => {
+        console.warn('[ClinicLogoUploader] Image processing note:', err);
+        setUploadError('حدث خطأ أثناء معالجة ملف الصورة');
+      });
   };
 
   const applyLogo = (newLogoUrl) => {
