@@ -1,5 +1,4 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { getInitialDataForTenant } from '../data/demoData';
 import { combinedAppReducer } from './reducers';
 import TenantContext from './TenantContext';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
@@ -15,7 +14,7 @@ import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
 import { localDb } from '../db/localDatabase';
-import { safeGetItem, safeGetJSON, safeSetJSON, safeRemoveItem } from '../utils/safeStorage';
+import { safeGetItem, safeSetJSON } from '../utils/safeStorage';
 
 export const DATA_SCHEMA_VERSION = 'v5_clean_zero_state';
 
@@ -337,8 +336,8 @@ export function AppProvider({ children }) {
   // ==========================================
   const sendSmsReminder = useCallback(async (appointment) => {
     try {
-      const activeClinicName = stateRef.current.clinicInfo?.name || activeTenant?.name || resolvedClinic?.name || 'العيادة';
-      const activeClinicId = appointment.clinicId || stateRef.current.clinicInfo?.id || activeTenant?.id || resolvedClinic?.id || 'default';
+      const activeClinicName = stateRef.current.clinicInfo?.name || activeTenant?.name || 'العيادة';
+      const activeClinicId = appointment.clinicId || stateRef.current.clinicInfo?.id || activeTenant?.id || 'default';
       await sendReminder(
         appointment.patientName,
         appointment.patientPhone,
@@ -350,7 +349,7 @@ export function AppProvider({ children }) {
     } catch (err) {
       console.error('SMS send failed:', err);
     }
-  }, [tenantSlug]);
+  }, [activeTenant?.name, activeTenant?.id]);
 
   // ==========================================
   // نظام التذكيرات التلقائي (كل 60 ثانية)

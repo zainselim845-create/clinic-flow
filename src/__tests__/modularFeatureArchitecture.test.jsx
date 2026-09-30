@@ -226,4 +226,29 @@ describe('Modular Feature Architecture & Fault Isolation', () => {
     const tenants = await syncTenantsFromCloud();
     expect(Array.isArray(tenants)).toBe(true);
   });
+
+  it('verifies clinical assistant modular architecture and decoupled layer boundaries', async () => {
+    const clinical = await import('../utils/clinical');
+    expect(typeof clinical.resolveDateFromText).toBe('function');
+    expect(typeof clinical.resolveTimeFromText).toBe('function');
+    expect(typeof clinical.findPatientInText).toBe('function');
+    expect(typeof clinical.extractCandidateName).toBe('function');
+    expect(typeof clinical.evaluateScheduleBlockActions).toBe('function');
+    expect(typeof clinical.evaluateAppointmentActions).toBe('function');
+    expect(typeof clinical.evaluatePatientDossierActions).toBe('function');
+    expect(typeof clinical.evaluateTreasuryActions).toBe('function');
+    expect(typeof clinical.evaluateServicesAndStaffActions).toBe('function');
+  });
+
+  it('verifies SaasInfrastructureCenter modular sub-tabs barrel export', async () => {
+    const infraTabs = await import('../pages/superadmin/components/infrastructure');
+    expect(typeof infraTabs.SupabaseDatabaseTab).toBe('function');
+    expect(typeof infraTabs.SmsGatewaysTab).toBe('function');
+    expect(typeof infraTabs.AiCoreTab).toBe('function');
+    expect(typeof infraTabs.CustomDomainsTab).toBe('function');
+    expect(typeof infraTabs.SubscriptionPlansTab).toBe('function');
+    expect(typeof infraTabs.GoogleOAuthTab).toBe('function');
+    expect(typeof infraTabs.Resilience100MTab).toBe('function');
+  });
 });
+

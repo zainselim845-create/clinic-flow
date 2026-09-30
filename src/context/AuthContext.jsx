@@ -16,7 +16,6 @@ import {
   safeGetItem, 
   safeSetItem, 
   safeRemoveItem, 
-  safeGetJSON, 
   safeSetJSON, 
   safeSessionGetJSON, 
   safeSessionSetJSON, 

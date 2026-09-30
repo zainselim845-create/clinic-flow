@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  X, Save, CheckCircle2, CheckCheck, AlertOctagon, Clock, 
+  X, Save, CheckCircle2, CheckCheck, AlertOctagon, 
   Ban, CreditCard, Activity, Layers, Crown, DollarSign
 } from 'lucide-react';
 import { 
@@ -65,7 +65,7 @@ export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant
     setEnableInventory(Boolean(tenant.enableInventory ?? tenant.modules?.inventory));
     setEnableAiAssistant(Boolean(tenant.enableAiAssistant ?? tenant.modules?.aiAssistant ?? true));
     setEnableSms(Boolean(tenant.enableSms ?? tenant.modules?.sms ?? (tenant.subscriptionTier === 'enterprise')));
-  }, [tenant]);
+  }, [propTenant, propClinic, isOpen]);
 
   // Quick Action Handlers
   const handleImmediateFreeze = () => {

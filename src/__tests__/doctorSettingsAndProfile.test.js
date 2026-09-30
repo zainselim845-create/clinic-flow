@@ -142,12 +142,17 @@ describe('Doctor Settings, Professional Profile & Schedule Persistence', () => {
   it('verifies SaasInfrastructureCenter provides centralized Custom Domains and Subscriptions management', () => {
     const infraPath = path.join(__dirname, '../pages/superadmin/components/SaasInfrastructureCenter.jsx');
     const infraCode = fs.readFileSync(infraPath, 'utf8');
+    const customDomainsPath = path.join(__dirname, '../pages/superadmin/components/infrastructure/CustomDomainsTab.jsx');
+    const customDomainsCode = fs.existsSync(customDomainsPath) ? fs.readFileSync(customDomainsPath, 'utf8') : '';
+    const subscriptionPlansPath = path.join(__dirname, '../pages/superadmin/components/infrastructure/SubscriptionPlansTab.jsx');
+    const subscriptionPlansCode = fs.existsSync(subscriptionPlansPath) ? fs.readFileSync(subscriptionPlansPath, 'utf8') : '';
+    const combinedCode = infraCode + customDomainsCode + subscriptionPlansCode;
 
     expect(infraCode).toContain("setSubTab('domains')");
     expect(infraCode).toContain("setSubTab('subscriptions')");
-    expect(infraCode).toContain('verifyDomainDnsAndSsl');
-    expect(infraCode).toContain('updateTenantDomain');
-    expect(infraCode).toContain('handleUpgradeTier');
+    expect(combinedCode).toContain('verifyDomainDnsAndSsl');
+    expect(combinedCode).toContain('updateTenantDomain');
+    expect(combinedCode).toContain('handleUpgradeTier');
   });
 });
 
