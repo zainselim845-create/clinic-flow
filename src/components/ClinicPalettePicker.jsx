@@ -1,14 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Check, 
-  Layers, 
   CheckCircle2, 
-  Palette, 
-  ShieldCheck, 
-  RotateCcw,
-  SlidersHorizontal,
-  Eye,
-  Crosshair
+  Palette 
 } from 'lucide-react';
 import { useTenant, applyTenantBranding } from '../context/TenantContext';
 

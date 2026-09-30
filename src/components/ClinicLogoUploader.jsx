@@ -3,13 +3,11 @@ import {
   Upload, 
   Trash2, 
   CheckCircle2, 
-  Image as ImageIcon, 
   Stethoscope, 
   Sparkles, 
   HeartPulse, 
   ShieldCheck, 
   Smile,
-  FileCheck,
   AlertCircle
 } from 'lucide-react';
 import { useTenant } from '../context/TenantContext';

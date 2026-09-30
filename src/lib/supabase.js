@@ -125,6 +125,29 @@ export const supabase = new Proxy({}, {
     if (prop === 'from') {
       return () => createOfflineQueryBuilder();
     }
+    if (prop === 'auth') {
+      return {
+        getSession: () => Promise.resolve({ data: { session: null }, error: NOT_CONFIGURED_ERROR }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+        signInWithPassword: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR }),
+        signInWithOAuth: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR }),
+        signOut: () => Promise.resolve({ error: null }),
+        getUser: () => Promise.resolve({ data: { user: null }, error: NOT_CONFIGURED_ERROR }),
+        resetPasswordForEmail: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR }),
+        updateUser: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR })
+      };
+    }
+    if (prop === 'storage') {
+      return {
+        from: () => ({
+          download: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR }),
+          upload: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR }),
+          getPublicUrl: () => ({ data: { publicUrl: '' } }),
+          list: () => Promise.resolve({ data: [], error: NOT_CONFIGURED_ERROR }),
+          remove: () => Promise.resolve({ data: null, error: NOT_CONFIGURED_ERROR })
+        })
+      };
+    }
     if (prop === 'channel') {
       return () => ({
         on: () => ({ on: () => ({ subscribe: () => {} }) }),

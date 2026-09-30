@@ -8,10 +8,7 @@ import {
   Image as ImageIcon, 
   Check, 
   ShieldCheck, 
-  Stethoscope, 
-  Building2,
-  FileCheck,
-  Sparkles
+  Stethoscope 
 } from 'lucide-react';
 import { Dialog, Portal } from '../../../components/ui';
 import { CURATED_CLINIC_PALETTES, PALETTE_CATEGORIES } from '../../../components/ClinicPalettePicker';
@@ -28,7 +25,6 @@ export default function SaasBrandingModal({
   const [selectedPaletteId, setSelectedPaletteId] = useState('monochrome');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [logoUrl, setLogoUrl] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
