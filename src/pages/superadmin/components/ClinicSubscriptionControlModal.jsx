@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, Save, CheckCircle2, CheckCheck, AlertOctagon, 
   Ban, CreditCard, Activity, Layers, Crown, DollarSign
@@ -9,7 +9,7 @@ import {
 } from '../../../services/saasSubscriptionPlansService';
 
 export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant: propTenant, clinic: propClinic, onUpdateSuccess, onSuccess }) {
-  const tenant = propTenant || propClinic || {};
+  const tenant = useMemo(() => propTenant || propClinic || {}, [propTenant, propClinic]);
 
   const plans = getSaaSSubscriptionPlans();
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { getOpenRouterConfig, saveOpenRouterConfig, testOpenRouterConnection } from '../../../../services/aiAssistantService';
 
 export function AiCoreTab() {

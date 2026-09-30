@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Bot, Send, Sparkles, X, Maximize2, RotateCcw, 
-  User, Calendar, Clock, AlertCircle, CheckCircle2, MessageSquare, 
-  ChevronDown, ArrowUpRight, Phone, ShieldCheck, DollarSign
+  User, Calendar, MessageSquare, ArrowUpRight 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
@@ -34,10 +32,10 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
 
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setIsOpen = (val) => {
+  const setIsOpen = useCallback((val) => {
     if (onToggle) onToggle(val);
     else setInternalOpen(val);
-  };
+  }, [onToggle]);
 
   const [inputText, setInputText] = useState('');
   const [isAiGenerating, setIsAiGenerating] = useState(false);
@@ -268,7 +266,8 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
             if (!replyText) {
               replyText = 'تم تنفيذ طلبك بنجاح في سيستم العيادة.';
             }
-          } catch (_) {
+          } catch (parseErr) {
+            console.warn('[DoctorAiWidget] Failed to parse action JSON:', parseErr.message);
             replyText = contentStr;
           }
         } else {
@@ -286,7 +285,8 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
         timestamp: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, agentMsg]);
-    } catch (_) {
+    } catch (agentErr) {
+      console.warn('[DoctorAiWidget] Agent execution error:', agentErr.message);
       setMessages(prev => [
         ...prev,
         {
