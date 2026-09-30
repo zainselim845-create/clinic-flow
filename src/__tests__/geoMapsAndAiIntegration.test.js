@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getAiConfig, saveAiConfig, testAiConnection, askDoctorAiAssistant, DEFAULT_AI_MODEL } from '../services/aiAssistantService';
-import { calculateHaversineDistanceKm } from '../pages/superadmin/components/SaasGeographicAnalytics';
+import { saveAiConfig, testAiConnection, askDoctorAiAssistant, DEFAULT_AI_MODEL } from '../services/aiAssistantService';
+import { calculateHaversineDistanceKm } from '../data/saasGeoData';
 describe('Geo Maps & AI Integration Suite', () => {
   let mockStorage = {};
 
