@@ -3,7 +3,6 @@
  * Encapsulates patient invoicing in Egyptian Pounds (EGP), double-entry ledger, and national payment rails.
  */
 
-export * from '../../services/invoicesService';
-export * from '../../services/generalLedgerService';
-export * from '../../components/invoices';
+export * from './components';
+export * from './services';
 export { EGYPT_PAYMENT_METHODS, validateInstaPayAddress, identifyWalletProvider, generateFawryRefCode, isMeezaCard } from '../egypt-national/egyptPayments';

@@ -3,7 +3,7 @@
  * Encapsulates patient demographic dossiers, medical alerts, chronic conditions, and visits history.
  */
 
-export * from '../../services/patientsService';
-export * from '../../components/patients';
+export * from './components';
+export * from './services';
 export { parseNationalId, validateNationalId } from '../egypt-national/nationalId';
-export { validateEgyptianPhone, formatEgyptianPhone } from '../../utils/phoneValidation';
+export { validateEgyptianPhone, formatEgyptianPhone } from '@/utils/phoneValidation';
