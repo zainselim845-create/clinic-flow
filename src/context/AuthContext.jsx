@@ -23,6 +23,7 @@ import {
   safeSessionSetItem
 } from '../utils/safeStorage';
 import TenantContext from './TenantContext';
+import { canAccess, CLINIC_PERMISSIONS, CLINIC_ROLE_PERMISSIONS } from '../services/organizationService';
 
 const AuthContext = createContext({});
 
@@ -780,6 +781,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const can = useCallback((permission) => {
+    if (!user) return false;
+    if (user.role === 'super_admin' || user.isSuperAdmin) return true;
+    return canAccess(role || user.role, permission);
+  }, [user, role]);
+
+  const hasRole = useCallback((expectedRole) => {
+    if (!user) return false;
+    if (user.role === 'super_admin' || user.isSuperAdmin) return true;
+    if (Array.isArray(expectedRole)) {
+      return expectedRole.includes(role || user.role);
+    }
+    return (role || user.role) === expectedRole;
+  }, [user, role]);
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -798,7 +814,11 @@ export const AuthProvider = ({ children }) => {
       impersonateUser,
       stopImpersonating,
       isImpersonating,
-      isDemoMode
+      isDemoMode,
+      can,
+      hasRole,
+      CLINIC_PERMISSIONS,
+      CLINIC_ROLE_PERMISSIONS
     }}>
       {children}
     </AuthContext.Provider>
