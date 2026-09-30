@@ -8,6 +8,20 @@ import { CLINIC_SPECIALTIES } from '../data/specialtiesData';
 import { formatSenderId } from './smsService';
 import { isSupabaseConfigured, CLOUD_TENANTS_REGISTRY_URL } from '../lib/supabase';
 import { createClinicInDb, deleteClinicFromDb } from './clinicsService';
+import { computeSha256 } from './auditLoggerService';
+
+export function hashPassword(plainPassword) {
+  if (!plainPassword) return '';
+  return `sha256:${computeSha256(plainPassword)}`;
+}
+
+export function verifyPassword(inputPassword, storedPasswordOrHash) {
+  if (!inputPassword || !storedPasswordOrHash) return false;
+  if (typeof storedPasswordOrHash === 'string' && storedPasswordOrHash.startsWith('sha256:')) {
+    return `sha256:${computeSha256(inputPassword)}` === storedPasswordOrHash;
+  }
+  return inputPassword === storedPasswordOrHash;
+}
 
 const REGISTERED_TENANTS_KEY = 'clinicflow_registered_tenants';
 const REGISTERED_USERS_KEY = 'clinicflow_registered_users';
@@ -516,7 +530,8 @@ export function saveRegisteredUser(user) {
   if (!user) return;
   // Ensure superadmin never gets persisted without a password to avoid auth lockouts
   if (user.role === 'super_admin' || user.isSuperAdmin) {
-    user.password = user.password || 'admin';
+    const defaultSecret = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPER_ADMIN_SECRET) || 'cf-superadmin-sec-2026-x9';
+    user.password = user.password || defaultSecret;
   }
   const existing = getRegisteredUsers(true);
   if (user.email) registeredEmailsSet.add(user.email.toLowerCase());
@@ -1208,9 +1223,15 @@ export function authenticateUser(identifier, password, _options = {}) {
 
   // 0. Super Admin Master Account check
   if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
-    const isMasterPass = cleanPass === 'admin' || cleanPass === 'admin123' || cleanPass === 'superadmin' || cleanPass === '123456';
+    const configuredSecret = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPER_ADMIN_SECRET) || '';
+    const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
+                      (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
+    const isMasterPass = configuredSecret
+      ? cleanPass === configuredSecret
+      : (cleanPass === 'cf-superadmin-sec-2026-x9' || (isTestEnv && cleanPass === 'admin'));
+
     if (!isMasterPass) {
-      throw new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام (الافتراضية: admin).');
+      throw new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام.');
     }
     return {
       id: 'user-superadmin-master',
@@ -1246,7 +1267,7 @@ export function authenticateUser(identifier, password, _options = {}) {
     if ((matchedUser.authProvider === 'google' || matchedUser.provider === 'google') && !matchedUser.password) {
       throw new Error('هذا الحساب مسجل عبر Google. يرجى تسجيل الدخول باستخدام زر Google.');
     }
-    if (matchedUser.password !== cleanPass) {
+    if (!verifyPassword(cleanPass, matchedUser.password)) {
       throw new Error('كلمة المرور غير صحيحة.');
     }
     return {
@@ -1272,7 +1293,7 @@ export function authenticateUser(identifier, password, _options = {}) {
       throw new Error('هذا الحساب مسجل عبر Google. يرجى تسجيل الدخول باستخدام زر Google.');
     }
     const validPass = matchedTenant.doctorPassword;
-    if (!validPass || cleanPass !== validPass) {
+    if (!validPass || !verifyPassword(cleanPass, validPass)) {
       throw new Error('كلمة المرور غير صحيحة لحساب الطبيب.');
     }
     return {

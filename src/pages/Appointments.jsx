@@ -74,9 +74,16 @@ const Appointments = () => {
   const handleUpdateStatus = async (id, newStatus) => {
     if (useSupabase) {
       try {
-        await appointmentsService.updateAppointmentStatus(id, newStatus);
+        const res = await appointmentsService.updateAppointmentStatus(id, newStatus);
+        if (res?.error) {
+          console.error('Failed to update status on Supabase:', res.error);
+          showToast('تعذر تحديث حالة الموعد في السحابة: ' + (res.error.message || 'خطأ في الاتصال'), 'error');
+          return;
+        }
       } catch (err) {
         console.error('Failed to update status on Supabase:', err);
+        showToast('خطأ في الاتصال بقاعدة البيانات', 'error');
+        return;
       }
     }
     dispatch({
@@ -162,13 +169,24 @@ const Appointments = () => {
 
     if (useSupabase) {
       try {
-        await appointmentsService.addAppointment(newAppointment);
+        const res = await appointmentsService.addAppointment(newAppointment);
+        if (res?.error) {
+          console.error('Failed to sync appointment with Supabase:', res.error);
+          showToast('تعذر حفظ الموعد في قاعدة البيانات: ' + (res.error.message || 'خطأ في الاتصال'), 'error');
+          return;
+        }
+        if (res?.data?.id) {
+          newAppointment.id = res.data.id;
+        }
       } catch (err) {
         console.error('Failed to sync appointment with Supabase:', err);
+        showToast('حدث خطأ أثناء حفظ الموعد في السحابة', 'error');
+        return;
       }
     }
 
     dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
+    showToast('تم حجز الموعد بنجاح', 'success');
     setIsModalOpen(false);
     setFormData({ patientId: '', date: todayStr, time: '', type: 'كشف عيادة', fee: defaultFee, paymentMethod: 'cash', notes: '' });
   };

@@ -31,8 +31,8 @@ export function getOccasionCampaignCandidates(patients = [], occasionId = 'birth
         const bMonth = new Date(p.birthDate).getMonth() + 1;
         isBirthdayCandidate = bMonth === currentMonth;
       } else {
-        // Deterministic spread for demo purposes
-        isBirthdayCandidate = ((parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 4) === 0;
+        // Real clinical safety: never assume birthday if birthDate is unrecorded
+        isBirthdayCandidate = false;
       }
     } else {
       isBirthdayCandidate = true;

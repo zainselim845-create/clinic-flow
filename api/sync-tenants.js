@@ -145,15 +145,39 @@ function parseJsonBody(req) {
 }
 
 export default async function handler(req, res) {
-  // Security & CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Security & CORS Headers — restrict to production origin (CWE-942)
+  const ALLOWED_ORIGINS = new Set([
+    'https://clinic-flow-ten-sigma.vercel.app',
+    process.env.ALLOWED_ORIGIN // Optional additional origin from env
+  ].filter(Boolean));
+  const requestOrigin = req.headers.origin || '';
+  const corsOrigin = ALLOWED_ORIGINS.has(requestOrigin) ? requestOrigin : '';
+  if (corsOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
   if (req.method === 'OPTIONS') {
+    // Respond to preflight even without origin match (browser requires 200)
+    if (!corsOrigin) {
+      res.setHeader('Access-Control-Allow-Origin', requestOrigin || '*');
+    }
     return res.status(200).end();
+  }
+
+  // Authentication gate for mutating operations (CWE-862 / CWE-306)
+  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+    const requiredSecret = process.env.SYNC_API_SECRET;
+    if (requiredSecret) {
+      const clientSecret = req.headers.authorization?.replace(/^Bearer\s+/i, '') || req.headers['x-sync-secret'];
+      if (clientSecret !== requiredSecret) {
+        return res.status(401).json({ success: false, error: 'Unauthorized: valid API secret required' });
+      }
+    }
   }
 
   try {
@@ -371,14 +395,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      // Authorization Check for Critical Resource Deletion (CWE-862 / CWE-306)
-      const requiredSecret = process.env.SYNC_API_SECRET;
-      if (requiredSecret) {
-        const clientSecret = req.headers.authorization?.replace(/^Bearer\s+/i, '') || req.headers['x-sync-secret'];
-        if (clientSecret !== requiredSecret) {
-          return res.status(401).json({ success: false, error: 'Unauthorized: Administrative secret required for tenant deletion' });
-        }
-      }
+      // Auth already verified by centralized gate above
 
       const body = parseJsonBody(req) || {};
       const rawIdentifier = (body.id || body.slug || req.query?.id || req.query?.slug || '').trim();
@@ -404,6 +421,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   } catch (error) {
     console.error('[Sync-Tenants API] Error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({ 
+      success: false, 
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error' 
+    });
   }
 }

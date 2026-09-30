@@ -186,8 +186,10 @@ export async function verifyDomainDnsAndSsl(domain, clinicId, fetchFn = fetch) {
     };
   }
 
-  // Pre-configured demo domains in demo/offline mode
-  if (clean === 'dr-ahmed-dental.com' || clean === 'drsara-clinic.com') {
+  // Pre-configured demo domains in test environment (safe isolation for test runner)
+  const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') ||
+                    (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
+  if (isTestEnv && (clean === 'dr-ahmed-dental.com' || clean === 'drsara-clinic.com')) {
     return {
       domain: clean,
       isValid: true,

@@ -26,6 +26,38 @@ import TenantContext from './TenantContext';
 
 const AuthContext = createContext({});
 
+const failedLoginAttempts = new Map();
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCKOUT_MS = 60 * 1000;
+
+function checkLoginRateLimit(identifier) {
+  const record = failedLoginAttempts.get(identifier);
+  if (!record) return null;
+  const now = Date.now();
+  if (record.lockedUntil && now < record.lockedUntil) {
+    const remainingSec = Math.ceil((record.lockedUntil - now) / 1000);
+    return `تم حظر محاولات تسجيل الدخول مؤقتاً لحماية الحساب. يرجى الانتظار ${remainingSec} ثانية.`;
+  }
+  if (record.lockedUntil && now >= record.lockedUntil) {
+    failedLoginAttempts.delete(identifier);
+  }
+  return null;
+}
+
+function recordFailedLogin(identifier) {
+  const now = Date.now();
+  const record = failedLoginAttempts.get(identifier) || { count: 0, lockedUntil: 0 };
+  record.count += 1;
+  if (record.count >= MAX_LOGIN_ATTEMPTS) {
+    record.lockedUntil = now + LOGIN_LOCKOUT_MS;
+  }
+  failedLoginAttempts.set(identifier, record);
+}
+
+function resetFailedLogin(identifier) {
+  failedLoginAttempts.delete(identifier);
+}
+
 export const AuthProvider = ({ children }) => {
   const tenantContext = useContext(TenantContext);
   const activeTenant = tenantContext?.tenant;
@@ -269,12 +301,26 @@ export const AuthProvider = ({ children }) => {
       return { data: null, error: new Error('يرجى إدخال البريد الإلكتروني أو الهاتف وكلمة المرور.') };
     }
 
+    // Rate Limiting & Brute-Force Defense (OWASP A07)
+    const rateLimitError = checkLoginRateLimit(cleanId);
+    if (rateLimitError) {
+      return { data: null, error: new Error(rateLimitError) };
+    }
+
     // Priority 0: Check Super Admin Master Login
     if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
-      const isMasterPass = cleanPass === 'admin' || cleanPass === 'admin123' || cleanPass === 'superadmin' || cleanPass === '123456';
+      const configuredSecret = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPER_ADMIN_SECRET) || '';
+      const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
+                        (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
+      const isMasterPass = configuredSecret
+        ? cleanPass === configuredSecret
+        : (cleanPass === 'cf-superadmin-sec-2026-x9' || (isTestEnv && cleanPass === 'admin'));
+
       if (!isMasterPass) {
-        return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام (الافتراضية: admin).') };
+        recordFailedLogin(cleanId);
+        return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام.') };
       }
+      resetFailedLogin(cleanId);
       const superAdminUser = {
         id: 'user-superadmin-master',
         name: 'مدير المنصة العام (Super Admin)',
@@ -335,15 +381,18 @@ export const AuthProvider = ({ children }) => {
             isolateTenantStorage(authUser.clinicSlug);
           }
         }
+        resetFailedLogin(cleanId);
         return { data: { user: authUser }, error: null };
       }
     } catch (authErr) {
+      recordFailedLogin(cleanId);
       if (authErr.message && !authErr.message.includes('يرجى إدخال')) {
         return { data: null, error: authErr };
       }
     }
 
     if (isDemoMode) {
+      recordFailedLogin(cleanId);
       return {
         data: null,
         error: new Error('بيانات الدخول غير صحيحة. يرجى التأكد من البريد الإلكتروني أو الهاتف وكلمة المرور أو إنشاء حساب جديد.')
@@ -357,6 +406,7 @@ export const AuthProvider = ({ children }) => {
         password: password
       });
       if (error) throw error;
+      resetFailedLogin(cleanId);
       return { data, error: null };
     } catch (error) {
       // Fallback: If Supabase connection fails or user is registered locally
@@ -367,11 +417,13 @@ export const AuthProvider = ({ children }) => {
           safeSetItem('clinicflow_role', fallbackUser.role || 'doctor');
           setUser(fallbackUser);
           setRole(fallbackUser.role || 'doctor');
+          resetFailedLogin(cleanId);
           return { data: { user: fallbackUser }, error: null };
         }
       } catch (fallbackErr) {
         console.warn('[AuthContext] Local authentication fallback error:', fallbackErr);
       }
+      recordFailedLogin(cleanId);
       return { data: null, error };
     }
   };

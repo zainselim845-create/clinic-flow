@@ -35,6 +35,11 @@ export const ENV_CONFIG = Object.freeze({
     clientId: metaEnv.VITE_GOOGLE_CLIENT_ID || '337379604098-6bp302kv7mmsuccf806ah1tba6grkoio.apps.googleusercontent.com'
   }),
 
+  // Super Admin Credentials
+  superAdmin: Object.freeze({
+    secret: metaEnv.VITE_SUPER_ADMIN_SECRET || ''
+  }),
+
   // AI Medical Reasoning (OpenRouter / DeepSeek)
   ai: Object.freeze({
     apiKey: metaEnv.VITE_OPENROUTER_API_KEY || '',

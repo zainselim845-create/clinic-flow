@@ -73,13 +73,20 @@ export function toDbLabOrder(data) {
 }
 
 export async function getLabOrders(clinicId) {
+  if (!clinicId) {
+    return { data: [], error: new Error('معرف العيادة (clinicId) إلزامي لعزل بيانات المعامل بين المستأجرين.') };
+  }
+
   if (!isSupabaseConfigured()) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    let query = supabase.from('lab_orders').select('*').order('created_at', { ascending: false });
-    if (clinicId) query = query.eq('clinic_id', clinicId);
+    const query = supabase
+      .from('lab_orders')
+      .select('*')
+      .eq('clinic_id', clinicId)
+      .order('created_at', { ascending: false });
 
     const { data, error } = await query;
     if (error) throw error;
@@ -90,13 +97,16 @@ export async function getLabOrders(clinicId) {
   }
 }
 
-export async function addLabOrder(order) {
+export async function addLabOrder(order, optionalClinicId = null) {
   if (!isSupabaseConfigured()) {
     return { data: order, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    const row = toDbLabOrder(order);
+    const row = toDbLabOrder({
+      ...order,
+      clinicId: order.clinicId || order.clinic_id || optionalClinicId
+    });
     const { data, error } = await supabase.from('lab_orders').insert(row).select().single();
     if (error) throw error;
     return { data: fromDbLabOrder(data), error: null };
@@ -106,17 +116,26 @@ export async function addLabOrder(order) {
   }
 }
 
-export async function updateLabOrderStatus(id, status, extraFields = {}) {
+export async function updateLabOrderStatus(id, status, extraFields = {}, clinicId = null) {
+  if (!id) {
+    return { success: false, error: new Error('معرف الطلب إلزامي') };
+  }
+
   if (!isSupabaseConfigured()) {
     return { success: true, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    const { error } = await supabase.from('lab_orders').update({
+    let query = supabase.from('lab_orders').update({
       status,
       ...extraFields
     }).eq('id', id);
 
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+
+    const { error } = await query;
     if (error) throw error;
     return { success: true, error: null };
   } catch (error) {

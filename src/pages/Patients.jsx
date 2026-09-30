@@ -133,9 +133,16 @@ const Patients = () => {
       };
       if (useSupabase) {
         try {
-          await patientsService.updatePatient(selectedPatient.id, updatedPayload);
+          const res = await patientsService.updatePatient(selectedPatient.id, updatedPayload);
+          if (res?.error) {
+            console.error('Failed to update patient in Supabase:', res.error);
+            showToast('تعذر تحديث بيانات المريض في السحابة: ' + (res.error.message || 'خطأ في الاتصال'), 'error');
+            return;
+          }
         } catch (err) {
           console.error('Failed to update patient in Supabase:', err);
+          showToast('حدث خطأ أثناء تعديل بيانات المريض', 'error');
+          return;
         }
       }
       dispatch({ 
@@ -154,9 +161,19 @@ const Patients = () => {
       };
       if (useSupabase) {
         try {
-          await patientsService.addPatient(newPatient);
+          const res = await patientsService.addPatient(newPatient);
+          if (res?.error) {
+            console.error('Failed to add patient to Supabase:', res.error);
+            showToast('تعذر حفظ المريض في قاعدة البيانات السحابية: ' + (res.error.message || 'خطأ في الاتصال'), 'error');
+            return;
+          }
+          if (res?.data?.id) {
+            newPatient.id = res.data.id;
+          }
         } catch (err) {
           console.error('Failed to add patient to Supabase:', err);
+          showToast('حدث خطأ أثناء حفظ بيانات المريض', 'error');
+          return;
         }
       }
       dispatch({ type: 'ADD_PATIENT', payload: newPatient });
