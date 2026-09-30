@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Check, 
   CheckCircle2, 
-  Palette 
+  Palette,
+  SlidersHorizontal
 } from 'lucide-react';
 import { useTenant, applyTenantBranding } from '../context/TenantContext';
 

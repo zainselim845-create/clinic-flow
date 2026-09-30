@@ -210,7 +210,8 @@ export function formatPrescriptionForWhatsApp(prescription) {
     verificationCode
   } = prescription;
 
-  let msg = `${clinicName || 'عيادة كلينيك فلو'}\n`;
+  let msg = `الروشتة الطبية الإلكترونية المعتمدة\n`;
+  msg += `${clinicName || 'عيادة كلينيك فلو'}\n`;
   if (doctorName) msg += `الطبيب: ${doctorName} ${doctorTitle ? `(${doctorTitle})` : ''}\n`;
   msg += `المريض: ${patientName}\n`;
   msg += `تاريخ الكشف: ${date}\n`;
@@ -220,10 +221,10 @@ export function formatPrescriptionForWhatsApp(prescription) {
     msg += `التشخيص الطبي:\n${diagnosis}\n\n`;
   }
 
-  msg += `الروشتة الدوائية المقررة:\n`;
+  msg += `الخطة العلاجية والروشتة المقررة:\n`;
 
   if (medications.length === 0) {
-    msg += `(لا توجد أدوية مضافة - مراجعة تعليمات الطبيب أدناه)\n`;
+    msg += `(لا توجد أدوية مضافة - يُرجى مراجعة إرشادات الطبيب أدناه)\n`;
   } else {
     medications.forEach((med, i) => {
       msg += `\n${i + 1}. ${med.name}\n`;
@@ -245,6 +246,7 @@ export function formatPrescriptionForWhatsApp(prescription) {
   }
 
   msg += `كود التحقق الرقمي: ${verificationCode}\n`;
+  msg += `حرصاً على سلامتكم، يُرجى الالتزام التام بالجرعات ومواعيد الدواء المقررة.\n`;
   msg += `مع تمنياتنا لكم بالشفاء العاجل ودوام الصحة والعافية.`;
 
   return msg;
