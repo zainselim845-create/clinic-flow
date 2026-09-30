@@ -167,6 +167,22 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const handleCopyHandover = async (tenant) => {
+    if (!tenant) return;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinicflow.app';
+    const bookingUrl = `${origin}/c/${tenant.slug}/booking`;
+    const loginUrl = `${origin}/login`;
+    const docEmail = tenant.doctorEmail || tenant.email || 'البريد المسجل';
+    const docPass = tenant.doctorPassword || '(كلمة المرور المحددة عند الإنشاء)';
+
+    const message = `مرحباً د. ${tenant.doctorName || 'الفاضل'}،\nتم تجهيز وتفعيل حساب عيادتكم (${tenant.name}) على منظومة ClinicFlow بنجاح:\n\n1. رابط لوحة تحكم العيادة:\n${loginUrl}\n\n2. بيانات الدخول:\n- البريد الإلكتروني: ${docEmail}\n- كلمة المرور: ${docPass}\n\n3. رابط حجز المرضى الخاص بكم:\n${bookingUrl}\n\nنسعد بخدمتكم وتمنياتنا بعيادة موفقة دائماً.`;
+
+    const success = await copyToClipboard(message);
+    if (success) {
+      toast.success('تم نسخ رسالة وبيانات تسليم الحساب بنجاح، يمكنك إرسالها للطبيب الآن عبر واتساب.');
+    }
+  };
+
   const handleSwitchAndVisit = (slug) => {
     switchTenant(slug);
     navigate('/dashboard');
@@ -336,6 +352,7 @@ export default function SuperAdminDashboard() {
 
     handleRefreshAll();
     setIsCreateModalOpen(false);
+    toast.success(`تم إنشاء العيادة (${created.name}) وحساب الطبيب بنجاح. يمكنك نسخ رسالة التسليم للطبيب مباشرة.`);
     setNewClinic({
       name: '',
       doctorName: '',
@@ -536,6 +553,7 @@ export default function SuperAdminDashboard() {
             suspendedClinics={suspendedClinics}
             copiedSlug={copiedSlug}
             onCopyLink={handleCopyLink}
+            onCopyHandover={handleCopyHandover}
             onApproveClinic={handleApproveClinic}
             onSuspendClinic={handleSuspendClinic}
             onReactivateClinic={handleReactivateClinic}

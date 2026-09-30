@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone, FileText } from 'lucide-react';
 
 export function ClinicsTable({
   filteredTenants,
@@ -15,6 +15,7 @@ export function ClinicsTable({
   suspendedClinics,
   copiedSlug,
   onCopyLink,
+  onCopyHandover,
   onApproveClinic,
   onSuspendClinic,
   onReactivateClinic,
@@ -426,6 +427,20 @@ export function ClinicsTable({
                         >
                           <Palette size={14} />
                         </button>
+
+                        {/* Handover Credentials to Doctor Button */}
+                        {onCopyHandover && (
+                          <button
+                            type="button"
+                            onClick={() => onCopyHandover(t)}
+                            className="btn-table-icon"
+                            style={{ color: '#059669', borderColor: 'rgba(16, 185, 129, 0.3)', background: 'rgba(16, 185, 129, 0.08)' }}
+                            title="نسخ رسالة وبيانات تسليم الحساب للطبيب (واتساب)"
+                            aria-label="نسخ بيانات تسليم الحساب"
+                          >
+                            <FileText size={14} />
+                          </button>
+                        )}
 
                         {/* Suspend Toggle (If not already suspended/pending) */}
                         {!isSuspended && !isPending && (

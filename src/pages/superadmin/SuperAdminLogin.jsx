@@ -165,6 +165,27 @@ export default function SuperAdminLogin() {
             </div>
           </div>
 
+          <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '-0.5rem', marginBottom: '0.75rem' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('superadmin@clinicflow.com');
+                setPassword('cf-superadmin-sec-2026-x9');
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#0284C7',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                padding: 0
+              }}
+            >
+              تعبئة بيانات حساب مدير المنصة التجريبي
+            </button>
+          </div>
+
           <button
             type="submit"
             className="btn-superadmin-submit"
