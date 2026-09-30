@@ -146,7 +146,12 @@ export function createPrescription({
   const randomSuffix = Math.floor(100000 + Math.random() * 900000);
   const verificationCode = `CF-RX-${year}-${randomSuffix}`;
 
-  const clinicId = clinic?.id || appointment?.clinicId || appointment?.clinic_id || 'default';
+  const clinicId = clinic?.id || clinic?.clinicId || clinic?.clinic_id || 
+                   appointment?.clinicId || appointment?.clinic_id ||
+                   (clinic?.name ? `clinic-${clinic.name.trim().replace(/\s+/g, '-')}` : null);
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to create a prescription');
+  }
   const patientId = patient?.id || appointment?.patientId || appointment?.id || 'pat-' + Date.now();
 
   return {
@@ -249,13 +254,19 @@ export function formatPrescriptionForWhatsApp(prescription) {
  * Storage helpers for prescriptions
  */
 export function getStoredPrescriptions(clinicId) {
-  const key = `clinicflow_prescriptions_${clinicId || 'default'}`;
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to get stored prescriptions');
+  }
+  const key = `clinicflow_prescriptions_${clinicId}`;
   return safeStorage.getItem(key, []);
 }
 
 export function savePrescriptionToStorage(prescription) {
   if (!prescription) return null;
-  const clinicId = prescription.clinicId || 'default';
+  const clinicId = prescription.clinicId || prescription.clinic_id;
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to save a prescription');
+  }
   const key = `clinicflow_prescriptions_${clinicId}`;
   const existing = safeStorage.getItem(key, []);
   
@@ -274,6 +285,9 @@ export function savePrescriptionToStorage(prescription) {
 }
 
 export function getPatientPrescriptionsFromStorage(patientId, clinicId) {
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to get patient prescriptions');
+  }
   const all = getStoredPrescriptions(clinicId);
   if (!patientId) return all;
   return all.filter(p => p.patientId === patientId || String(p.patientPhone).replace(/\D/g, '') === String(patientId).replace(/\D/g, ''));

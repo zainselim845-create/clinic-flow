@@ -53,6 +53,15 @@ export async function getExpenses(clinicId, options = {}) {
 }
 
 export async function addExpense(expense) {
+  const clinicId = expense?.clinicId || expense?.clinic_id;
+  if (!clinicId) {
+    return { data: null, error: new Error('clinicId is strictly required to add an expense') };
+  }
+  const amount = Number(expense?.amount);
+  if (isNaN(amount) || amount < 0) {
+    return { data: null, error: new Error('Expense amount must be a positive number') };
+  }
+
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
@@ -71,7 +80,14 @@ export async function addExpense(expense) {
   }
 }
 
-export async function deleteExpense(id) {
+export async function deleteExpense(id, clinicId) {
+  if (!id) {
+    return { success: false, error: new Error('Expense ID is required') };
+  }
+  if (!clinicId) {
+    return { success: false, error: new Error('clinicId is strictly required for tenant isolation') };
+  }
+
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
@@ -79,7 +95,8 @@ export async function deleteExpense(id) {
     const { error } = await supabase
       .from('expenses')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
+      .eq('clinic_id', clinicId);
     if (error) throw error;
     return { success: true, error: null };
   } catch (error) {

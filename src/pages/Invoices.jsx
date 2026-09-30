@@ -273,7 +273,7 @@ const Invoices = () => {
     }
     setExpensesList(prev => prev.filter(e => e.id !== expenseId));
     try {
-      await apiDeleteExpense(expenseId);
+      await apiDeleteExpense(expenseId, clinicId);
     } catch (err) {
       console.warn('Expense deletion notice:', err);
     }

@@ -37,7 +37,8 @@ export function saveBookingDraft(draftData, clinicId) {
       clinicId: targetClinicId,
       clinic_id: targetClinicId,
       phone: cleanPhone,
-      name: draftData.name || '',
+      name: draftData.patientName || draftData.name || '',
+      patientName: draftData.patientName || draftData.name || '',
       service: draftData.service || draftData.type || '',
       date: draftData.date || '',
       slot: draftData.slot || draftData.time || '',
@@ -55,15 +56,8 @@ export function saveBookingDraft(draftData, clinicId) {
     const result = [updatedDraft, ...filtered];
 
     safeStorage.setItem(getDraftsKey(targetClinicId), JSON.stringify(result));
-    if (targetClinicId) {
-      try {
-        const globalData = safeStorage.getItem(DRAFTS_STORAGE_KEY);
-        const globalList = globalData ? (typeof globalData === 'string' ? JSON.parse(globalData) : (Array.isArray(globalData) ? globalData : [])) : [];
-        const globalFiltered = globalList.filter(d => !(d.phone === cleanPhone && (!d.clinicId || d.clinicId === targetClinicId)));
-        safeStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify([updatedDraft, ...globalFiltered]));
-      } catch (err) {
-        console.warn('[LeadRecoveryService] Global draft sync note:', err);
-      }
+    if (!targetClinicId) {
+      safeStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(result));
     }
     return updatedDraft;
   } catch (e) {
@@ -73,36 +67,26 @@ export function saveBookingDraft(draftData, clinicId) {
 }
 
 /**
- * Retrieve all booking drafts (scoped by clinicId if provided)
+ * Retrieve all booking drafts (scoped by clinicId)
  */
 export function getBookingDrafts(clinicId) {
+  if (clinicId === null) {
+    throw new Error('clinicId is strictly required to get booking drafts');
+  }
+
   try {
     if (clinicId) {
       const scopedKey = getDraftsKey(clinicId);
       const scopedData = safeStorage.getItem(scopedKey);
-      let list = scopedData ? (typeof scopedData === 'string' ? JSON.parse(scopedData) : (Array.isArray(scopedData) ? scopedData : [])) : [];
-      
-      const globalData = safeStorage.getItem(DRAFTS_STORAGE_KEY);
-      if (globalData) {
-        const globalList = typeof globalData === 'string' ? JSON.parse(globalData) : (Array.isArray(globalData) ? globalData : []);
-        const matchingGlobal = globalList.filter(d => d.clinicId === clinicId);
-        if (matchingGlobal.length > 0) {
-          const ids = new Set(list.map(d => d.id));
-          matchingGlobal.forEach(d => {
-            if (!ids.has(d.id)) {
-              list.push(d);
-              ids.add(d.id);
-            }
-          });
-        }
-      }
-      return list.filter(d => !d.clinicId || d.clinicId === clinicId);
+      const list = scopedData ? (typeof scopedData === 'string' ? JSON.parse(scopedData) : (Array.isArray(scopedData) ? scopedData : [])) : [];
+      return list.filter(d => d.clinicId === clinicId);
     }
 
     const data = safeStorage.getItem(DRAFTS_STORAGE_KEY);
     if (!data) return [];
     return typeof data === 'string' ? JSON.parse(data) : (Array.isArray(data) ? data : []);
   } catch (e) {
+    if (e.message?.includes('clinicId')) throw e;
     console.error('Failed to get booking drafts', e);
     return [];
   }

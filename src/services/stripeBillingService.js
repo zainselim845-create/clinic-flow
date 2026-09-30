@@ -149,11 +149,19 @@ export function submitRegionalPaymentProof(receipt = {}) {
 }
 
 /**
- * Retrieves all submitted manual payment receipts for Super Admin review
+ * Retrieves submitted manual payment receipts scoped by clinicId
+ * @param {string} [clinicId]
  * @returns {Array<Object>}
  */
-export function getRegionalPaymentReceipts() {
-  return safeGetJSON(MANUAL_PAYMENTS_KEY, []);
+export function getRegionalPaymentReceipts(clinicId) {
+  if (clinicId === null) {
+    throw new Error('clinicId is strictly required to get regional payment receipts');
+  }
+  const all = safeGetJSON(MANUAL_PAYMENTS_KEY, []);
+  if (clinicId && clinicId !== '*') {
+    return all.filter(r => r.clinicId === clinicId);
+  }
+  return all;
 }
 
 /**
@@ -165,11 +173,18 @@ export function getRegionalPaymentReceipts() {
 export function approveRegionalPayment(receiptId, clinicId) {
   const receipts = safeGetJSON(MANUAL_PAYMENTS_KEY, []);
   const idx = receipts.findIndex(r => r.id === receiptId);
-  if (idx >= 0) {
-    receipts[idx].status = 'approved';
-    receipts[idx].approvedAt = new Date().toISOString();
-    safeSetJSON(MANUAL_PAYMENTS_KEY, receipts);
+  if (idx < 0) {
+    throw new Error('Receipt not found');
   }
+
+  const receipt = receipts[idx];
+  if (clinicId && receipt.clinicId && receipt.clinicId !== clinicId) {
+    throw new Error('Tenant mismatch: unauthorized clinic approval attempt');
+  }
+
+  receipts[idx].status = 'approved';
+  receipts[idx].approvedAt = new Date().toISOString();
+  safeSetJSON(MANUAL_PAYMENTS_KEY, receipts);
 
   if (clinicId) {
     updateClinicSubscriptionStatus(clinicId, SUBSCRIPTION_STATES.ACTIVE);
