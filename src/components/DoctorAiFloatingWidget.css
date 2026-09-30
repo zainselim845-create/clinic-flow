@@ -224,7 +224,7 @@
 
 .quick-pill {
   white-space: nowrap;
-  padding: 5px 11px;
+  padding: 4px var(--space-1);
   border-radius: 9999px;
   font-size: 0.78rem;
   font-weight: 600;
@@ -244,17 +244,17 @@
 /* Messages Area */
 .copilot-messages-area {
   flex: 1;
-  padding: 16px;
+  padding: var(--space-2);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-2);
   background: var(--chat-bg, #fafafa);
 }
 
 .copilot-msg-row {
   display: flex;
-  gap: 10px;
+  gap: var(--space-1);
   max-width: 90%;
 }
 
@@ -268,8 +268,8 @@
 }
 
 .msg-avatar {
-  width: 28px;
-  height: 28px;
+  width: var(--space-4);
+  height: var(--space-4);
   border-radius: 8px;
   background: #0284c7;
   color: #ffffff;
@@ -281,7 +281,7 @@
 }
 
 .msg-content-bubble {
-  padding: 11px 15px;
+  padding: var(--space-1) var(--space-2);
   border-radius: 16px;
   font-size: 0.88rem;
   line-height: 1.55;

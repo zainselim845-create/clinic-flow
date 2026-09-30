@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --spacing-0: var(--space-0);
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-7: var(--space-7);
+  --spacing-8: var(--space-8);
+  --spacing-9: var(--space-9);
+  --spacing-10: var(--space-10);
+  --spacing-11: var(--space-11);
+  --spacing-12: var(--space-12);
+  --spacing-13: var(--space-13);
+  --spacing-14: var(--space-14);
+  --spacing-15: var(--space-15);
+}
+
 /* ==========================================================================
    ClinicFlow — Google Material Design 3 (Material You / Google Workspace)
    ========================================================================== */
@@ -104,12 +123,43 @@ h1, h2, h3, h4, h5, h6 {
   --font-weight-700: 700;
   --font-weight-800: 800;
 
-  --spacing-xs: 0.25rem; /* 4px */
-  --spacing-sm: 0.5rem;  /* 8px */
-  --spacing-md: 1rem;    /* 16px */
-  --spacing-lg: 1.5rem;  /* 24px */
-  --spacing-xl: 2rem;    /* 32px */
-  --spacing-2xl: 3rem;   /* 48px */
+  /* ==========================================================================
+     Centralized 8px Grid Spacing Token System (Single Source of Truth)
+     ========================================================================== */
+  --space-0: 0px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-7: 56px;
+  --space-8: 64px;
+  --space-9: 72px;
+  --space-10: 80px;
+  --space-11: 88px;
+  --space-12: 96px;
+  --space-13: 104px;
+  --space-14: 112px;
+  --space-15: 120px;
+
+  /* Spacing Scale Semantic Hierarchy */
+  --space-micro: var(--space-1);        /* 8px: icon <-> label, checkbox <-> text, inline controls */
+  --space-component: var(--space-2);    /* 16px: form fields, button groups, card internal content */
+  --space-subsection: var(--space-3);   /* 24px: related content groups, card sections, toolbar sections */
+  --space-major: var(--space-4);        /* 32px: major card separation, content groups, dashboard blocks */
+  --space-page-sm: var(--space-6);      /* 48px: mobile/tablet page section separation */
+  --space-page-md: var(--space-8);      /* 64px: desktop page section separation */
+  --space-page-lg: var(--space-10);     /* 80px: hero sections, major transitions */
+
+  /* Legacy & Backward Compatibility Aliases */
+  --spacing-xs: 4px;
+  --spacing-sm: var(--space-1);  /* 8px */
+  --spacing-md: var(--space-2);  /* 16px */
+  --spacing-lg: var(--space-3);  /* 24px */
+  --spacing-xl: var(--space-4);  /* 32px */
+  --spacing-2xl: var(--space-6); /* 48px */
+  --spacing-3xl: var(--space-8); /* 64px */
 
   /* Precision Border Radii Hierarchy */
   --radius-xs: 0.25rem;  /* 4px - Micro badges */
@@ -319,9 +369,9 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.55rem 1.15rem;
-  min-height: 40px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  min-height: var(--space-5);
   font-size: 0.86rem;
   font-weight: 600;
   border-radius: var(--radius-md, 8px);
@@ -400,15 +450,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-sm {
-  min-height: 32px;
-  padding: 0.35rem 0.75rem;
+  min-height: var(--space-4);
+  padding: 4px var(--space-1);
   font-size: 0.8rem;
   border-radius: var(--radius-sm, 6px);
 }
 
 .btn-lg {
-  min-height: 46px;
-  padding: 0.75rem 1.65rem;
+  min-height: var(--space-6);
+  padding: var(--space-1) var(--space-3);
   font-size: 0.96rem;
   border-radius: var(--radius-md, 8px);
 }
@@ -417,8 +467,8 @@ h1, h2, h3, h4, h5, h6 {
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
 }
 
 .form-label, label {
@@ -429,8 +479,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .input-field, .form-control, input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="number"], select, textarea {
   width: 100%;
-  min-height: 40px;
-  padding: 0.55rem 0.85rem;
+  min-height: var(--space-5);
+  padding: var(--space-1) var(--space-2);
   font-size: 0.9rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md, 8px);
@@ -494,14 +544,14 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--surface);
   border: 1px dashed var(--border-color);
   border-radius: var(--radius-xl);
-  padding: 3.5rem 1.5rem;
+  padding: var(--space-7) var(--space-3);
   text-align: center;
   color: var(--text-secondary);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: var(--space-2);
   width: 100%;
   box-sizing: border-box;
 }
@@ -509,7 +559,7 @@ h1, h2, h3, h4, h5, h6 {
 .empty-state-icon {
   color: var(--text-tertiary);
   opacity: 0.6;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-1);
 }
 
 .empty-state-title {
@@ -528,7 +578,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .empty-state-action {
-  margin-top: 0.5rem;
+  margin-top: var(--space-1);
 }
 
 /* 9. Layout utilities */
@@ -536,10 +586,12 @@ h1, h2, h3, h4, h5, h6 {
 .flex-col { display: flex; flex-direction: column; }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
-.gap-2 { gap: 0.5rem; }
-.gap-3 { gap: 0.75rem; }
-.gap-4 { gap: 1rem; }
-.gap-6 { gap: 1.5rem; }
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-6 { gap: var(--space-6); }
+.gap-8 { gap: var(--space-8); }
 
 /* 10. Animations */
 @keyframes fadeIn {
@@ -557,8 +609,8 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.85rem;
-  margin-bottom: 0.85rem;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
   width: 100%;
 }
 
@@ -582,7 +634,7 @@ h1, h2, h3, h4, h5, h6 {
 .page-header .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-1);
   flex-wrap: wrap;
 }
 
@@ -591,14 +643,14 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg, 12px);
-  padding: 0.65rem 0.95rem;
+  padding: var(--space-1) var(--space-2);
   box-shadow: var(--shadow-xs);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: var(--space-2);
 }
 
 .status-filter-pills {
@@ -684,7 +736,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center !important;
   justify-content: center !important;
   z-index: 99999 !important;
-  padding: 1.25rem !important;
+  padding: var(--space-3) !important;
   animation: modalFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   overflow-y: auto !important;
 }
@@ -720,13 +772,13 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 580px;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 1.75rem;
+  padding: var(--space-3);
   position: relative;
   animation: modalPopScale 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   z-index: 100000;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--space-2);
 }
 
 @keyframes modalPopScale {
@@ -739,14 +791,14 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.85rem;
-  margin-bottom: 0.25rem;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 .modal-header .title-row {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-1);
 }
 
 .modal-header h3 {
@@ -761,8 +813,8 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: var(--space-4);
+  height: var(--space-4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -782,9 +834,9 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  padding-top: 0.85rem;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
   border-top: 1px solid var(--border-color);
 }
 

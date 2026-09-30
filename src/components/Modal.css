@@ -46,7 +46,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
+  padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border-color, #E4E4E7);
   background: var(--surface);
 }
@@ -64,8 +64,8 @@
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   cursor: pointer;
-  width: 32px;
-  height: 32px;
+  width: var(--space-4);
+  height: var(--space-4);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -81,7 +81,7 @@
 }
 
 .modal-body {
-  padding: 1.75rem;
+  padding: var(--space-3);
   overflow-y: auto;
   color: var(--text-primary);
 }
