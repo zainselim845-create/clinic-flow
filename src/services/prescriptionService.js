@@ -1,5 +1,4 @@
 import { safeStorage } from '../utils/safeStorage';
-import { checkPrescriptionSafety } from './drugInteractionService';
 
 /**
  * Curated library of common Egyptian clinic medications across Dental, General,

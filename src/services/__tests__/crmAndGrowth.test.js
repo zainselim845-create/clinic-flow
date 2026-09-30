@@ -2,16 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { 
   segmentPatient, 
   segmentAllPatients, 
-  filterPatientsBySegment, 
-  getDaysDifference, 
-  calculatePatientLtv,
   LIFECYCLE_SEGMENTS,
   VALUE_TIERS
 } from '../segmentationService';
 import { 
   DEFAULT_CROSS_SELL_RULES, 
-  getPatientCrossSellOpportunities, 
-  scanAllCrossSellingOpportunities 
+  getPatientCrossSellOpportunities 
 } from '../crossSellingService';
 import { 
   REACTIVATION_STAGES, 
@@ -22,18 +18,15 @@ import {
   saveBookingDraft, 
   getBookingDrafts, 
   completeBookingDraft, 
-  generateLeadRecoverySmsUrl,
-  generateLeadRecoverySmsMessage 
+  generateLeadRecoverySmsUrl 
 } from '../leadRecoveryService';
 import { 
   getPatientReferralCode, 
   getPatientReferralLink, 
-  recordReferral, 
-  getReferralsLedger 
+  recordReferral 
 } from '../referralService';
 import { 
   savePatientPackage, 
-  getPatientPackages, 
   detectStalledPackages 
 } from '../packagesService';
 import { generatePostVisitFeedbackMessage } from '../feedbackService';

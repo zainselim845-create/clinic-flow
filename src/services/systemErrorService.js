@@ -72,7 +72,8 @@ export function redactSensitiveTokens(input) {
         }
       }
       return copy;
-    } catch (_) {
+    } catch (err) {
+      console.warn('[SystemErrorService] Sensitive data redaction fallback:', err);
       return input;
     }
   }
@@ -122,8 +123,8 @@ export function captureSystemError({
       // Store compact window of last 50 errors to prevent QuotaExceeded collisions
       const toStore = inMemoryErrors.slice(0, 50);
       localStorage.setItem(SYSTEM_ERRORS_KEY, JSON.stringify(toStore));
-    } catch (_) {
-      // Preserved in inMemoryErrors; silent fallback avoids recursive quota loops
+    } catch (storageErr) {
+      console.warn('[SystemErrorService] localStorage quota notice when storing errors:', storageErr);
     }
   }
 
@@ -149,7 +150,8 @@ export function getSystemErrors() {
     const raw = localStorage.getItem(SYSTEM_ERRORS_KEY);
     inMemoryErrors = raw ? JSON.parse(raw) : [];
     return inMemoryErrors;
-  } catch (_) {
+  } catch (readErr) {
+    console.warn('[SystemErrorService] Corrupted errors in storage:', readErr);
     return [];
   }
 }
@@ -224,8 +226,8 @@ export function reportUserBug({
     try {
       const toStore = inMemoryBugReports.slice(0, 30);
       localStorage.setItem(BUG_REPORTS_KEY, JSON.stringify(toStore));
-    } catch (_) {
-      // In-memory fallback
+    } catch (storageErr) {
+      console.warn('[SystemErrorService] localStorage quota notice when storing bug reports:', storageErr);
     }
   }
 

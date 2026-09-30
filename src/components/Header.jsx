@@ -8,10 +8,9 @@ import GlobalSearchModal from './GlobalSearchModal';
 import TenantSwitcher from './TenantSwitcher';
 import ReportIssueModal from './ReportIssueModal';
 import ConfirmationModal from './ConfirmationModal';
-import { isSupabaseConfigured } from '../lib/supabase';
 import './Header.css';
 
-const Header = ({ title, onOpenAiCopilot }) => {
+const Header = ({ title }) => {
   const { state, toggleTheme, setMobileNavOpen } = useApp();
   const { user, clinic, role, signOut } = useAuth();
   const { tenant } = useTenant();
@@ -20,7 +19,6 @@ const Header = ({ title, onOpenAiCopilot }) => {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const unreadCount = state.notifications?.filter(n => !n.read).length || 0;
-  const isCloudConnected = isSupabaseConfigured();
 
   // Global shortcut to toggle Command Palette (Ctrl+K / Cmd+K)
   useEffect(() => {

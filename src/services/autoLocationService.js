@@ -65,8 +65,8 @@ function getCachedLocation() {
       inMemoryLocation = parsed.data;
       return inMemoryLocation;
     }
-  } catch (_) {
-    // Ignore storage parsing issues
+  } catch (readErr) {
+    console.warn('[AutoLocation] Failed to parse cached location:', readErr);
   }
   return null;
 }
@@ -82,8 +82,8 @@ function setCachedLocation(data) {
       timestamp: Date.now(),
       data
     }));
-  } catch (_) {
-    // Ignore storage quota issues
+  } catch (err) {
+    console.warn('[AutoLocation] Failed to cache location:', err);
   }
 }
 
@@ -116,8 +116,9 @@ async function fetchIpLocation(timeoutMs = 2500) {
         };
       }
     }
-  } catch (_) {
+  } catch (ipErr) {
     if (timeoutId) clearTimeout(timeoutId);
+    console.warn('[AutoLocation] Primary IP location fetch failed:', ipErr);
   }
 
   try {
@@ -138,8 +139,8 @@ async function fetchIpLocation(timeoutMs = 2500) {
         };
       }
     }
-  } catch (_) {
-    // Silent fail
+  } catch (backupErr) {
+    console.warn('[AutoLocation] Backup IP location fetch failed:', backupErr);
   }
 
   return null;
@@ -167,8 +168,8 @@ export async function getAutoUserLocation(options = {}) {
               isPermissionGranted = true;
             }
           }
-        } catch (_) {
-          // Permissions API might not support 'geolocation' query in some browsers
+        } catch (permErr) {
+          console.warn('[AutoLocation] Geolocation permission query error:', permErr);
         }
 
         if (isPermissionGranted) {
@@ -199,8 +200,8 @@ export async function getAutoUserLocation(options = {}) {
         setCachedLocation(ipResult);
         return ipResult;
       }
-    } catch (_) {
-      // Silent error suppression
+    } catch (detectErr) {
+      console.warn('[AutoLocation] Location detection error:', detectErr);
     } finally {
       detectionPromise = null;
     }

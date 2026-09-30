@@ -203,7 +203,9 @@ export default function SuperAdminDashboard() {
       window.removeEventListener('clinicflow_sync', handleRefreshAll);
       document.removeEventListener('visibilitychange', handleRefreshAll);
       if (channel) {
-        try { channel.close(); } catch (_) {}
+        try { channel.close(); } catch (err) {
+          console.warn('[SuperAdminDashboard] BroadcastChannel close error:', err);
+        }
       }
     };
   }, [activeTab]);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { WifiOff, Wifi, RefreshCw } from 'lucide-react';
+import { WifiOff, Wifi } from 'lucide-react';
 
 /**
  * NetworkStatusBanner

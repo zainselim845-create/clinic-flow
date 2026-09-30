@@ -3,7 +3,7 @@ import {
   MapPin, Globe, Building2, Users, Compass, 
   Search, ShieldCheck, Activity, Award, CheckCircle2,
   Lock, ArrowUpRight, TrendingUp, Layers, Crosshair,
-  RotateCcw, SlidersHorizontal, Check, Eye, LocateFixed,
+  RotateCcw, LocateFixed,
   Navigation, RefreshCw, AlertCircle, ArrowUpDown, ExternalLink
 } from 'lucide-react';
 import OpenStreetClinicMap from '../../../components/common/OpenStreetClinicMap';
@@ -402,7 +402,6 @@ export default function SaasGeographicAnalytics({ allTenants = [] }) {
   const [selectedGovernorate, setSelectedGovernorate] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMapMode, setActiveMapMode] = useState('egypt'); // 'egypt' | 'gulf'
-  const [hoveredRegion, setHoveredRegion] = useState(null);
 
   // Live Real GPS User Geolocation State
   const [userLocation, setUserLocation] = useState(null);
@@ -560,21 +559,6 @@ export default function SaasGeographicAnalytics({ allTenants = [] }) {
 
     return list;
   }, [geoAnalytics.clinicsWithGeo, selectedGovernorate, searchQuery, userLocation, sortByDistance]);
-
-  // Determine fill color for governorate on map
-  const getRegionFillColor = (govId) => {
-    const isSelected = selectedGovernorate === govId;
-    const isHovered = hoveredRegion?.id === govId;
-    const count = geoAnalytics.govCounts[govId]?.total || 0;
-
-    if (isSelected) return '#10B981'; // Emerald active highlight
-    if (isHovered) return '#38BDF8';  // Sky hover highlight
-
-    if (count >= 5) return '#0369A1';
-    if (count >= 2) return '#0284C7';
-    if (count >= 1) return '#0E7490';
-    return '#1E293B'; // Muted slate for 0 clinics
-  };
 
   return (
     <div className="saas-geographic-analytics" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', direction: 'rtl' }}>

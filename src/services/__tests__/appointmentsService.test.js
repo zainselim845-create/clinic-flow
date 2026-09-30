@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as appointmentsService from '../appointmentsService';
-import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 // Mock supabase client
 vi.mock('../../lib/supabase', () => {

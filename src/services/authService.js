@@ -18,7 +18,9 @@ export function broadcastTenantUpdate(type, payload) {
       const channel = new BroadcastChannel('clinicflow_tenants_sync');
       channel.postMessage({ type, payload, timestamp: Date.now() });
       setTimeout(() => {
-        try { channel.close(); } catch (_) {}
+        try { channel.close(); } catch (closeErr) {
+          console.warn('[AuthService] BroadcastChannel close error:', closeErr);
+        }
       }, 1000);
     } catch (err) {
       console.warn('[AuthService] BroadcastChannel update error:', err);
@@ -195,8 +197,8 @@ export async function syncTenantsFromCloud() {
           cloudUsers = data.users;
         }
       }
-    } catch (_) {
-      // Fallback to direct public CDN storage endpoint
+    } catch (apiErr) {
+      console.warn('[AuthService] /api/sync-tenants sync fallback:', apiErr);
     }
 
     // 2. Fallback to direct public CDN storage endpoint if API route returned nothing
@@ -212,7 +214,9 @@ export async function syncTenantsFromCloud() {
             cloudUsers = cdnData.users;
           }
         }
-      } catch (_) {}
+      } catch (cdnErr) {
+        console.warn('[AuthService] CDN tenants fetch notice:', cdnErr);
+      }
     }
 
     if (cloudTenants.length === 0) return memoryTenantsCache || [];
@@ -237,7 +241,9 @@ export async function syncTenantsFromCloud() {
     if (typeof localStorage !== 'undefined') {
       try {
         localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(merged));
-      } catch (_) {}
+      } catch (storageErr) {
+        console.warn('[AuthService] Failed to persist merged tenants to localStorage:', storageErr);
+      }
     }
 
     // Also merge users if any
@@ -257,7 +263,9 @@ export async function syncTenantsFromCloud() {
       if (typeof localStorage !== 'undefined') {
         try {
           localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(mergedUsers));
-        } catch (_) {}
+        } catch (storageErr) {
+          console.warn('[AuthService] Failed to persist merged users to localStorage:', storageErr);
+        }
       }
     }
 
@@ -450,7 +458,9 @@ export function updateClinicSubscriptionStatus(clinicIdOrSlug, status, reason = 
             quotas: updatedTenant.quotas
           })
         }).catch(apiErr => console.warn('[AuthService] /api/sync-tenants PUT note:', apiErr));
-      } catch (_) {}
+      } catch (fetchErr) {
+        console.warn('[AuthService] /api/sync-tenants request error:', fetchErr);
+      }
     }
   }
 

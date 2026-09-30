@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Stethoscope, Eye, EyeOff, Loader2, Shield, AlertTriangle, 
+  Stethoscope, Eye, EyeOff, Loader2, AlertTriangle, 
   Building2, Globe, Check, User, Lock, Mail, Phone, 
   Sparkles, CheckCircle2, ArrowLeft
 } from 'lucide-react';

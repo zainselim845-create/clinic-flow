@@ -116,12 +116,16 @@ export default function ClinicLogoUploader({
     <div 
       className="clinic-logo-uploader" 
       dir="rtl"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       style={{
-        backgroundColor: 'var(--bg-primary, #FFFFFF)',
-        border: '1px solid var(--border-color, #E4E4E7)',
+        backgroundColor: isDragging ? 'var(--bg-tertiary, #F4F4F5)' : 'var(--bg-primary, #FFFFFF)',
+        border: isDragging ? '1.5px dashed var(--primary, #09090B)' : '1px solid var(--border-color, #E4E4E7)',
         borderRadius: '16px',
         padding: '1.25rem 1.5rem',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)'
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+        transition: 'background-color 0.2s, border-color 0.2s'
       }}
     >
       <input

@@ -5,8 +5,7 @@ import {
   deleteSaaSSubscriptionPlan,
   resetSaaSSubscriptionPlansToDefaults,
   getSaaSBillingMetrics,
-  updateClinicSubscriptionDetails,
-  DEFAULT_SAAS_PLANS
+  updateClinicSubscriptionDetails
 } from '../saasSubscriptionPlansService';
 import { clearAuthCache } from '../authService';
 import { safeStorage } from '../../utils/safeStorage';

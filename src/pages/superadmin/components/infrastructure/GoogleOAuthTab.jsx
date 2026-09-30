@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { getGoogleClientId, saveGoogleClientId, getGoogleOAuthSetupInfo } from '../../../../services/googleAuthService';
 import { copyToClipboard } from '../../../../utils/clipboard';
 

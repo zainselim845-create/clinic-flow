@@ -7,8 +7,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
-import { sendSMS } from '../services/smsService';
-import { askDoctorAiAssistant, getAiConfig } from '../services/aiAssistantService';
+import { askDoctorAiAssistant } from '../services/aiAssistantService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
@@ -43,7 +42,6 @@ const DoctorAssistant = ({ initialMode }) => {
   const scopedPatients = useMemo(() => {
     return (state.patients || []).filter(p => !p.clinicId || p.clinicId === activeClinicId);
   }, [state.patients, activeClinicId]);
-  const patients = scopedPatients;
 
   const scopedAppointments = useMemo(() => {
     return (state.appointments || []).filter(a => !a.clinicId || a.clinicId === activeClinicId);
@@ -56,8 +54,6 @@ const DoctorAssistant = ({ initialMode }) => {
     appointments: scopedAppointments,
     allClinics: allTenants || []
   }), [state, activeClinic, scopedPatients, scopedAppointments, allTenants]);
-
-  const [aiConfig, setAiConfig] = useState(() => getAiConfig());
 
   const getInitialWelcome = (slug, title, clinicTitle) => [
     {
@@ -278,7 +274,8 @@ const DoctorAssistant = ({ initialMode }) => {
             if (!agentReply) {
               agentReply = 'تم تنفيذ طلبك بنجاح في سيستم العيادة.';
             }
-          } catch (_) {
+          } catch (parseErr) {
+            console.warn('[DoctorAssistant] Action JSON parsing failed:', parseErr);
             agentReply = contentStr;
           }
         } else {
@@ -374,7 +371,8 @@ const DoctorAssistant = ({ initialMode }) => {
             if (!replyText) {
               replyText = 'تم تنفيذ طلبك بنجاح في سيستم العيادة.';
             }
-          } catch (_) {
+          } catch (parseErr) {
+            console.warn('[DoctorAssistant] Action JSON parsing failed:', parseErr);
             replyText = contentStr;
           }
         } else {

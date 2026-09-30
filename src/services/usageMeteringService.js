@@ -262,14 +262,24 @@ export function topUpClinicCredits({
   if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
     try {
       window.dispatchEvent(new CustomEvent('clinicflow_sync', { detail: { type: 'TOPUP_CREDITS', clinicId: cleanClinicId } }));
-    } catch (_) {}
+    } catch (err) {
+      console.warn('[UsageMetering] Sync broadcast event dispatch failed:', err);
+    }
   }
   if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
     try {
       const channel = new BroadcastChannel('clinicflow_tenants_sync');
       channel.postMessage({ type: 'TOPUP_CREDITS', clinicId: cleanClinicId, timestamp: Date.now() });
-      setTimeout(() => { try { channel.close(); } catch (_) {} }, 1000);
-    } catch (_) {}
+      setTimeout(() => {
+        try {
+          channel.close();
+        } catch (closeErr) {
+          console.warn('[UsageMetering] BroadcastChannel close failed:', closeErr);
+        }
+      }, 1000);
+    } catch (err) {
+      console.warn('[UsageMetering] BroadcastChannel message failed:', err);
+    }
   }
 
   return getClinicUsage(cleanClinicId);

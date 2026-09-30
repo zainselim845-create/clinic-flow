@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Download, Plus, ArrowUpRight } from 'lucide-react';
+import { Download, ArrowUpRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import InvoiceModal from '../components/InvoiceModal';
@@ -76,7 +76,7 @@ const Invoices = () => {
   }, [clinicSlug, clinicId]);
 
   // Remote Invoices Fetch
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     if (!clinicId) return;
     setIsLoading(true);
     setLoadError(null);
@@ -92,10 +92,10 @@ const Invoices = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [clinicId]);
 
   // Remote Expenses Fetch
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     if (!clinicId) return;
     try {
       const { data, error } = await getExpenses(clinicId);
@@ -105,12 +105,12 @@ const Invoices = () => {
     } catch (err) {
       console.warn('Expenses background sync notice:', err);
     }
-  };
+  }, [clinicId]);
 
   useEffect(() => {
     fetchInvoices();
     fetchExpenses();
-  }, [clinicId]);
+  }, [fetchInvoices, fetchExpenses]);
 
   // Save to tenant-scoped localStorage when lists change
   useEffect(() => {
@@ -201,7 +201,6 @@ const Invoices = () => {
     setIsInvoiceModalOpen(true);
   };
   const handleCreateInvoice = handleOpenNew;
-  const handleOpenNewInvoice = handleOpenNew;
 
   const handleViewInvoice = (inv) => {
     setSelectedInvoice(inv);
@@ -416,7 +415,7 @@ const Invoices = () => {
           statusFilter={statusFilter}
           setSearchQuery={setSearchQuery}
           setStatusFilter={setStatusFilter}
-          handleOpenNew={handleOpenNewInvoice}
+          handleOpenNew={handleOpenNew}
           handleOpenNewExpense={handleOpenNewExpense}
           handleViewInvoice={handleViewInvoice}
           handleDeleteExpense={handleDeleteExpense}

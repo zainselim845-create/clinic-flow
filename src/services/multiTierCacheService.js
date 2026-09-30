@@ -99,7 +99,9 @@ export class MultiTierCacheService {
         } else {
           safeStorage.removeItem(`cf_l2_${key}`);
         }
-      } catch (_) {}
+      } catch (err) {
+        console.warn(`[MultiTierCache] Failed to parse L2 entry for "${key}":`, err);
+      }
     }
 
     this.stats.misses += 1;
@@ -129,7 +131,9 @@ export class MultiTierCacheService {
     // Set L2
     try {
       safeStorage.setItem(`cf_l2_${key}`, JSON.stringify(entry));
-    } catch (_) {}
+    } catch (err) {
+      console.warn(`[MultiTierCache] Failed to persist L2 entry for "${key}":`, err);
+    }
   }
 
   /**

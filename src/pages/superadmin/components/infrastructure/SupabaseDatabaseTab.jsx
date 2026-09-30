@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, ShieldCheck, Download, CheckCircle2, Check, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, Download, CheckCircle2, Check, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { getSupabaseConfig, saveSupabaseConfig } from '../../../../lib/supabase';
 import { getRegisteredTenants, getAllPlatformUsers } from '../../../../services/authService';
 

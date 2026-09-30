@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, X } from 'lucide-react';
+import { safeGetItem, safeSetItem } from '../utils/safeStorage';
 
 /**
  * Clean, non-intrusive cookie and privacy consent banner.
@@ -9,29 +10,21 @@ export const CookieBanner = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    try {
-      const consent = localStorage.getItem('clinicflow_cookie_consent');
-      if (!consent) {
-        // Show after small initial delay for better UX
-        const timer = setTimeout(() => setIsVisible(true), 1200);
-        return () => clearTimeout(timer);
-      }
-    } catch {
-      // safe fallback
+    const consent = safeGetItem('clinicflow_cookie_consent');
+    if (!consent) {
+      // Show after small initial delay for better UX
+      const timer = setTimeout(() => setIsVisible(true), 1200);
+      return () => clearTimeout(timer);
     }
   }, []);
 
   const handleAccept = () => {
-    try {
-      localStorage.setItem('clinicflow_cookie_consent', 'accepted');
-    } catch {}
+    safeSetItem('clinicflow_cookie_consent', 'accepted');
     setIsVisible(false);
   };
 
   const handleDismiss = () => {
-    try {
-      localStorage.setItem('clinicflow_cookie_consent', 'dismissed');
-    } catch {}
+    safeSetItem('clinicflow_cookie_consent', 'dismissed');
     setIsVisible(false);
   };
 

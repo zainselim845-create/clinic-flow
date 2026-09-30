@@ -52,7 +52,7 @@ const Settings = () => {
         setSearchParams({ tab: 'clinic' }, { replace: true });
       }
     }
-  }, [tabFromUrl, isSuperAdmin, allowedTabs]);
+  }, [tabFromUrl, isSuperAdmin, allowedTabs, setSearchParams]);
 
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
@@ -86,7 +86,7 @@ const Settings = () => {
         };
       });
     }
-  }, [state.clinicInfo?.id, tenant?.id, tenant?.slug]);
+  }, [state.clinicInfo, tenant]);
 
   const handleSaveClinic = async (e) => {
     if (e && e.preventDefault) e.preventDefault();

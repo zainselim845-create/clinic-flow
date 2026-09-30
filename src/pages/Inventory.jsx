@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
@@ -27,14 +27,14 @@ const Inventory = () => {
   const clinicModules = tenant?.modules || state.clinicInfo?.modules || {};
   const isEnabled = Boolean(tenant?.enableInventory ?? state.clinicInfo?.enableInventory ?? clinicModules.inventory);
 
-  const loadScopedInventory = () => {
-    if (!currentSlug) return [];
-    const parsed = safeGetJSON(`clinicflow_inventory_${currentSlug}`, null);
+  const loadScopedInventory = useCallback((slug) => {
+    if (!slug) return [];
+    const parsed = safeGetJSON(`clinicflow_inventory_${slug}`, null);
     if (Array.isArray(parsed)) return parsed;
     return [];
-  };
+  }, []);
 
-  const [items, setItems] = useState(loadScopedInventory);
+  const [items, setItems] = useState(() => loadScopedInventory(currentSlug));
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState(null);
 
@@ -51,14 +51,14 @@ const Inventory = () => {
   }, [location.search]);
 
   useEffect(() => {
-    setItems(loadScopedInventory());
-  }, [currentSlug]);
+    setItems(loadScopedInventory(currentSlug));
+  }, [currentSlug, loadScopedInventory]);
 
   useEffect(() => {
     safeSetJSON(`clinicflow_inventory_${currentSlug}`, items);
   }, [items, currentSlug]);
 
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
     if (!currentClinicId) return;
     setIsLoading(true);
     setLoadError(null);
@@ -74,11 +74,11 @@ const Inventory = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentClinicId]);
 
   useEffect(() => {
     fetchInventory();
-  }, [currentClinicId]);
+  }, [fetchInventory]);
 
   const filteredItems = useMemo(() => {
     const q = (searchQuery || '').trim().toLowerCase();

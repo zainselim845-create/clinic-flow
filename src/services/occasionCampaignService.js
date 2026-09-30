@@ -24,14 +24,18 @@ export function getOccasionCampaignCandidates(patients = [], occasionId = 'birth
     // Derive favorite service from diagnosis or last notes
     const favoriteService = p.diagnosis || (p.lastTreatment || 'خدمات العناية المتكاملة');
     
-    // Check birthday match (if birthDate exists, or fallback based on patient ID hash for demo)
+    // Check occasion match (if birthDate exists for birthdays, or general eligibility)
     let isBirthdayCandidate = false;
-    if (p.birthDate) {
-      const bMonth = new Date(p.birthDate).getMonth() + 1;
-      isBirthdayCandidate = bMonth === currentMonth;
+    if (occasionId === 'birthday') {
+      if (p.birthDate) {
+        const bMonth = new Date(p.birthDate).getMonth() + 1;
+        isBirthdayCandidate = bMonth === currentMonth;
+      } else {
+        // Deterministic spread for demo purposes
+        isBirthdayCandidate = ((parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 4) === 0;
+      }
     } else {
-      // Deterministic spread for demo purposes
-      isBirthdayCandidate = ((parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 4) === 0;
+      isBirthdayCandidate = true;
     }
 
     return {

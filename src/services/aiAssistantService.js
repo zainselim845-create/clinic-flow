@@ -17,7 +17,8 @@ export function getAiConfig() {
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch (e) {
+      } catch (parseErr) {
+        console.warn('[AiAssistantService] Corrupt ai config JSON:', parseErr);
         try {
           localStorage.removeItem('clinicflow_ai_config');
         } catch (removeErr) {
@@ -369,7 +370,8 @@ export async function testOpenRouterConnection(apiKey, model) {
         model: model || DEFAULT_AI_MODEL 
       };
     }
-  } catch (_) {
+  } catch (testErr) {
+    console.warn('[AiAssistantService] Connection test fallback notice:', testErr);
     return { 
       success: true, 
       message: 'محرك الذكاء الاصطناعي السريري لمنظومة ClinicFlow مهيأ مسبقاً ويعمل بكفاءة كاملة 100%!', 

@@ -4,7 +4,7 @@ import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, MessageSquare, 
-  FileSpreadsheet, X, Edit3, Wallet, Layers
+  FileSpreadsheet, X, Edit3, Wallet, Layers, Printer
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTenant } from '../../context/TenantContext';

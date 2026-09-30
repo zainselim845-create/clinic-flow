@@ -2,16 +2,14 @@ import React, { useState } from 'react';
 import { 
   Building2, Save, CheckCircle2, Phone, Mail, Clock, 
   CalendarDays, ArrowLeft, Stethoscope, Globe, 
-  FileText, Printer, ShieldCheck, UserCheck, Sparkles,
+  ShieldCheck, UserCheck, Sparkles,
   Copy, ExternalLink, MessageSquare, Layers, Package,
   MapPin, LocateFixed, Compass, RefreshCw, AlertCircle,
-  Share2, QrCode, Link2, CreditCard, Smartphone, Banknote
+  QrCode, CreditCard, Smartphone
 } from 'lucide-react';
 
 import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
 import { formatSenderId } from '../../services/smsService';
-import { getClinicBookingUrl, getClinicDomain, SAAS_PLATFORM_DOMAIN } from '../../utils/clinicUrls';
-import { EGYPT_GOVERNORATES } from '../../features/egypt-national/governorates';
 import BookingShareModal from '../../components/BookingShareModal';
 import ClinicPalettePicker from '../../components/ClinicPalettePicker';
 import ClinicLogoUploader from '../../components/ClinicLogoUploader';
@@ -1277,11 +1275,11 @@ export default function GeneralSettingsTab({
               />
               <span className="slider round" style={{
                 position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: Boolean(clinicForm.enableLabs ?? clinicForm.modules?.labs) ? '#10B981' : '#CBD5E1',
+                backgroundColor: (clinicForm.enableLabs ?? clinicForm.modules?.labs) ? '#10B981' : '#CBD5E1',
                 borderRadius: '34px', transition: '0.3s'
               }}>
                 <span style={{
-                  position: 'absolute', content: '""', height: '20px', width: '20px', left: Boolean(clinicForm.enableLabs ?? clinicForm.modules?.labs) ? '25px' : '3px', bottom: '3px',
+                  position: 'absolute', content: '""', height: '20px', width: '20px', left: (clinicForm.enableLabs ?? clinicForm.modules?.labs) ? '25px' : '3px', bottom: '3px',
                   backgroundColor: 'white', borderRadius: '50%', transition: '0.3s'
                 }} />
               </span>
@@ -1339,11 +1337,11 @@ export default function GeneralSettingsTab({
               />
               <span className="slider round" style={{
                 position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: Boolean(clinicForm.enableInventory ?? clinicForm.modules?.inventory) ? '#10B981' : '#CBD5E1',
+                backgroundColor: (clinicForm.enableInventory ?? clinicForm.modules?.inventory) ? '#10B981' : '#CBD5E1',
                 borderRadius: '34px', transition: '0.3s'
               }}>
                 <span style={{
-                  position: 'absolute', content: '""', height: '20px', width: '20px', left: Boolean(clinicForm.enableInventory ?? clinicForm.modules?.inventory) ? '25px' : '3px', bottom: '3px',
+                  position: 'absolute', content: '""', height: '20px', width: '20px', left: (clinicForm.enableInventory ?? clinicForm.modules?.inventory) ? '25px' : '3px', bottom: '3px',
                   backgroundColor: 'white', borderRadius: '50%', transition: '0.3s'
                 }} />
               </span>

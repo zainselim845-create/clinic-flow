@@ -23,15 +23,13 @@ import * as patientsService from '../services/patientsService';
 import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '../utils/permissions';
-import { getBookingFunnelStats, getBookingDrafts, generateLeadRecoveryWhatsAppUrl, BOOKING_FUNNEL_STEPS } from '../services/leadRecoveryService';
+import { getBookingFunnelStats, getBookingDrafts } from '../services/leadRecoveryService';
 import { 
   DashboardMetricsGrid, 
   DashboardScheduleTable, 
-  DashboardLeadRecoveryCard, 
-  DashboardQuickDock 
+  DashboardLeadRecoveryCard 
 } from './dashboard/components';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
-import { copyToClipboard } from '../utils/clipboard';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -57,22 +55,9 @@ const Dashboard = () => {
   const [isShiftModalOpen, setIsShiftModalOpen] = useState(false);
   const [paymentModalAppt, setPaymentModalAppt] = useState(null);
   const [roomWarningModal, setRoomWarningModal] = useState(null);
-  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [scheduleSearchQuery, setScheduleSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('all');
-  const [copiedBookingLink, setCopiedBookingLink] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-
-  const handleCopyBookingLink = () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const clinicSlug = tenant?.slug || state.clinicInfo?.slug;
-    const url = clinicSlug 
-      ? `${origin}/c/${clinicSlug}`
-      : `${origin}/booking`;
-    copyToClipboard(url);
-    setCopiedBookingLink(true);
-    setTimeout(() => setCopiedBookingLink(false), 2500);
-  };
 
   // Filter today's appointments strictly scoped to current clinic
   const todaysAppointments = useMemo(() => {
@@ -147,7 +132,7 @@ const Dashboard = () => {
   // Booking Funnel Monitoring: Live abandoned leads and conversion analytics
   const bookingFunnelStats = useMemo(() => {
     return getBookingFunnelStats(currentClinicId);
-  }, [currentClinicId, state.appointments?.length]);
+  }, [currentClinicId]);
 
   const recentAbandonedLeads = useMemo(() => {
     const drafts = getBookingDrafts(currentClinicId);
@@ -155,7 +140,7 @@ const Dashboard = () => {
       .filter(d => d.status === 'abandoned')
       .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
       .slice(0, 5);
-  }, [currentClinicId, state.appointments?.length]);
+  }, [currentClinicId]);
 
   const currentExamPatient = inProgressToday[0] || null;
 
@@ -382,15 +367,6 @@ const Dashboard = () => {
     dispatch({ type: 'ADD_APPOINTMENT', payload: newBooking });
   };
 
-  const handleRefreshToday = () => {
-    setIsResetConfirmOpen(true);
-  };
-
-  const confirmResetToday = () => {
-    dispatch({ type: 'REFRESH_TODAY_DEMO_DATA' });
-    setIsResetConfirmOpen(false);
-  };
-
   // Minimalist Monochrome Quick Actions Dock Shortcuts
   const dockItems = useMemo(() => [
     {
@@ -432,7 +408,7 @@ const Dashboard = () => {
       iconType: 'rose',
       onClick: () => setIsRecallModalOpen(true)
     }
-  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab, isAdmin, isDoctor, user?.role, navigate]);
+  ], [waitingToday.length, pendingPaymentToday.length, activeFilterTab, isAdmin, user?.role]);
 
   // Schedule filtering (Memoized for high performance)
   const filteredAppointments = useMemo(() => {
@@ -779,18 +755,6 @@ const Dashboard = () => {
         confirmText="حسناً، فهمت"
         cancelText=""
         isDestructive={false}
-      />
-
-      {/* Reset Schedule Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={isResetConfirmOpen}
-        onClose={() => setIsResetConfirmOpen(false)}
-        onConfirm={confirmResetToday}
-        title="تأكيد استعادة جدول مواعيد اليوم"
-        message="هل أنت متأكد من رغبتك في إعادة ضبط واستعادة جدول مواعيد اليوم للحالة الأولية؟"
-        confirmText="تأكيد إعادة الضبط"
-        cancelText="إلغاء"
-        isDestructive={true}
       />
 
       {/* Clinic Booking Share & Real Domain Modal */}

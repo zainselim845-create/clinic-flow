@@ -56,7 +56,7 @@ const Labs = () => {
     safeSetJSON(`clinicflow_labs_${currentSlug}`, orders);
   }, [orders, currentSlug]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     if (!currentClinicId) return;
     setIsLoading(true);
     setLoadError(null);
@@ -72,11 +72,11 @@ const Labs = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentClinicId]);
 
   useEffect(() => {
     fetchOrders();
-  }, [currentClinicId]);
+  }, [fetchOrders]);
 
   const filteredOrders = useMemo(() => {
     return orders.filter(o => {

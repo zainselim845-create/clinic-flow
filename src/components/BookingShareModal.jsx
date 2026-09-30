@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { 
   X, Copy, Check, ExternalLink, Share2, MessageCircle, 
-  QrCode, Globe, ShieldCheck, Download, Sparkles, Building2
+  QrCode, Globe, ShieldCheck, Download
 } from 'lucide-react';
 import { 
   getClinicBookingUrl, 
-  getClinicDomain, 
   getClinicQrCodeUrl, 
   getClinicBookingWhatsAppShareUrl,
   SAAS_PLATFORM_DOMAIN
@@ -14,13 +13,12 @@ import { toast } from '../lib/toast';
 import { copyToClipboard } from '../utils/clipboard';
 
 export default function BookingShareModal({ isOpen, onClose, tenant }) {
-  if (!isOpen || !tenant) return null;
-
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedSubdomain, setCopiedSubdomain] = useState(false);
 
+  if (!isOpen || !tenant) return null;
+
   const bookingUrl = getClinicBookingUrl(tenant);
-  const dedicatedDomain = getClinicDomain(tenant);
   const qrCodeUrl = getClinicQrCodeUrl(bookingUrl, 320);
   const whatsappUrl = getClinicBookingWhatsAppShareUrl(tenant);
 

@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Bot, Sparkles, Key, Cpu, ShieldCheck, CheckCircle2, 
+  Bot, Key, Cpu, CheckCircle2, 
   AlertCircle, RefreshCw, Eye, EyeOff, Save, Activity,
-  Zap, ArrowUpRight, HelpCircle, Check, Sliders
+  Zap, Check, Sliders
 } from 'lucide-react';
 import { 
   getAiConfig, 
   saveAiConfig, 
   testAiConnection, 
-  DEFAULT_AI_MODEL, 
-  DEFAULT_OPENROUTER_KEY 
+  DEFAULT_AI_MODEL 
 } from '../../services/aiAssistantService';
 import { getClinicUsage } from '../../services/usageMeteringService';
 import { useTenant } from '../../context/TenantContext';

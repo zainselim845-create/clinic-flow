@@ -18,7 +18,7 @@ export default function ConsultationModal({
 }) {
   const { state, dispatch } = useApp();
   const { tenant } = useTenant();
-  const defaultClinicFee = state.clinicInfo?.regularFee || '300 ج.م';
+  const defaultClinicFee = tenant?.regularFee || state.clinicInfo?.regularFee || '300 ج.م';
   const [customFee, setCustomFee] = useState(appointment?.fee || defaultClinicFee);
   const [diagnosis, setDiagnosis] = useState('');
   const [procedures, setProcedures] = useState('');

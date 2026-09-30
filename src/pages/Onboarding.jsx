@@ -91,13 +91,13 @@ export default function Onboarding() {
 
   // Auto-fill defaults if user object updates
   useEffect(() => {
-    if (user?.name && (!doctorName || doctorName === 'د. ')) {
-      setDoctorName(user.name.startsWith('د.') ? user.name : `د. ${user.name}`);
+    if (user?.name) {
+      setDoctorName(prev => (!prev || prev === 'د. ') ? (user.name.startsWith('د.') ? user.name : `د. ${user.name}`) : prev);
     }
-    if (user?.phone && !phone) {
-      setPhone(user.phone);
+    if (user?.phone) {
+      setPhone(prev => !prev ? user.phone : prev);
     }
-  }, [user]);
+  }, [user?.name, user?.phone]);
 
   // If user already finished onboarding previously or has a valid clinic, redirect to dashboard
   useEffect(() => {

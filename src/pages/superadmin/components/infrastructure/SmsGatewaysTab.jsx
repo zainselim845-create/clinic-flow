@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Smartphone, Send, Eye, EyeOff } from 'lucide-react';
+import { Send, Eye, EyeOff } from 'lucide-react';
 import { getGlobalSmsProvider, saveGlobalSmsProvider, testSmsConnection } from '../../../../services/smsService';
 
 export function SmsGatewaysTab() {

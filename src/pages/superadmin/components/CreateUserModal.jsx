@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '../../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { X, UserPlus, Shield, User, Building, Lock, Mail, Phone, Briefcase } from 'lucide-react';
+import { X, UserPlus } from 'lucide-react';
 import { getAllPlatformUsers } from '../../../services/authService';
 
 export function CreateUserModal({

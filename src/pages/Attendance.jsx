@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   LogIn, LogOut, Clock 
 } from 'lucide-react';
@@ -19,21 +19,21 @@ const Attendance = () => {
   const currentSlug = tenant?.slug || state.clinicInfo?.slug || '';
   const clinicId = tenant?.id || currentSlug;
 
-  const loadScopedAttendance = () => {
-    if (!currentSlug) return [];
-    const parsed = safeGetJSON(`clinicflow_attendance_${currentSlug}`, null);
+  const loadScopedAttendance = useCallback((slug) => {
+    if (!slug) return [];
+    const parsed = safeGetJSON(`clinicflow_attendance_${slug}`, null);
     if (Array.isArray(parsed)) return parsed;
     return [];
-  };
+  }, []);
 
-  const [attendanceRecords, setAttendanceRecords] = useState(loadScopedAttendance);
+  const [attendanceRecords, setAttendanceRecords] = useState(() => loadScopedAttendance(currentSlug));
 
   const [selectedStaffId, setSelectedStaffId] = useState(staffList[0]?.id || 'staff-1');
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('ar-EG'));
 
   useEffect(() => {
-    setAttendanceRecords(loadScopedAttendance());
-  }, [currentSlug]);
+    setAttendanceRecords(loadScopedAttendance(currentSlug));
+  }, [currentSlug, loadScopedAttendance]);
 
   useEffect(() => {
     safeSetJSON(`clinicflow_attendance_${currentSlug}`, attendanceRecords);

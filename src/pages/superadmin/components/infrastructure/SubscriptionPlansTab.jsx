@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Crown, TrendingUp, DollarSign, CheckCircle2, ShieldAlert, 
+  Crown, TrendingUp, DollarSign, CheckCircle2, ShieldAlert, ShieldCheck,
   Layers, Sliders, Plus, RotateCcw, Trash2, Edit3, Search, 
   Lock, AlertTriangle, PlayCircle, PauseCircle, Check
 } from 'lucide-react';
@@ -92,7 +92,7 @@ export function SubscriptionPlansTab({
     }
   };
 
-  const handleUpgradeTier = (tenantId, newTier) => {
+  const _handleUpgradeTier = (tenantId, newTier) => {
     updateClinicSubscriptionDetails(tenantId, { subscriptionTier: newTier });
     if (updateTenantInfo) {
       updateTenantInfo(tenantId, { subscriptionTier: newTier });

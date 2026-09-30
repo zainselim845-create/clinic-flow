@@ -8,8 +8,6 @@ const REGISTRY_FILE = 'sync/tenants_registry.json';
 
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
-const FALLBACK_CLINICS = [];
-
 const LEGACY_DEMO_SLUGS = new Set([
   'dr-ahmed', 
   'dr-sara', 
@@ -121,11 +119,27 @@ async function saveRegistry(registry) {
   }
 }
 
+function parseJsonBody(req) {
+  if (!req.body) return {};
+  if (typeof req.body === 'object') return req.body;
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch (parseErr) {
+      console.warn('[Sync-Tenants API] Malformed JSON payload:', parseErr.message);
+      return null;
+    }
+  }
+  return {};
+}
+
 export default async function handler(req, res) {
-  // CORS Headers
+  // Security & CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -142,7 +156,7 @@ export default async function handler(req, res) {
         };
       });
       const sanitizedUsers = (registry.users || []).map(u => {
-        const { password, ...safeUser } = u;
+        const { password: _password, ...safeUser } = u;
         const hasClinic = Boolean(safeUser.clinicSlug && safeUser.clinicSlug !== '*');
         return {
           ...safeUser,
@@ -159,7 +173,10 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      const body = parseJsonBody(req);
+      if (body === null) {
+        return res.status(400).json({ success: false, error: 'Malformed JSON payload' });
+      }
       const { tenant, user } = body;
 
       if (!tenant && !user) {
@@ -232,7 +249,9 @@ export default async function handler(req, res) {
             subscription_tier: tenant.subscriptionTier || 'pro',
             subscription_status: tenant.subscriptionStatus || 'active'
           }).select().maybeSingle();
-        } catch (_) {}
+        } catch (pgErr) {
+          console.warn('[Sync-Tenants API] Supabase DB upsert warning:', pgErr?.message || pgErr);
+        }
       }
 
       return res.status(200).json({
@@ -244,7 +263,10 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      const body = parseJsonBody(req);
+      if (body === null) {
+        return res.status(400).json({ success: false, error: 'Malformed JSON payload' });
+      }
       const { id, slug, status, reason, branding, quotas, customDomain, custom_domain } = body;
       const targetIdentifier = id || slug;
 
@@ -271,7 +293,9 @@ export default async function handler(req, res) {
               custom_domain: domainVal,
               updated_at: new Date().toISOString()
             }).or(`id.eq.${targetIdentifier},slug.eq.${targetIdentifier}`);
-          } catch (_) {}
+          } catch (dbErr) {
+            console.warn('[Sync-Tenants API] Supabase custom_domain sync warning:', dbErr?.message || dbErr);
+          }
         }
         registry.tenants[tIndex].updatedAt = new Date().toISOString();
 
@@ -283,7 +307,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+      const body = parseJsonBody(req) || {};
       const targetIdentifier = body.id || body.slug || req.query?.id || req.query?.slug;
 
       if (!targetIdentifier) {

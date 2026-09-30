@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Smartphone, Send, Save, CheckCircle2, AlertCircle, RefreshCw,
-  ShieldCheck, MessageSquare, Zap, TrendingUp, Clock, Radio,
-  ChevronDown, ChevronUp, Eye, EyeOff, Copy, Activity
+  ShieldCheck, MessageSquare, Zap, Clock, Radio,
+  ChevronDown, ChevronUp, Eye, EyeOff, Activity
 } from 'lucide-react';
 import {
   getSmsConfig, saveSmsConfig, sendSMS, formatSenderId,
-  getClinicSenderId, getEasySendSmsBalance, testSmsConnection
+  getClinicSenderId
 } from '../services/smsService';
 import { useTenant } from '../context/TenantContext';
 import './SmsIntegration.css';

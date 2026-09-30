@@ -13,6 +13,7 @@ import {
 import { matchesSpecialtyFilter } from '../utils/specialtyUtils';
 import { getWhatsAppSupportUrl } from '../utils/utmTracking';
 import { getAutoUserLocation, calculateDistanceKm, formatDistanceAr } from '../services/autoLocationService';
+import { safeSetItem } from '../utils/safeStorage';
 import './LandingPage.css';
 
 const SPECIALTY_OPTIONS = [
@@ -144,9 +145,7 @@ const LandingPage = () => {
     const nextTheme = isDarkMode ? 'light' : 'dark';
     setIsDarkMode(!isDarkMode);
     document.documentElement.setAttribute('data-theme', nextTheme);
-    try {
-      localStorage.setItem('clinicflow_theme', nextTheme);
-    } catch {}
+    safeSetItem('clinicflow_theme', nextTheme);
   };
 
   // Newsletter Signup State

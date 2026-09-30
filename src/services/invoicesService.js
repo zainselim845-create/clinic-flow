@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/supabase';
-import { invoiceSchema, paymentSchema, validateWithSchema } from '../utils/validationSchemas';
+import { invoiceSchema, validateWithSchema } from '../utils/validationSchemas';
 
 export function fromDbInvoice(row) {
   if (!row) return null;

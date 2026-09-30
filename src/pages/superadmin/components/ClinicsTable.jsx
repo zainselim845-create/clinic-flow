@@ -1,7 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Check, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone } from 'lucide-react';
-import { getClinicUsage } from '../../../services/usageMeteringService';
-import { getClinicSenderId } from '../../../services/smsService';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone } from 'lucide-react';
 
 export function ClinicsTable({
   filteredTenants,

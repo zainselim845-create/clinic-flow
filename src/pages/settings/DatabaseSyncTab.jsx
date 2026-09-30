@@ -90,7 +90,7 @@ export default function DatabaseSyncTab({ state, dispatch }) {
     reader.readAsText(file);
   };
 
-  const handleCopySql = () => {
+  const handleCopySql = async () => {
     const sqlScript = `-- ClinicFlow PostgreSQL Schema
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

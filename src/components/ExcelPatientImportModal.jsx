@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { 
   FileSpreadsheet, Upload, Download, CheckCircle2, AlertTriangle, 
-  X, Users, FileText, Check, ArrowRight, Loader2, RefreshCw
+  X, Loader2, RefreshCw
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
@@ -16,7 +16,7 @@ export default function ExcelPatientImportModal({
   onImportComplete
 }) {
   const fileInputRef = useRef(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [_selectedFile, setSelectedFile] = useState(null);
   const [isParsing, setIsParsing] = useState(false);
   const [parseError, setParseError] = useState('');
   const [parseResult, setParseResult] = useState(null);

@@ -342,7 +342,9 @@ export const TenantProvider = ({ children }) => {
         document.removeEventListener('visibilitychange', handleSync);
       }
       if (channel) {
-        try { channel.close(); } catch (_) {}
+        try { channel.close(); } catch (err) {
+          console.warn('[TenantContext] BroadcastChannel close error:', err);
+        }
       }
     };
   }, []);
@@ -658,9 +660,13 @@ export const TenantProvider = ({ children }) => {
             .update(dbPayload)
             .or(`id.eq.${matchKey},slug.eq.${matchKey}`)
             .then(() => {})
-            .catch(() => {});
+            .catch((err) => {
+              console.warn('[TenantContext] Failed to sync tenant branding to Supabase:', err);
+            });
         }
-      } catch {}
+      } catch (err) {
+        console.warn('[TenantContext] Tenant branding update error:', err);
+      }
     }
   }, [activeTenant, applyBranding]);
 
@@ -734,7 +740,9 @@ export const TenantProvider = ({ children }) => {
         const bc = new BroadcastChannel('clinicflow_tenant_sync');
         bc.postMessage({ type: 'TENANT_DOMAIN_UPDATED', clinicId: target, domain: clean });
         bc.close();
-      } catch {}
+      } catch (err) {
+        console.warn('[TenantContext] BroadcastChannel domain sync error:', err);
+      }
     }
   }, [activeTenant]);
 

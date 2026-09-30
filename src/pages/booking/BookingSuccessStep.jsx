@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Stethoscope, CheckCircle, Check, Copy, MapPin, 
   MessageCircle, CalendarPlus, RefreshCw,
-  CreditCard, Smartphone, Banknote, ShieldCheck
+  CreditCard, Smartphone, Banknote
 } from 'lucide-react';
 import { parseArabicTime } from '../../utils/parseArabicTime';
 import { getBookingConfirmationWhatsAppUrl } from '../../services/smsService';
@@ -84,11 +84,6 @@ export default function BookingSuccessStep({
     }
     const query = clinic.address ? `${clinic.address} ${clinic.name || ''}` : (clinic.name || 'عيادة');
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-  };
-
-  const getOpenStreetMapUrl = (address, clinicName) => {
-    const query = address ? `${address} ${clinicName || ''}` : (clinicName || 'عيادة');
-    return `https://www.openstreetmap.org/search?query=${encodeURIComponent(query)}`;
   };
 
   return (

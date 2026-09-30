@@ -7,9 +7,7 @@ import {
   Plus, 
   Trash2, 
   ArrowDownLeft, 
-  ArrowUpRight, 
-  Calendar, 
-  CreditCard 
+  ArrowUpRight 
 } from 'lucide-react';
 import { Skeleton } from '../ui/Skeleton';
 
@@ -22,8 +20,8 @@ export default function InvoicesTable({
   viewMode = 'all', // 'all' | 'in' | 'out'
   searchQuery = '',
   statusFilter = 'all',
-  setSearchQuery,
-  setStatusFilter,
+  _setSearchQuery,
+  _setStatusFilter,
   handleOpenNew,
   handleOpenNewExpense,
   handleViewInvoice,

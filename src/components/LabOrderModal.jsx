@@ -95,7 +95,12 @@ const LabOrderModal = ({
                 placeholder="اسم المريض..."
                 className="input-field"
                 value={patientName}
-                onChange={(e) => setPatientName(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPatientName(val);
+                  const matched = (patients || []).find(p => p.name === val);
+                  setPatientId(matched ? matched.id : '');
+                }}
               />
               <datalist id="patients-list">
                 {patients.map(p => (

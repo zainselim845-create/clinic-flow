@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowDownLeft, ArrowUpRight, Wallet, AlertCircle, Calendar } from 'lucide-react';
 
 export default function InvoicesMetricsGrid({
-  totalBilled = 0,
+  _totalBilled = 0,
   totalCollected = 0,
   totalOutstanding = 0,
   invoicesCount = 0,

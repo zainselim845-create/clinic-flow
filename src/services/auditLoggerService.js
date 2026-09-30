@@ -33,7 +33,8 @@ export function computeSha256(rawInput) {
   let ascii = '';
   try {
     ascii = unescape(encodeURIComponent(String(rawInput || '')));
-  } catch (_) {
+  } catch (encodeErr) {
+    console.warn('[AuditLogger] URI component encoding fallback:', encodeErr);
     ascii = String(rawInput || '');
   }
 

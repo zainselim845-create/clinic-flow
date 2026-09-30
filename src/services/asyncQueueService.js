@@ -8,8 +8,6 @@
  * - Tenant-isolated and crash-resilient with persistent state
  */
 
-import { safeStorage } from '../utils/safeStorage';
-
 export const JOB_PRIORITY = {
   HIGH: 1,
   NORMAL: 2,

@@ -106,7 +106,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, setIsOpen]);
 
   // Execute clinical actions dispatched by agent
   const executeDoctorAction = (actionResult) => {

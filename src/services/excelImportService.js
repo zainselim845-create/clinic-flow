@@ -18,7 +18,7 @@ const COLUMN_ALIASES = {
  */
 const normalizeHeader = (header) => {
   if (!header || typeof header !== 'string') return '';
-  return header.trim().toLowerCase().replace(/[\s_\-\.]+/g, '');
+  return header.trim().toLowerCase().replace(/[\s_\-.]+/g, '');
 };
 
 /**

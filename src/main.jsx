@@ -43,12 +43,16 @@ if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
             localStorage.removeItem('clinicflow_auth_user');
             sessionStorage.removeItem('clinicflow_auth_user');
           }
-        } catch (_) {}
+        } catch (parseErr) {
+          console.warn('[PurgeDemo] Error parsing auth user:', parseErr);
+        }
       }
 
       localStorage.setItem(PURGE_KEY, 'true');
     }
-  } catch (_) {}
+  } catch (purgeErr) {
+    console.warn('[PurgeDemo] Error executing demo purge:', purgeErr);
+  }
 }
 
 // Register Service Worker for offline PWA support

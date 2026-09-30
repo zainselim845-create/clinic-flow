@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '../../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { X, Edit, Shield, Building, Lock, Mail, Phone, Briefcase, KeyRound, Check } from 'lucide-react';
+import { X, Edit, KeyRound, Check } from 'lucide-react';
 
 export function EditUserModal({
   isOpen,

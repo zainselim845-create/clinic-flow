@@ -5,7 +5,6 @@
 
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import { updateClinicSubscriptionStatus, broadcastTenantUpdate } from './authService';
-import { getSaaSSubscriptionPlans } from './saasSubscriptionPlansService';
 
 export const SUBSCRIPTION_STATES = {
   TRIALING: 'trialing',
@@ -92,6 +91,7 @@ export function processBillingWebhook(event = {}) {
     case 'checkout.session.completed':
     case 'invoice.payment_succeeded': {
       if (clinicId) {
+        console.info(`[StripeBilling] Webhook processed: clinic ${clinicId} activated on tier ${planId}.`);
         updateClinicSubscriptionStatus(clinicId, SUBSCRIPTION_STATES.ACTIVE);
       }
       break;

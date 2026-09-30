@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  X, Save, Sparkles, Check, CheckCircle2, ShieldCheck, 
-  Smartphone, Users, Calendar, DollarSign, Tag, Globe, Activity
-} from 'lucide-react';
+import { X, Save, Sparkles, CheckCircle2 } from 'lucide-react';
 import { saveSaaSSubscriptionPlan } from '../../../services/saasSubscriptionPlansService';
 
 export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess, onSave }) {
