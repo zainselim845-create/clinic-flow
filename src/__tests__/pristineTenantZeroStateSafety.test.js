@@ -167,7 +167,7 @@ describe('Pristine Tenant Zero-State Safety & Anti-Leakage Architecture', () => 
 
   it('guarantees getRegisteredTenants automatically purges legacy demo clinics from storage and cache', () => {
     localStorage.setItem('clinicflow_registered_tenants', JSON.stringify([
-      { id: 'clinic-domya-auto', slug: 'dr-domyaauto', name: 'Fake Clinic', doctorEmail: 'domyaauto@gmail.com' },
+      { id: 'clinic-legacy-fixture', slug: 'dr-ahmed', name: 'Legacy Demo Clinic', doctorEmail: 'doctor@clinicflow.com' },
       { id: 'clinic-real-doc', slug: 'dr-real', name: 'Real Clinic', doctorEmail: 'real@clinicflow.test' }
     ]));
     clearAuthCache();

@@ -10,11 +10,7 @@ const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
 const LEGACY_DEMO_SLUGS = new Set([
   'dr-ahmed', 
-  'dr-sara', 
-  'dr-domyaauto', 
-  'dr-ramasarg0', 
-  'dr-mo1momo3mo16', 
-  'dr-mohammedsaeed6u'
+  'dr-sara'
 ]);
 
 const ALLOWED_SUBSCRIPTION_STATUSES = new Set(['active', 'trial', 'suspended', 'cancelled', 'lifetime', 'pending_approval']);
@@ -27,40 +23,26 @@ const LEGACY_DEMO_EMAILS = new Set([
   'doctor@clinicflow.com',
   'sara.clinic@clinicflow.com',
   'owner@clinicflow.com',
-  'reception@clinicflow.com',
-  'domyaauto@gmail.com',
-  'ramasarg@gmail.com'
+  'reception@clinicflow.com'
 ]);
 
 function isDemoOrCorruptedTenant(t) {
   if (!t) return true;
   const slug = (t.slug || '').toLowerCase();
   const email = (t.doctorEmail || t.email || '').toLowerCase();
-  const name = (t.name || '').toLowerCase();
-  const id = (t.id || '').toLowerCase();
 
   if (LEGACY_DEMO_SLUGS.has(slug)) return true;
   if (LEGACY_DEMO_EMAILS.has(email)) return true;
-  if (slug === 'domya-auto' || slug === 'dr-domyaauto' || id === 'clinic-domya-auto' || id === 'clinic-111261498014278193869') return true;
-  if (slug.includes('domya') || name.includes('domya') || email.includes('domya') || id.includes('domya')) return true;
-  if (slug.includes('ramasarg') || email.includes('ramasarg') || id.includes('ramasarg')) return true;
-  if (slug.includes('mo1momo3mo16') || id.includes('mo1momo3mo16')) return true;
-  if (slug.includes('mohammedsaeed6u') || id.includes('mohammedsaeed6u')) return true;
   return false;
 }
 
 function isDemoOrCorruptedUser(u) {
   if (!u) return true;
   const email = (u.email || '').toLowerCase();
-  const name = (u.name || '').toLowerCase();
   const id = (u.id || '').toLowerCase();
-  const slug = (u.clinicSlug || '').toLowerCase();
 
   if (LEGACY_DEMO_EMAILS.has(email)) return true;
   if (id === 'doc-master' || id === 'doc-sara-master' || id === 'user-multi-clinic-owner' || id === 'staff-reception-master') return true;
-  if (email.includes('domya') || name.includes('domya') || slug.includes('domya') || id.includes('domya')) return true;
-  if (email.includes('ramasarg') || name.includes('ramasarg') || slug.includes('ramasarg') || id.includes('ramasarg')) return true;
-  if (slug.includes('mo1momo3mo16') || slug.includes('mohammedsaeed6u')) return true;
   return false;
 }
 
@@ -191,12 +173,11 @@ export default async function handler(req, res) {
         };
       });
       const sanitizedUsers = (registry.users || []).map(u => {
-        const { password: _password, ...safeUser } = u;
-        const hasClinic = Boolean(safeUser.clinicSlug && safeUser.clinicSlug !== '*');
+        const hasClinic = Boolean(u.clinicSlug && u.clinicSlug !== '*');
         return {
-          ...safeUser,
-          needsOnboarding: hasClinic ? false : (safeUser.needsOnboarding ?? false),
-          isOnboardingCompleted: hasClinic ? true : (safeUser.isOnboardingCompleted ?? true)
+          ...u,
+          needsOnboarding: hasClinic ? false : (u.needsOnboarding ?? false),
+          isOnboardingCompleted: hasClinic ? true : (u.isOnboardingCompleted ?? true)
         };
       });
       return res.status(200).json({

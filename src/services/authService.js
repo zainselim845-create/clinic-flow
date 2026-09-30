@@ -92,50 +92,32 @@ export function clearAuthCache() {
 
 const LEGACY_DEMO_SLUGS = new Set([
   'dr-ahmed', 
-  'dr-sara', 
-  'dr-domyaauto', 
-  'dr-ramasarg0', 
-  'dr-mo1momo3mo16', 
-  'dr-mohammedsaeed6u'
+  'dr-sara'
 ]);
 const LEGACY_DEMO_EMAILS = new Set([
   'doctor@clinicflow.com',
   'sara.clinic@clinicflow.com',
   'owner@clinicflow.com',
-  'reception@clinicflow.com',
-  'domyaauto@gmail.com',
-  'ramasarg@gmail.com'
+  'reception@clinicflow.com'
 ]);
 
 export function isDemoOrCorruptedTenant(t) {
   if (!t) return true;
   const slug = (t.slug || '').toLowerCase();
   const email = (t.doctorEmail || t.email || '').toLowerCase();
-  const name = (t.name || '').toLowerCase();
-  const id = (t.id || '').toLowerCase();
 
   if (LEGACY_DEMO_SLUGS.has(slug)) return true;
   if (LEGACY_DEMO_EMAILS.has(email)) return true;
-  if (slug === 'domya-auto' || slug === 'dr-domyaauto' || id === 'clinic-domya-auto' || id === 'clinic-111261498014278193869') return true;
-  if (slug.includes('domya') || name.includes('domya') || email.includes('domya') || id.includes('domya')) return true;
-  if (slug.includes('ramasarg') || email.includes('ramasarg') || id.includes('ramasarg')) return true;
-  if (slug.includes('mo1momo3mo16') || id.includes('mo1momo3mo16')) return true;
-  if (slug.includes('mohammedsaeed6u') || id.includes('mohammedsaeed6u')) return true;
   return false;
 }
 
 export function isDemoOrCorruptedUser(u) {
   if (!u) return true;
   const email = (u.email || '').toLowerCase();
-  const name = (u.name || '').toLowerCase();
   const id = (u.id || '').toLowerCase();
-  const slug = (u.clinicSlug || '').toLowerCase();
 
   if (LEGACY_DEMO_EMAILS.has(email)) return true;
   if (id === 'doc-master' || id === 'doc-sara-master' || id === 'user-multi-clinic-owner' || id === 'staff-reception-master') return true;
-  if (email.includes('domya') || name.includes('domya') || slug.includes('domya') || id.includes('domya')) return true;
-  if (email.includes('ramasarg') || name.includes('ramasarg') || slug.includes('ramasarg') || id.includes('ramasarg')) return true;
-  if (slug.includes('mo1momo3mo16') || slug.includes('mohammedsaeed6u')) return true;
   return false;
 }
 
