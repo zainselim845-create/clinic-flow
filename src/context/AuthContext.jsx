@@ -9,7 +9,8 @@ import {
   slugifyClinic,
   completeClinicOnboarding,
   saveRegisteredUser,
-  syncTenantsFromCloud
+  syncTenantsFromCloud,
+  syncTenantAndUserToCloud
 } from '../services/authService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import { 
@@ -560,6 +561,9 @@ export const AuthProvider = ({ children }) => {
 
     persistUser(realUser);
     saveRegisteredUser(realUser);
+    if (userTenant) {
+      await syncTenantAndUserToCloud(userTenant, realUser);
+    }
     localStorage.setItem('clinicflow_role', realUser.role);
     setUser(realUser);
     setRole(realUser.role);
@@ -608,6 +612,9 @@ export const AuthProvider = ({ children }) => {
       if (registerNewTenant) {
         registerNewTenant(result.tenant);
       }
+      if (result.tenant) {
+        await syncTenantAndUserToCloud(result.tenant, updatedUser);
+      }
       if (switchTenant && result.tenant?.slug) {
         switchTenant(result.tenant.slug);
       }
@@ -637,6 +644,10 @@ export const AuthProvider = ({ children }) => {
   const signUpDoctorAndClinic = async (formData) => {
     try {
       const { tenant, user: newUser } = registerDoctorAndClinic(formData);
+      
+      // CRITICAL: Await mandatory cloud push so account is immediately in the cloud registry
+      await syncTenantAndUserToCloud(tenant, newUser);
+
       persistUser(newUser);
       setUser(newUser);
       setRole(newUser.role);

@@ -42,7 +42,8 @@ import {
   updateUserAccount,
   resetUserPassword,
   toggleUserAccountStatus,
-  deleteUserAccount
+  deleteUserAccount,
+  syncTenantsFromCloud
 } from '../../services/authService';
 import { formatSenderId } from '../../services/smsService';
 import { getClinicUsage } from '../../services/usageMeteringService';
@@ -130,6 +131,17 @@ export default function SuperAdminDashboard() {
   });
 
   const handleRefreshAll = () => {
+    syncTenantsFromCloud().then(() => {
+      if (refreshTenants) {
+        refreshTenants();
+      } else {
+        const freshTenants = getCombinedTenants(true);
+        setAllTenants(freshTenants);
+      }
+      const freshUsers = getAllPlatformUsers();
+      setAllUsers(freshUsers);
+    }).catch(() => {});
+
     if (refreshTenants) {
       refreshTenants();
     } else {

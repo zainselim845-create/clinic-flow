@@ -65,3 +65,59 @@ describe('googleAuthService', () => {
     expect(Array.isArray(setupInfo.authorizedRedirects)).toBe(true);
   });
 });
+
+describe('Cloud-First Registration and Google Auth Sync', () => {
+  beforeEach(() => {
+    safeStorage.clear();
+  });
+
+  it('syncTenantAndUserToCloud queues payload if fetch is rejected or unavailable', async () => {
+    const { syncTenantAndUserToCloud, flushPendingCloudSyncQueue } = await import('../services/authService');
+    
+    // Simulate network error
+    const originalFetch = global.fetch;
+    global.fetch = () => Promise.reject(new Error('Network offline'));
+
+    const testTenant = { id: 'clinic-google-test', slug: 'dr-google', name: 'عيادة د. تجربة' };
+    const testUser = { id: 'google-usr-1', email: 'test.google@gmail.com', name: 'د. تجربة' };
+
+    const result = await syncTenantAndUserToCloud(testTenant, testUser);
+    expect(result).toBe(false);
+
+    // Verify it was queued in safeStorage
+    const pending = safeStorage.getItem('clinicflow_pending_cloud_sync');
+    expect(pending).toBeTruthy();
+    const parsed = typeof pending === 'string' ? JSON.parse(pending) : pending;
+    expect(parsed.length).toBeGreaterThan(0);
+    expect(parsed[0].tenant.id).toBe('clinic-google-test');
+    expect(parsed[0].user.email).toBe('test.google@gmail.com');
+
+    // Now restore fetch and flush
+    global.fetch = () => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ success: true })
+    });
+
+    await flushPendingCloudSyncQueue();
+    expect(safeStorage.getItem('clinicflow_pending_cloud_sync')).toBeNull();
+
+    global.fetch = originalFetch;
+  });
+
+  it('syncTenantAndUserToCloud succeeds immediately when cloud API returns ok', async () => {
+    const { syncTenantAndUserToCloud } = await import('../services/authService');
+    const originalFetch = global.fetch;
+    global.fetch = () => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ success: true, message: 'Saved to cloud' })
+    });
+
+    const testTenant = { id: 'clinic-google-live', slug: 'dr-live', name: 'عيادة د. لايف' };
+    const testUser = { id: 'google-usr-2', email: 'live.google@gmail.com', name: 'د. لايف' };
+
+    const ok = await syncTenantAndUserToCloud(testTenant, testUser);
+    expect(ok).toBe(true);
+
+    global.fetch = originalFetch;
+  });
+});

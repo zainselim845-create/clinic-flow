@@ -9,6 +9,7 @@ import { formatSenderId } from './smsService';
 import { isSupabaseConfigured, CLOUD_TENANTS_REGISTRY_URL } from '../lib/supabase';
 import { createClinicInDb, deleteClinicFromDb } from './clinicsService';
 import { computeSha256 } from './auditLoggerService';
+import { safeStorage } from '../utils/safeStorage';
 
 export function hashPassword(plainPassword) {
   if (!plainPassword) return '';
@@ -164,8 +165,7 @@ function safeFetchSyncTenants(endpointUrl, options = {}) {
     } else if (typeof process !== 'undefined' && process.env?.VERCEL_URL) {
       finalUrl = `https://${process.env.VERCEL_URL}${endpointUrl}`;
     } else {
-      // In environment without valid origin, skip relative network call safely
-      return Promise.resolve({ ok: false, json: async () => ({}) });
+      finalUrl = `https://clinic-flow-ten-sigma.vercel.app${endpointUrl}`;
     }
   }
   return fetch(finalUrl, options);
@@ -265,11 +265,127 @@ export async function syncTenantsFromCloud() {
       }
     }
 
+    // Upward Reconciliation: Flush pending queue and ensure any local tenants/users missing from cloud are immediately pushed
+    flushPendingCloudSyncQueue().catch(() => {});
+
+    if (cloudTenants.length > 0) {
+      const missingTenantsFromCloud = local.filter(lt => 
+        lt && (lt.slug || lt.id) && !isDemoOrCorruptedTenant(lt) && 
+        !cloudTenants.some(ct => (lt.id && ct.id === lt.id) || (lt.slug && ct.slug === lt.slug))
+      );
+      for (const missingTenant of missingTenantsFromCloud) {
+        safeFetchSyncTenants('/api/sync-tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tenant: missingTenant })
+        }).catch(err => console.warn('[AuthService] Upward sync tenant note:', err));
+      }
+    }
+
+    if (cloudUsers.length > 0) {
+      const localUsers = getRegisteredUsers(true);
+      const missingUsersFromCloud = localUsers.filter(lu =>
+        lu && (lu.id || lu.email) && !isDemoOrCorruptedUser(lu) &&
+        !cloudUsers.some(cu => (lu.id && cu.id === lu.id) || (lu.email && cu.email && cu.email.toLowerCase() === lu.email.toLowerCase()))
+      );
+      for (const missingUser of missingUsersFromCloud) {
+        safeFetchSyncTenants('/api/sync-tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: missingUser })
+        }).catch(err => console.warn('[AuthService] Upward sync user note:', err));
+      }
+    }
+
     return merged;
   } catch (err) {
     console.warn('[AuthService] syncTenantsFromCloud notice:', err);
     return memoryTenantsCache || [];
   }
+}
+
+const PENDING_SYNC_KEY = 'clinicflow_pending_cloud_sync';
+
+function queuePendingCloudSync(payload) {
+  if (!payload) return;
+  try {
+    const raw = safeStorage.getItem(PENDING_SYNC_KEY);
+    const queue = raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : [];
+    const list = Array.isArray(queue) ? queue : [];
+    list.push({ ...payload, queuedAt: new Date().toISOString() });
+    safeStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(list.slice(-20)));
+  } catch (err) {
+    console.warn('[AuthService] Failed to queue pending cloud sync:', err);
+  }
+}
+
+export async function flushPendingCloudSyncQueue() {
+  if (typeof fetch === 'undefined') return;
+  try {
+    const raw = safeStorage.getItem(PENDING_SYNC_KEY);
+    if (!raw) return;
+    const queue = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    if (!Array.isArray(queue) || queue.length === 0) return;
+
+    const remaining = [];
+    for (const item of queue) {
+      try {
+        const res = await safeFetchSyncTenants('/api/sync-tenants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item)
+        });
+        if (!res || !res.ok) {
+          remaining.push(item);
+        }
+      } catch {
+        remaining.push(item);
+      }
+    }
+    if (remaining.length > 0) {
+      safeStorage.setItem(PENDING_SYNC_KEY, JSON.stringify(remaining));
+    } else {
+      safeStorage.removeItem(PENDING_SYNC_KEY);
+    }
+  } catch (err) {
+    console.warn('[AuthService] Pending sync flush notice:', err);
+  }
+}
+
+/**
+ * Mandatory atomic push of a registered clinic tenant and doctor account to the cloud registry.
+ * Eliminates browser-only account stranding.
+ * @param {Object} tenant
+ * @param {Object} user
+ * @returns {Promise<boolean>}
+ */
+export async function syncTenantAndUserToCloud(tenant, user) {
+  const payload = { tenant, user };
+  if (typeof fetch === 'undefined') return true;
+  try {
+    const res = await safeFetchSyncTenants('/api/sync-tenants', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res && res.ok) {
+      const data = await res.json();
+      return Boolean(data.success);
+    }
+    queuePendingCloudSync(payload);
+    return false;
+  } catch (err) {
+    console.warn('[AuthService] Mandatory cloud sync notice:', err);
+    queuePendingCloudSync(payload);
+    return false;
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    flushPendingCloudSyncQueue().catch(() => {});
+    syncTenantsFromCloud().catch(() => {});
+  });
 }
 
 export function saveRegisteredTenant(tenant) {
