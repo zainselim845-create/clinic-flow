@@ -60,4 +60,20 @@ describe('excelImportService - Migration from Old Systems', () => {
       .rejects
       .toThrow('لم نتمكن من التعرف على أعمدة (الاسم) أو (رقم الهاتف)');
   });
+
+  it('protects against prototype pollution and malicious header attributes in excel files', async () => {
+    const rawData = [
+      { 'الاسم بالكامل': 'مريض تجريبي', 'رقم المحمول': '01099887766', '__proto__': { 'isAdmin': true }, 'constructor': 'hacked' }
+    ];
+
+    const worksheet = XLSX.utils.json_to_sheet(rawData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    const fileBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+
+    const result = await parsePatientsExcelFile(fileBuffer, 'test-clinic-1');
+    expect(result.validCount).toBe(1);
+    expect(({}).isAdmin).toBeUndefined();
+    expect(result.patients[0].isAdmin).toBeUndefined();
+  });
 });

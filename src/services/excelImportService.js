@@ -62,6 +62,7 @@ export const parsePatientsExcelFile = async (fileBuffer, clinicId, existingPatie
   const firstRow = rawRows[0];
   const fieldMapping = {};
   Object.keys(firstRow).forEach(colName => {
+    if (colName === '__proto__' || colName === 'constructor' || colName === 'prototype') return;
     const matchedField = matchHeaderToField(colName);
     if (matchedField && !fieldMapping[matchedField]) {
       fieldMapping[matchedField] = colName;

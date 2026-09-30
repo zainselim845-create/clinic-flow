@@ -16,6 +16,13 @@ const LEGACY_DEMO_SLUGS = new Set([
   'dr-mo1momo3mo16', 
   'dr-mohammedsaeed6u'
 ]);
+
+const ALLOWED_SUBSCRIPTION_STATUSES = new Set(['active', 'trial', 'suspended', 'cancelled', 'lifetime']);
+const ALLOWED_SUBSCRIPTION_TIERS = new Set(['free', 'basic', 'pro', 'enterprise', 'lifetime']);
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const IDENTIFIER_REGEX = /^[a-zA-Z0-9_-]+$/;
+const DOMAIN_REGEX = /^[a-zA-Z0-9.-]+$/;
+
 const LEGACY_DEMO_EMAILS = new Set([
   'doctor@clinicflow.com',
   'sara.clinic@clinicflow.com',
@@ -187,6 +194,39 @@ export default async function handler(req, res) {
         return res.status(400).json({ success: false, error: 'Missing tenant or user payload' });
       }
 
+      // Input Validation & Length Bounds (CWE-20 / CWE-120)
+      if (tenant) {
+        const rawTenantId = String(tenant.id || '').trim();
+        const rawTenantSlug = String(tenant.slug || '').trim();
+        if (rawTenantId && (!IDENTIFIER_REGEX.test(rawTenantId) || rawTenantId.length > 64)) {
+          return res.status(400).json({ success: false, error: 'Invalid tenant id format' });
+        }
+        if (rawTenantSlug && (!IDENTIFIER_REGEX.test(rawTenantSlug) || rawTenantSlug.length > 64)) {
+          return res.status(400).json({ success: false, error: 'Invalid tenant slug format' });
+        }
+        if (tenant.doctorEmail && (typeof tenant.doctorEmail !== 'string' || tenant.doctorEmail.length > 128 || !EMAIL_REGEX.test(tenant.doctorEmail))) {
+          return res.status(400).json({ success: false, error: 'Invalid tenant email format' });
+        }
+        if (tenant.subscriptionTier && !ALLOWED_SUBSCRIPTION_TIERS.has(tenant.subscriptionTier)) {
+          tenant.subscriptionTier = 'pro';
+        }
+        if (tenant.subscriptionStatus && !ALLOWED_SUBSCRIPTION_STATUSES.has(tenant.subscriptionStatus)) {
+          tenant.subscriptionStatus = 'active';
+        }
+      }
+      if (user) {
+        const rawUserId = String(user.id || '').trim();
+        if (rawUserId && (!IDENTIFIER_REGEX.test(rawUserId) || rawUserId.length > 64)) {
+          return res.status(400).json({ success: false, error: 'Invalid user id format' });
+        }
+        if (user.email && (typeof user.email !== 'string' || user.email.length > 128 || !EMAIL_REGEX.test(user.email))) {
+          return res.status(400).json({ success: false, error: 'Invalid user email format' });
+        }
+        if (user.clinicSlug && user.clinicSlug !== '*' && (!IDENTIFIER_REGEX.test(user.clinicSlug) || user.clinicSlug.length > 64)) {
+          return res.status(400).json({ success: false, error: 'Invalid user clinic slug format' });
+        }
+      }
+
       const registry = await getRegistry();
 
       if (tenant && (tenant.id || tenant.slug)) {
@@ -281,9 +321,15 @@ export default async function handler(req, res) {
       const { id, slug, status, reason, branding, quotas, customDomain, custom_domain } = body;
       const rawIdentifier = (id || slug || '').trim();
 
-      // Input Validation & PostgREST / SQL Injection Mitigation (CWE-89)
-      if (!rawIdentifier || !/^[a-zA-Z0-9_-]+$/.test(rawIdentifier)) {
+      // Input Validation & PostgREST / SQL Injection Mitigation (CWE-89 / CWE-120)
+      if (!rawIdentifier || !IDENTIFIER_REGEX.test(rawIdentifier) || rawIdentifier.length > 64) {
         return res.status(400).json({ success: false, error: 'Invalid clinic identifier format' });
+      }
+      if (status && !ALLOWED_SUBSCRIPTION_STATUSES.has(status)) {
+        return res.status(400).json({ success: false, error: 'Invalid subscription status' });
+      }
+      if (reason && (typeof reason !== 'string' || reason.length > 500)) {
+        return res.status(400).json({ success: false, error: 'Invalid suspension reason length or format' });
       }
       const targetIdentifier = rawIdentifier;
 
@@ -300,7 +346,7 @@ export default async function handler(req, res) {
         if (customDomain !== undefined || custom_domain !== undefined) {
           const rawDomain = (customDomain || custom_domain || '').trim();
           // Sanitize domain to prevent injection or XSS (CWE-79 / CWE-89)
-          if (rawDomain && !/^[a-zA-Z0-9.-]+$/.test(rawDomain)) {
+          if (rawDomain && !DOMAIN_REGEX.test(rawDomain) || rawDomain.length > 120) {
             return res.status(400).json({ success: false, error: 'Invalid custom domain format' });
           }
           const domainVal = rawDomain || null;
