@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Bot, Send, Sparkles, X, Maximize2, RotateCcw, 
   User, Calendar, MessageSquare, ArrowUpRight 
