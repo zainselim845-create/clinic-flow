@@ -6,6 +6,7 @@ import { useTenant } from '../context/TenantContext';
 import InvoiceModal from '../components/InvoiceModal';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import { getInvoices, addInvoice } from '../services/invoicesService';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { getExpenses, addExpense, deleteExpense as apiDeleteExpense } from '../services/expensesService';
 import { recordJournalEntry, CHART_OF_ACCOUNTS } from '../services/generalLedgerService';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
@@ -77,7 +78,7 @@ const Invoices = () => {
 
   // Remote Invoices Fetch
   const fetchInvoices = useCallback(async () => {
-    if (!clinicId) return;
+    if (!clinicId || !isSupabaseConfigured()) return;
     setIsLoading(true);
     setLoadError(null);
     try {

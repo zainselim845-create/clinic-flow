@@ -504,8 +504,8 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => {
-                          setIdentifier('doctor@clinicflow.com');
-                          setPassword('admin');
+                          setIdentifier('doctor1@enterprise-clinic1.com');
+                          setPassword('passDoctor1!');
                         }}
                         style={{
                           background: 'rgba(2, 132, 199, 0.08)',
@@ -518,26 +518,7 @@ export default function Login() {
                           fontSize: '0.75rem'
                         }}
                       >
-                        طبيب (doctor@clinicflow.com)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIdentifier('superadmin@clinicflow.com');
-                          setPassword('admin');
-                        }}
-                        style={{
-                          background: 'rgba(16, 185, 129, 0.08)',
-                          border: '1px solid rgba(16, 185, 129, 0.25)',
-                          color: '#059669',
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontWeight: 700,
-                          fontSize: '0.75rem'
-                        }}
-                      >
-                        مدير الساس (superadmin)
+                        طبيب تجريبي (doctor1)
                       </button>
                     </div>
 

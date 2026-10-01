@@ -108,8 +108,8 @@ export const config = {
  */
 const rateLimitStore = new Map();
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute sliding window
-const RATE_LIMIT_MAX_REQUESTS = 60; // 60 requests per minute for general routes
-const RATE_LIMIT_AUTH_MAX = 10; // 10 requests per minute for auth-sensitive routes
+const RATE_LIMIT_MAX_REQUESTS = 180; // 180 requests per minute for general routes
+const RATE_LIMIT_AUTH_MAX = 10; // 10 requests per minute for auth-sensitive endpoints (OWASP A07)
 const RATE_LIMIT_CLEANUP_INTERVAL = 300_000; // Cleanup stale entries every 5 minutes
 let lastCleanup = Date.now();
 
@@ -147,10 +147,10 @@ function checkRateLimit(ip, maxRequests) {
 export default function middleware(request) {
   const url = new URL(request.url);
 
-  // Rate limiting enforcement
+  // Rate limiting enforcement: distinguish auth endpoints from general browsing
   const ip = getRateLimitKey(request);
-  const isAuthRoute = url.pathname === '/login' || url.pathname.includes('/api/auth');
-  const maxReqs = isAuthRoute ? RATE_LIMIT_AUTH_MAX : RATE_LIMIT_MAX_REQUESTS;
+  const isAuthEndpoint = url.pathname === '/login' || url.pathname.startsWith('/api/auth') || url.pathname.includes('/auth');
+  const maxReqs = isAuthEndpoint ? RATE_LIMIT_AUTH_MAX : RATE_LIMIT_MAX_REQUESTS;
   const rateCheck = checkRateLimit(ip, maxReqs);
 
   if (rateCheck.limited) {

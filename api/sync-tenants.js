@@ -2,11 +2,18 @@ import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rogkodgqeowiylpckspi.supabase.co';
 
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_wuceFYy_wMujWGBRRVVfUg_oTXMFKrg';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
 const BUCKET_NAME = 'tenants';
 const REGISTRY_FILE = 'sync/tenants_registry.json';
 
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+let supabaseAdmin = null;
+function getSupabaseAdmin() {
+  if (!supabaseAdmin) {
+    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  }
+  return supabaseAdmin;
+}
 
 const LEGACY_DEMO_SLUGS = new Set([
   'dr-ahmed', 
@@ -48,7 +55,7 @@ function isDemoOrCorruptedUser(u) {
 
 async function getRegistry() {
   try {
-    const { data, error } = await supabaseAdmin.storage
+    const { data, error } = await getSupabaseAdmin().storage
       .from(BUCKET_NAME)
       .download(REGISTRY_FILE);
 
@@ -96,7 +103,7 @@ async function saveRegistry(registry) {
   registry.updatedAt = new Date().toISOString();
   const buffer = Buffer.from(JSON.stringify(registry, null, 2));
 
-  const { error } = await supabaseAdmin.storage
+  const { error } = await getSupabaseAdmin().storage
     .from(BUCKET_NAME)
     .upload(REGISTRY_FILE, buffer, {
       contentType: 'application/json',
@@ -293,7 +300,7 @@ export default async function handler(req, res) {
       // Best effort sync to PostgreSQL clinics table if active
       if (tenant) {
         try {
-          await supabaseAdmin.from('clinics').upsert({
+          await getSupabaseAdmin().from('clinics').upsert({
             id: tenant.id,
             name: tenant.name,
             slug: tenant.slug,
@@ -358,7 +365,7 @@ export default async function handler(req, res) {
           registry.tenants[tIndex].customDomain = domainVal;
           registry.tenants[tIndex].custom_domain = domainVal;
           try {
-            await supabaseAdmin.from('clinics').update({
+            await getSupabaseAdmin().from('clinics').update({
               custom_domain: domainVal,
               updated_at: new Date().toISOString()
             }).or(`id.eq.${targetIdentifier},slug.eq.${targetIdentifier}`);

@@ -13,6 +13,7 @@ import {
   getInventoryItems, addInventoryItem, adjustItemStock, 
   INVENTORY_CATEGORIES 
 } from '../services/inventoryService';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Inventory.css';
 
@@ -59,7 +60,7 @@ const Inventory = () => {
   }, [items, currentSlug]);
 
   const fetchInventory = useCallback(async () => {
-    if (!currentClinicId) return;
+    if (!currentClinicId || !isSupabaseConfigured()) return;
     setIsLoading(true);
     setLoadError(null);
     try {
