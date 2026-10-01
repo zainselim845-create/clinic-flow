@@ -100,9 +100,74 @@ export const config = {
     '/((?!api/|_vercel/|assets/|[\\w-]+\\.\\w+).*)',
   ],
 };
+/**
+ * Edge-Level Sliding Window Rate Limiter
+ * Protects against brute-force, credential stuffing, and API abuse at the infrastructure level.
+ * Uses per-region in-memory storage (resets on cold start, which is acceptable for rate limiting).
+ */
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute sliding window
+const RATE_LIMIT_MAX_REQUESTS = 60; // 60 requests per minute for general routes
+const RATE_LIMIT_AUTH_MAX = 10; // 10 requests per minute for auth-sensitive routes
+const RATE_LIMIT_CLEANUP_INTERVAL = 300_000; // Cleanup stale entries every 5 minutes
+let lastCleanup = Date.now();
+
+function getRateLimitKey(request) {
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+         request.headers.get('x-real-ip') ||
+         'unknown';
+}
+
+function checkRateLimit(ip, maxRequests) {
+  const now = Date.now();
+
+  // Periodic cleanup to prevent memory bloat
+  if (now - lastCleanup > RATE_LIMIT_CLEANUP_INTERVAL) {
+    for (const [key, timestamps] of rateLimitStore.entries()) {
+      const valid = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW_MS);
+      if (valid.length === 0) rateLimitStore.delete(key);
+      else rateLimitStore.set(key, valid);
+    }
+    lastCleanup = now;
+  }
+
+  const timestamps = rateLimitStore.get(ip) || [];
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const recentRequests = timestamps.filter(t => t > windowStart);
+  recentRequests.push(now);
+  rateLimitStore.set(ip, recentRequests);
+
+  if (recentRequests.length > maxRequests) {
+    return { limited: true, retryAfterMs: RATE_LIMIT_WINDOW_MS - (now - recentRequests[0]) };
+  }
+  return { limited: false };
+}
 
 export default function middleware(request) {
   const url = new URL(request.url);
+
+  // Rate limiting enforcement
+  const ip = getRateLimitKey(request);
+  const isAuthRoute = url.pathname === '/login' || url.pathname.includes('/api/auth');
+  const maxReqs = isAuthRoute ? RATE_LIMIT_AUTH_MAX : RATE_LIMIT_MAX_REQUESTS;
+  const rateCheck = checkRateLimit(ip, maxReqs);
+
+  if (rateCheck.limited) {
+    const retryAfterSec = Math.ceil((rateCheck.retryAfterMs || RATE_LIMIT_WINDOW_MS) / 1000);
+    return new Response(
+      JSON.stringify({ error: 'Too many requests. Please slow down.', retryAfter: retryAfterSec }),
+      {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': String(retryAfterSec),
+          'X-RateLimit-Limit': String(maxReqs),
+          'X-RateLimit-Remaining': '0',
+        },
+      }
+    );
+  }
+
   const hostHeader = 
     request.headers.get('x-clinic-test-host') ||
     request.headers.get('x-forwarded-host') || 

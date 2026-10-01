@@ -31,6 +31,8 @@ const AuthContext = createContext({});
 const failedLoginAttempts = new Map();
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOGIN_LOCKOUT_MS = 60 * 1000;
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours for regular users
+const SESSION_TTL_SUPER_ADMIN_MS = 2 * 60 * 60 * 1000; // 2 hours for super admin
 
 function checkLoginRateLimit(identifier) {
   const record = failedLoginAttempts.get(identifier);
@@ -110,6 +112,22 @@ export const AuthProvider = ({ children }) => {
           parsed.isSuperAdmin = false;
         }
       }
+
+      // Session TTL Enforcement: auto-expire stale sessions
+      // Super Admin: 2 hours, Regular users: 24 hours
+      if (parsed.authenticatedAt) {
+        const sessionAgeMs = Date.now() - new Date(parsed.authenticatedAt).getTime();
+        const isSuperUser = parsed.role === 'super_admin' || parsed.isSuperAdmin;
+        const maxSessionMs = isSuperUser ? SESSION_TTL_SUPER_ADMIN_MS : SESSION_TTL_MS;
+        if (sessionAgeMs > maxSessionMs) {
+          console.warn('[Session Guard] Session expired after', Math.round(sessionAgeMs / 3600000), 'hours. Auto-logout enforced.');
+          localStorage.removeItem('clinicflow_auth_user');
+          sessionStorage.removeItem('clinicflow_auth_user');
+          localStorage.removeItem('clinicflow_role');
+          return null;
+        }
+      }
+
       return parsed;
     } catch {
       return null;
@@ -118,6 +136,10 @@ export const AuthProvider = ({ children }) => {
 
   const persistUser = (userData) => {
     if (userData) {
+      // Stamp session creation time for TTL enforcement on next load
+      if (!userData.authenticatedAt) {
+        userData.authenticatedAt = new Date().toISOString();
+      }
       safeSetJSON('clinicflow_auth_user', userData);
       safeSessionSetJSON('clinicflow_auth_user', userData);
       saveRegisteredUser(userData);

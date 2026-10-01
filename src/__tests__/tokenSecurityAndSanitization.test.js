@@ -174,5 +174,55 @@ describe('Token Security, Telemetry Redaction & Role Anti-Tampering Suite', () =
       // DEFAULT_OPENROUTER_KEY must be empty string in code (read from env dynamically)
       expect(DEFAULT_OPENROUTER_KEY).toBe('');
     });
+
+    it('verifies AuthContext does not contain any hardcoded super admin password', () => {
+      const fs = require('fs');
+      const path = require('path');
+      const authContextCode = fs.readFileSync(path.join(__dirname, '../context/AuthContext.jsx'), 'utf8');
+      expect(authContextCode).not.toContain('cf-superadmin-sec-2026-x9');
+    });
+  });
+
+  describe('4. Session TTL & Stale Session Auto-Expiration', () => {
+    const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+    const SESSION_TTL_SUPER_ADMIN_MS = 2 * 60 * 60 * 1000;
+
+    function evaluateSession(user) {
+      if (!user?.authenticatedAt) return user;
+      const sessionAgeMs = Date.now() - new Date(user.authenticatedAt).getTime();
+      const isSuperUser = user.role === 'super_admin' || user.isSuperAdmin;
+      const maxMs = isSuperUser ? SESSION_TTL_SUPER_ADMIN_MS : SESSION_TTL_MS;
+      if (sessionAgeMs > maxMs) return null;
+      return user;
+    }
+
+    it('retains fresh user session created 1 hour ago', () => {
+      const user = {
+        id: 'doc-1',
+        role: 'doctor',
+        authenticatedAt: new Date(Date.now() - 3600 * 1000).toISOString()
+      };
+      expect(evaluateSession(user)).not.toBeNull();
+    });
+
+    it('purges regular user session older than 24 hours', () => {
+      const user = {
+        id: 'doc-1',
+        role: 'doctor',
+        authenticatedAt: new Date(Date.now() - 25 * 3600 * 1000).toISOString()
+      };
+      expect(evaluateSession(user)).toBeNull();
+    });
+
+    it('purges super admin session older than 2 hours', () => {
+      const superUser = {
+        id: 'superadmin-root',
+        role: 'super_admin',
+        isSuperAdmin: true,
+        authenticatedAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString()
+      };
+      expect(evaluateSession(superUser)).toBeNull();
+    });
   });
 });
+

@@ -260,4 +260,33 @@ describe('Edge Subdomain & Dedicated Domain Routing Architecture', () => {
       expect(resolution.tenant?.slug).toBeUndefined();
     });
   });
+
+  describe('5. Edge Rate Limiter Protection', () => {
+    it('enforces rate limit on auth endpoints after threshold is exceeded', async () => {
+      const testIp = '198.51.100.42';
+      let lastResponse = null;
+
+      // Send 10 allowed requests to /login
+      for (let i = 0; i < 10; i++) {
+        const req = new Request('https://clinicflow.app/login', {
+          headers: { 'x-forwarded-for': testIp }
+        });
+        lastResponse = middleware(req);
+        expect(lastResponse.status).not.toBe(429);
+      }
+
+      // The 11th request must be rejected with 429
+      const blockedReq = new Request('https://clinicflow.app/login', {
+        headers: { 'x-forwarded-for': testIp }
+      });
+      const blockedRes = middleware(blockedReq);
+      expect(blockedRes.status).toBe(429);
+      expect(blockedRes.headers.get('Retry-After')).toBeDefined();
+      expect(blockedRes.headers.get('X-RateLimit-Remaining')).toBe('0');
+
+      const body = await blockedRes.json();
+      expect(body.error).toContain('Too many requests');
+    });
+  });
 });
+
