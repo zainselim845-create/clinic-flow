@@ -4,6 +4,7 @@
  */
 
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const AUDIT_STORAGE_KEY = 'clinicflow_audit_log';
 let inMemoryAuditLogs = [];
@@ -179,6 +180,31 @@ export function recordAuditEvent({
   const existing = getAuditLogs();
   const trimmed = [newEntry, ...existing.filter(e => e.id !== newEntry.id)].slice(0, 500);
   safeSetJSON(AUDIT_STORAGE_KEY, trimmed);
+
+  // Cloud Forwarding: Async non-blocking dispatch to Supabase platform_audit_logs
+  if (isSupabaseConfigured() && typeof window !== 'undefined') {
+    try {
+      supabase
+        .from('platform_audit_logs')
+        .insert({
+          action: String(action || eventType || 'AUDIT_ACTION'),
+          target_entity: String(entityType || 'general'),
+          details: {
+            auditId: newEntry.id,
+            user: String(user),
+            details: String(details || ''),
+            entityId: String(entityId || ''),
+            hash: newEntry.hash,
+            previousHash: newEntry.previousHash,
+            epoch: newEntry.epoch
+          }
+        })
+        .then(() => {})
+        .catch(() => {});
+    } catch {
+      // Non-blocking fallback: local Merkle chain is already secured
+    }
+  }
 
   return newEntry;
 }
