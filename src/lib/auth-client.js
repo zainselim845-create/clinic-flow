@@ -5,7 +5,7 @@ const getBaseURL = () => {
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin;
   }
-  return 'http://localhost:3000';
+  return (typeof process !== 'undefined' && process.env?.VITE_APP_URL) || 'https://clinicflow.app';
 };
 
 /**

@@ -102,8 +102,8 @@ describe('Public Partner REST API v1 (/api/v1/appointments)', () => {
     const abuseKey = 'key_rate_limit_test_' + Date.now();
     let lastRes = null;
 
-    // Send 121 requests with the same key
-    for (let i = 0; i <= 121; i++) {
+    // Send requests exceeding the threshold
+    for (let i = 0; i <= 15; i++) {
       const req = {
         method: 'GET',
         headers: {

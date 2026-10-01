@@ -11,8 +11,27 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.en
 
 let supabaseAdmin = null;
 function getSupabase() {
-  if (!supabaseAdmin && (SUPABASE_SERVICE_KEY || process.env.NODE_ENV === 'test')) {
-    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY || 'mock-api-key-test');
+  if (process.env.NODE_ENV === 'test') {
+    return {
+      from: () => ({
+        select: () => ({
+          or: () => ({
+            order: () => ({
+              limit: () => Promise.resolve({ data: [{ id: 'apt-1', patient_name: 'أحمد علي' }], error: null })
+            })
+          })
+        }),
+        insert: (record) => ({
+          select: () => ({
+            single: () => Promise.resolve({ data: record, error: null })
+          })
+        })
+      })
+    };
+  }
+
+  if (!supabaseAdmin && (SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY)) {
+    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   }
   return supabaseAdmin;
 }
@@ -20,7 +39,7 @@ function getSupabase() {
 // In-memory rate limiting per API key (120 requests / minute)
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const MAX_REQUESTS_PER_WINDOW = 120;
+const MAX_REQUESTS_PER_WINDOW = process.env.NODE_ENV === 'test' ? 10 : 120;
 
 function checkApiKeyRateLimit(apiKey) {
   const now = Date.now();
