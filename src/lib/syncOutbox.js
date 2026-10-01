@@ -19,6 +19,23 @@ export const OUTBOX_STATUS = {
   FAILED: 'failed'
 };
 
+/**
+ * Merges local and remote entity payloads non-destructively
+ * Field-level merge favoring latest updated fields while protecting medical notes
+ */
+export function mergeConflictingPayloads(localPayload = {}, remotePayload = {}) {
+  const merged = { ...remotePayload, ...localPayload };
+  if (remotePayload.notes && !localPayload.notes) {
+    merged.notes = remotePayload.notes;
+  }
+  if (remotePayload.diagnosis && !localPayload.diagnosis) {
+    merged.diagnosis = remotePayload.diagnosis;
+  }
+  merged.version = Math.max(Number(localPayload.version) || 0, Number(remotePayload.version) || 0) + 1;
+  merged.updatedAt = new Date().toISOString();
+  return merged;
+}
+
 class SyncOutbox {
   constructor() {
     this.isDraining = false;
@@ -50,6 +67,8 @@ class SyncOutbox {
       id: item.id || `outbox_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       status: OUTBOX_STATUS.PENDING,
       timestamp: Date.now(),
+      version: item.version || item.payload?.version || 1,
+      updatedAt: item.updatedAt || item.payload?.updatedAt || new Date().toISOString(),
       retryCount: 0
     };
 

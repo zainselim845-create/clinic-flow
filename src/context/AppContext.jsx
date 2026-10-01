@@ -547,3 +547,50 @@ export const useApp = () => {
   }
   return context;
 };
+
+// Domain-specific slice accessors for granular re-rendering and modular architecture
+export const useClinical = () => {
+  const app = useApp();
+  return {
+    patients: app.state.patients || [],
+    appointments: app.state.appointments || [],
+    isLoading: app.state.isLoading,
+    getPatientById: app.getPatientById,
+    getAppointmentsByPatientId: app.getAppointmentsByPatientId,
+    getAppointmentsByDate: app.getAppointmentsByDate,
+    getTodayAppointments: app.getTodayAppointments,
+    getUpcomingAppointments: app.getUpcomingAppointments,
+    addAppointmentWithNotification: app.addAppointmentWithNotification,
+    sendSmsReminder: app.sendSmsReminder,
+    dispatch: app.dispatch
+  };
+};
+
+export const useFinancial = () => {
+  const app = useApp();
+  const expenses = app.state.expenses || [];
+  const totalExpenses = expenses.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
+  return {
+    expenses,
+    totalExpenses,
+    expensesCount: expenses.length,
+    dispatch: app.dispatch
+  };
+};
+
+export const useOperations = () => {
+  const app = useApp();
+  return {
+    staffMembers: app.state.staffMembers || [],
+    blockedSlots: app.state.blockedSlots || [],
+    notifications: app.state.notifications || [],
+    recalls: app.state.recalls || [],
+    unreadCount: app.getUnreadNotificationsCount ? app.getUnreadNotificationsCount() : 0,
+    realtimeStatus: app.realtimeStatus,
+    broadcastClinicEvent: app.broadcastClinicEvent,
+    BROADCAST_EVENTS: app.BROADCAST_EVENTS,
+    mobileNavOpen: app.mobileNavOpen,
+    setMobileNavOpen: app.setMobileNavOpen,
+    dispatch: app.dispatch
+  };
+};

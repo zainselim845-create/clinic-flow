@@ -28,6 +28,18 @@ export default defineConfig({
             if (id.includes('@supabase')) {
               return 'vendor-supabase';
             }
+            if (id.includes('leaflet')) {
+              return 'vendor-leaflet';
+            }
+            if (id.includes('dicom-parser')) {
+              return 'vendor-dicom';
+            }
+            if (id.includes('better-auth') || id.includes('zod')) {
+              return 'vendor-auth-core';
+            }
+            if (id.includes('date-fns')) {
+              return 'vendor-date-fns';
+            }
             // Keep React runtime, Ark UI primitives, and icons unified to avoid Rolldown CJS/ESM chunk interop breakage
             if (
               id.includes('react') ||
@@ -39,7 +51,6 @@ export default defineConfig({
             ) {
               return 'vendor-react';
             }
-            // Heavy UI primitive chunk target for standalone non-react components
             if (id.includes('@ark-ui-standalone')) {
               return 'vendor-ark-ui';
             }
