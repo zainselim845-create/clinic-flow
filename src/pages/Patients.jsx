@@ -8,6 +8,7 @@ import ExcelPatientImportModal from '../components/ExcelPatientImportModal';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import { patientIndex } from '../services/indexedSearchService';
 import * as patientsService from '../services/patientsService';
+import { syncOutbox } from '../lib/syncOutbox';
 import {
   PatientsHeader,
   PatientsFiltersBar,
@@ -133,16 +134,24 @@ const Patients = () => {
       };
       if (useSupabase) {
         try {
-          const res = await patientsService.updatePatient(selectedPatient.id, updatedPayload);
+          const res = await patientsService.updatePatient(selectedPatient.id, updatedPayload, currentClinicId);
           if (res?.error) {
-            console.error('Failed to update patient in Supabase:', res.error);
-            showToast('تعذر تحديث بيانات المريض في السحابة: ' + (res.error.message || 'خطأ في الاتصال'), 'error');
-            return;
+            console.warn('[Patients] Remote update failed, queueing to outbox:', res.error);
+            syncOutbox.enqueue({
+              entityType: 'patient',
+              action: 'update',
+              payload: updatedPayload,
+              clinicId: currentClinicId
+            });
           }
         } catch (err) {
-          console.error('Failed to update patient in Supabase:', err);
-          showToast('حدث خطأ أثناء تعديل بيانات المريض', 'error');
-          return;
+          console.warn('[Patients] Remote update error, queueing to outbox:', err);
+          syncOutbox.enqueue({
+            entityType: 'patient',
+            action: 'update',
+            payload: updatedPayload,
+            clinicId: currentClinicId
+          });
         }
       }
       dispatch({ 
@@ -165,10 +174,22 @@ const Patients = () => {
           if (res?.data?.id) {
             newPatient.id = res.data.id;
           } else if (res?.error) {
-            console.warn('[Patients] Remote table sync unavailable, saving locally:', res.error.message);
+            console.warn('[Patients] Remote table sync unavailable, saving locally and queuing to outbox:', res.error.message);
+            syncOutbox.enqueue({
+              entityType: 'patient',
+              action: 'create',
+              payload: newPatient,
+              clinicId: currentClinicId
+            });
           }
         } catch (err) {
-          console.warn('[Patients] Remote sync error, saving locally:', err);
+          console.warn('[Patients] Remote sync error, saving locally and queuing to outbox:', err);
+          syncOutbox.enqueue({
+            entityType: 'patient',
+            action: 'create',
+            payload: newPatient,
+            clinicId: currentClinicId
+          });
         }
       }
       dispatch({ type: 'ADD_PATIENT', payload: newPatient });

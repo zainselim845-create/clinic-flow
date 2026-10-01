@@ -17,6 +17,7 @@ import { getTodayDateStr } from '../utils/timeSlots';
 import * as appointmentsService from '../services/appointmentsService';
 import * as blockedSlotsService from '../services/blockedSlotsService';
 import { isDoctorRole } from '../utils/permissions';
+import { syncOutbox } from '../lib/syncOutbox';
 import './Appointments.css';
 
 const Appointments = () => {
@@ -74,16 +75,24 @@ const Appointments = () => {
   const handleUpdateStatus = async (id, newStatus) => {
     if (useSupabase) {
       try {
-        const res = await appointmentsService.updateAppointmentStatus(id, newStatus);
+        const res = await appointmentsService.updateAppointmentStatus(id, newStatus, {}, currentClinicId);
         if (res?.error) {
-          console.error('Failed to update status on Supabase:', res.error);
-          showToast('تعذر تحديث حالة الموعد في السحابة: ' + (res.error.message || 'خطأ في الاتصال'), 'error');
-          return;
+          console.warn('[Appointments] Remote status update failed, queueing to outbox:', res.error);
+          syncOutbox.enqueue({
+            entityType: 'appointment',
+            action: 'updateStatus',
+            payload: { id, status: newStatus },
+            clinicId: currentClinicId
+          });
         }
       } catch (err) {
-        console.error('Failed to update status on Supabase:', err);
-        showToast('خطأ في الاتصال بقاعدة البيانات', 'error');
-        return;
+        console.warn('[Appointments] Remote status update error, queueing to outbox:', err);
+        syncOutbox.enqueue({
+          entityType: 'appointment',
+          action: 'updateStatus',
+          payload: { id, status: newStatus },
+          clinicId: currentClinicId
+        });
       }
     }
     dispatch({
@@ -173,10 +182,22 @@ const Appointments = () => {
         if (res?.data?.id) {
           newAppointment.id = res.data.id;
         } else if (res?.error) {
-          console.warn('[Appointments] Remote table sync unavailable, saving locally:', res.error.message);
+          console.warn('[Appointments] Remote table sync unavailable, saving locally and queuing to outbox:', res.error.message);
+          syncOutbox.enqueue({
+            entityType: 'appointment',
+            action: 'create',
+            payload: newAppointment,
+            clinicId: currentClinicId
+          });
         }
       } catch (err) {
-        console.warn('[Appointments] Remote sync error, saving locally:', err);
+        console.warn('[Appointments] Remote sync error, saving locally and queuing to outbox:', err);
+        syncOutbox.enqueue({
+          entityType: 'appointment',
+          action: 'create',
+          payload: newAppointment,
+          clinicId: currentClinicId
+        });
       }
     }
 

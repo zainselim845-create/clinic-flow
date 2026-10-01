@@ -146,12 +146,19 @@ class SyncOutbox {
           return true;
         }
         if (action === 'update') {
-          const res = await appointmentsService.updateAppointment(payload);
+          const id = payload.id || payload.appointmentId;
+          const res = await appointmentsService.updateAppointment(id, payload, item.clinicId);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        if (action === 'updateStatus') {
+          const id = payload.id || payload.appointmentId;
+          const res = await appointmentsService.updateAppointmentStatus(id, payload.status, {}, item.clinicId);
           if (res?.error) throw res.error;
           return true;
         }
         if (action === 'delete') {
-          const res = await appointmentsService.deleteAppointment(payload.id || payload);
+          const res = await appointmentsService.deleteAppointment(payload.id || payload, item.clinicId);
           if (res?.error) throw res.error;
           return true;
         }
@@ -164,12 +171,13 @@ class SyncOutbox {
           return true;
         }
         if (action === 'update') {
-          const res = await patientsService.updatePatient(payload);
+          const id = payload.id || payload.patientId;
+          const res = await patientsService.updatePatient(id, payload, item.clinicId);
           if (res?.error) throw res.error;
           return true;
         }
         if (action === 'delete') {
-          const res = await patientsService.deletePatient(payload.id || payload);
+          const res = await patientsService.deletePatient(payload.id || payload, item.clinicId);
           if (res?.error) throw res.error;
           return true;
         }
