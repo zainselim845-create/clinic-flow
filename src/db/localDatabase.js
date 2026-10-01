@@ -223,5 +223,48 @@ export const localDb = {
 
   markActionSynced: async (queueId) => {
     return performTransaction('sync_queue', 'readwrite', (store) => store.delete(queueId));
+  },
+
+  enqueueSyncItem: async (item) => {
+    return performTransaction('sync_queue', 'readwrite', (store) => store.add(item));
+  },
+
+  getPendingSyncItems: async () => {
+    const db = await openLocalDatabase();
+    if (!db) return [];
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('sync_queue', 'readonly');
+      const store = transaction.objectStore('sync_queue');
+      const request = store.getAll();
+
+      request.onsuccess = () => {
+        const all = request.result || [];
+        resolve(all.filter(item => item.status === 'pending'));
+      };
+      request.onerror = () => reject(request.error);
+    });
+  },
+
+  updateSyncItemStatus: async (queueId, status) => {
+    if (status === 'completed') {
+      return performTransaction('sync_queue', 'readwrite', (store) => store.delete(queueId));
+    }
+    const db = await openLocalDatabase();
+    if (!db) return null;
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('sync_queue', 'readwrite');
+      const store = transaction.objectStore('sync_queue');
+      const getReq = store.get(queueId);
+      getReq.onsuccess = () => {
+        const row = getReq.result;
+        if (row) {
+          row.status = status;
+          store.put(row);
+        }
+        resolve(true);
+      };
+      getReq.onerror = () => reject(getReq.error);
+    });
   }
 };

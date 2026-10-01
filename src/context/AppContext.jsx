@@ -15,6 +15,9 @@ import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
 import { localDb } from '../db/localDatabase';
 import { safeGetItem, safeSetJSON } from '../utils/safeStorage';
+import { cloudCircuitBreaker } from '../lib/circuitBreaker';
+import { migrateTenantPayload } from '../lib/schemaMigration';
+import { syncOutbox } from '../lib/syncOutbox';
 
 export const DATA_SCHEMA_VERSION = 'v5_clean_zero_state';
 
@@ -78,7 +81,7 @@ export function AppProvider({ children }) {
     dispatch({ type: 'SWITCH_TENANT_START', payload: { tenantSlug: currentSlug } });
 
     const loadData = async () => {
-      if (useSupabase) {
+      if (useSupabase && cloudCircuitBreaker.isAvailable()) {
         try {
           // جلب البيانات من Supabase مع الفلترة بالعيادة النشطة فقط
           const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, expensesRes, recallsRes] = await Promise.all([
@@ -97,7 +100,10 @@ export function AppProvider({ children }) {
             res => res?.error?.code === 'PGRST205' || String(res?.error?.message || '').includes('schema cache')
           );
 
-          if (!isSchemaMissing && (patientsRes?.data !== null || apptsRes?.data !== null || clinicRes?.data !== null)) {
+          if (isSchemaMissing) {
+            cloudCircuitBreaker.recordFailure('schema_missing_pgrst205');
+          } else if (patientsRes?.data !== null || apptsRes?.data !== null || clinicRes?.data !== null) {
+            cloudCircuitBreaker.recordSuccess();
             if (isCancelled) return;
 
             dispatch({
@@ -120,10 +126,10 @@ export function AppProvider({ children }) {
 
           console.warn('[AppContext] Supabase schema unmigrated or unavailable. Gracefully falling back to offline-first local storage.');
         } catch (err) {
+          cloudCircuitBreaker.recordFailure(err);
           console.warn('[AppContext] Supabase scoped load failed, falling back to localStorage:', err);
         }
       }
-
 
       if (isCancelled) return;
 
@@ -134,38 +140,18 @@ export function AppProvider({ children }) {
       if (savedData) {
         try {
           const parsed = typeof savedData === 'string' ? JSON.parse(savedData) : savedData;
-          const isUpToDate = parsed._version === DATA_SCHEMA_VERSION;
+          const migratedPayload = migrateTenantPayload(parsed, currentSlug);
 
-          let finalAppointments = Array.isArray(parsed.appointments) ? parsed.appointments : [];
-          let finalPatients = Array.isArray(parsed.patients) ? parsed.patients : [];
-          let finalExpenses = Array.isArray(parsed.expenses) ? parsed.expenses : [];
-          let finalRecalls = Array.isArray(parsed.recalls) ? parsed.recalls : [];
-
-          // Clean production slate: invalidate and clear legacy demo data
-          if (!isUpToDate) {
-            finalAppointments = [];
-            finalPatients = [];
-            finalExpenses = [];
-            finalRecalls = [];
+          if (activeTenant) {
+            migratedPayload.clinicInfo = activeTenant;
           }
 
           dispatch({ 
             type: 'INIT_DATA', 
-            payload: { 
-              patients: finalPatients,
-              appointments: finalAppointments,
-              notifications: (isUpToDate && parsed.notifications && parsed.notifications.length > 0) ? parsed.notifications : [],
-              blockedSlots: (isUpToDate && parsed.blockedSlots) ? parsed.blockedSlots : [],
-              expenses: finalExpenses,
-              recalls: finalRecalls,
-              staffMembers: (parsed.staffMembers && parsed.staffMembers.length > 0) ? parsed.staffMembers : [],
-              clinicInfo: activeTenant || parsed.clinicInfo || (currentSlug ? { slug: currentSlug, name: currentSlug } : null),
-              useSupabase: false,
-              currentTenantSlug: currentSlug
-            } 
+            payload: migratedPayload
           });
         } catch (err) {
-          console.error('Error loading scoped localStorage:', err);
+          console.error('[AppContext] Error loading scoped localStorage:', err);
           dispatch({ 
             type: 'INIT_DATA', 
             payload: { 
@@ -451,13 +437,39 @@ export function AppProvider({ children }) {
   const addAppointmentWithNotification = useCallback(async (appointment) => {
     const newAppointment = { ...appointment, id: generateId(), status: 'upcoming', reminderSent: false };
     
-    if (useSupabase) {
-      const result = await appointmentsService.addAppointment(newAppointment);
-      if (result?.data) {
-        dispatch({ type: 'ADD_APPOINTMENT', payload: result.data });
+    if (useSupabase && cloudCircuitBreaker.isAvailable()) {
+      try {
+        const result = await appointmentsService.addAppointment(newAppointment);
+        if (result?.data) {
+          dispatch({ type: 'ADD_APPOINTMENT', payload: result.data });
+          cloudCircuitBreaker.recordSuccess();
+        } else {
+          dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
+          syncOutbox.enqueue({
+            entityType: 'appointment',
+            action: 'create',
+            payload: newAppointment,
+            clinicId: tenantId
+          }).catch(console.warn);
+        }
+      } catch (err) {
+        cloudCircuitBreaker.recordFailure(err);
+        dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
+        syncOutbox.enqueue({
+          entityType: 'appointment',
+          action: 'create',
+          payload: newAppointment,
+          clinicId: tenantId
+        }).catch(console.warn);
       }
     } else {
       dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
+      syncOutbox.enqueue({
+        entityType: 'appointment',
+        action: 'create',
+        payload: newAppointment,
+        clinicId: tenantId
+      }).catch(console.warn);
     }
 
     const notification = {
@@ -470,11 +482,11 @@ export function AppProvider({ children }) {
       relatedId: newAppointment.id
     };
 
-    if (useSupabase) {
-      await notificationsService.addNotification(notification);
+    if (useSupabase && cloudCircuitBreaker.isAvailable()) {
+      notificationsService.addNotification(notification).catch(console.warn);
     }
     dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
-  }, [useSupabase]);
+  }, [useSupabase, tenantId]);
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 

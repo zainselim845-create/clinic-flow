@@ -9,6 +9,7 @@ import Header from './components/Header';
 import DoctorAiFloatingWidget from './components/DoctorAiFloatingWidget';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import PageErrorBoundary from './components/PageErrorBoundary';
 import SeoHeadManager from './components/SeoHeadManager';
 import Breadcrumbs from './components/Breadcrumbs';
 import ScrollProgressBar from './components/ui/ScrollProgressBar';
@@ -265,35 +266,35 @@ function App() {
                 <AdminLayout />
               </ProtectedRoute>
             }>
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard" element={<PageErrorBoundary pageName="لوحة التحكم"><Dashboard /></PageErrorBoundary>} />
               <Route path="/appointments" element={
-                <ProtectedRoute requiredPermission="appointments"><Appointments /></ProtectedRoute>
+                <ProtectedRoute requiredPermission="appointments"><PageErrorBoundary pageName="المواعيد"><Appointments /></PageErrorBoundary></ProtectedRoute>
               } />
               <Route path="/patients" element={
-                <ProtectedRoute requiredPermission="patients"><Patients /></ProtectedRoute>
+                <ProtectedRoute requiredPermission="patients"><PageErrorBoundary pageName="المرضى"><Patients /></PageErrorBoundary></ProtectedRoute>
               } />
               <Route path="/invoices" element={
-                <ProtectedRoute requiredPermission="invoices"><Invoices /></ProtectedRoute>
+                <ProtectedRoute requiredPermission="invoices"><PageErrorBoundary pageName="الخزينة والفواتير"><Invoices /></PageErrorBoundary></ProtectedRoute>
               } />
               <Route path="/inventory" element={
-                <ProtectedRoute requiredPermission="inventory"><Inventory /></ProtectedRoute>
+                <ProtectedRoute requiredPermission="inventory"><PageErrorBoundary pageName="المخزون"><Inventory /></PageErrorBoundary></ProtectedRoute>
               } />
               <Route path="/attendance" element={
-                <ProtectedRoute><Attendance /></ProtectedRoute>
+                <ProtectedRoute><PageErrorBoundary pageName="الحضور والانصراف"><Attendance /></PageErrorBoundary></ProtectedRoute>
               } />
-              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/notifications" element={<PageErrorBoundary pageName="الإشعارات"><Notifications /></PageErrorBoundary>} />
               <Route path="/doctor-agent" element={
-                <ProtectedRoute allowedRoles={['doctor']}><DoctorAssistant /></ProtectedRoute>
+                <ProtectedRoute allowedRoles={['doctor']}><PageErrorBoundary pageName="المساعد الطبي الذكي"><DoctorAssistant /></PageErrorBoundary></ProtectedRoute>
               } />
               <Route path="/doctor-assistant" element={<Navigate to="/doctor-agent" replace />} />
               <Route path="/sms-integration" element={
-                <ProtectedRoute allowedRoles={['doctor']}><SmsIntegration /></ProtectedRoute>
+                <ProtectedRoute allowedRoles={['doctor']}><PageErrorBoundary pageName="بوابة الرسائل"><SmsIntegration /></PageErrorBoundary></ProtectedRoute>
               } />
               <Route path="/labs" element={
-                <ProtectedRoute allowedRoles={['doctor', 'super_admin']}><Labs /></ProtectedRoute>
+                <ProtectedRoute allowedRoles={['doctor', 'super_admin']}><PageErrorBoundary pageName="المعمل والتركيبات"><Labs /></PageErrorBoundary></ProtectedRoute>
               } />
               <Route path="/settings" element={
-                <ProtectedRoute allowedRoles={['doctor']}><Settings /></ProtectedRoute>
+                <ProtectedRoute allowedRoles={['doctor']}><PageErrorBoundary pageName="إعدادات العيادة"><Settings /></PageErrorBoundary></ProtectedRoute>
               } />
             </Route>
 
