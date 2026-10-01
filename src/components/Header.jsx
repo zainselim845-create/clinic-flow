@@ -83,7 +83,7 @@ const Header = ({ title }) => {
           >
             <Menu size={20} />
           </button>
-          <h1>{title}</h1>
+          <h2>{title}</h2>
           <TenantSwitcher />
         </div>
 

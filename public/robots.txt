@@ -9,6 +9,10 @@ Allow: /login
 Allow: /c/
 Allow: /sitemap.xml
 Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /manifest.json
+Allow: /favicon.svg
+Allow: /og-image.png
 
 # Secure Private Dashboards and Admin Portals
 Disallow: /dashboard
@@ -27,5 +31,6 @@ Disallow: /notifications
 Disallow: /sms-integration
 Disallow: /onboarding
 
-# Sitemap Reference
+# Host & Sitemap Directives
+Host: https://clinicflow.app
 Sitemap: https://clinicflow.app/sitemap.xml

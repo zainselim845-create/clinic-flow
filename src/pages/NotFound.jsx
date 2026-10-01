@@ -25,7 +25,7 @@ export default function NotFound() {
       robots.setAttribute('name', 'robots');
       document.head.appendChild(robots);
     }
-    robots.setAttribute('content', 'noindex, follow');
+    robots.setAttribute('content', 'index, follow');
   }, []);
 
   const handleSearchSubmit = (e) => {

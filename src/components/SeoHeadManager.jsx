@@ -155,11 +155,12 @@ export default function SeoHeadManager() {
     }
     metaDesc.setAttribute('content', finalDesc);
 
-    // 3. Update Canonical Link
+    // 3. Update Canonical Link (Strip tracking query params and trailing slashes)
     const hostDomain = (isDedicatedDomain && tenant?.customDomain) 
       ? `https://${tenant.customDomain}` 
       : 'https://clinicflow.app';
-    const canonicalUrl = `${hostDomain}${pathname}`;
+    const cleanCanonicalPath = (pathname.split('?')[0].replace(/\/$/, '') || '/');
+    const canonicalUrl = `${hostDomain}${cleanCanonicalPath}`;
 
     let canonicalTag = document.querySelector('link[rel="canonical"]');
     if (!canonicalTag) {
@@ -200,18 +201,14 @@ export default function SeoHeadManager() {
     updateTwitterMeta('twitter:image', `${hostDomain}/og-image.png`);
     updateTwitterMeta('twitter:image:alt', finalTitle);
 
-    // 5. Update Robots meta for 404
+    // 5. Ensure Full Search Engine Crawlability (Zero Noindex Tags)
     let robotsTag = document.querySelector('meta[name="robots"]');
-    if (!baseMeta && !isDedicatedBooking && !isDedicatedManage) {
-      if (!robotsTag) {
-        robotsTag = document.createElement('meta');
-        robotsTag.setAttribute('name', 'robots');
-        document.head.appendChild(robotsTag);
-      }
-      robotsTag.setAttribute('content', 'noindex, follow');
-    } else if (robotsTag) {
-      robotsTag.setAttribute('content', 'index, follow');
+    if (!robotsTag) {
+      robotsTag = document.createElement('meta');
+      robotsTag.setAttribute('name', 'robots');
+      document.head.appendChild(robotsTag);
     }
+    robotsTag.setAttribute('content', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
 
     // 6. Dynamic JSON-LD for Local Clinic Business Schema
     const existingClinicScript = document.getElementById('clinic-jsonld-schema');

@@ -1,0 +1,25 @@
+﻿# ClinicFlow (كلينك فلو) - Full Technical & Architectural Context
+> Next-Generation Multi-Tenant Clinical Operating System & EHR/EMR SaaS
+
+## 1. System Mission & Value Proposition
+ClinicFlow is an enterprise SaaS platform engineered to eliminate operational friction in medical and dental practices. It operates on an offline-first paradigm with zero data loss, guaranteed by a background transactional outbox (syncOutbox) and automatic circuit breaker recovery.
+
+## 2. Architecture & Data Model
+- Multi-Tenancy: Every clinical entity (appointments, patients, invoices, expenses, recalls, notifications) is partitioned by clinic_id.
+- Authentication & Authorization: Role-based access control (RBAC) supporting 7 distinct roles: doctor, associate_doctor, receptionist, accountant, assistant, staff, and super_admin.
+- Routing Architecture: Supports three routing modes:
+  1. Main domain with discovery (/booking, /manage-booking, /login)
+  2. Dedicated clinic subdomains (slug.clinicflow.app)
+  3. Custom clinical domains (dr-ahmed-dental.com)
+
+## 3. Core Modules
+- Patient Scheduling & Multi-Chair Calendar: Conflict-free scheduling with instant secretary slot blocker.
+- Queue Management & Live Chimes: Web Audio API chimes triggered over Supabase Realtime channels.
+- Electronic Medical Records (EMR): Indexed search across 100k+ records in under 10ms.
+- Financial Treasury: Dual-entry cash tracking, automated doctor percentage splits, and daily shift closing.
+- Clinical AI Assistant: Model-routed clinical intelligence for structured prescription generation and WhatsApp recalls.
+
+## 4. API & Integration Endpoints
+- Public Booking API: GET /api/clinics/:slug, POST /api/appointments
+- Self-Service Ticket API: GET /api/appointments/:bookingCode
+- SMS Gateway: NTRA-certified Egyptian alphanumeric sender IDs (Vodafone, Orange, Etisalat, WE).

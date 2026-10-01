@@ -314,9 +314,11 @@ export const AuthProvider = ({ children }) => {
       const configuredSecret = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPER_ADMIN_SECRET) || '';
       const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
                         (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
+      // Security: Super Admin password MUST come from environment variable.
+      // No hardcoded fallback in production. Test env allows 'admin' for automated suites.
       const isMasterPass = configuredSecret
         ? cleanPass === configuredSecret
-        : (cleanPass === 'cf-superadmin-sec-2026-x9' || (isTestEnv && cleanPass === 'admin'));
+        : (isTestEnv && cleanPass === 'admin');
 
       if (!isMasterPass) {
         recordFailedLogin(cleanId);
