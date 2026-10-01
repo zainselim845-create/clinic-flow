@@ -12,7 +12,7 @@ import * as expensesService from '../services/expensesService';
 import * as recallsService from '../services/recallsService';
 import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
-import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS } from '../services/realtimeSyncService';
+import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS, playChime } from '../services/realtimeSyncService';
 import { localDb } from '../db/localDatabase';
 import { safeGetItem, safeSetJSON } from '../utils/safeStorage';
 import { cloudCircuitBreaker } from '../lib/circuitBreaker';
@@ -284,6 +284,13 @@ export function AppProvider({ children }) {
       onStatusChange: (status) => setRealtimeStatus(status),
       onBroadcast: (payload) => {
         if (payload?.message) {
+          if (payload.eventType === BROADCAST_EVENTS.PATIENT_ARRIVED) {
+            playChime('patient_arrival');
+          } else if (payload.eventType === BROADCAST_EVENTS.DOCTOR_CALL_NEXT) {
+            playChime('doctor_call');
+          } else {
+            playChime('notification');
+          }
           dispatch({
             type: 'ADD_NOTIFICATION',
             payload: {

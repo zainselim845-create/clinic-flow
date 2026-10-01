@@ -740,9 +740,13 @@ export const AuthProvider = ({ children }) => {
     }
     persistUser(null);
     localStorage.removeItem('clinicflow_role');
+    sessionStorage.removeItem('clinicflow_role');
+    safeSessionRemoveItem('clinicflow_impersonator_admin');
+    setImpersonatorAdmin(null);
     setUser(null);
     setRole('doctor');
-    if (!isDemoMode) {
+    setSession(null);
+    if (!isDemoMode && supabase?.auth?.signOut) {
       await supabase.auth.signOut().catch(() => {});
     }
   };

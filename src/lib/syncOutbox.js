@@ -6,6 +6,11 @@
 
 import { localDb } from '../db/localDatabase';
 import { cloudCircuitBreaker } from './circuitBreaker';
+import * as appointmentsService from '../services/appointmentsService';
+import * as patientsService from '../services/patientsService';
+import * as expensesService from '../services/expensesService';
+import * as recallsService from '../services/recallsService';
+import * as notificationsService from '../services/notificationsService';
 
 export const OUTBOX_STATUS = {
   PENDING: 'pending',
@@ -18,6 +23,7 @@ class SyncOutbox {
   constructor() {
     this.isDraining = false;
     this.listeners = new Set();
+    this.customHandlers = new Map();
     this.drainTimer = null;
 
     // Start background sync polling if in browser environment
@@ -106,8 +112,101 @@ class SyncOutbox {
     }
   }
 
+  registerHandler(entityType, handler) {
+    if (typeof handler === 'function') {
+      this.customHandlers.set(entityType, handler);
+    }
+  }
+
+  unregisterHandler(entityType) {
+    this.customHandlers.delete(entityType);
+  }
+
+  clearHandlers() {
+    this.customHandlers.clear();
+  }
+
   async executeSyncItem(item) {
-    // Handlers can be registered or dynamically resolved
+    if (!item) return true;
+
+    // Check custom handlers first
+    if (this.customHandlers.has(item.entityType)) {
+      const handler = this.customHandlers.get(item.entityType);
+      return await handler(item);
+    }
+
+    const { entityType, action, payload } = item;
+    if (!payload) return true;
+
+    switch (entityType) {
+      case 'appointment': {
+        if (action === 'create') {
+          const res = await appointmentsService.addAppointment(payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        if (action === 'update') {
+          const res = await appointmentsService.updateAppointment(payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        if (action === 'delete') {
+          const res = await appointmentsService.deleteAppointment(payload.id || payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        break;
+      }
+      case 'patient': {
+        if (action === 'create') {
+          const res = await patientsService.addPatient(payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        if (action === 'update') {
+          const res = await patientsService.updatePatient(payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        if (action === 'delete') {
+          const res = await patientsService.deletePatient(payload.id || payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        break;
+      }
+      case 'expense': {
+        if (action === 'create') {
+          const res = await expensesService.addExpense(payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        if (action === 'delete') {
+          const res = await expensesService.deleteExpense(payload.id || payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        break;
+      }
+      case 'recall': {
+        if (action === 'create') {
+          const res = await recallsService.addRecall(payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        break;
+      }
+      case 'notification': {
+        if (action === 'create') {
+          const res = await notificationsService.addNotification(payload);
+          if (res?.error) throw res.error;
+          return true;
+        }
+        break;
+      }
+      default:
+        return true;
+    }
     return true;
   }
 
