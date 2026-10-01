@@ -58,7 +58,7 @@ export function openLocalDatabase() {
     };
 
     request.onerror = (event) => {
-      console.error('IndexedDB opening error:', event.target.error);
+      console.warn('[LocalDB] Database open error:', event.target.error);
       reject(event.target.error);
     };
   });
@@ -67,7 +67,7 @@ export function openLocalDatabase() {
 }
 
 /**
- * Generic helper to perform an IndexedDB transaction
+ * Generic helper for executing transactions
  */
 async function performTransaction(storeName, mode, callback) {
   const db = await openLocalDatabase();
@@ -79,22 +79,18 @@ async function performTransaction(storeName, mode, callback) {
       const store = transaction.objectStore(storeName);
       const request = callback(store);
 
-      transaction.oncomplete = () => {
-        resolve(request ? request.result : true);
-      };
-
-      transaction.onerror = () => {
-        reject(transaction.error);
-      };
+      if (request && typeof request === 'object' && 'onsuccess' in request) {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      } else {
+        transaction.oncomplete = () => resolve(true);
+        transaction.onerror = () => reject(transaction.error);
+      }
     } catch (err) {
       reject(err);
     }
   });
 }
-
-// ============================================================================
-// Public Database API
-// ============================================================================
 
 export const localDb = {
   // --- Patients ---
@@ -133,12 +129,18 @@ export const localDb = {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction('patients', 'readonly');
       const store = transaction.objectStore('patients');
-      const request = store.getAll();
+      if (!clinicId) return resolve([]);
+
+      const request = store.indexNames && store.indexNames.contains('by_clinic')
+        ? store.index('by_clinic').getAll(clinicId)
+        : store.getAll();
 
       request.onsuccess = () => {
-        const all = request.result || [];
-        if (!clinicId) return resolve([]);
-        resolve(all.filter(p => p.clinicId === clinicId));
+        const result = request.result || [];
+        resolve(store.indexNames && store.indexNames.contains('by_clinic')
+          ? result
+          : result.filter(p => p.clinicId === clinicId)
+        );
       };
       request.onerror = () => reject(request.error);
     });
@@ -152,6 +154,14 @@ export const localDb = {
   saveAppointment: async (appointment) => {
     if (!appointment || !appointment.id) return null;
     return performTransaction('appointments', 'readwrite', (store) => store.put(appointment));
+  },
+
+  getAppointment: async (id) => {
+    return performTransaction('appointments', 'readonly', (store) => store.get(id));
+  },
+
+  deleteAppointment: async (id) => {
+    return performTransaction('appointments', 'readwrite', (store) => store.delete(id));
   },
 
   saveAppointmentsBulk: async (appointments) => {
@@ -180,12 +190,56 @@ export const localDb = {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction('appointments', 'readonly');
       const store = transaction.objectStore('appointments');
-      const request = store.getAll();
+      if (!clinicId) return resolve([]);
+
+      const request = store.indexNames && store.indexNames.contains('by_clinic')
+        ? store.index('by_clinic').getAll(clinicId)
+        : store.getAll();
 
       request.onsuccess = () => {
-        const all = request.result || [];
-        if (!clinicId) return resolve([]);
-        resolve(all.filter(a => a.clinicId === clinicId));
+        const result = request.result || [];
+        resolve(store.indexNames && store.indexNames.contains('by_clinic')
+          ? result
+          : result.filter(a => a.clinicId === clinicId)
+        );
+      };
+      request.onerror = () => reject(request.error);
+    });
+  },
+
+  // --- Invoices ---
+  saveInvoice: async (invoice) => {
+    if (!invoice || !invoice.id) return null;
+    return performTransaction('invoices', 'readwrite', (store) => store.put(invoice));
+  },
+
+  getInvoice: async (id) => {
+    return performTransaction('invoices', 'readonly', (store) => store.get(id));
+  },
+
+  deleteInvoice: async (id) => {
+    return performTransaction('invoices', 'readwrite', (store) => store.delete(id));
+  },
+
+  getAllInvoices: async (clinicId) => {
+    const db = await openLocalDatabase();
+    if (!db) return [];
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('invoices', 'readonly');
+      const store = transaction.objectStore('invoices');
+      if (!clinicId) return resolve([]);
+
+      const request = store.indexNames && store.indexNames.contains('by_clinic')
+        ? store.index('by_clinic').getAll(clinicId)
+        : store.getAll();
+
+      request.onsuccess = () => {
+        const result = request.result || [];
+        resolve(store.indexNames && store.indexNames.contains('by_clinic')
+          ? result
+          : result.filter(inv => inv.clinicId === clinicId)
+        );
       };
       request.onerror = () => reject(request.error);
     });
@@ -198,8 +252,7 @@ export const localDb = {
       payload,
       clinicId,
       status: 'pending',
-      timestamp: new Date().toISOString(),
-      retryCount: 0
+      timestamp: new Date().toISOString()
     };
     return performTransaction('sync_queue', 'readwrite', (store) => store.add(action));
   },
@@ -211,11 +264,16 @@ export const localDb = {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction('sync_queue', 'readonly');
       const store = transaction.objectStore('sync_queue');
-      const request = store.getAll();
+      const request = store.indexNames && store.indexNames.contains('by_status')
+        ? store.index('by_status').getAll('pending')
+        : store.getAll();
 
       request.onsuccess = () => {
         const all = request.result || [];
-        resolve(all.filter(item => item.status === 'pending'));
+        resolve(store.indexNames && store.indexNames.contains('by_status')
+          ? all
+          : all.filter(item => item.status === 'pending')
+        );
       };
       request.onerror = () => reject(request.error);
     });
@@ -236,11 +294,16 @@ export const localDb = {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction('sync_queue', 'readonly');
       const store = transaction.objectStore('sync_queue');
-      const request = store.getAll();
+      const request = store.indexNames && store.indexNames.contains('by_status')
+        ? store.index('by_status').getAll('pending')
+        : store.getAll();
 
       request.onsuccess = () => {
         const all = request.result || [];
-        resolve(all.filter(item => item.status === 'pending'));
+        resolve(store.indexNames && store.indexNames.contains('by_status')
+          ? all
+          : all.filter(item => item.status === 'pending')
+        );
       };
       request.onerror = () => reject(request.error);
     });

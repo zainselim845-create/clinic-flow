@@ -737,7 +737,7 @@ export const TenantProvider = ({ children }) => {
     // 6. Broadcast across tabs
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
-        const bc = new BroadcastChannel('clinicflow_tenant_sync');
+        const bc = new BroadcastChannel('clinicflow_tenants_sync');
         bc.postMessage({ type: 'TENANT_DOMAIN_UPDATED', clinicId: target, domain: clean });
         bc.close();
       } catch (err) {

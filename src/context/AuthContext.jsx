@@ -775,6 +775,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Active session heartbeat: auto-evict expired sessions in open browser tabs
+  useEffect(() => {
+    if (!user) return;
+    const checkExpiration = () => {
+      const stored = safeSessionGetJSON('clinicflow_auth_user') || safeGetJSON('clinicflow_auth_user');
+      if (!stored || !stored.authenticatedAt) return;
+      const ageMs = Date.now() - new Date(stored.authenticatedAt).getTime();
+      const isSuper = stored.role === 'super_admin' || stored.isSuperAdmin;
+      const maxAge = isSuper ? SESSION_TTL_SUPER_ADMIN_MS : SESSION_TTL_MS;
+      if (ageMs > maxAge) {
+        console.warn('[AuthContext] Session expired via background timer, signing out');
+        signOut();
+      }
+    };
+
+    const interval = setInterval(checkExpiration, 60000);
+    const onVisibility = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        checkExpiration();
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibility);
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (typeof document !== 'undefined') {
+        document.removeEventListener('visibilitychange', onVisibility);
+      }
+    };
+  }, [user]);
+
   const updateClinicInfo = (newInfo) => {
     setClinic(prev => ({ ...prev, ...newInfo }));
     if (user && role === 'doctor') {

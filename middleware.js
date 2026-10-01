@@ -92,12 +92,13 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except:
-     * - api/ (API routes)
+    /*
+     * Match all request paths except:
      * - _vercel/ (Vercel internals)
      * - assets/ (Vite static assets)
-     * - Files with extensions (e.g. favicon.svg, robots.txt, sitemap.xml)
+     * - Static asset files with extensions (.svg, .png, .ico, .txt, .xml, .css, .js)
      */
-    '/((?!api/|_vercel/|assets/|[\\w-]+\\.\\w+).*)',
+    '/((?!_vercel/|assets/|[\\w-]+\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|css|js|woff2?)).*)',
   ],
 };
 /**

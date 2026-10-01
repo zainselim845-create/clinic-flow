@@ -93,6 +93,21 @@ class SyncOutbox {
     if (this.isDraining) return;
     if (!cloudCircuitBreaker.isAvailable()) return;
 
+    if (typeof navigator !== 'undefined' && navigator.locks && typeof navigator.locks.request === 'function') {
+      try {
+        await navigator.locks.request('clinicflow_sync_outbox_drain', { ifAvailable: true }, async (lock) => {
+          if (!lock) return;
+          await this._performDrain();
+        });
+      } catch {
+        await this._performDrain();
+      }
+    } else {
+      await this._performDrain();
+    }
+  }
+
+  async _performDrain() {
     this.isDraining = true;
     try {
       const pendingItems = await localDb.getPendingSyncItems();
@@ -114,12 +129,24 @@ class SyncOutbox {
             await localDb.updateSyncItemStatus(item.queueId || item.id, OUTBOX_STATUS.COMPLETED);
             cloudCircuitBreaker.recordSuccess();
           } else {
-            await localDb.updateSyncItemStatus(item.queueId || item.id, OUTBOX_STATUS.FAILED);
+            const retries = (Number(item.retryCount) || 0) + 1;
+            item.retryCount = retries;
+            if (retries >= 5) {
+              await localDb.updateSyncItemStatus(item.queueId || item.id, OUTBOX_STATUS.FAILED);
+            } else {
+              await localDb.updateSyncItemStatus(item.queueId || item.id, OUTBOX_STATUS.PENDING);
+            }
             cloudCircuitBreaker.recordFailure('sync_item_execution_returned_false');
           }
         } catch (itemErr) {
           console.warn('[SyncOutbox] Sync item failed:', item.id, itemErr);
-          await localDb.updateSyncItemStatus(item.queueId || item.id, OUTBOX_STATUS.FAILED);
+          const retries = (Number(item.retryCount) || 0) + 1;
+          item.retryCount = retries;
+          if (retries >= 5) {
+            await localDb.updateSyncItemStatus(item.queueId || item.id, OUTBOX_STATUS.FAILED);
+          } else {
+            await localDb.updateSyncItemStatus(item.queueId || item.id, OUTBOX_STATUS.PENDING);
+          }
           cloudCircuitBreaker.recordFailure(itemErr);
           break; // Stop draining on error
         }
