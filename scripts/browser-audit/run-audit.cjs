@@ -70,6 +70,36 @@ async function runUiAudit() {
     bad('view-login', 'login-submit', e.message);
   }
 
+  // Seed verified doctor session for subsequent protected route testing
+  await page.evaluate(() => {
+    const validDoctor = {
+      id: 'doc-audit-runner',
+      name: 'دكتور الاختبار المعتمد',
+      email: 'verified.doctor@clinicflow.app',
+      role: 'doctor',
+      clinicSlug: 'dr-audit-clinic',
+      isOnboardingCompleted: true,
+      permissions: ['all', 'appointments', 'patients', 'invoices', 'inventory', 'attendance', 'notifications', 'settings']
+    };
+    const validTenant = {
+      id: 'clinic-audit-runner',
+      slug: 'dr-audit-clinic',
+      name: 'عيادة د. الاختبار',
+      doctorName: 'دكتور الاختبار المعتمد',
+      doctorEmail: 'verified.doctor@clinicflow.app',
+      phone: '01012345678',
+      tier: 'pro',
+      status: 'active',
+      subscriptionStatus: 'active',
+      isOnboardingCompleted: true
+    };
+    localStorage.setItem('clinicflow_auth_user', JSON.stringify(validDoctor));
+    sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(validDoctor));
+    localStorage.setItem('clinicflow_active_tenant', JSON.stringify(validTenant));
+    sessionStorage.setItem('clinicflow_active_tenant', JSON.stringify(validTenant));
+    localStorage.setItem('clinicflow_active_tenant_slug', 'dr-audit-clinic');
+  });
+
   // --- 2. VIEW DASHBOARD ---
   console.log('\n--- 2. Testing View: view-dashboard ---');
   await page.goto(BASE + '/', { waitUntil: 'domcontentloaded' });
@@ -273,12 +303,12 @@ async function runUiAudit() {
   console.log('\n--- 11. Testing View: view-superadmin ---');
   await page.evaluate(() => {
     const adminUser = {
-      id: 'superadmin_1',
+      id: 'user-superadmin-master',
       name: 'مدير المنصة العام',
       email: 'superadmin@clinicflow.com',
       role: 'super_admin',
       isSuperAdmin: true,
-      clinicSlug: 'saas-hq'
+      clinicSlug: '*'
     };
     localStorage.setItem('clinicflow_auth_user', JSON.stringify(adminUser));
     sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(adminUser));
@@ -306,6 +336,10 @@ async function runUiAudit() {
 
   // --- 12. VIEW BOOKING PORTAL ---
   console.log('\n--- 12. Testing View: view-booking-portal ---');
+  await page.evaluate(() => {
+    localStorage.removeItem('clinicflow_auth_user');
+    sessionStorage.removeItem('clinicflow_auth_user');
+  });
   await page.goto(BASE + '/booking', { waitUntil: 'networkidle' });
   await page.waitForTimeout(500);
 
