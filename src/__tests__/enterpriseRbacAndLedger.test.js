@@ -202,7 +202,7 @@ describe('Enterprise Tier-1 SaaS Architecture: RBAC & Ledger Verification', () =
       expect(typeof Domains.BillingDomain.getNextInvoiceNumber).toBe('function');
       expect(typeof Domains.BillingDomain.normalizeInvoiceTotals).toBe('function');
       expect(typeof Domains.IdentityDomain.hasCapability).toBe('function');
-      expect(typeof Domains.ClinicalDomain.checkDrugAllergyInteractions).toBe('function');
+      expect(typeof Domains.ClinicalDomain.getPatientClinicalNotes).toBe('function');
     });
   });
 

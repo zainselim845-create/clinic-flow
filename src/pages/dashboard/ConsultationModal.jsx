@@ -2,12 +2,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Dialog } from '../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { 
-  Stethoscope, Check, CalendarPlus, BellRing, X, 
-  ShieldAlert
+  Stethoscope, Check, CalendarPlus, BellRing, X 
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useTenant } from '../../context/TenantContext';
-import { checkPrescriptionSafety } from '../../services/drugInteractionService';
 import './ConsultationModal.css';
 
 export default function ConsultationModal({
@@ -35,21 +33,6 @@ export default function ConsultationModal({
     }
   }, [appointment, state.clinicInfo]);
 
-  // Retrieve patient health factors & allergy history
-  const patientRecord = useMemo(() => {
-    if (!appointment) return null;
-    return (state.patients || []).find(p => 
-      p.id === (appointment.patientId || appointment.id) || 
-      (p.phone && appointment.patientPhone && p.phone === appointment.patientPhone)
-    ) || {};
-  }, [state.patients, appointment]);
-
-  // Real-time Clinical Decision Support (CDS) Safety Warnings
-  const safetyWarnings = useMemo(() => {
-    const combinedClinicalText = `${diagnosis} ${procedures} ${notes}`.trim();
-    if (!combinedClinicalText || !patientRecord) return [];
-    return checkPrescriptionSafety(combinedClinicalText, patientRecord);
-  }, [diagnosis, procedures, notes, patientRecord]);
 
   if (!appointment) return null;
 
@@ -256,33 +239,6 @@ export default function ConsultationModal({
                 </label>
               </div>
             </div>
-
-            {/* CDS Clinical Decision Support Alert Banner */}
-            {safetyWarnings.length > 0 && (
-              <div className="cds-safety-alert-box" style={{
-                margin: '1rem 0',
-                padding: '0.9rem 1.1rem',
-                borderRadius: '12px',
-                background: '#FEF2F2',
-                border: '1.5px solid #F87171',
-                color: '#991B1B',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.6rem'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
-                  <ShieldAlert size={20} color="#DC2626" />
-                  <span>تنبيه أمان دوائي وسريري عاجل!</span>
-                </div>
-                {safetyWarnings.map((warning, idx) => (
-                  <div key={idx} style={{ fontSize: '0.86rem', lineHeight: 1.5, background: '#FFFFFF', padding: '0.6rem 0.8rem', borderRadius: '8px', border: '1px solid #FECACA' }}>
-                    <div style={{ fontWeight: 700, color: '#B91C1C' }}>{warning.title}</div>
-                    <div style={{ color: '#4B5563', margin: '0.2rem 0' }}>{warning.description}</div>
-                    <div style={{ color: '#047857', fontWeight: 600, fontSize: '0.82rem' }}>التوصية السريرية: {warning.recommendation}</div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="modal-actions consultation-footer">

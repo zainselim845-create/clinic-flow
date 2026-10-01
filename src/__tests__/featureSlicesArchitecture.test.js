@@ -52,12 +52,12 @@ describe('Vertical Feature Slices Architecture & Clean Code Compliance', () => {
   });
 
   describe('4. Clinical Feature Slice', () => {
-    it('provides clinical notes, prescriptions, drug interactions, and labs', () => {
+    it('provides clinical notes, prescriptions, treatments, and labs', () => {
       expect(ClinicalFeature.ClinicalNotesPanel).toBeDefined();
       expect(ClinicalFeature.PrescriptionPrintModal).toBeDefined();
       expect(ClinicalFeature.DoctorAiFloatingWidget).toBeDefined();
       expect(ClinicalFeature.LabOrderModal).toBeDefined();
-      expect(ClinicalFeature.checkPrescriptionSafety).toBeDefined();
+      expect(ClinicalFeature.savePrescriptionToStorage).toBeDefined();
       expect(ClinicalFeature.getPatientClinicalNotes).toBeDefined();
       expect(ClinicalFeature.askDoctorAiAssistant).toBeDefined();
     });

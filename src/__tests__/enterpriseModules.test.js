@@ -1,63 +1,68 @@
 import { describe, it, expect } from 'vitest';
-import { checkPrescriptionSafety } from '../services/drugInteractionService';
 import { 
   recordAuditEvent, getAuditLogs, filterAuditLogs, AUDIT_EVENT_TYPES 
 } from '../services/auditLoggerService';
 
-describe('Enterprise Healthcare Modules & Clinical Decision Support Suite', () => {
+describe('Enterprise Healthcare Modules & Immutable Audit Trail Suite', () => {
 
-  describe('1. Clinical Decision Support (CDS) Drug & Allergy Safety Engine', () => {
-    it('flags critical penicillin allergy when prescribing Augmentin / Amoxicillin', () => {
-      const patient = {
-        name: 'كريم محمود',
-        allergies: 'حساسية شديدة من البنسلين ومشتقاته',
-        chronicDiseases: ''
-      };
+  describe('1. Enterprise Multi-Branch Operational Audit Events', () => {
+    it('records and verifies multi-branch patient registration events', () => {
+      const event = recordAuditEvent({
+        eventType: AUDIT_EVENT_TYPES.PATIENT_CREATED,
+        user: 'د. سارة عمارة',
+        action: 'تسجيل مريض جديد بفرع مدينة نصر',
+        details: 'الرقم الطبي: MED-9901 - فرع النزهة',
+        entityId: 'pat_nasr_9901',
+        entityType: 'patient'
+      });
 
-      const warnings = checkPrescriptionSafety('Augmentin 1gm قرص كل 12 ساعة بعد الأكل', patient);
-      expect(warnings.length).toBeGreaterThan(0);
-      expect(warnings[0].id).toBe('penicillin_allergy');
-      expect(warnings[0].severity).toBe('danger');
-      expect(warnings[0].recommendation).toContain('Dalacin C');
+      expect(event.id).toBeDefined();
+      expect(event.eventType).toBe(AUDIT_EVENT_TYPES.PATIENT_CREATED);
+      expect(event.entityType).toBe('patient');
+      expect(event.action).toContain('فرع مدينة نصر');
     });
 
-    it('warns when prescribing NSAIDs (Cataflam/Brufen) to patient with Peptic Ulcer', () => {
-      const patient = {
-        name: 'منى الشاذلي',
-        allergies: '',
-        chronicDiseases: 'قرحة معدة مزمنة وارتجاع مريء'
-      };
+    it('records and logs enterprise appointment rescheduling events', () => {
+      const event = recordAuditEvent({
+        eventType: AUDIT_EVENT_TYPES.APPOINTMENT_UPDATED,
+        user: 'موظف الاستقبال - فرع المهندسين',
+        action: 'تعديل موعد استشارة جراحة أسنان',
+        details: 'تم التقديم 24 ساعة بناء على طلب المريض',
+        entityId: 'apt_moh_3301',
+        entityType: 'appointment'
+      });
 
-      const warnings = checkPrescriptionSafety('كتافلام 50مجم مسكن للألم عند اللزوم', patient);
-      expect(warnings.length).toBeGreaterThan(0);
-      expect(warnings[0].id).toBe('nsaids_peptic_ulcer');
-      expect(warnings[0].severity).toBe('warning');
-      expect(warnings[0].recommendation).toContain('Panadol');
+      expect(event.id).toBeDefined();
+      expect(event.eventType).toBe(AUDIT_EVENT_TYPES.APPOINTMENT_UPDATED);
+      expect(event.entityType).toBe('appointment');
     });
 
-    it('warns against Epinephrine local anesthetic in uncontrolled hypertension', () => {
-      const patient = {
-        name: 'صلاح الدين',
-        allergies: '',
-        chronicDiseases: 'ضغط دم غير منضبط ومشاكل قلبية'
-      };
+    it('captures clinical laboratory order lifecycle events', () => {
+      const event = recordAuditEvent({
+        eventType: AUDIT_EVENT_TYPES.CLINICAL_NOTE_ADDED,
+        user: 'د. أحمد كامل',
+        action: 'طلب تحليل دم شامل وصورة دم كاملة CBC',
+        details: 'معمل البرج - باركود التحليل: LAB-8812',
+        entityId: 'lab_order_8812',
+        entityType: 'clinical_note'
+      });
 
-      const warnings = checkPrescriptionSafety('بنج اسنان موضعي مع ادرينالين', patient);
-      expect(warnings.length).toBeGreaterThan(0);
-      expect(warnings[0].id).toBe('local_anesthetic_epinephrine_hypertension');
-      expect(warnings[0].severity).toBe('danger');
-      expect(warnings[0].recommendation).toContain('Mepivacaine');
+      expect(event.id).toBeDefined();
+      expect(event.action).toContain('CBC');
     });
 
-    it('returns empty warnings when prescription has no contraindicated drugs', () => {
-      const patient = {
-        name: 'أحمد سالم',
-        allergies: 'حساسية بنسلين',
-        chronicDiseases: ''
-      };
+    it('captures enterprise medical fee adjustment events with authorization details', () => {
+      const event = recordAuditEvent({
+        eventType: AUDIT_EVENT_TYPES.INVOICE_CREATED,
+        user: 'المحاسب المالي العام',
+        action: 'تطبيق خصم نقابي بنسبة 15%',
+        details: 'فاتورة رقم INV-772 - خصم نقابة المهندسين بنسبة 15%',
+        entityId: 'inv_772',
+        entityType: 'invoice'
+      });
 
-      const warnings = checkPrescriptionSafety('Panadol Extra 500mg قرصين عند الصداع', patient);
-      expect(warnings.length).toBe(0);
+      expect(event.id).toBeDefined();
+      expect(event.details).toContain('15%');
     });
   });
 

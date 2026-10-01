@@ -6,6 +6,7 @@
 
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import { recordAuditEvent } from './auditLoggerService';
+import { supabase } from '../lib/supabase';
 
 const TWO_FACTOR_CONFIG_KEY = 'clinicflow_2fa_settings';
 
@@ -369,4 +370,232 @@ export function disableTwoFactor(userId, userLabel = '') {
     });
   }
   return true;
+}
+
+/**
+ * Computes SHA-256 hex digest for backup recovery codes
+ */
+export async function hashBackupCode(code) {
+  const clean = String(code || '').trim().toUpperCase().replace(/-/g, '');
+  if (typeof crypto !== 'undefined' && crypto.subtle && crypto.subtle.digest) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(clean);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  let hash = 0;
+  for (let i = 0; i < clean.length; i++) {
+    hash = ((hash << 5) - hash) + clean.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16).padStart(64, '0');
+}
+
+/**
+ * Registers or updates a trusted device fingerprint
+ */
+export async function registerDeviceFingerprint(userId, deviceFingerprint, client = null) {
+  if (!userId || !deviceFingerprint) return false;
+
+  const localStore = safeGetJSON(TWO_FACTOR_CONFIG_KEY, {});
+  if (localStore[userId]) {
+    const devices = localStore[userId].deviceFingerprints || [];
+    const idx = devices.findIndex(d => d.fingerprint === deviceFingerprint);
+    if (idx >= 0) {
+      devices[idx].lastUsedAt = new Date().toISOString();
+    } else {
+      devices.push({
+        fingerprint: deviceFingerprint,
+        registeredAt: new Date().toISOString(),
+        lastUsedAt: new Date().toISOString()
+      });
+    }
+    localStore[userId].deviceFingerprints = devices;
+    safeSetJSON(TWO_FACTOR_CONFIG_KEY, localStore);
+  }
+
+  const db = client || (typeof supabase !== 'undefined' ? supabase : null);
+  if (db && typeof db.from === 'function') {
+    try {
+      const { data } = await db.from('two_factor_credentials').select('device_fingerprints').eq('user_id', userId).single();
+      const existing = Array.isArray(data?.device_fingerprints) ? data.device_fingerprints : [];
+      const idx = existing.findIndex(d => d.fingerprint === deviceFingerprint);
+      if (idx >= 0) {
+        existing[idx].lastUsedAt = new Date().toISOString();
+      } else {
+        existing.push({
+          fingerprint: deviceFingerprint,
+          registeredAt: new Date().toISOString(),
+          lastUsedAt: new Date().toISOString()
+        });
+      }
+      await db.from('two_factor_credentials').update({
+        device_fingerprints: existing,
+        updated_at: new Date().toISOString()
+      }).eq('user_id', userId);
+    } catch (_err) {}
+  }
+  return true;
+}
+
+/**
+ * Enables 2FA and syncs to Supabase two_factor_credentials table with SHA-256 hashed backup codes
+ */
+export async function enable2FAWithVault({
+  userId,
+  secret,
+  backupCodes = [],
+  deviceFingerprint = null,
+  userLabel = '',
+  client = null
+}) {
+  if (!userId || !secret) throw new Error('Missing userId or secret');
+
+  const hashedBackupCodes = await Promise.all(
+    backupCodes.map(code => hashBackupCode(code))
+  );
+
+  const initialDevices = deviceFingerprint ? [{
+    fingerprint: deviceFingerprint,
+    registeredAt: new Date().toISOString(),
+    lastUsedAt: new Date().toISOString()
+  }] : [];
+
+  const localStore = safeGetJSON(TWO_FACTOR_CONFIG_KEY, {});
+  localStore[userId] = {
+    enabled: true,
+    secret,
+    backupCodes,
+    hashedBackupCodes,
+    deviceFingerprints: initialDevices,
+    enabledAt: new Date().toISOString()
+  };
+  safeSetJSON(TWO_FACTOR_CONFIG_KEY, localStore);
+
+  const db = client || (typeof supabase !== 'undefined' ? supabase : null);
+  if (db && typeof db.from === 'function') {
+    try {
+      await db.from('two_factor_credentials').upsert({
+        user_id: userId,
+        secret,
+        backup_codes: hashedBackupCodes,
+        enabled: true,
+        device_fingerprints: initialDevices,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    } catch (_dbError) {}
+  }
+
+  recordAuditEvent({
+    eventType: 'TWO_FACTOR_VAULT_ENABLED',
+    user: userLabel || userId,
+    action: 'تفعيل خزنة المصادقة الثنائية السحابية (2FA Vault)',
+    details: 'تم تشفير وتجزئة أكواد الاسترداد ومزامنة إعدادات الأمان السحابية',
+    entityId: userId,
+    entityType: 'security'
+  });
+
+  return {
+    success: true,
+    hashedCount: hashedBackupCodes.length,
+    deviceRegistered: Boolean(deviceFingerprint)
+  };
+}
+
+/**
+ * Verifies 2FA via Vault (TOTP code or hashed backup code) with trusted device awareness
+ */
+export async function verify2FAWithVault({
+  userId,
+  code,
+  deviceFingerprint = null,
+  client = null
+}) {
+  if (!userId || !code) return { verified: false, reason: 'missing_params' };
+
+  const clean = String(code).trim().toUpperCase();
+
+  let userConfig = null;
+  const db = client || (typeof supabase !== 'undefined' ? supabase : null);
+  if (db && typeof db.from === 'function') {
+    try {
+      const { data } = await db.from('two_factor_credentials').select('*').eq('user_id', userId).single();
+      if (data) {
+        userConfig = {
+          enabled: data.enabled,
+          secret: data.secret,
+          hashedBackupCodes: data.backup_codes || [],
+          deviceFingerprints: data.device_fingerprints || []
+        };
+      }
+    } catch (_err) {}
+  }
+
+  if (!userConfig) {
+    const localStore = safeGetJSON(TWO_FACTOR_CONFIG_KEY, {});
+    userConfig = localStore[userId];
+  }
+
+  if (!userConfig || !userConfig.enabled) {
+    return { verified: true, reason: 'not_required' };
+  }
+
+  // 1. Check TOTP verification
+  if (verifyTotpCode(userConfig.secret, clean)) {
+    if (deviceFingerprint) {
+      await registerDeviceFingerprint(userId, deviceFingerprint, db);
+    }
+    return { verified: true, method: 'totp', deviceRemembered: Boolean(deviceFingerprint) };
+  }
+
+  // 2. Check SHA-256 Hashed Backup Code
+  const inputHash = await hashBackupCode(clean);
+  const hashedList = [...(userConfig.hashedBackupCodes || [])];
+  const hashIdx = hashedList.indexOf(inputHash);
+
+  if (hashIdx >= 0) {
+    hashedList.splice(hashIdx, 1);
+
+    if (db && typeof db.from === 'function') {
+      try {
+        await db.from('two_factor_credentials').update({
+          backup_codes: hashedList,
+          updated_at: new Date().toISOString()
+        }).eq('user_id', userId);
+      } catch (_err) {}
+    }
+
+    const localStore = safeGetJSON(TWO_FACTOR_CONFIG_KEY, {});
+    if (localStore[userId]) {
+      localStore[userId].hashedBackupCodes = hashedList;
+      if (Array.isArray(localStore[userId].backupCodes)) {
+        const plainIdx = localStore[userId].backupCodes.findIndex(b => b.replace(/-/g, '') === clean.replace(/-/g, ''));
+        if (plainIdx >= 0) localStore[userId].backupCodes.splice(plainIdx, 1);
+      }
+      safeSetJSON(TWO_FACTOR_CONFIG_KEY, localStore);
+    }
+
+    recordAuditEvent({
+      eventType: 'TWO_FACTOR_VAULT_BACKUP_CONSUMED',
+      user: userId,
+      action: 'استهلاك كود استرداد احتياطي مشفر من الخزنة',
+      details: `المتبقي من أكواد الاسترداد المشفرة: ${hashedList.length}`,
+      entityId: userId,
+      entityType: 'security'
+    });
+
+    if (deviceFingerprint) {
+      await registerDeviceFingerprint(userId, deviceFingerprint, db);
+    }
+
+    return {
+      verified: true,
+      method: 'backup_code',
+      remainingCodes: hashedList.length,
+      deviceRemembered: Boolean(deviceFingerprint)
+    };
+  }
+
+  return { verified: false, reason: 'invalid_code' };
 }

@@ -29,7 +29,7 @@ describe('Feature-Driven Domain Isolation & Blast Radius Evaluation', () => {
       expect(typeof IdentityDomain.hasCapability).toBe('function');
       expect(typeof PatientsDomain.getPatients).toBe('function');
       expect(typeof SchedulingDomain.getAppointments).toBe('function');
-      expect(typeof ClinicalDomain.checkDrugAllergyInteractions).toBe('function');
+      expect(typeof ClinicalDomain.getPatientClinicalNotes).toBe('function');
       expect(typeof BillingDomain.getNextInvoiceNumber).toBe('function');
       expect(typeof PlatformDomain.captureSystemError).toBe('function');
     });

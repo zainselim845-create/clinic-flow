@@ -8,7 +8,6 @@ import {
   savePrescriptionToStorage, 
   getPatientPrescriptionsFromStorage 
 } from '../services/prescriptionService';
-import { checkPrescriptionSafety } from '../services/drugInteractionService';
 import { 
   formatPhoneForWhatsApp, 
   getWhatsAppUri, 
@@ -92,20 +91,27 @@ describe('e-Prescription & WhatsApp Direct Integration', () => {
       expect(patient2Rx[0].patientName).toBe('سارة إبراهيم');
     });
 
-    it('detects penicillin allergy during prescription building', () => {
-      const patientWithPenicillinAllergy = {
-        id: 'pat-1',
-        name: 'كريم مجدي',
-        allergies: 'حساسية من البنسلين ومشتقاته (Penicillin)'
-      };
+    it('creates and structures complete prescription record with clinic metadata', () => {
+      const rx = createPrescription({
+        clinic: { id: 'c-alpha', name: 'عيادة الأمل' },
+        patient: { id: 'pat-1', name: 'كريم مجدي' },
+        doctor: { name: 'د. حازم' },
+        diagnosis: 'التهاب حاد في الجيوب الأنفية',
+        medications: [
+          {
+            name: 'أوجمنتين 1 جم',
+            dose: 'قرص واحد',
+            frequency: 'كل 12 ساعة',
+            duration: '7 أيام',
+            instructions: 'بعد الأكل'
+          }
+        ]
+      });
 
-      const medsText = 'أوجمنتين 1 جم أقراص كل 12 ساعة';
-      const warnings = checkPrescriptionSafety(medsText, patientWithPenicillinAllergy);
-
-      expect(warnings.length).toBeGreaterThanOrEqual(1);
-      expect(warnings[0].id).toBe('penicillin_allergy');
-      expect(warnings[0].severity).toBe('danger');
-      expect(warnings[0].title).toContain('حساسية بنسلين');
+      expect(rx.id).toBeDefined();
+      expect(rx.patientName).toBe('كريم مجدي');
+      expect(rx.medications).toHaveLength(1);
+      expect(rx.diagnosis).toBe('التهاب حاد في الجيوب الأنفية');
     });
   });
 

@@ -201,7 +201,7 @@ describe('Egypt National Scale & Feature-Sliced Architecture', () => {
       expect(typeof BillingFeature.recordJournalEntry).toBe('function');
 
       expect(ClinicalFeature).toBeDefined();
-      expect(typeof ClinicalFeature.checkDrugAllergyInteractions).toBe('function');
+      expect(typeof ClinicalFeature.getPatientClinicalNotes).toBe('function');
 
       expect(InventoryFeature).toBeDefined();
       expect(typeof InventoryFeature.getInventoryItems).toBe('function');
