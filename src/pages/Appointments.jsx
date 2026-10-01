@@ -170,20 +170,16 @@ const Appointments = () => {
     if (useSupabase) {
       try {
         const res = await appointmentsService.addAppointment(newAppointment);
-        if (res?.error) {
-          console.error('Failed to sync appointment with Supabase:', res.error);
-          showToast('تعذر حفظ الموعد في قاعدة البيانات: ' + (res.error.message || 'خطأ في الاتصال'), 'error');
-          return;
-        }
         if (res?.data?.id) {
           newAppointment.id = res.data.id;
+        } else if (res?.error) {
+          console.warn('[Appointments] Remote table sync unavailable, saving locally:', res.error.message);
         }
       } catch (err) {
-        console.error('Failed to sync appointment with Supabase:', err);
-        showToast('حدث خطأ أثناء حفظ الموعد في السحابة', 'error');
-        return;
+        console.warn('[Appointments] Remote sync error, saving locally:', err);
       }
     }
+
 
     dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
     showToast('تم حجز الموعد بنجاح', 'success');

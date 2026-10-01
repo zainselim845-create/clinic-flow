@@ -1413,3 +1413,91 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* 11. OBJECTION HANDLING & DIRECT CLOSE SECTION */
+.hero-objection-bar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1.1rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #065F46;
+  font-size: 0.84rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+[data-theme='dark'] .hero-objection-bar {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #6EE7B7;
+}
+
+.landing-direct-close {
+  padding: 4rem 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.direct-close-card {
+  background: linear-gradient(135deg, #09090B 0%, #18181B 100%);
+  color: #FFFFFF;
+  border-radius: 24px;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.direct-close-card .close-pill {
+  display: inline-block;
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #E4E4E7;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+.direct-close-card .close-headline {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-bottom: 0.85rem;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}
+
+.direct-close-card .close-sub {
+  font-size: 1.05rem;
+  color: #A1A1AA;
+  max-width: 640px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+
+.direct-close-card .close-objections {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  color: #34D399;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.direct-close-card .close-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+

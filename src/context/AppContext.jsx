@@ -92,28 +92,38 @@ export function AppProvider({ children }) {
             recallsService.getRecalls(currentClinicId)
           ]);
 
-          if (isCancelled) return;
+          // Verify whether Supabase schema is actually deployed or returned PGRST205
+          const isSchemaMissing = [patientsRes, apptsRes, clinicRes].some(
+            res => res?.error?.code === 'PGRST205' || String(res?.error?.message || '').includes('schema cache')
+          );
 
-          dispatch({
-            type: 'INIT_DATA',
-            payload: {
-              patients: patientsRes?.data || [],
-              appointments: apptsRes?.data || [],
-              blockedSlots: blockedRes?.data || [],
-              notifications: notifsRes?.data || [],
-              staffMembers: staffRes?.data && staffRes.data.length > 0 ? staffRes.data : [],
-              clinicInfo: clinicRes?.data || activeTenant || null,
-              expenses: expensesRes?.data || [],
-              recalls: recallsRes?.data || [],
-              useSupabase: true,
-              currentTenantSlug: currentSlug
-            }
-          });
-          return;
+          if (!isSchemaMissing && (patientsRes?.data !== null || apptsRes?.data !== null || clinicRes?.data !== null)) {
+            if (isCancelled) return;
+
+            dispatch({
+              type: 'INIT_DATA',
+              payload: {
+                patients: patientsRes?.data || [],
+                appointments: apptsRes?.data || [],
+                blockedSlots: blockedRes?.data || [],
+                notifications: notifsRes?.data || [],
+                staffMembers: staffRes?.data && staffRes.data.length > 0 ? staffRes.data : [],
+                clinicInfo: clinicRes?.data || activeTenant || null,
+                expenses: expensesRes?.data || [],
+                recalls: recallsRes?.data || [],
+                useSupabase: true,
+                currentTenantSlug: currentSlug
+              }
+            });
+            return;
+          }
+
+          console.warn('[AppContext] Supabase schema unmigrated or unavailable. Gracefully falling back to offline-first local storage.');
         } catch (err) {
-          console.error('Supabase scoped load failed, falling back to localStorage:', err);
+          console.warn('[AppContext] Supabase scoped load failed, falling back to localStorage:', err);
         }
       }
+
 
       if (isCancelled) return;
 

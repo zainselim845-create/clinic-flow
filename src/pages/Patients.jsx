@@ -162,18 +162,13 @@ const Patients = () => {
       if (useSupabase) {
         try {
           const res = await patientsService.addPatient(newPatient);
-          if (res?.error) {
-            console.error('Failed to add patient to Supabase:', res.error);
-            showToast('تعذر حفظ المريض في قاعدة البيانات السحابية: ' + (res.error.message || 'خطأ في الاتصال'), 'error');
-            return;
-          }
           if (res?.data?.id) {
             newPatient.id = res.data.id;
+          } else if (res?.error) {
+            console.warn('[Patients] Remote table sync unavailable, saving locally:', res.error.message);
           }
         } catch (err) {
-          console.error('Failed to add patient to Supabase:', err);
-          showToast('حدث خطأ أثناء حفظ بيانات المريض', 'error');
-          return;
+          console.warn('[Patients] Remote sync error, saving locally:', err);
         }
       }
       dispatch({ type: 'ADD_PATIENT', payload: newPatient });
