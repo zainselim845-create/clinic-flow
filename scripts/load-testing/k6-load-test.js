@@ -32,12 +32,17 @@ export default function () {
     'API status is 200 or cached': (r) => r.status === 200,
   });
 
-  // Scenario 3: Subdomain Resolution
-  const resSubdomain = http.get(`${BASE_URL}/`, {
-    headers: { 'Host': 'dr-ahmed.clinic-flow-ten-sigma.vercel.app' },
+  // Scenario 3: Tenant Query Resolution & Auth Gate
+  const resTenantAuth = http.get(`${BASE_URL}/login?clinic=dr-ahmed`);
+  check(resTenantAuth, {
+    'Tenant Auth gate status is 200': (r) => r.status === 200,
+    'Tenant Auth loads within 1s': (r) => r.timings.duration < 1000,
   });
-  check(resSubdomain, {
-    'Subdomain status is 200': (r) => r.status === 200,
+
+  // Scenario 4: Health & System Diagnostics Probe
+  const resHealth = http.get(`${BASE_URL}/api/health`);
+  check(resHealth, {
+    'Health probe status is 200': (r) => r.status === 200,
   });
 
   sleep(0.2);
