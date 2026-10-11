@@ -32,6 +32,7 @@ const createStorageMock = () => {
 
 globalThis.localStorage = createStorageMock();
 globalThis.sessionStorage = createStorageMock();
+globalThis.fetch = () => Promise.resolve({ ok: true, status: 200, json: async () => ({ success: true }) });
 
 describe('Enterprise 1,000 Doctors & Clinics AuthN/AuthZ Benchmark (test-guard compliant)', () => {
   beforeEach(() => {

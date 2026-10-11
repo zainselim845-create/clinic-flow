@@ -2,36 +2,34 @@ import React, { useMemo, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
-  UserPlus, Share2, CalendarDays, Clock, Wallet, Landmark, BellRing, MessageCircle 
+  UserPlus, Share2, CalendarDays, Clock, Wallet, Landmark, BellRing 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import WaitingRoomQueue from './dashboard/WaitingRoomQueue';
-import ConsultationModal from './dashboard/ConsultationModal';
-import WalkInRegistrationModal from './dashboard/WalkInRegistrationModal';
 import RevenueAnalytics from './dashboard/RevenueAnalytics';
-import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
-import ExpensesModal from '../components/ExpensesModal';
-import PatientRecallModal from '../components/PatientRecallModal';
-import ShiftHandoverModal from '../components/ShiftHandoverModal';
-import ConfirmationModal from '../components/ConfirmationModal';
-import BookingShareModal from '../components/BookingShareModal';
-import QuickPaymentModal from './dashboard/QuickPaymentModal';
 import * as appointmentsService from '../services/appointmentsService';
 import * as patientsService from '../services/patientsService';
 import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
 import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
 import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '../utils/permissions';
 import { getBookingFunnelStats, getBookingDrafts } from '../services/leadRecoveryService';
+import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import { 
   DashboardMetricsGrid, 
   DashboardScheduleTable, 
-  DashboardLeadRecoveryCard 
+  DashboardLeadRecoveryCard,
+  DashboardQuickDock,
+  DashboardModalsContainer,
+  DashboardPendingBanner
 } from './dashboard/components';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import './Dashboard.css';
 
+/**
+ * Dashboard - Core Clinical Operations & Real-time Flow Orchestrator
+ */
 const Dashboard = () => {
   const { state, dispatch } = useApp();
   const { tenant } = useTenant();
@@ -190,7 +188,6 @@ const Dashboard = () => {
       }
     }
 
-    // Doctor finishes → status = pending_payment (secretary handles payment)
     dispatch({
       type: 'UPDATE_APPOINTMENT_STATUS',
       payload: {
@@ -215,7 +212,6 @@ const Dashboard = () => {
       });
     }
 
-    // Record healthcare audit trail
     recordAuditEvent({
       eventType: AUDIT_EVENT_TYPES.CONSULTATION_COMPLETED,
       user: user?.name || currentClinic.doctorName || 'طبيب العيادة',
@@ -273,7 +269,6 @@ const Dashboard = () => {
       createdAt: new Date().toISOString()
     };
 
-    // 1. Sync invoice to Supabase and LocalStorage
     try {
       await addInvoice(newInvoice);
       const existingInvoices = safeGetJSON(`clinicflow_invoices_${clinicSlug}`, []);
@@ -282,7 +277,6 @@ const Dashboard = () => {
       console.warn('Could not persist auto-generated invoice:', invErr);
     }
 
-    // 2. Sync appointment status in Supabase if configured
     if (state.useSupabase) {
       try {
         await appointmentsService.updateAppointmentStatus(appointmentId, 'completed', {
@@ -294,7 +288,6 @@ const Dashboard = () => {
       }
     }
 
-    // 3. Dispatch status update to React AppContext
     dispatch({
       type: 'UPDATE_APPOINTMENT_STATUS',
       payload: {
@@ -305,7 +298,6 @@ const Dashboard = () => {
       }
     });
 
-    // 4. Record Audit Event
     recordAuditEvent({
       eventType: AUDIT_EVENT_TYPES.PAYMENT_COLLECTED,
       user: user?.name || 'مكتب الاستقبال',
@@ -367,7 +359,7 @@ const Dashboard = () => {
     dispatch({ type: 'ADD_APPOINTMENT', payload: newBooking });
   };
 
-  // Minimalist Monochrome Quick Actions Dock Shortcuts
+  // Floating Command Dock Shortcuts
   const dockItems = useMemo(() => [
     {
       id: 'walkin',
@@ -426,83 +418,12 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
-      
       {/* SaaS Pending Activation & Review Banner */}
-      {((tenant?.subscriptionStatus === 'pending_approval') || (currentClinic?.subscriptionStatus === 'pending_approval')) && (
-        <div style={{
-          background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
-          border: '1.5px solid #FCD34D',
-          borderRadius: '14px',
-          padding: '1.1rem 1.4rem',
-          marginBottom: '1.25rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1rem',
-          direction: 'rtl',
-          boxShadow: '0 4px 12px rgba(245, 158, 11, 0.08)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
-            <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '10px',
-              background: '#F59E0B',
-              color: '#FFFFFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              marginTop: '2px'
-            }}>
-              <Clock size={22} strokeWidth={2.4} />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontWeight: 800, fontSize: '0.98rem', color: '#92400E' }}>
-                  حساب العيادة قيد المراجعة والتفعيل السريع
-                </span>
-                <span style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  background: '#FDE68A',
-                  color: '#78350F',
-                  padding: '2px 8px',
-                  borderRadius: '6px'
-                }}>
-                  باقة {tenant?.subscriptionTier === 'enterprise' ? 'Enterprise (المراكز الكبرى)' : tenant?.subscriptionTier === 'starter' ? 'Starter (الأساسية)' : 'Pro (العيادة الذكية)'}
-                </span>
-              </div>
-              <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.86rem', color: '#B45309', lineHeight: 1.5 }}>
-                مرحباً بك {user?.name ? (user.name.startsWith('د.') ? user.name : `د. ${user.name}`) : 'دكتور'}! تم تدشين عيادتك بنجاح ويمكنك استكشاف النظام وإدخال بيانات المرضى والخدمات. سيقوم فريق ClinicFlow بالتواصل معك هاتفياً على ({user?.phone || tenant?.phone || 'رقم هاتفك'}) لتأكيد الاشتراك وتفعيل كافة الصلاحيات المتقدمة.
-              </p>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
-            <a 
-              href={`https://wa.me/201006285031?text=${encodeURIComponent(`مرحباً فريق ClinicFlow، أنا الطبيب ${user?.name || ''} عيادة ${tenant?.name || ''} وأرغب في تأكيد وتفعيل حسابي سريعاً.`)}`}
-              target="_blank" 
-              rel="noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.45rem',
-                padding: '0.55rem 1rem',
-                borderRadius: '8px',
-                background: '#10B981',
-                color: '#FFFFFF',
-                fontSize: '0.84rem',
-                fontWeight: 700,
-                textDecoration: 'none',
-                boxShadow: '0 2px 6px rgba(16, 185, 129, 0.2)'
-              }}
-            >
-              <MessageCircle size={15} />
-              <span>تواصل لتسريع التفعيل</span>
-            </a>
-          </div>
-        </div>
-      )}
+      <DashboardPendingBanner 
+        tenant={tenant}
+        currentClinic={currentClinic}
+        user={user}
+      />
 
       {/* 1. Sleek Minimal Architectural Command Bar */}
       <div className="dashboard-command-bar">
@@ -577,13 +498,10 @@ const Dashboard = () => {
         />
       </FeatureErrorBoundary>
 
-      {/* 2. Cockpit Layout: 2-Column Responsive High-Density Grid */}
+      {/* 3. Cockpit Layout: 2-Column Responsive High-Density Grid */}
       <div className="dashboard-cockpit-grid">
-        
         {/* Main Column: Live Floor + Today's Schedule */}
         <div className="cockpit-main-column">
-          
-          {/* Waiting Room & Examination Room */}
           <WaitingRoomQueue
             currentExamPatient={currentExamPatient}
             waitingToday={waitingToday}
@@ -594,7 +512,6 @@ const Dashboard = () => {
             isDoctor={isDoctor}
           />
 
-          {/* Schedule Table Section */}
           <FeatureErrorBoundary featureName="جدول المواعيد">
             <DashboardScheduleTable
               filteredAppointments={filteredAppointments}
@@ -616,10 +533,9 @@ const Dashboard = () => {
               onOpenWalkInModal={() => setIsWalkInModalOpen(true)}
             />
           </FeatureErrorBoundary>
-
         </div>
 
-        {/* Side Column: Revenue Analytics (Doctor) or Reception Toolkit (Staff) */}
+        {/* Side Column: Revenue Analytics or Reception Toolkit */}
         <div className="cockpit-side-column">
           {isDoctor ? (
             <RevenueAnalytics
@@ -652,7 +568,7 @@ const Dashboard = () => {
                 </button>
                 <button 
                   type="button" 
-                  onClick={handleCopyBookingLink} 
+                  onClick={() => setIsShareModalOpen(true)} 
                   className="toolkit-action-btn"
                 >
                   <Share2 size={18} />
@@ -699,101 +615,37 @@ const Dashboard = () => {
             />
           </FeatureErrorBoundary>
         </div>
-
       </div>
 
-      {/* Modals & Drawers */}
-      <WalkInRegistrationModal
-        isOpen={isWalkInModalOpen}
-        onClose={() => setIsWalkInModalOpen(false)}
-        onSubmit={handleWalkInSubmit}
-        regularFee={currentClinic.regularFee || '300 ج.م'}
+      {/* Modals & Drawers Container */}
+      <DashboardModalsContainer
+        isWalkInModalOpen={isWalkInModalOpen}
+        setIsWalkInModalOpen={setIsWalkInModalOpen}
+        handleWalkInSubmit={handleWalkInSubmit}
+        currentClinic={currentClinic}
+        finishExamAppt={finishExamAppt}
+        setFinishExamAppt={setFinishExamAppt}
+        handleFinishConsultation={handleFinishConsultation}
+        dossierPatient={dossierPatient}
+        setDossierPatient={setDossierPatient}
+        isExpensesModalOpen={isExpensesModalOpen}
+        setIsExpensesModalOpen={setIsExpensesModalOpen}
+        isRecallModalOpen={isRecallModalOpen}
+        setIsRecallModalOpen={setIsRecallModalOpen}
+        isShiftModalOpen={isShiftModalOpen}
+        setIsShiftModalOpen={setIsShiftModalOpen}
+        paymentModalAppt={paymentModalAppt}
+        setPaymentModalAppt={setPaymentModalAppt}
+        handleCollectPayment={handleCollectPayment}
+        roomWarningModal={roomWarningModal}
+        setRoomWarningModal={setRoomWarningModal}
+        isShareModalOpen={isShareModalOpen}
+        setIsShareModalOpen={setIsShareModalOpen}
+        tenant={tenant}
       />
 
-      <ConsultationModal
-        isOpen={!!finishExamAppt}
-        appointment={finishExamAppt}
-        onClose={() => setFinishExamAppt(null)}
-        onComplete={handleFinishConsultation}
-      />
-
-      <PatientDossierDrawer
-        patient={dossierPatient}
-        onClose={() => setDossierPatient(null)}
-      />
-
-      <ExpensesModal
-        isOpen={isExpensesModalOpen}
-        onClose={() => setIsExpensesModalOpen(false)}
-      />
-
-      <PatientRecallModal
-        isOpen={isRecallModalOpen}
-        onClose={() => setIsRecallModalOpen(false)}
-      />
-
-      <ShiftHandoverModal
-        isOpen={isShiftModalOpen}
-        onClose={() => setIsShiftModalOpen(false)}
-      />
-
-      {/* Quick Payment & Invoicing Modal */}
-      <QuickPaymentModal
-        isOpen={!!paymentModalAppt}
-        appointment={paymentModalAppt}
-        onClose={() => setPaymentModalAppt(null)}
-        onConfirm={handleCollectPayment}
-      />
-
-      {/* Room Occupancy Guard Warning Modal */}
-      <ConfirmationModal
-        isOpen={!!roomWarningModal}
-        onClose={() => setRoomWarningModal(null)}
-        onConfirm={() => setRoomWarningModal(null)}
-        title="غرفة الكشف مشغولة حالياً"
-        message={`المريض (${roomWarningModal?.occupiedPatient?.patientName || ''}) متواجد حالياً داخل غرفة الكشف مع الطبيب. يرجى إنهاء الكشف الحالي قبل إدخال (${roomWarningModal?.nextPatient?.patientName || ''}).`}
-        confirmText="حسناً، فهمت"
-        cancelText=""
-        isDestructive={false}
-      />
-
-      {/* Clinic Booking Share & Real Domain Modal */}
-      <BookingShareModal
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-        tenant={tenant || currentClinic}
-      />
-
-      {/* 4. Floating Quick Actions Command Dock */}
-      <div 
-        className="dashboard-floating-dock" 
-        role="toolbar" 
-        aria-label="شريط الوصول السريع للعمليات السريرية"
-      >
-        <div className="dock-actions-group">
-          {dockItems.map((item, idx) => (
-            <React.Fragment key={item.id}>
-              {/* Vertical separator between main action triggers and filtering tabs */}
-              {idx === 2 && <div className="dock-separator" role="separator" aria-orientation="vertical" />}
-              <button
-                type="button"
-                onClick={item.onClick}
-                className={`dock-pill-btn ${item.active ? 'active' : ''}`}
-                title={item.label}
-                aria-pressed={item.active}
-              >
-                <span className={`dock-icon-box ${item.iconType || 'default'}`}>
-                  {item.icon}
-                </span>
-                <span className="dock-label">{item.label}</span>
-                {item.badge !== undefined && (
-                  <span className="dock-badge">{item.badge}</span>
-                )}
-              </button>
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
+      {/* Floating Quick Actions Command Dock */}
+      <DashboardQuickDock dockItems={dockItems} />
     </div>
   );
 };

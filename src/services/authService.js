@@ -10,9 +10,13 @@ import { isSupabaseConfigured, CLOUD_TENANTS_REGISTRY_URL } from '../lib/supabas
 import { createClinicInDb, deleteClinicFromDb } from './clinicsService';
 import { safeStorage } from '../utils/safeStorage';
 
-export { hashPassword, verifyPassword, slugifyClinic } from './auth/authCrypto';
-export { broadcastTenantUpdate } from './auth/authBroadcast';
-export { isDemoOrCorruptedTenant, isDemoOrCorruptedUser } from './auth/authValidation';
+import { hashPassword, verifyPassword, slugifyClinic } from './auth/authCrypto';
+import { broadcastTenantUpdate } from './auth/authBroadcast';
+import { isDemoOrCorruptedTenant, isDemoOrCorruptedUser } from './auth/authValidation';
+
+export { hashPassword, verifyPassword, slugifyClinic };
+export { broadcastTenantUpdate };
+export { isDemoOrCorruptedTenant, isDemoOrCorruptedUser };
 
 const REGISTERED_TENANTS_KEY = 'clinicflow_registered_tenants';
 const REGISTERED_USERS_KEY = 'clinicflow_registered_users';

@@ -1,14 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Stethoscope, Eye, EyeOff, Loader2, AlertTriangle, 
-  Building2, Globe, Check, User, Lock, Mail, Phone, 
-  Sparkles, CheckCircle2, ArrowLeft
-} from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Globe, Stethoscope } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Tabs } from '../components/ui/tabs';
 import { triggerGoogleOAuthPopup } from '../services/googleAuthService';
 import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/safeStorage';
+import { LoginHeroPane, LoginForm, RegisterClinicForm } from './auth';
 import './Login.css';
 
 const MAX_FAILED_ATTEMPTS = 5;
@@ -30,6 +27,9 @@ const CLINIC_SPECIALTIES_LIST = [
   'مركز طبي متعدد التخصصات'
 ];
 
+/**
+ * Login & Clinic Onboarding Page - Modular Orchestrator Component
+ */
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,7 +38,7 @@ export default function Login() {
   const searchParams = new URLSearchParams(location.search);
   const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
 
-  // If someone passes portal=admin or portal=saas to /login, securely redirect to dedicated /superadmin/login
+  // Redirect admin portals to dedicated superadmin login
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const portal = params.get('portal');
@@ -47,7 +47,7 @@ export default function Login() {
     }
   }, [location.search, navigate]);
 
-  const [activeTab, setActiveTab] = useState(initialTab); // 'login' | 'register'
+  const [activeTab, setActiveTab] = useState(initialTab);
   
   // Login Form State
   const [identifier, setIdentifier] = useState(() => safeGetItem(REMEMBERED_USER_KEY, '') || '');
@@ -75,7 +75,7 @@ export default function Login() {
   
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Calculate Password Strength (0: none, 1: weak, 2: medium, 3: strong)
+  // Password Strength Calculation
   const passwordStrength = useMemo(() => {
     const pwd = regForm.password || '';
     if (!pwd) return 0;
@@ -143,7 +143,6 @@ export default function Login() {
       const { data, error: signInError } = await signIn(identifier.trim(), password);
       if (signInError) throw signInError;
       
-      // Remember me logic
       if (rememberMe) {
         safeSetItem(REMEMBERED_USER_KEY, identifier.trim());
       } else {
@@ -276,64 +275,11 @@ export default function Login() {
       <div className="login-card-container">
         <div className="login-dual-card glass-panel">
           
-          {/* Left Column: Brand Hero & Value Proposition */}
-          <div className="login-hero-pane">
-            <div className="hero-brand-top">
-              <div className="brand-logo-badge">
-                <Stethoscope size={28} className="brand-logo-icon" />
-              </div>
-              <div className="brand-titles">
-                <span className="brand-name">Clinic<span>Flow</span></span>
-                <span className="brand-tagline">السحابة الطبية لإدارة العيادات</span>
-              </div>
-            </div>
+          {/* Left Column: Brand Hero */}
+          <LoginHeroPane />
 
-            <div className="hero-headline-block">
-              <h2>المنظومة السحابية المعتمدة لإدارة عيادتك الطبية بكل احترافية</h2>
-              <p>بيئة عمل سريرية وإدارية متكاملة تضمن أعلى درجات الخصوصية والكفاءة في متابعة المرضى والعمليات اليومية.</p>
-            </div>
-
-            <div className="hero-features-list">
-              <div className="hero-feature-item">
-                <div className="feature-check-icon">
-                  <Check size={16} strokeWidth={3} />
-                </div>
-                <div className="feature-text">
-                  <strong>سجلات طبية سريرية مشفرة</strong>
-                  <span>عزل تام ومستقل لبيانات كل مريض وعيادة بأعلى معايير الأمان.</span>
-                </div>
-              </div>
-
-              <div className="hero-feature-item">
-                <div className="feature-check-icon">
-                  <Check size={16} strokeWidth={3} />
-                </div>
-                <div className="feature-text">
-                  <strong>إدارة المواعيد وطوابير الانتظار</strong>
-                  <span>تنظيم سلس للكشوفات مع تذكيرات تلقائية عبر الرسائل القصيرة.</span>
-                </div>
-              </div>
-
-              <div className="hero-feature-item">
-                <div className="feature-check-icon">
-                  <Check size={16} strokeWidth={3} />
-                </div>
-                <div className="feature-text">
-                  <strong>فواتير إلكترونية وتقارير فورية</strong>
-                  <span>إصدار سندات القبض، متابعة الخزينة، وإحصائيات الإيرادات الدقيقة.</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="hero-footer-trust">
-              <Sparkles size={16} className="text-emerald" />
-              <span>معتمد وموثوق لأكثر من 1,000 عيادة ومركز طبي متخصص</span>
-            </div>
-          </div>
-
-          {/* Right Column: Authentication Forms */}
+          {/* Right Column: Authentication & Onboarding Forms */}
           <div className="login-forms-pane">
-            
             <div className="forms-header">
               <h1 className="form-main-title">
                 {activeTab === 'login' ? 'مرحباً بك مجدداً دكتور' : 'تأسيس وتدشين حساب عيادة جديدة'}
@@ -343,7 +289,7 @@ export default function Login() {
               </p>
             </div>
 
-            {/* Global Error & Lockout Alert */}
+            {/* Global Error Alert */}
             {error && (
               <div 
                 role="alert" 
@@ -367,7 +313,7 @@ export default function Login() {
               </div>
             )}
 
-            {/* Client Clinics: Tabs between Login and Register */}
+            {/* Tabs between Login and Register */}
             <Tabs.Root 
               value={activeTab} 
               onValueChange={(details) => { 
@@ -382,460 +328,50 @@ export default function Login() {
                   value="login"
                   className={`auth-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
                 >
-                    <span>تسجيل الدخول</span>
-                  </Tabs.Trigger>
-                  <Tabs.Trigger 
-                    value="register"
-                    className={`auth-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
-                  >
-                    <span>إنشاء حساب عيادة جديدة</span>
-                  </Tabs.Trigger>
-                </Tabs.List>
+                  <span>تسجيل الدخول</span>
+                </Tabs.Trigger>
+                <Tabs.Trigger 
+                  value="register"
+                  className={`auth-tab-btn ${activeTab === 'register' ? 'active' : ''}`}
+                >
+                  <span>إنشاء حساب عيادة جديدة</span>
+                </Tabs.Trigger>
+              </Tabs.List>
 
-                {/* 1. DOCTOR / STAFF LOGIN TAB */}
-                <Tabs.Content value="login">
-                  {/* Google OAuth Primary Callout */}
-                  <div className="google-primary-cta-card">
-                    <div className="google-cta-badge">
-                      <Sparkles size={14} />
-                      <span>تسجيل الدخول الأساسي والموصى به</span>
-                    </div>
-                    <button 
-                      type="button" 
-                      onClick={handleGoogleSignInClick}
-                      className="btn-google-primary-hero"
-                      disabled={isLoading || isLocked}
-                      aria-label="تسجيل الدخول السريع عبر Google"
-                    >
-                      <svg className="google-svg" width="20" height="20" viewBox="0 0 18 18" aria-hidden="true">
-                        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-                        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-                        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
-                        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
-                      </svg>
-                      <span>تسجيل الدخول الفوري بحساب Google</span>
-                    </button>
-                    <p className="google-cta-caption">
-                      دخول مباشر وموثق بدون كلمة مرور، مرتبط تلقائياً بعيادتك وسجلاتك الطبية.
-                    </p>
-                  </div>
+              <Tabs.Content value="login">
+                <LoginForm 
+                  identifier={identifier}
+                  setIdentifier={setIdentifier}
+                  password={password}
+                  setPassword={setPassword}
+                  rememberMe={rememberMe}
+                  setRememberMe={setRememberMe}
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                  isLoading={isLoading}
+                  isLocked={isLocked}
+                  lockoutTimer={lockoutTimer}
+                  handleSubmit={handleSubmit}
+                  handleGoogleSignInClick={handleGoogleSignInClick}
+                />
+              </Tabs.Content>
 
-                  <div className="auth-separator">
-                    <span>أو تسجيل الدخول اليدوي بكلمة المرور</span>
-                  </div>
-
-                  <form onSubmit={handleSubmit} className="auth-form">
-                    <div className="form-field-group">
-                      <label className="field-label" htmlFor="identifier">
-                        <span>البريد الإلكتروني أو رقم الهاتف</span>
-                      </label>
-                      <div className="field-input-wrapper">
-                        <User className="input-icon" size={18} />
-                        <input
-                          id="identifier"
-                          name="identifier"
-                          type="text"
-                          className="field-input has-icon"
-                          placeholder="doctor@clinic.com أو 010XXXXXXXX"
-                          value={identifier}
-                          onChange={(e) => setIdentifier(e.target.value)}
-                          disabled={isLocked || isLoading}
-                          required
-                          dir="ltr"
-                          autoComplete="username"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-field-group">
-                      <div className="field-label-row">
-                        <label className="field-label" htmlFor="password">كلمة المرور</label>
-                        <span className="field-hint-action" title="تواصل مع إدارة العيادة لإعادة تعيين كلمة المرور">
-                          نسيت كلمة المرور؟
-                        </span>
-                      </div>
-                      <div className="field-input-wrapper">
-                        <Lock className="input-icon" size={18} />
-                        <input
-                          id="password"
-                          name="password"
-                          type={showPassword ? "text" : "password"}
-                          className="field-input has-icon has-toggle"
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          disabled={isLocked || isLoading}
-                          required
-                          dir="ltr"
-                          autoComplete="current-password"
-                        />
-                        <button
-                          type="button"
-                          className="btn-toggle-eye"
-                          onClick={() => setShowPassword(!showPassword)}
-                          aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="form-options-row">
-                      <label className="checkbox-control">
-                        <input 
-                          type="checkbox" 
-                          checked={rememberMe} 
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                          disabled={isLoading}
-                        />
-                        <span className="checkbox-label">تذكر بيانات الدخول على هذا الجهاز</span>
-                      </label>
-                    </div>
-
-                    <div style={{
-                      display: 'flex',
-                      gap: '0.5rem',
-                      alignItems: 'center',
-                      flexWrap: 'wrap',
-                      marginBottom: '1rem',
-                      fontSize: '0.78rem'
-                    }}>
-                      <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>دخول تجريبي سريع:</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIdentifier('doctor1@enterprise-clinic1.com');
-                          setPassword('passDoctor1!');
-                        }}
-                        style={{
-                          background: 'rgba(2, 132, 199, 0.08)',
-                          border: '1px solid rgba(2, 132, 199, 0.25)',
-                          color: '#0284C7',
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontWeight: 700,
-                          fontSize: '0.75rem'
-                        }}
-                      >
-                        طبيب تجريبي (doctor1)
-                      </button>
-                    </div>
-
-                    <button 
-                      type="submit" 
-                      className="btn-auth-primary"
-                      disabled={isLoading || isLocked || !identifier.trim() || !password}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="btn-spinner" size={20} />
-                          <span>جاري تسجيل الدخول...</span>
-                        </>
-                      ) : isLocked ? (
-                        <span>يرجى الانتظار ({lockoutTimer} ثانية)...</span>
-                      ) : (
-                        <span>تسجيل الدخول إلى العيادة</span>
-                      )}
-                    </button>
-                  </form>
-                </Tabs.Content>
-
-                {/* 2. CLINIC ONBOARDING REGISTRATION TAB */}
-                <Tabs.Content value="register">
-                  {/* Google OAuth Primary Registration Hero */}
-                  <div className="google-primary-cta-card google-register-hero">
-                    <div className="google-cta-badge highlight">
-                      <Sparkles size={14} />
-                      <span>الإنشاء الأساسي السريع - سحب كافة البيانات</span>
-                    </div>
-                    <h3 className="google-card-heading">تدشين العيادة فوراً بنقرة واحدة عبر Google</h3>
-                    <p className="google-card-desc">
-                      سحب اسم الطبيب، البريد الإلكتروني المعتمد، والصورة لإنشاء العيادة في السحابة فوراً وتوثيقها بدون إدخال يدوي.
-                    </p>
-                    <button 
-                      type="button" 
-                      onClick={handleGoogleSignInClick}
-                      className="btn-google-primary-hero btn-google-register"
-                      disabled={isLoading || isLocked}
-                      aria-label="تدشين العيادة وسحب كافة المعلومات عبر Google"
-                    >
-                      <svg className="google-svg" width="20" height="20" viewBox="0 0 18 18" aria-hidden="true">
-                        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-                        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-                        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
-                        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
-                      </svg>
-                      <span>تدشين العيادة وسحب البيانات عبر Google (أساسي)</span>
-                    </button>
-                  </div>
-
-                  <div className="auth-separator">
-                    <span>أو إدخال بيانات التأسيس يدوياً</span>
-                  </div>
-
-                  <form onSubmit={handleRegisterSubmit} className="auth-form register-form">
-                    {/* Google Pre-fill Helper */}
-                    <div className="google-autofill-banner">
-                      <button
-                        type="button"
-                        onClick={handleAutofillFromGoogle}
-                        className="btn-google-autofill"
-                        disabled={isLoading}
-                        title="سحب الاسم والبريد الإلكتروني من Google لتسريع ملء النموذج"
-                      >
-                        <svg className="google-svg" width="16" height="16" viewBox="0 0 18 18" aria-hidden="true">
-                          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-                          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-                          <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
-                          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
-                        </svg>
-                        <span>سحب بياناتي من Google لتعبئة النموذج تلقائياً</span>
-                      </button>
-                    </div>
-                    
-                    <div className="form-fields-grid-2">
-                      <div className="form-field-group">
-                        <label className="field-label" htmlFor="regDoctorName">اسم الطبيب الكامل *</label>
-                        <div className="field-input-wrapper">
-                          <User className="input-icon" size={18} />
-                          <input 
-                            id="regDoctorName"
-                            name="doctorName"
-                            type="text" 
-                            className="field-input has-icon" 
-                            placeholder="د. محمد عبد الرحمن"
-                            value={regForm.doctorName}
-                            onChange={(e) => setRegForm({ ...regForm, doctorName: e.target.value })}
-                            required
-                            disabled={isLoading}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="form-field-group">
-                        <label className="field-label" htmlFor="regClinicName">اسم العيادة أو المركز الطبي *</label>
-                        <div className="field-input-wrapper">
-                          <Building2 className="input-icon" size={18} />
-                          <input 
-                            id="regClinicName"
-                            name="clinicName"
-                            type="text" 
-                            className="field-input has-icon" 
-                            placeholder="عيادة الشروق التخصصية"
-                            value={regForm.clinicName}
-                            onChange={(e) => setRegForm({ ...regForm, clinicName: e.target.value })}
-                            required
-                            disabled={isLoading}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="form-field-group">
-                      <label className="field-label" htmlFor="regSpecialty">التخصص السريري للعيادة *</label>
-                      <select
-                        id="regSpecialty"
-                        name="specialty"
-                        className="field-input field-select"
-                        value={regForm.specialty}
-                        onChange={(e) => setRegForm({ ...regForm, specialty: e.target.value })}
-                        disabled={isLoading}
-                      >
-                        {CLINIC_SPECIALTIES_LIST.map((spec) => (
-                          <option key={spec} value={spec}>{spec}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="form-fields-grid-2">
-                      <div className="form-field-group">
-                        <label className="field-label" htmlFor="regPhone">رقم هاتف الطبيب / العيادة *</label>
-                        <div className="field-input-wrapper">
-                          <Phone className="input-icon" size={18} />
-                          <input 
-                            id="regPhone"
-                            name="phone"
-                            type="tel" 
-                            className="field-input has-icon" 
-                            placeholder="010XXXXXXXX"
-                            dir="ltr"
-                            value={regForm.phone}
-                            onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
-                            required
-                            disabled={isLoading}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="form-field-group">
-                        <label className="field-label" htmlFor="regEmail">البريد الإلكتروني المهني *</label>
-                        <div className="field-input-wrapper">
-                          <Mail className="input-icon" size={18} />
-                          <input 
-                            id="regEmail"
-                            name="email"
-                            type="email" 
-                            className="field-input has-icon" 
-                            placeholder="doctor@myclinic.com"
-                            dir="ltr"
-                            value={regForm.email}
-                            onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                            required
-                            disabled={isLoading}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="form-field-group">
-                      <label className="field-label" htmlFor="regPassword">كلمة المرور للحساب *</label>
-                      <div className="field-input-wrapper">
-                        <Lock className="input-icon" size={18} />
-                        <input 
-                          id="regPassword"
-                          name="password"
-                          type={showPassword ? "text" : "password"} 
-                          className="field-input has-icon has-toggle" 
-                          placeholder="لا تقل عن 6 أحرف وأرقام"
-                          minLength={6}
-                          autoComplete="new-password"
-                          dir="ltr"
-                          value={regForm.password}
-                          onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
-                          required
-                          disabled={isLoading}
-                        />
-                        <button
-                          type="button"
-                          className="btn-toggle-eye"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                        </button>
-                      </div>
-
-                      {/* Password Strength Indicator */}
-                      {regForm.password && (
-                        <div className="password-meter-wrap">
-                          <div className="meter-bars">
-                            <span className={`meter-segment ${passwordStrength >= 1 ? 'active weak' : ''}`} />
-                            <span className={`meter-segment ${passwordStrength >= 2 ? 'active medium' : ''}`} />
-                            <span className={`meter-segment ${passwordStrength >= 3 ? 'active strong' : ''}`} />
-                          </div>
-                          <span className="meter-label">
-                            {passwordStrength === 1 && 'كلمة مرور مقبولة (يفضل إضافة أرقام)'}
-                            {passwordStrength === 2 && 'كلمة مرور جيدة'}
-                            {passwordStrength >= 3 && 'كلمة مرور قوية ومحمية'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* SaaS Plan Selection */}
-                    <div className="form-field-group">
-                      <label className="field-label">اختر باقة الاشتراك المناسبة لعيادتك *</label>
-                      <div className="saas-plan-selector-grid">
-                        {[
-                          {
-                            id: 'starter',
-                            name: 'Starter (الأساسية)',
-                            price: '499 ج.م',
-                            period: '/ شهر',
-                            badge: 'العيادات الفردية',
-                            features: ['طبيب واحد', 'عيادة واحدة (فرع واحد)', 'مواعيد ومرضى وفواتير']
-                          },
-                          {
-                            id: 'pro',
-                            name: 'Pro (العيادة الذكية)',
-                            price: '999 ج.م',
-                            period: '/ شهر',
-                            badge: 'الأكثر طلباً',
-                            features: ['حتى 3 أطباء', 'ربط فروع وعيادات متعددة', 'مساعد ذكي ومخزون']
-                          },
-                          {
-                            id: 'enterprise',
-                            name: 'Enterprise (المراكز الكبرى)',
-                            price: '1999 ج.م',
-                            period: '/ شهر',
-                            badge: 'مؤسسي متقدم',
-                            features: ['حتى 10 أطباء', 'باقة رسائل SMS وواتساب', 'نطاق مخصص وتدقيق كامل']
-                          }
-                        ].map((plan) => {
-                          const isSelected = (regForm.subscriptionTier || 'pro') === plan.id;
-                          return (
-                            <div
-                              key={plan.id}
-                              className={`saas-plan-card ${isSelected ? 'selected' : ''}`}
-                              onClick={() => setRegForm(prev => ({ ...prev, subscriptionTier: plan.id }))}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  setRegForm(prev => ({ ...prev, subscriptionTier: plan.id }));
-                                }
-                              }}
-                            >
-                              <div className="plan-card-header">
-                                <span className="plan-name">{plan.name}</span>
-                                {plan.badge && <span className="plan-badge">{plan.badge}</span>}
-                              </div>
-                              <div className="plan-price-row">
-                                <span className="plan-price">{plan.price}</span>
-                                <span className="plan-period">{plan.period}</span>
-                              </div>
-                              <ul className="plan-features-mini">
-                                {plan.features.map((feat, idx) => (
-                                  <li key={idx}>
-                                    <Check size={12} className="feat-check" />
-                                    <span>{feat}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                              <div className="plan-select-indicator">
-                                <div className={`radio-dot ${isSelected ? 'active' : ''}`} />
-                                <span>{isSelected ? 'الباقة المختارة' : 'اختيار هذه الباقة'}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="form-options-row">
-                      <label className="checkbox-control">
-                        <input 
-                          type="checkbox" 
-                          checked={regForm.agreeTerms} 
-                          onChange={(e) => setRegForm({ ...regForm, agreeTerms: e.target.checked })}
-                          required
-                        />
-                        <span className="checkbox-label terms-label">
-                          أوافق على <a href="#terms" onClick={(e) => e.preventDefault()}>شروط الاستخدام</a> و <a href="#privacy" onClick={(e) => e.preventDefault()}>سياسة أمان وخصوصية البيانات الطبية</a>
-                        </span>
-                      </label>
-                    </div>
-
-                    <button 
-                      type="submit" 
-                      className="btn-auth-primary btn-register-cta"
-                      disabled={isLoading || !regForm.doctorName || !regForm.clinicName || !regForm.phone || !regForm.password || !regForm.agreeTerms}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="btn-spinner" size={20} />
-                          <span>جاري تدشين وتجهيز عيادتك...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>تدشين حساب العيادة مجاناً</span>
-                          <ArrowLeft size={18} />
-                        </>
-                      )}
-                    </button>
-                  </form>
-                </Tabs.Content>
-              </Tabs.Root>
+              <Tabs.Content value="register">
+                <RegisterClinicForm 
+                  regForm={regForm}
+                  setRegForm={setRegForm}
+                  specialtiesList={CLINIC_SPECIALTIES_LIST}
+                  passwordStrength={passwordStrength}
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                  isLoading={isLoading}
+                  isLocked={isLocked}
+                  handleRegisterSubmit={handleRegisterSubmit}
+                  handleGoogleSignInClick={handleGoogleSignInClick}
+                  handleAutofillFromGoogle={handleAutofillFromGoogle}
+                />
+              </Tabs.Content>
+            </Tabs.Root>
 
             {/* Bottom Footer Navigation */}
             <div className="auth-footer-nav">
@@ -854,7 +390,6 @@ export default function Login() {
 
           </div>
         </div>
-
       </div>
     </div>
   );
