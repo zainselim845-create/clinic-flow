@@ -14,17 +14,22 @@ export function fromDbWalletTransaction(row) {
   };
 }
 
-export async function getPatientWalletHistory(patientId) {
+export async function getPatientWalletHistory(patientId, clinicId = null) {
   if (!isSupabaseConfigured() || !patientId) {
     return { balance: 0, transactions: [], error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('patient_wallet')
       .select('*')
-      .eq('patient_id', patientId)
-      .order('created_at', { ascending: false });
+      .eq('patient_id', patientId);
+
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) throw error;
     const transactions = (data || []).map(fromDbWalletTransaction);
