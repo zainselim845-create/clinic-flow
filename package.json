@@ -15,6 +15,7 @@
     "load:browser": "node scripts/load-testing/playwright-concurrent-stress.cjs",
     "audit:lighthouse": "lighthouse https://clinic-flow-ten-sigma.vercel.app --output=json --output-path=./LIGHTHOUSE_REAL_REPORT.json --chrome-flags=\"--headless --no-sandbox\"",
     "test:prod": "node scripts/test-real-production-simulation.cjs",
+    "test:security": "node scripts/security-audit/owasp-production-security-test.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
