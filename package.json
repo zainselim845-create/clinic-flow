@@ -11,7 +11,9 @@
     "audit": "node scripts/browser-audit/run-audit.cjs",
     "load:autocannon": "node scripts/load-testing/autocannon-benchmark.cjs",
     "load:k6": ".\\tools\\k6\\k6-v2.3.0-windows-amd64\\k6.exe run scripts/load-testing/k6-load-test.js",
+    "load:artillery": "artillery run scripts/load-testing/artillery-scenario.yml",
     "load:browser": "node scripts/load-testing/playwright-concurrent-stress.cjs",
+    "audit:lighthouse": "lighthouse https://clinic-flow-ten-sigma.vercel.app --output=json --output-path=./LIGHTHOUSE_REAL_REPORT.json --chrome-flags=\"--headless --no-sandbox\"",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -38,6 +40,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "artillery": "^2.0.34",
     "autocannon": "^8.0.0",
     "oxlint": "^1.75.0",
     "playwright": "^1.62.1",

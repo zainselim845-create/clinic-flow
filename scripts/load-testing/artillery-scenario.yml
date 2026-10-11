@@ -1,0 +1,31 @@
+config:
+  target: "https://clinic-flow-ten-sigma.vercel.app"
+  phases:
+    - duration: 15
+      arrivalRate: 2
+      rampTo: 5
+      name: "Warm-up phase (Real user traffic)"
+    - duration: 15
+      arrivalRate: 5
+      name: "Sustained clinic traffic phase"
+  defaults:
+    headers:
+      User-Agent: "Artillery-ClinicFlow-RealAuditor/1.0"
+scenarios:
+  - name: "Real User Clinic Flow Journey"
+    flow:
+      # Step 1: Health probe check
+      - get:
+          url: "/api/health"
+          capture:
+            - json: "$.status"
+              as: "healthStatus"
+      # Step 2: Homepage Load
+      - get:
+          url: "/"
+      # Step 3: Tenant Multi-Clinic Sync API
+      - get:
+          url: "/api/sync-tenants"
+      # Step 4: Login page navigation
+      - get:
+          url: "/login"

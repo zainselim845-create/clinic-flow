@@ -32,3 +32,6 @@ scratch/
 .env*
 tools/
 LOAD_TEST_REPORT.json
+ARTILLERY_RESULTS.json
+LIGHTHOUSE_REAL_REPORT.json
+

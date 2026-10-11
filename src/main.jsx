@@ -7,8 +7,12 @@ import { TenantProvider } from './context/TenantContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LocaleProvider } from '@ark-ui/react/locale';
 import { Toaster } from 'sonner';
+import { initGlobalErrorListeners } from './services/systemErrorService';
 import App from './App';
 import './index.css';
+
+// Immediately trap all unhandled runtime errors & promise rejections across all browsers
+initGlobalErrorListeners();
 
 // Auto-recover from stale dynamic chunk loading after new deployments
 window.addEventListener('vite:preloadError', (event) => {
