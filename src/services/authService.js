@@ -8,71 +8,14 @@ import { CLINIC_SPECIALTIES } from '../data/specialtiesData';
 import { formatSenderId } from './smsService';
 import { isSupabaseConfigured, CLOUD_TENANTS_REGISTRY_URL } from '../lib/supabase';
 import { createClinicInDb, deleteClinicFromDb } from './clinicsService';
-import { computeSha256 } from './auditLoggerService';
 import { safeStorage } from '../utils/safeStorage';
 
-export function hashPassword(plainPassword) {
-  if (!plainPassword) return '';
-  return `sha256:${computeSha256(plainPassword)}`;
-}
-
-export function verifyPassword(inputPassword, storedPasswordOrHash) {
-  if (!inputPassword || !storedPasswordOrHash) return false;
-  if (typeof storedPasswordOrHash === 'string' && storedPasswordOrHash.startsWith('sha256:')) {
-    return `sha256:${computeSha256(inputPassword)}` === storedPasswordOrHash;
-  }
-  return inputPassword === storedPasswordOrHash;
-}
+export { hashPassword, verifyPassword, slugifyClinic } from './auth/authCrypto';
+export { broadcastTenantUpdate } from './auth/authBroadcast';
+export { isDemoOrCorruptedTenant, isDemoOrCorruptedUser } from './auth/authValidation';
 
 const REGISTERED_TENANTS_KEY = 'clinicflow_registered_tenants';
 const REGISTERED_USERS_KEY = 'clinicflow_registered_users';
-
-export function broadcastTenantUpdate(type, payload) {
-  if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-    try {
-      const channel = new BroadcastChannel('clinicflow_tenants_sync');
-      channel.postMessage({ type, payload, timestamp: Date.now() });
-      setTimeout(() => {
-        try { channel.close(); } catch (closeErr) {
-          console.warn('[AuthService] BroadcastChannel close error:', closeErr);
-        }
-      }, 1000);
-    } catch (err) {
-      console.warn('[AuthService] BroadcastChannel update error:', err);
-    }
-  }
-
-  // Same-window / same-tab instant reactive dispatch
-  if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
-    try {
-      window.dispatchEvent(new CustomEvent('clinicflow_sync', { detail: { type, payload, timestamp: Date.now() } }));
-    } catch (evtErr) {
-      console.warn('[AuthService] CustomEvent dispatch error:', evtErr);
-    }
-  }
-}
-
-/**
- * Creates a URL-friendly slug from Arabic/English name
- */
-export function slugifyClinic(name, specialty = '') {
-  if (!name) return 'clinic-' + Date.now();
-  
-  // Clean special characters
-  const clean = name
-    .trim()
-    .toLowerCase()
-    .replace(/[^\w\u0621-\u064A\s-]/g, '')
-    .replace(/\s+/g, '-');
-
-  // If pure Arabic or special, generate hybrid slug
-  if (!clean || clean.length < 2 || !/[a-zA-Z0-9]/.test(clean)) {
-    const specTag = specialty.includes('جلدية') ? 'derma' : specialty.includes('أسنان') ? 'dental' : 'clinic';
-    return `${specTag}-${Date.now().toString(36)}`;
-  }
-
-  return clean;
-}
 
 let memoryTenantsCache = null;
 let memoryUsersCache = null;
@@ -89,37 +32,6 @@ export function clearAuthCache() {
   registeredSlugsSet.clear();
   registeredEmailsSet.clear();
   registeredPhonesSet.clear();
-}
-
-const LEGACY_DEMO_SLUGS = new Set([
-  'dr-ahmed', 
-  'dr-sara'
-]);
-const LEGACY_DEMO_EMAILS = new Set([
-  'doctor@clinicflow.com',
-  'sara.clinic@clinicflow.com',
-  'owner@clinicflow.com',
-  'reception@clinicflow.com'
-]);
-
-export function isDemoOrCorruptedTenant(t) {
-  if (!t) return true;
-  const slug = (t.slug || '').toLowerCase();
-  const email = (t.doctorEmail || t.email || '').toLowerCase();
-
-  if (LEGACY_DEMO_SLUGS.has(slug)) return true;
-  if (LEGACY_DEMO_EMAILS.has(email)) return true;
-  return false;
-}
-
-export function isDemoOrCorruptedUser(u) {
-  if (!u) return true;
-  const email = (u.email || '').toLowerCase();
-  const id = (u.id || '').toLowerCase();
-
-  if (LEGACY_DEMO_EMAILS.has(email)) return true;
-  if (id === 'doc-master' || id === 'doc-sara-master' || id === 'user-multi-clinic-owner' || id === 'staff-reception-master') return true;
-  return false;
 }
 
 /**
