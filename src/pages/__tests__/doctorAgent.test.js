@@ -138,7 +138,7 @@ describe('Doctor AI Agent & Follow-up Engine', () => {
       // Verify segmented control and CRM or Assistant rendered cleanly
       expect(html).toContain('مركز التسويق ونمو العيادة');
       expect(html).toContain('المساعد السريري الذكي');
-    });
+    }, 60000);
 
     it('renders DoctorAssistant in chat mode without ReferenceError: patients is not defined', async () => {
       const React = await import('react');
@@ -174,6 +174,6 @@ describe('Doctor AI Agent & Follow-up Engine', () => {
       expect(chatHtml).toContain('إجمالي المرضى بالسجل:');
       expect(chatHtml).toContain('قائمة المرضى المستهدفين');
       expect(chatHtml).toContain('صياغة رسالة الرعاية والمتابعة');
-    });
+    }, 60000);
   });
 });

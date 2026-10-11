@@ -9,6 +9,9 @@
     "lint": "oxlint",
     "test": "vitest run --testTimeout=30000",
     "audit": "node scripts/browser-audit/run-audit.cjs",
+    "load:autocannon": "node scripts/load-testing/autocannon-benchmark.cjs",
+    "load:k6": ".\\tools\\k6\\k6-v2.3.0-windows-amd64\\k6.exe run scripts/load-testing/k6-load-test.js",
+    "load:browser": "node scripts/load-testing/playwright-concurrent-stress.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -35,6 +38,7 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "autocannon": "^8.0.0",
     "oxlint": "^1.75.0",
     "playwright": "^1.62.1",
     "tailwindcss": "^4.3.3",
