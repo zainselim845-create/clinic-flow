@@ -10,6 +10,7 @@ import * as staffService from '../services/staffService';
 import * as clinicsService from '../services/clinicsService';
 import * as expensesService from '../services/expensesService';
 import * as recallsService from '../services/recallsService';
+import * as doctorsService from '../services/doctorsService';
 import { sendReminder } from '../services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS, playChime } from '../services/realtimeSyncService';
@@ -31,6 +32,7 @@ export const initialState = {
   expenses: [],
   recalls: [],
   staffMembers: [],
+  doctors: [],
   clinicInfo: null,
   theme: 'light',
   searchQuery: '',
@@ -84,7 +86,7 @@ export function AppProvider({ children }) {
       if (useSupabase && cloudCircuitBreaker.isAvailable()) {
         try {
           // جلب البيانات من Supabase مع الفلترة بالعيادة النشطة فقط
-          const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, expensesRes, recallsRes] = await Promise.all([
+          const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, expensesRes, recallsRes, doctorsRes] = await Promise.all([
             patientsService.getPatients(currentClinicId),
             appointmentsService.getAppointments(currentClinicId),
             blockedSlotsService.getBlockedSlots(currentClinicId),
@@ -92,7 +94,8 @@ export function AppProvider({ children }) {
             staffService.getStaffMembers(currentClinicId),
             clinicsService.getClinicInfo(currentClinicId),
             expensesService.getExpenses(currentClinicId),
-            recallsService.getRecalls(currentClinicId)
+            recallsService.getRecalls(currentClinicId),
+            doctorsService.getDoctors(currentClinicId)
           ]);
 
           // Verify whether Supabase schema is actually deployed or returned PGRST205
@@ -114,6 +117,7 @@ export function AppProvider({ children }) {
                 blockedSlots: blockedRes?.data || [],
                 notifications: notifsRes?.data || [],
                 staffMembers: staffRes?.data && staffRes.data.length > 0 ? staffRes.data : [],
+                doctors: doctorsRes?.data || [],
                 clinicInfo: clinicRes?.data || activeTenant || null,
                 expenses: expensesRes?.data || [],
                 recalls: recallsRes?.data || [],
@@ -146,6 +150,10 @@ export function AppProvider({ children }) {
             migratedPayload.clinicInfo = activeTenant;
           }
 
+          if (!migratedPayload.doctors) {
+            migratedPayload.doctors = [];
+          }
+
           dispatch({ 
             type: 'INIT_DATA', 
             payload: migratedPayload
@@ -162,6 +170,7 @@ export function AppProvider({ children }) {
               expenses: [],
               recalls: [],
               staffMembers: [],
+              doctors: [],
               clinicInfo: activeTenant || (currentSlug ? { slug: currentSlug, name: currentSlug } : null),
               useSupabase: false,
               currentTenantSlug: currentSlug 
@@ -179,6 +188,7 @@ export function AppProvider({ children }) {
             expenses: [],
             recalls: [],
             staffMembers: [],
+            doctors: [],
             clinicInfo: activeTenant || (currentSlug ? { slug: currentSlug, name: currentSlug } : null),
             useSupabase: false,
             currentTenantSlug: currentSlug 

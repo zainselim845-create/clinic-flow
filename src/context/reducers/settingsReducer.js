@@ -93,6 +93,48 @@ export function settingsReducer(state, action) {
         )
       };
 
+    // Multi-Doctor Management (Polyclinics & Centers)
+    case 'SET_DOCTORS':
+      return { ...state, doctors: action.payload || [] };
+
+    case 'ADD_DOCTOR': {
+      const incoming = action.payload;
+      if (!incoming) return state;
+      const exists = (state.doctors || []).some(d => incoming.id && d.id === incoming.id);
+      if (exists) {
+        return {
+          ...state,
+          doctors: (state.doctors || []).map(d => d.id === incoming.id ? incoming : d)
+        };
+      }
+      return {
+        ...state,
+        doctors: [incoming, ...(state.doctors || [])]
+      };
+    }
+
+    case 'UPDATE_DOCTOR':
+      return {
+        ...state,
+        doctors: (state.doctors || []).map(d => d.id === action.payload.id ? { ...d, ...action.payload } : d)
+      };
+
+    case 'DELETE_DOCTOR':
+      return {
+        ...state,
+        doctors: (state.doctors || []).filter(d => d.id !== action.payload)
+      };
+
+    case 'TOGGLE_DOCTOR_STATUS':
+      return {
+        ...state,
+        doctors: (state.doctors || []).map(d =>
+          d.id === action.payload
+            ? { ...d, isActive: d.isActive === false ? true : false }
+            : d
+        )
+      };
+
     // Services Catalog
     case 'ADD_SERVICE': {
       const existingServices = state.clinicInfo?.services || [];

@@ -6,6 +6,11 @@ export function fromDbInvoice(row) {
   return {
     id: row.id,
     clinicId: row.clinic_id,
+    doctorId: row.doctor_id || row.doctorId || null,
+    doctorName: row.doctor_name || row.doctorName || '',
+    doctorCommissionRate: Number(row.doctor_commission_rate ?? row.doctorCommissionRate ?? 0),
+    doctorShare: Number(row.doctor_share ?? row.doctorShare ?? 0),
+    clinicShare: Number(row.clinic_share ?? row.clinicShare ?? 0),
     patientId: row.patient_id,
     patientName: row.patient_name || '',
     patientPhone: row.patient_phone || '',
@@ -33,6 +38,11 @@ export function toDbInvoice(data) {
   return {
     id: data.id || undefined,
     clinic_id: data.clinicId || undefined,
+    doctor_id: data.doctorId || data.doctor_id || null,
+    doctor_name: data.doctorName || data.doctor_name || null,
+    doctor_commission_rate: data.doctorCommissionRate !== undefined ? Number(data.doctorCommissionRate) : undefined,
+    doctor_share: data.doctorShare !== undefined ? Number(data.doctorShare) : undefined,
+    clinic_share: data.clinicShare !== undefined ? Number(data.clinicShare) : undefined,
     patient_id: data.patientId,
     appointment_id: data.appointmentId || null,
     invoice_number: data.invoiceNumber,

@@ -13,6 +13,9 @@ export function fromDbAppointment(row) {
     id: row.id,
     bookingCode: row.booking_code || row.bookingCode || '',
     clinicId: row.clinic_id || row.clinicId,
+    doctorId: row.doctor_id || row.doctorId || null,
+    doctorName: row.doctor_name || row.doctorName || '',
+    branchId: row.branch_id || row.branchId || null,
     patientId: row.patient_id || row.patientId,
     patientName: row.patient_name || row.patientName,
     patientPhone: row.patient_phone || row.patientPhone,
@@ -42,6 +45,9 @@ export function toDbAppointment(data) {
   }
   if (data.bookingCode !== undefined || data.booking_code !== undefined) payload.booking_code = data.bookingCode || data.booking_code;
   if (data.clinicId !== undefined || data.clinic_id !== undefined) payload.clinic_id = data.clinicId || data.clinic_id;
+  if (data.doctorId !== undefined || data.doctor_id !== undefined) payload.doctor_id = data.doctorId || data.doctor_id;
+  if (data.doctorName !== undefined || data.doctor_name !== undefined) payload.doctor_name = data.doctorName || data.doctor_name;
+  if (data.branchId !== undefined || data.branch_id !== undefined) payload.branch_id = data.branchId || data.branch_id;
   if (data.patientId !== undefined || data.patient_id !== undefined) payload.patient_id = data.patientId || data.patient_id;
   if (data.patientName !== undefined) payload.patient_name = data.patientName;
   if (data.patientPhone !== undefined) payload.patient_phone = data.patientPhone;
@@ -84,6 +90,9 @@ export async function getAppointments(clinicId, filters = {}) {
       if (filters.date) {
         query = query.eq('date', filters.date);
       }
+      if (filters.doctorId || filters.doctor_id) {
+        query = query.eq('doctor_id', filters.doctorId || filters.doctor_id);
+      }
 
       const limit = filters.limit || 300;
       const { data, error } = await query
@@ -101,7 +110,7 @@ export async function getAppointments(clinicId, filters = {}) {
 }
 
 /**
- * Checks if a specific date and time slot is already booked for the clinic
+ * Checks if a specific date and time slot is already booked for the clinic or specific doctor
  * to prevent double-booking race conditions at application and database level.
  * 
  * @param {string} clinicId - Clinic ID or slug
@@ -109,9 +118,10 @@ export async function getAppointments(clinicId, filters = {}) {
  * @param {string} time - Time slot e.g. "05:00 م"
  * @param {string} [excludeAppointmentId=null] - Optional appointment ID to exclude
  * @param {Array} [inMemoryAppointments=[]] - Optional memory store for offline mode
+ * @param {string} [doctorId=null] - Optional doctor ID for multi-doctor clinics
  * @returns {Promise<boolean>} True if collision exists, false if slot is available
  */
-export async function checkSlotCollision(clinicId, date, time, excludeAppointmentId = null, inMemoryAppointments = []) {
+export async function checkSlotCollision(clinicId, date, time, excludeAppointmentId = null, inMemoryAppointments = [], doctorId = null) {
   let excludeId = excludeAppointmentId;
   let appointmentsList = inMemoryAppointments;
 
@@ -127,9 +137,10 @@ export async function checkSlotCollision(clinicId, date, time, excludeAppointmen
       const matchClinic = !clinicId || !apt.clinicId || apt.clinicId === clinicId;
       const matchDate = apt.date === date;
       const matchTime = apt.time === time;
+      const matchDoctor = !doctorId || !apt.doctorId || apt.doctorId === doctorId;
       const notExcluded = !excludeId || String(apt.id) !== String(excludeId);
       const isNotCancelled = apt.status !== 'cancelled';
-      return matchClinic && matchDate && matchTime && notExcluded && isNotCancelled;
+      return matchClinic && matchDate && matchTime && matchDoctor && notExcluded && isNotCancelled;
     });
     if (collision) return true;
   }
@@ -145,6 +156,9 @@ export async function checkSlotCollision(clinicId, date, time, excludeAppointmen
             .eq('clinic_id', clinicId)
             .eq('date', date)
             .eq('time', time);
+          if (doctorId) {
+            query = query.eq('doctor_id', doctorId);
+          }
           if (typeof query?.not === 'function') {
             query = query.not('status', 'in', '("cancelled","refunded")');
           }
