@@ -258,7 +258,6 @@ async function generateSinglePagePdf() {
         <ul class="features-list">
           <li><span class="feature-name">ملف طبي رقمي (EMR):</span> سجل كامل لكل مريض يشمل كشوفاته السابقة، أدويته، وتاريخ زياراته وصور الأشعة.</li>
           <li><span class="feature-name">مساعد طبي بالذكاء الاصطناعي:</span> دكتور يسأله بالصوت أو الكتابة: "طلعلي مرضى السكر" أو "اقفل الخميس" وينفذ في الأجندة فوراً.</li>
-          <li><span class="feature-name">كاشف تعارض الأدوية:</span> تنبيه سريري ذكي يحذر الدكتور لو كتب دواء يتعارض مع حالة المريض الصحية.</li>
         </ul>
       </div>
 

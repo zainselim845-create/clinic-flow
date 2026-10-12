@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Stethoscope, ShieldCheck, ArrowLeft, CheckCircle2, ChevronDown, Phone, Lock, Activity, DollarSign, Cpu, Clock, Building2, Calendar, Sun, Moon, Menu, X, Mail } from 'lucide-react';
+import { Stethoscope, ShieldCheck, ArrowLeft, CheckCircle2, ChevronDown, Phone, Lock, Activity, DollarSign, Clock, Building2, Calendar, Sun, Moon, Menu, X, Mail } from 'lucide-react';
 import { getWhatsAppSupportUrl } from '../utils/utmTracking';
 import { safeSetItem } from '../utils/safeStorage';
 import './LandingPage.css';
@@ -31,7 +31,7 @@ const PRICING_PLANS = [
     description: 'القضاء على غياب المرضى، وتصفية حسابات الأطباء الشركاء تلقائياً.',
     features: [
       'حتى 5 أطباء مع استقبال غير محدود — وتذكيرات واتساب غير محدودة لمنع الغياب',
-      'فحص سلامة الأدوية وتجنب الحساسية — مع مخطط أسنان وفحوصات تخصصية',
+      'مخطط أسنان وفحوصات تخصصية — مع تقارير تفصيلية لكل مريض',
       'حساب تلقائي لنسب الأطباء الشركاء — ورابط مخصص باسم عيادتك'
     ],
     highlight: true,
@@ -318,7 +318,7 @@ const LandingPage = () => {
             </div>
             <div className="trust-item">
               <CheckCircle2 size={16} className="text-emerald-500" />
-              <span>روشتات وتشخيص فوري — فحص سلامة الأدوية</span>
+              <span>روشتات وتشخيص فوري — مع طباعة بباركود</span>
             </div>
             <div className="trust-item">
               <CheckCircle2 size={16} className="text-emerald-500" />
@@ -392,7 +392,7 @@ const LandingPage = () => {
                     <span className="c-tag">طربوش زيركون</span>
                   </div>
                   <div className="c-exam-footer-note">
-                    <span>فحص التعارضات الدوائية: آمن 100%</span>
+                    <span>الروشتة جاهزة للطباعة والإرسال</span>
                   </div>
                 </div>
               </div>
@@ -463,16 +463,6 @@ const LandingPage = () => {
             <h3>الروشتات والتشخيص</h3>
             <p>
               بيانات التشخيص والزيارات السابقة بلمسة واحدة، مع روشتة مطبوعة بباركود تمنع أي التباس.
-            </p>
-          </div>
-
-          <div className="feature-box">
-            <div className="feature-icon bg-cyan">
-              <Cpu size={26} />
-            </div>
-            <h3>أمان الأدوية</h3>
-            <p>
-              محرك ذكاء اصطناعي ينبهك فوراً إذا تعارض الدواء مع حساسية المريض أو علاجاته الحالية — حماية مضاعفة لك ولمريضك.
             </p>
           </div>
 
@@ -748,7 +738,7 @@ const LandingPage = () => {
               <li><a href="#features">محرك منع غياب المرضى</a></li>
               <li><a href="#features">الروشتات والتشخيص</a></li>
               <li><a href="#features">الخزينة ونسب الشركاء</a></li>
-              <li><a href="#features">فحص التعارضات الدوائية</a></li>
+              <li><a href="#features">سجل الحضور والانصراف</a></li>
             </ul>
           </div>
 
