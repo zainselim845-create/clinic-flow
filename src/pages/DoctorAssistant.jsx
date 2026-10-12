@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Bot, Sparkles } from 'lucide-react';
+import { Bot, Activity } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
@@ -427,7 +427,7 @@ const DoctorAssistant = ({ initialMode }) => {
           onClick={() => setViewMode('crm')}
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }}
         >
-          <Sparkles size={16} />
+          <Activity size={16} />
           <span>مركز التسويق ونمو العيادة (CRM Engine)</span>
         </button>
         <button 

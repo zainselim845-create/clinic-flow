@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stethoscope, Check, Sparkles } from 'lucide-react';
+import { Stethoscope, Check, ShieldCheck } from 'lucide-react';
 
 /**
  * LoginHeroPane - Left Column: Brand Hero & Value Proposition
@@ -55,7 +55,7 @@ export default function LoginHeroPane() {
       </div>
 
       <div className="hero-footer-trust">
-        <Sparkles size={16} className="text-emerald" />
+        <ShieldCheck size={16} className="text-emerald" />
         <span>معتمد وموثوق لأكثر من 1,000 عيادة ومركز طبي متخصص</span>
       </div>
     </div>

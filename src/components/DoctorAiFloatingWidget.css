@@ -43,13 +43,6 @@
   position: relative;
 }
 
-.fab-sparkle-icon {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  color: #fbbf24;
-  animation: pulse-sparkle 2s ease-in-out infinite;
-}
 
 .fab-label {
   letter-spacing: -0.2px;
@@ -78,11 +71,6 @@
   0% { transform: scale(0.95); opacity: 0.8; }
   50% { transform: scale(1.08); opacity: 0; }
   100% { transform: scale(1.15); opacity: 0; }
-}
-
-@keyframes pulse-sparkle {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
-  50% { transform: scale(1.25) rotate(15deg); opacity: 1; }
 }
 
 /* Copilot Slide-over Drawer */

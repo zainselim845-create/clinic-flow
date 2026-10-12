@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, Stethoscope, Sparkles, MapPin, Compass } from 'lucide-react';
+import { Building2, Stethoscope, CheckCircle2, MapPin, Compass } from 'lucide-react';
 
 export default function OnboardingStepClinic({
   clinicName,
@@ -94,7 +94,7 @@ export default function OnboardingStepClinic({
                 <div className="specialty-card-name">{spec.name}</div>
                 <div className="specialty-card-desc">{spec.description}</div>
                 <div className="specialty-meta-tag">
-                  <Sparkles size={14} />
+                  <CheckCircle2 size={14} />
                   <span>{spec.defaultServices?.length || 5} خدمات طبية مُجهزة تلقائياً</span>
                 </div>
               </div>

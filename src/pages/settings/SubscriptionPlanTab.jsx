@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  CreditCard, Sparkles, Smartphone, Users, ShieldCheck, 
-  ArrowUpRight, Database, Zap, AlertTriangle, History, Crown, CheckCircle2
-} from 'lucide-react';
+import { CreditCard, Smartphone, Users, ShieldCheck, ArrowUpRight, Database, Zap, AlertTriangle, History, Crown, CheckCircle2 } from 'lucide-react';
 import { useTenant } from '../../context/TenantContext';
 import { useApp } from '../../context/AppContext';
 import { getClinicUsage, getClinicUsageLedger } from '../../services/usageMeteringService';
@@ -308,7 +305,7 @@ export default function SubscriptionPlanTab() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ background: '#F5F3FF', color: '#7C3AED', padding: '0.5rem', borderRadius: '10px' }}>
-                <Sparkles size={20} />
+                <ShieldCheck size={20} />
               </div>
               <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>المساعد السريري الذكي (AI)</strong>
             </div>

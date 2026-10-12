@@ -1,9 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  Users, Sparkles, RefreshCw, 
-  AlertTriangle, Layers, Star, 
-  Activity, Bot, HeartHandshake, Smile, CheckCircle2, Zap, Cake
-} from 'lucide-react';
+import { Users, RefreshCw, AlertTriangle, Layers, Star, Activity, Bot, HeartHandshake, Smile, CheckCircle2, Zap, Cake } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTenant } from '../../context/TenantContext';
@@ -240,7 +236,7 @@ export const MarketingCrmHub = () => {
       <div className="crm-header-hero">
         <div className="hero-content">
           <div className="hero-badge">
-            <Sparkles size={15} />
+            <Activity size={15} />
             <span>منظومة الـ CRM والنمو الذكي المتكاملة</span>
           </div>
           <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0.35rem 0', color: 'var(--text-primary)' }}>محرك التسويق والاحتفاظ بالمرضى (11 محركاً ذكياً)</h1>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, Save, Layers, CheckCircle2 } from 'lucide-react';
 import { saveSaaSSubscriptionPlan } from '../../../services/saasSubscriptionPlansService';
 
 export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess, onSave }) {
@@ -97,7 +97,7 @@ export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess
         }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary, #09090B)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Sparkles size={20} color="var(--clinic-primary, #09090B)" />
+              <Layers size={20} color="var(--clinic-primary, #09090B)" />
               <span>ضبط وتعديل تفاصيل باقة الساس ({formData.nameEn})</span>
             </h3>
             <p style={{ margin: '0.25rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary, #71717A)' }}>

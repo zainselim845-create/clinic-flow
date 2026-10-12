@@ -1,13 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Stethoscope, ShieldCheck, Sparkles, 
-  ArrowLeft, CheckCircle2, ChevronDown, 
-  Phone, Lock, Activity, DollarSign, Cpu, 
-  Clock, Building2, Calendar, Sun, Moon, 
-  Menu, X, Mail
-} from 'lucide-react';
+import { Stethoscope, ShieldCheck, ArrowLeft, CheckCircle2, ChevronDown, Phone, Lock, Activity, DollarSign, Cpu, Clock, Building2, Calendar, Sun, Moon, Menu, X, Mail } from 'lucide-react';
 import { getWhatsAppSupportUrl } from '../utils/utmTracking';
 import { safeSetItem } from '../utils/safeStorage';
 import './LandingPage.css';
@@ -219,7 +213,7 @@ const LandingPage = () => {
                   <span>دخول العيادات</span>
                 </button>
                 <button onClick={() => navigate('/login?tab=register')} className="btn-nav-register">
-                  <Sparkles size={14} />
+                  <Building2 size={14} />
                   <span>ابدأ تجربتك المجانية</span>
                 </button>
               </div>
@@ -263,7 +257,7 @@ const LandingPage = () => {
                 <span>دخول العيادات</span>
               </button>
               <button onClick={() => { navigate('/login?tab=register'); setIsMobileMenuOpen(false); }} className="btn-hero-primary">
-                <Sparkles size={15} />
+                <Building2 size={15} />
                 <span>ابدأ تجربتك المجانية</span>
               </button>
             </div>
@@ -276,7 +270,7 @@ const LandingPage = () => {
         <div className="hero-background-glow"></div>
         <div className="hero-content">
           <div className="hero-badge">
-            <Sparkles size={14} className="badge-sparkle-icon" />
+            <ShieldCheck size={14} className="badge-sparkle-icon" />
             <span>منظومة الإدارة السريرية والتشغيلية للأطباء</span>
           </div>
 
@@ -295,7 +289,7 @@ const LandingPage = () => {
 
           <div className="hero-cta-group">
             <button onClick={() => navigate('/login?tab=register')} className="btn-hero-primary">
-              <Sparkles size={18} />
+              <Building2 size={18} />
               <span>ابدأ تنظيم عيادتك مجاناً</span>
               <ArrowLeft size={18} />
             </button>
@@ -575,7 +569,7 @@ const LandingPage = () => {
           </div>
           <div className="close-actions">
             <button onClick={() => navigate('/login?tab=register')} className="btn-hero-primary">
-              <Sparkles size={18} />
+              <Building2 size={18} />
               <span>ابدأ تنظيم عيادتك مجاناً (14 يوماً)</span>
               <ArrowLeft size={18} />
             </button>

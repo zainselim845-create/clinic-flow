@@ -1,8 +1,5 @@
 import React from 'react';
-import { 
-  ArrowRight, Sparkles, Users, UserPlus, AlertCircle, Loader2, Stethoscope, CreditCard, Banknote, Bolt, Smartphone,
-  MapPin, ExternalLink
-} from 'lucide-react';
+import { ArrowRight, Users, UserPlus, AlertCircle, Loader2, Stethoscope, CreditCard, Banknote, Bolt, Smartphone, MapPin, ExternalLink } from 'lucide-react';
 import BookingCalendar from '../../components/BookingCalendar';
 import { EGYPT_PAYMENT_METHODS } from '../../features/egypt-national';
 import { calculateDistanceKm, formatDistanceAr } from '../../services/autoLocationService';
@@ -65,7 +62,7 @@ export default function AppointmentDetailsStep({
           {isExistingClient && recognizedPatient && !isFamilyMemberBooking && (
             <div className="nebras-patient-recognized-box">
               <div className="recognized-info">
-                <Sparkles size={22} className="text-nebras-orange" />
+                <Stethoscope size={22} className="text-nebras-orange" />
                 <div>
                   <h4>أهلاً بك مجدداً ({maskName(recognizedPatient.name)})</h4>
                   <p>رقم الهاتف: <span dir="ltr">{formData.phone}</span> • ملفك الطبي مسجل لدينا في العيادة. يمكنك اختيار موعدك بالأسفل مباشرةً.</p>

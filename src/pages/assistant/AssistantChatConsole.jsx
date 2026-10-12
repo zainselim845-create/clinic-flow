@@ -1,7 +1,5 @@
 import React from 'react';
-import { 
-  Bot, Send, Sparkles, Stethoscope, CheckCircle2, Trash2 
-} from 'lucide-react';
+import { Bot, Send, Stethoscope, CheckCircle2, Trash2 } from 'lucide-react';
 
 /**
  * AssistantChatConsole - Interactive AI conversation interface for the doctor
@@ -22,7 +20,7 @@ export default function AssistantChatConsole({
     <div className="chat-console-card glass-card">
       <div className="console-header">
         <div className="console-title">
-          <Sparkles size={18} className="text-primary" />
+          <Stethoscope size={18} className="text-primary" />
           <span>محادثة الوكيل السريري الذكي</span>
         </div>
 
@@ -106,7 +104,7 @@ export default function AssistantChatConsole({
 
       {/* Quick Doctor Prompts Chips */}
       <div className="quick-prompts-bar">
-        <div className="prompts-label">⚡ أوامر واستفسارات سريعة:</div>
+        <div className="prompts-label">أوامر واستفسارات سريعة:</div>
         <div className="prompts-chips-grid">
           <button 
             type="button" 
@@ -114,7 +112,7 @@ export default function AssistantChatConsole({
             onClick={() => handleQuickPrompt('اقفل يوم الأحد القادم')}
             style={{ borderColor: 'rgba(239, 68, 68, 0.4)', background: 'rgba(239, 68, 68, 0.08)', color: '#DC2626' }}
           >
-            🚫 إغلاق الأحد القادم
+            إغلاق الأحد القادم
           </button>
           <button 
             type="button" 
@@ -122,7 +120,7 @@ export default function AssistantChatConsole({
             onClick={() => handleQuickPrompt('ايه الأيام والمواعيد المقفولة في العيادة؟')}
             style={{ borderColor: 'rgba(24, 96, 236, 0.3)', background: 'rgba(24, 96, 236, 0.08)', color: 'var(--primary)' }}
           >
-            📅 الأيام المقفولة
+            الأيام المقفولة
           </button>
           <button 
             type="button" 
@@ -130,35 +128,35 @@ export default function AssistantChatConsole({
             onClick={() => handleQuickPrompt('ملخص أداء وإحصائيات اليوم')}
             style={{ borderColor: 'rgba(16, 185, 129, 0.3)', background: 'rgba(16, 185, 129, 0.08)', color: '#059669' }}
           >
-            📊 ملخص اليوم
+            ملخص اليوم
           </button>
           <button 
             type="button" 
             className={`prompt-chip ${activeFilter === 'regular' ? 'active' : ''}`}
             onClick={() => handleQuickPrompt('مرضى الكشف العادي', 'regular')}
           >
-            🩺 مرضى الكشف
+            مرضى الكشف
           </button>
           <button 
             type="button" 
             className={`prompt-chip ${activeFilter === 'consultation' ? 'active' : ''}`}
             onClick={() => handleQuickPrompt('مرضى الاستشارات والمتابعة', 'consultation')}
           >
-            📋 مرضى الاستشارات
+            مرضى الاستشارات
           </button>
           <button 
             type="button" 
             className="prompt-chip"
             onClick={() => handleQuickPrompt('مرضى السكر')}
           >
-            🩸 مرضى السكر
+            مرضى السكر
           </button>
           <button 
             type="button" 
             className="prompt-chip"
             onClick={() => handleQuickPrompt('مرضى الضغط')}
           >
-            💓 مرضى الضغط
+            مرضى الضغط
           </button>
         </div>
       </div>

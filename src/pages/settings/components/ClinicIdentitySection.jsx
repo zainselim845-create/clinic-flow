@@ -1,8 +1,5 @@
 import React from 'react';
-import { 
-  Building2, Phone, Clock, QrCode, MessageSquare, Copy, 
-  ExternalLink, ArrowLeft, CheckCircle2, Sparkles 
-} from 'lucide-react';
+import { Building2, Phone, Clock, QrCode, MessageSquare, Copy, ExternalLink, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { CLINIC_SPECIALTIES } from '../../../data/specialtiesData';
 import { SAAS_PLATFORM_DOMAIN } from '../../../utils/clinicUrls';
 import ClinicLocationGpsSection from './ClinicLocationGpsSection';
@@ -479,7 +476,7 @@ export default function ClinicIdentitySection({
           onClick={handleApplyDefaultServicesForSpecialty}
           style={{ fontSize: '0.8rem' }}
         >
-          <Sparkles size={14} />
+          <CheckCircle2 size={14} />
           <span>تحميل خدمات التخصص النموذجية</span>
         </button>
       </div>

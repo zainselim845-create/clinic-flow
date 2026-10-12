@@ -92,9 +92,9 @@ export default function AssistantActionHub({
                       {patient.bloodType && <span className="tag-blood">{patient.bloodType}</span>}
                     </div>
                     <span className="phone-line">
-                      📞 {patient.phone || 'بدون هاتف'} • آخر زيارة: {patient.lastVisit || 'غير مسجل'}
+                      {patient.phone || 'بدون هاتف'} • آخر زيارة: {patient.lastVisit || 'غير مسجل'}
                     </span>
-                    {patient.diagnosis && <p className="diag-line">📋 {patient.diagnosis}</p>}
+                    {patient.diagnosis && <p className="diag-line">{patient.diagnosis}</p>}
                   </div>
 
                   {/* Direct SMS 1-Click Action */}
@@ -106,7 +106,7 @@ export default function AssistantActionHub({
                         title="إرسال رسالة رعاية عبر SMS مباشرة لهذا المريض"
                       >
                         <MessageCircle size={15} />
-                        <span>SMS 💬</span>
+                        <span>SMS</span>
                       </a>
                     ) : (
                       <span className="no-phone-tag">لا يوجد هاتف</span>
@@ -159,13 +159,13 @@ export default function AssistantActionHub({
             placeholder="اكتب نص الرسالة هنا..."
           />
           <span className="variables-hint">
-            💡 المتغيرات المدعومة: <code>{'{اسم_المريض}'}</code> ، <code>{'{اسم_العيادة}'}</code> ، <code>{'{اسم_الطبيب}'}</code> ، <code>{'{رابط_الحجز}'}</code>
+            المتغيرات المدعومة: <code>{'{اسم_المريض}'}</code> ، <code>{'{اسم_العيادة}'}</code> ، <code>{'{اسم_الطبيب}'}</code> ، <code>{'{رابط_الحجز}'}</code>
           </span>
         </div>
 
         {/* Live Message Preview Card */}
         <div className="message-live-preview-card">
-          <span className="preview-label">👁️ معاينة شكل الرسالة للمريض ({samplePatient.name}):</span>
+          <span className="preview-label">معاينة شكل الرسالة للمريض ({samplePatient.name}):</span>
           <div className="preview-bubble">
             <p>{previewText}</p>
           </div>
@@ -194,7 +194,7 @@ export default function AssistantActionHub({
             <span>
               {isBroadcastingSms 
                 ? 'جاري إرسال الرسائل...' 
-                : `إرسال رسائل SMS للحملة (${selectedPatientsList.length} مريض) ✨`}
+                : `إرسال رسائل SMS للحملة (${selectedPatientsList.length} مريض)`}
             </span>
           </button>
         </div>

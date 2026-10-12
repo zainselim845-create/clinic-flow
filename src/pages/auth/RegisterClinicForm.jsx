@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Building2, Check, User, Lock, Mail, Phone, 
-  Sparkles, Eye, EyeOff, Loader2, ArrowLeft 
+  ShieldCheck, Eye, EyeOff, Loader2, ArrowLeft 
 } from 'lucide-react';
 
 const SUBSCRIPTION_PLANS = [
@@ -15,11 +15,11 @@ const SUBSCRIPTION_PLANS = [
   },
   {
     id: 'pro',
-    name: 'Pro (العيادة الذكية)',
+    name: 'Pro (العيادة المتقدمة)',
     price: '999 ج.م',
     period: '/ شهر',
     badge: 'الأكثر طلباً',
-    features: ['حتى 3 أطباء', 'ربط فروع وعيادات متعددة', 'مساعد ذكي ومخزون']
+    features: ['حتى 3 أطباء', 'ربط فروع وعيادات متعددة', 'المساعد السريري والمخزون']
   },
   {
     id: 'enterprise',
@@ -52,7 +52,7 @@ export default function RegisterClinicForm({
       {/* Google OAuth Primary Registration Hero */}
       <div className="google-primary-cta-card google-register-hero">
         <div className="google-cta-badge highlight">
-          <Sparkles size={14} />
+          <ShieldCheck size={14} />
           <span>الإنشاء الأساسي السريع - سحب كافة البيانات</span>
         </div>
         <h3 className="google-card-heading">تدشين العيادة فوراً بنقرة واحدة عبر Google</h3>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Lock, Eye, EyeOff, Loader2, Sparkles } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 
 /**
  * LoginForm - Doctor / Staff Login tab component
@@ -24,7 +24,7 @@ export default function LoginForm({
       {/* Google OAuth Primary Callout */}
       <div className="google-primary-cta-card">
         <div className="google-cta-badge">
-          <Sparkles size={14} />
+          <ShieldCheck size={14} />
           <span>تسجيل الدخول الأساسي والموصى به</span>
         </div>
         <button 
@@ -114,28 +114,6 @@ export default function LoginForm({
             />
             <span className="checkbox-label">تذكر بيانات الدخول على هذا الجهاز</span>
           </label>
-
-          <button
-            type="button"
-            className="btn-demo-fill"
-            onClick={() => {
-              setIdentifier('doctor1');
-              setPassword('password123');
-            }}
-            title="ملء بيانات حساب طبيب تجريبي للاختبار السريع"
-            style={{
-              background: 'rgba(2, 132, 199, 0.08)',
-              border: '1px solid rgba(2, 132, 199, 0.25)',
-              color: '#0284C7',
-              padding: '0.2rem 0.55rem',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 700,
-              fontSize: '0.75rem'
-            }}
-          >
-            طبيب تجريبي (doctor1)
-          </button>
         </div>
 
         <button 

@@ -5,15 +5,7 @@ import { useTenant } from '../context/TenantContext';
 import { CLINIC_SPECIALTIES } from '../data/specialtiesData';
 import { isUsernameAvailable } from '../services/authService';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
-import { 
-  HeartPulse, 
-  User, 
-  LogOut, 
-  AlertCircle, 
-  ArrowRight, 
-  ArrowLeft, 
-  Sparkles 
-} from 'lucide-react';
+import { HeartPulse, User, LogOut, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import {
   OnboardingStepper,
   OnboardingStepDoctor,
@@ -454,7 +446,7 @@ export default function Onboarding() {
                       style={{ background: 'linear-gradient(135deg, #10B981, #059669)', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)' }}
                     >
                       <span>{submitting ? 'جاري تهيئة عيادتك...' : 'إتمام الإعداد وبدء استخدام العيادة'}</span>
-                      <Sparkles size={16} />
+                      <CheckCircle2 size={16} />
                     </button>
                   )}
                 </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '../../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { X, Zap, Smartphone, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, Zap, Smartphone, Cpu, CheckCircle2 } from 'lucide-react';
 import { topUpClinicCredits, getClinicUsage } from '../../../services/usageMeteringService';
 
 export function TopUpCreditsModal({
@@ -154,7 +154,7 @@ export function TopUpCreditsModal({
                 {/* AI Tokens Input */}
                 <div className="form-group">
                   <label htmlFor="ai-tokens-input" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <Sparkles size={16} color="#7C3AED" />
+                    <Cpu size={16} color="#7C3AED" />
                     <span>توكنز الذكاء الاصطناعي الإضافية (اختياري)</span>
                   </label>
                   <input 

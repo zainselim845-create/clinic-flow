@@ -211,7 +211,7 @@ const Settings = () => {
               href="/super-admin"
               style={{ color: '#047857', textDecoration: 'underline', fontWeight: 800 }}
             >
-              الذهاب إلى لوحة إدارة الساس ↗
+              الذهاب إلى لوحة إدارة الساس
             </a>
           </div>
         )}

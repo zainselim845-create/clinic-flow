@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bot, Sparkles, Save, CheckCircle2, AlertCircle, RefreshCw, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { Bot, Save, CheckCircle2, AlertCircle, RefreshCw, KeyRound, Eye, EyeOff, Activity } from 'lucide-react';
 import { getAiConfig, saveAiConfig, askDoctorAiAssistant } from '../../services/aiAssistantService';
 
 export default function AiAssistantConfigTab() {
@@ -111,7 +111,7 @@ export default function AiAssistantConfigTab() {
 
       <div className="test-ai-card">
         <h4>
-          <Sparkles size={18} />
+          <Activity size={18} />
           <span>اختبار الاتصال والاستجابة الحية للذكاء الاصطناعي</span>
         </h4>
         <p>إرسال طلب فحص فوري للنموذج المختار للتحقق من سرعة الاستجابة وصحة المفتاح.</p>

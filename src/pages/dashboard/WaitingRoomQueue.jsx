@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stethoscope, Clock, Check, ArrowLeft, UserPlus, FolderOpen, Sparkles } from 'lucide-react';
+import { Stethoscope, Clock, Check, ArrowLeft, UserPlus, FolderOpen } from 'lucide-react';
 
 function WaitingRoomQueue({
   currentExamPatient,
@@ -104,7 +104,7 @@ function WaitingRoomQueue({
           ) : (
             <div className="vacant-state-box">
               <div className="vacant-icon-beacon">
-                <Sparkles size={28} className="text-primary" />
+                <Stethoscope size={28} className="text-primary" />
               </div>
               <h4>غرفة الكشف جاهزة ومستعدة</h4>
               <p>

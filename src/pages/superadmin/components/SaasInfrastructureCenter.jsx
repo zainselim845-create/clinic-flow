@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Database, Server, ShieldCheck, CheckCircle2, 
-  Smartphone, Sparkles, Globe, CreditCard, Zap 
-} from 'lucide-react';
+import { Database, Server, ShieldCheck, CheckCircle2, Smartphone, Globe, CreditCard, Zap, Cpu } from 'lucide-react';
 import { useTenant } from '../../../context/TenantContext';
 import { 
   SupabaseDatabaseTab, 
@@ -64,7 +61,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           onClick={() => setSubTab('ai')}
           className={`saas-tab-btn ${subTab === 'ai' ? 'active-tab' : ''}`}
         >
-          <Sparkles size={16} />
+          <Cpu size={16} />
           <span>محرك الذكاء الاصطناعي المركزي (AI Core)</span>
         </button>
         <button

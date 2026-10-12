@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
-  Bot, Send, Sparkles, X, Maximize2, RotateCcw, 
+  Bot, Send, X, Maximize2, RotateCcw, 
   User, Calendar, MessageSquare, ArrowUpRight 
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -336,7 +336,6 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
         >
           <div className="fab-pulse-ring" />
           <div className="fab-icon-wrap">
-            <Sparkles size={20} className="fab-sparkle-icon" />
             <Bot size={22} className="fab-bot-icon" />
           </div>
           <span className="fab-label">المساعد الذكي (AI Agent)</span>

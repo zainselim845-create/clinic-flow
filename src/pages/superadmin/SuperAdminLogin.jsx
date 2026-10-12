@@ -15,7 +15,7 @@ export default function SuperAdminLogin() {
   const location = useLocation();
   const { signIn, user } = useAuth();
 
-  const [email, setEmail] = useState('superadmin@clinicflow.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -163,27 +163,6 @@ export default function SuperAdminLogin() {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '-0.5rem', marginBottom: '0.75rem' }}>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('superadmin@clinicflow.com');
-                setPassword('cf-superadmin-sec-2026-x9');
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#0284C7',
-                fontSize: '0.75rem',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-                padding: 0
-              }}
-            >
-              تعبئة بيانات حساب مدير المنصة التجريبي
-            </button>
           </div>
 
           <button
