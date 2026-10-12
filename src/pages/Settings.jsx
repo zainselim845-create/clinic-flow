@@ -7,6 +7,7 @@ import {
 import { useApp } from '../context/AppContext';
 import * as clinicsService from '../services/clinicsService';
 import { isSupabaseConfigured } from '../lib/supabase';
+import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import GeneralSettingsTab from './settings/GeneralSettingsTab';
 import { useAuth } from '../context/AuthContext';
 import ScheduleBuilderTab from './settings/ScheduleBuilderTab';
@@ -295,76 +296,92 @@ const Settings = () => {
 
         <div className="settings-content-wrapper">
           <Tabs.Content value="clinic">
-            <GeneralSettingsTab
-              clinicForm={clinicForm}
-              setClinicForm={setClinicForm}
-              handleSaveClinic={handleSaveClinic}
-              clinicSaveSuccess={clinicSaveSuccess}
-              onNavigateToSchedule={() => handleTabChange('schedule')}
-              onNavigateToVisitTypes={() => handleTabChange('visitTypes')}
-              onNavigateToCustomDomain={() => handleTabChange('customDomain')}
-            />
+            <FeatureErrorBoundary featureName="إعدادات ملف العيادة">
+              <GeneralSettingsTab
+                clinicForm={clinicForm}
+                setClinicForm={setClinicForm}
+                handleSaveClinic={handleSaveClinic}
+                clinicSaveSuccess={clinicSaveSuccess}
+                onNavigateToSchedule={() => handleTabChange('schedule')}
+                onNavigateToVisitTypes={() => handleTabChange('visitTypes')}
+                onNavigateToCustomDomain={() => handleTabChange('customDomain')}
+              />
+            </FeatureErrorBoundary>
           </Tabs.Content>
 
           <Tabs.Content value="schedule">
-            <ScheduleBuilderTab
-              state={state}
-              dispatch={dispatch}
-              clinicForm={clinicForm}
-              setClinicForm={setClinicForm}
-            />
+            <FeatureErrorBoundary featureName="جدول مواعيد العمل والورديات">
+              <ScheduleBuilderTab
+                state={state}
+                dispatch={dispatch}
+                clinicForm={clinicForm}
+                setClinicForm={setClinicForm}
+              />
+            </FeatureErrorBoundary>
           </Tabs.Content>
 
           <Tabs.Content value="visitTypes">
-            <VisitTypesTab
-              visitTypes={clinicForm?.services || state.clinicInfo?.services || []}
-              onUpdateVisitTypes={(newTypes) => {
-                const currentSlug = tenantSlug || tenant?.slug || state.clinicInfo?.slug || state.currentTenantSlug;
-                const updated = {
-                  ...(clinicForm || state.clinicInfo),
-                  services: newTypes
-                };
-                setClinicForm(updated);
-                dispatch({
-                  type: 'UPDATE_CLINIC_INFO',
-                  payload: { services: newTypes }
-                });
-                if (updateTenantInfo) {
-                  updateTenantInfo({ services: newTypes });
-                }
-                if (currentSlug) {
-                  const scopedKey = `clinicflow_data_${currentSlug}`;
-                  const parsed = safeGetJSON(scopedKey, {});
-                  parsed.clinicInfo = updated;
-                  parsed.services = newTypes;
-                  safeSetJSON(scopedKey, parsed);
-                }
-              }}
-            />
+            <FeatureErrorBoundary featureName="إعدادات أنواع الزيارات">
+              <VisitTypesTab
+                visitTypes={clinicForm?.services || state.clinicInfo?.services || []}
+                onUpdateVisitTypes={(newTypes) => {
+                  const currentSlug = tenantSlug || tenant?.slug || state.clinicInfo?.slug || state.currentTenantSlug;
+                  const updated = {
+                    ...(clinicForm || state.clinicInfo),
+                    services: newTypes
+                  };
+                  setClinicForm(updated);
+                  dispatch({
+                    type: 'UPDATE_CLINIC_INFO',
+                    payload: { services: newTypes }
+                  });
+                  if (updateTenantInfo) {
+                    updateTenantInfo({ services: newTypes });
+                  }
+                  if (currentSlug) {
+                    const scopedKey = `clinicflow_data_${currentSlug}`;
+                    const parsed = safeGetJSON(scopedKey, {});
+                    parsed.clinicInfo = updated;
+                    parsed.services = newTypes;
+                    safeSetJSON(scopedKey, parsed);
+                  }
+                }}
+              />
+            </FeatureErrorBoundary>
           </Tabs.Content>
 
           <Tabs.Content value="staff">
-            <StaffManagementTab
-              staffMembers={state.staffMembers || []}
-              dispatch={dispatch}
-            />
+            <FeatureErrorBoundary featureName="إدارة طاقم العمل">
+              <StaffManagementTab
+                staffMembers={state.staffMembers || []}
+                dispatch={dispatch}
+              />
+            </FeatureErrorBoundary>
           </Tabs.Content>
 
           <Tabs.Content value="aiAssistant">
-            <AiAssistantTab />
+            <FeatureErrorBoundary featureName="إعدادات المساعد الذكي">
+              <AiAssistantTab />
+            </FeatureErrorBoundary>
           </Tabs.Content>
 
           <Tabs.Content value="subscription">
-            <SubscriptionPlanTab />
+            <FeatureErrorBoundary featureName="إعدادات الاشتراك والباقة">
+              <SubscriptionPlanTab />
+            </FeatureErrorBoundary>
           </Tabs.Content>
 
           <Tabs.Content value="customDomain">
-            <CustomDomainTab />
+            <FeatureErrorBoundary featureName="إعدادات الدومين الخاص">
+              <CustomDomainTab />
+            </FeatureErrorBoundary>
           </Tabs.Content>
 
           {isSuperAdmin && (
             <Tabs.Content value="sms">
-              <SmsConfigTab />
+              <FeatureErrorBoundary featureName="إعدادات الرسائل النصية">
+                <SmsConfigTab />
+              </FeatureErrorBoundary>
             </Tabs.Content>
           )}
         </div>
