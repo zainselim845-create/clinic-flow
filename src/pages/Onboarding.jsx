@@ -5,7 +5,7 @@ import { useTenant } from '../context/TenantContext';
 import { CLINIC_SPECIALTIES } from '../data/specialtiesData';
 import { isUsernameAvailable } from '../services/authService';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
-import { HeartPulse, User, LogOut, AlertCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { HeartPulse, User, LogOut, AlertCircle, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import {
   OnboardingStepper,
   OnboardingStepDoctor,

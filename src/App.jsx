@@ -64,7 +64,7 @@ const pageTitles = {
   '/': 'لوحة التحكم السريرية',
   '/dashboard': 'لوحة التحكم السريرية',
   '/appointments': 'إدارة المواعيد والتقويم',
-  '/patients': 'السجلات والملفات الطبية',
+  '/patients': 'المرضى',
   '/invoices': 'حسابات الخزينة (داخل وخارج)',
   '/inventory': 'مخزون المستلزمات الطبية',
   '/attendance': 'حضور وانصراف الطاقم',
@@ -130,7 +130,7 @@ const AdminLayout = () => {
             <div className="saas-admin-meta">
               <span className="saas-admin-badge" style={isImpersonating ? { background: 'rgba(234, 88, 12, 0.4)', borderColor: '#F97316', color: '#FFEDD5' } : {}}>
                 <ShieldCheck size={14} />
-                <span>{isImpersonating ? 'وضع محاكاة العميل (Active Impersonation)' : 'وضع مدير الساس (SaaS Admin)'}</span>
+                <span>{isImpersonating ? 'وضع محاكاة العميل' : 'وضع مدير المنصة'}</span>
               </span>
               <span className="saas-admin-text">
                 {isImpersonating ? (

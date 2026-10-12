@@ -191,8 +191,8 @@ const DashboardScheduleTable = ({
                         type="button"
                         onClick={() => onOpenDossier(appt)}
                         className="btn-action-icon"
-                        title="عرض السجل الطبي"
-                        aria-label="عرض السجل الطبي"
+                        title="عرض التشخيص"
+                        aria-label="عرض التشخيص"
                       >
                         <FolderOpen size={15} />
                       </button>

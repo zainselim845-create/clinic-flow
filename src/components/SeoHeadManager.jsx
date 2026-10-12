@@ -22,7 +22,7 @@ const ROUTE_META = {
     schemaType: 'MedicalWebPage'
   },
   '/patients': {
-    title: 'السجلات والملفات الطبية للمرضى',
+    title: 'المرضى والتشخيص',
     description: 'سجل طبي رقمي شامل: التاريخ المرضي، الروشتات السابقة، خطط العلاج، والفواتير المسددة.',
     schemaType: 'MedicalWebPage'
   },

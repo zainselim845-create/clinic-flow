@@ -30,7 +30,7 @@ export default function PatientFormModal({
             
             <form onSubmit={onSubmit} className="modal-form">
               <div className="form-group">
-                <label>الاسم بالكامل *</label>
+                <label>اسم المريض *</label>
                 <input 
                   type="text" 
                   className="input-field"
@@ -116,7 +116,7 @@ export default function PatientFormModal({
               </div>
 
               <div className="form-group">
-                <label style={{ color: '#DC2626', fontWeight: 800 }}>تنبيهات طبية وحساسيات (Medical Alerts)</label>
+                <label style={{ color: '#DC2626', fontWeight: 800 }}>تنبيهات وحساسيات المريض</label>
                 <input 
                   type="text" 
                   className="input-field"

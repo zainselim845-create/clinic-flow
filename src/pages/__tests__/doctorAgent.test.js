@@ -136,8 +136,8 @@ describe('Doctor AI Agent & Follow-up Engine', () => {
       expect(html).toBeDefined();
       expect(typeof html).toBe('string');
       // Verify segmented control and CRM or Assistant rendered cleanly
-      expect(html).toContain('مركز التسويق ونمو العيادة');
-      expect(html).toContain('المساعد السريري الذكي');
+      expect(html).toContain('رسائل المرضى');
+      expect(html).toContain('المساعد');
     }, 60000);
 
     it('renders DoctorAssistant in chat mode without ReferenceError: patients is not defined', async () => {
@@ -170,7 +170,7 @@ describe('Doctor AI Agent & Follow-up Engine', () => {
       );
 
       expect(chatHtml).toBeDefined();
-      expect(chatHtml).toContain('مساعد الطبيب السريري الذكي (AI Patient Care Agent)');
+      expect(chatHtml).toContain('مساعد الطبيب');
       expect(chatHtml).toContain('إجمالي المرضى بالسجل:');
       expect(chatHtml).toContain('قائمة المرضى المستهدفين');
       expect(chatHtml).toContain('صياغة رسالة الرعاية والمتابعة');

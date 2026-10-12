@@ -338,7 +338,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
           <div className="fab-icon-wrap">
             <Bot size={22} className="fab-bot-icon" />
           </div>
-          <span className="fab-label">المساعد الذكي (AI Agent)</span>
+          <span className="fab-label">المساعد</span>
           <span className="fab-shortcut-badge">Alt+A</span>
         </button>
       )}
@@ -355,8 +355,8 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
               </div>
               <div>
                 <div className="copilot-title-row">
-                  <h3>مساعد العيادة الذكي</h3>
-                  <span className="ai-model-tag">AI Copilot</span>
+                  <h3>مساعد العيادة</h3>
+                  <span className="ai-model-tag">متصل</span>
                 </div>
                 <p className="copilot-status-text">متصل لحظياً بكافة بيانات العيادة</p>
               </div>
@@ -465,7 +465,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
                           }}
                         >
                           <ArrowUpRight size={14} />
-                          <span>فتح الملف الطبي</span>
+                          <span>عرض التشخيص</span>
                         </button>
                         {m.action.payload.phone && (
                           <a

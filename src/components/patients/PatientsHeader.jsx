@@ -18,7 +18,7 @@ export default function PatientsHeader({
           style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)', fontWeight: 600 }}
         >
           <Upload size={18} />
-          <span>استيراد من إكسيل (النظام القديم)</span>
+          <span>استيراد إكسيل</span>
         </button>
         <button 
           type="button" 
@@ -27,7 +27,7 @@ export default function PatientsHeader({
           title="تصدير قائمة المرضى لملف إكسيل"
         >
           <Download size={18} />
-          <span>تصدير إكسيل (CSV)</span>
+          <span>تصدير إكسيل</span>
         </button>
         <button 
           type="button" 
@@ -35,7 +35,7 @@ export default function PatientsHeader({
           onClick={onOpenNewPatient}
         >
           <Plus size={20} />
-          <span>إضافة مريض جديد</span>
+          <span>إضافة مريض</span>
         </button>
       </div>
     </div>

@@ -14,10 +14,10 @@ export default function AssistantHeroHeader({ patientsCount }) {
           </div>
           <div>
             <h1 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-              مساعد الطبيب السريري الذكي (AI Patient Care Agent)
+              مساعد الطبيب
             </h1>
             <p>
-              تواصل مع وكيلك الذكي لتحديد شرائح المرضى وإرسال رسائل الرعاية والمتابعة الطبية المخصصة بنقرة واحدة
+              تحديد مجموعات المرضى وإرسال رسائل المتابعة والتذكير بنقرة واحدة
             </p>
           </div>
         </div>

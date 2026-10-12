@@ -31,7 +31,7 @@ export default function ClinicFeatureModulesSection({ clinicForm, setClinicForm 
             <Layers size={20} />
           </div>
           <div>
-            <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>تفعيل وإدارة ميزات العيادة (Feature Modules)</h4>
+            <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>تفعيل ميزات العيادة</h4>
             <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>تخصيص الميزات التشغيلية المفعّلة في عيادتك للتحكم فيما يظهر بالقائمة الرئيسية</p>
           </div>
         </div>

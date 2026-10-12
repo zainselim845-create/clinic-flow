@@ -6,7 +6,7 @@ import { useTenant } from '../context/TenantContext';
 const SEGMENT_NAMES = {
   dashboard: 'لوحة التحكم',
   appointments: 'المواعيد والتقويم',
-  patients: 'سجلات المرضى',
+  patients: 'المرضى',
   invoices: 'الفوترة والتحصيل',
   inventory: 'المخزون والمستلزمات',
   labs: 'المعامل والتركيبات',

@@ -86,9 +86,9 @@ export default function PatientDossierDrawer({
                 <FolderOpen style={{ color: 'var(--accent)' }} size={22} />
                 <div>
                   <Dialog.Title asChild>
-                    <h3 style={{ color: '#FFFFFF', margin: 0 }}>الملف الطبي السريري: {patientName}</h3>
+                    <h3 style={{ color: '#FFFFFF', margin: 0 }}>بيانات التشخيص: {patientName}</h3>
                   </Dialog.Title>
-                  <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>رقم الملف: #{patient?.fileNumber || patient?.id?.slice(0, 8) || 'D-101'}</span>
+                  <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>رقم المريض: #{patient?.fileNumber || patient?.id?.slice(0, 8) || 'D-101'}</span>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -143,7 +143,7 @@ export default function PatientDossierDrawer({
                     type="button" 
                     onClick={onClose} 
                     className="btn-close-dossier" 
-                    aria-label="إغلاق الملف"
+                    aria-label="إغلاق"
                   >
                     <X size={18} />
                   </button>
@@ -173,9 +173,7 @@ export default function PatientDossierDrawer({
                       fontSize: '0.84rem',
                       cursor: 'pointer'
                     }}
-                  >
-                    نظرة عامة والزيارات
-                  </button>
+                  >نظرة عامة</button>
                 </Tabs.Trigger>
 
                 <Tabs.Trigger value="notes" asChild>
@@ -197,7 +195,7 @@ export default function PatientDossierDrawer({
                     }}
                   >
                     <FileText size={14} />
-                    <span>الملاحظات السريرية ({clinicalNotes.length})</span>
+                    <span>التشخيص ({clinicalNotes.length})</span>
                   </button>
                 </Tabs.Trigger>
 
@@ -243,7 +241,7 @@ export default function PatientDossierDrawer({
                     }}
                   >
                     <Wallet size={14} />
-                    <span>المحفظة الرقمية</span>
+                    <span>الحسابات</span>
                   </button>
                 </Tabs.Trigger>
 

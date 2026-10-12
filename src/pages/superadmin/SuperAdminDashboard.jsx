@@ -508,7 +508,7 @@ export default function SuperAdminDashboard() {
             className={`saas-tab-btn ${activeTab === 'clinics' ? 'active-tab' : ''}`}
           >
             <Building2 size={16} />
-            <span>دليل العيادات والاشتراكات ({totalClinics})</span>
+            <span>العيادات ({totalClinics})</span>
           </button>
           <button
             type="button"
@@ -519,7 +519,7 @@ export default function SuperAdminDashboard() {
             className={`saas-tab-btn ${activeTab === 'users' ? 'active-tab' : ''}`}
           >
             <Users size={16} />
-            <span>حسابات العملاء والمستخدمين ({allUsers.length})</span>
+            <span>المستخدمون ({allUsers.length})</span>
           </button>
           <button
             type="button"
@@ -531,7 +531,7 @@ export default function SuperAdminDashboard() {
             className={`saas-tab-btn ${activeTab === 'telemetry_bugs' ? 'active-tab active-telemetry' : ''}`}
           >
             <AlertTriangle size={16} />
-            <span>مركز الأعطال وبلاغات النظام ({unresolvedIncidentsCount})</span>
+            <span>الأعطال ({unresolvedIncidentsCount})</span>
           </button>
           <button
             type="button"
@@ -539,7 +539,7 @@ export default function SuperAdminDashboard() {
             className={`saas-tab-btn ${activeTab === 'infrastructure' ? 'active-tab' : ''}`}
           >
             <Server size={16} />
-            <span>البنية السحابية والربط المركزي (Infrastructure)</span>
+            <span>البنية التحتية</span>
           </button>
           <button
             type="button"
@@ -547,7 +547,7 @@ export default function SuperAdminDashboard() {
             className={`saas-tab-btn ${activeTab === 'geographic' ? 'active-tab' : ''}`}
           >
             <MapPin size={16} />
-            <span>الانتشار والمواقع الجغرافية (Geo Analytics)</span>
+            <span>المواقع الجغرافية</span>
           </button>
         </div>
 
@@ -634,7 +634,7 @@ export default function SuperAdminDashboard() {
           <div>
             <h3>حصانة أمن البيانات عبر PostgreSQL RLS</h3>
             <p>
-              يتم عزل كافة السجلات الطبية، المواعيد، الفواتير، وحسابات الطاقم تلقائياً عبر مفتاح العيادة <code dir="ltr" style={{ unicodeBidi: 'isolate', display: 'inline-block' }}>clinic_id</code>. لا يمكن لمستخدم أو مريض من عيادة الاطلاع على سجلات عيادة أخرى بأي طريقة.
+              يتم عزل كافة بيانات المرضى والتشخيص، المواعيد، الفواتير، وحسابات الطاقم تلقائياً عبر مفتاح العيادة <code dir="ltr" style={{ unicodeBidi: 'isolate', display: 'inline-block' }}>clinic_id</code>. لا يمكن لمستخدم أو مريض من عيادة الاطلاع على سجلات عيادة أخرى بأي طريقة.
             </p>
           </div>
         </div>

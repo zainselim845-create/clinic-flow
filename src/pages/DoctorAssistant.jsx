@@ -428,7 +428,7 @@ const DoctorAssistant = ({ initialMode }) => {
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }}
         >
           <Activity size={16} />
-          <span>مركز التسويق ونمو العيادة (CRM Engine)</span>
+          <span>رسائل المرضى</span>
         </button>
         <button 
           type="button"
@@ -439,7 +439,7 @@ const DoctorAssistant = ({ initialMode }) => {
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }}
         >
           <Bot size={16} />
-          <span>المساعد السريري الذكي (AI Agent)</span>
+          <span>المساعد</span>
         </button>
       </div>
 

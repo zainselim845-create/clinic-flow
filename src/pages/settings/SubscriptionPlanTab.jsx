@@ -307,7 +307,7 @@ export default function SubscriptionPlanTab() {
               <div style={{ background: '#F5F3FF', color: '#7C3AED', padding: '0.5rem', borderRadius: '10px' }}>
                 <ShieldCheck size={20} />
               </div>
-              <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>المساعد السريري الذكي (AI)</strong>
+              <strong style={{ fontSize: '0.95rem', color: 'var(--text-primary)' }}>مساعد العيادة</strong>
             </div>
             <span style={{
               background: '#ECFDF5',
@@ -359,7 +359,7 @@ export default function SubscriptionPlanTab() {
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: '1px solid var(--border-color)' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>إجمالي سجلات المرضى النشطة</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>إجمالي المرضى بالعيادة</span>
             <strong style={{ color: 'var(--text-primary)' }}>{activePatientsCount} مريض</strong>
           </div>
 
@@ -371,7 +371,7 @@ export default function SubscriptionPlanTab() {
           </div>
 
           <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)' }}>
-            سعة غير محدودة لسجلات المرضى والأشعات والملفات الطبية السريرية.
+            سعة غير محدودة لبيانات المرضى والفحوصات والتشخيص.
           </div>
         </div>
 

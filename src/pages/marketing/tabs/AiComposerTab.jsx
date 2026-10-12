@@ -21,7 +21,7 @@ export function AiComposerTab({
             <label>الشريحة المستهدفة:</label>
             <select value={composerSegment} onChange={(e) => setComposerSegment(e.target.value)}>
               <option value="dormant">المرضى الخاملون (6+ أشهر لم يزوروا العيادة)</option>
-              <option value="vip">كبار العملاء المميزين (VIP)</option>
+              <option value="vip">المرضى المميزون</option>
               <option value="new">المرضى الجدد (لتحويلهم لمرضى دائمين)</option>
               <option value="returning">المرضى الدائمون دورياً</option>
             </select>

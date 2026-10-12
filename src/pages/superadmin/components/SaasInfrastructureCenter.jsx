@@ -54,7 +54,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           className={`saas-tab-btn ${subTab === 'sms' ? 'active-tab' : ''}`}
         >
           <Smartphone size={16} />
-          <span>بوابات الرسائل المركزية (SMS Gateways)</span>
+          <span>بوابات الرسائل</span>
         </button>
         <button
           type="button"
@@ -62,7 +62,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           className={`saas-tab-btn ${subTab === 'ai' ? 'active-tab' : ''}`}
         >
           <Cpu size={16} />
-          <span>محرك الذكاء الاصطناعي المركزي (AI Core)</span>
+          <span>محرك المساعد</span>
         </button>
         <button
           type="button"
@@ -70,7 +70,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           className={`saas-tab-btn ${subTab === 'domains' ? 'active-tab' : ''}`}
         >
           <Globe size={16} />
-          <span>الدومينات الخاصة والـ SSL (Custom Domains)</span>
+          <span>الروابط الخاصة</span>
         </button>
         <button
           type="button"
@@ -78,7 +78,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           className={`saas-tab-btn ${subTab === 'subscriptions' ? 'active-tab' : ''}`}
         >
           <CreditCard size={16} />
-          <span>باقات الاشتراكات والترخيص (Subscription Plans)</span>
+          <span>باقات الاشتراك</span>
         </button>
         <button
           type="button"
@@ -86,7 +86,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           className={`saas-tab-btn ${subTab === 'auth' ? 'active-tab' : ''}`}
         >
           <ShieldCheck size={16} />
-          <span>المصادقة وGoogle OAuth (SSO)</span>
+          <span>تسجيل الدخول</span>
         </button>
         <button
           type="button"
@@ -94,7 +94,7 @@ export function SaasInfrastructureCenter({ allTenants = [] }) {
           className={`saas-tab-btn ${subTab === 'resilience' ? 'active-tab' : ''}`}
         >
           <Zap size={16} />
-          <span>المرونة وطوابير المعالجة (100M Scale)</span>
+          <span>طوابير المعالجة</span>
         </button>
       </div>
 

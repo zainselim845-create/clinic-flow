@@ -21,12 +21,12 @@ export default function AssistantChatConsole({
       <div className="console-header">
         <div className="console-title">
           <Stethoscope size={18} className="text-primary" />
-          <span>محادثة الوكيل السريري الذكي</span>
+          <span>محادثة المساعد</span>
         </div>
 
         <div className="console-header-actions">
           <span className="live-status-dot ai-online" title="محرك الذكاء الاصطناعي السريري نشط ومُهيأ تلقائياً">
-            الذكاء الاصطناعي نشط
+            المساعد متصل
           </span>
           <button 
             type="button" 
@@ -49,7 +49,7 @@ export default function AssistantChatConsole({
             </div>
             <div className="bubble-content">
               <div className="bubble-sender-name">
-                {msg.sender === 'agent' ? 'مساعد العيادة الذكي' : doctorTitle}
+                {msg.sender === 'agent' ? 'مساعد العيادة' : doctorTitle}
                 <span className="bubble-time">{msg.timestamp}</span>
               </div>
               <div className="bubble-text">

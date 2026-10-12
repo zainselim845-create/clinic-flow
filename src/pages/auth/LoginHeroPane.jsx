@@ -28,8 +28,8 @@ export default function LoginHeroPane() {
             <Check size={16} strokeWidth={3} />
           </div>
           <div className="feature-text">
-            <strong>سجلات طبية سريرية مشفرة</strong>
-            <span>عزل تام ومستقل لبيانات كل مريض وعيادة بأعلى معايير الأمان.</span>
+            <strong>بيانات وتشخيصات مشفرة</strong>
+            <span>عزل تام ومستقل لبيانات كل عيادة بأعلى معايير الأمان.</span>
           </div>
         </div>
 

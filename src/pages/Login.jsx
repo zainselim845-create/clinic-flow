@@ -173,7 +173,7 @@ export default function Login() {
     }
 
     if (regForm.password.length < 6) {
-      setError('كلمة المرور يجب أن لا تقل عن 6 خانات لضمان أمان السجلات الطبية.');
+      setError('كلمة المرور يجب أن لا تقل عن 6 خانات لضمان أمان بيانات العيادة.');
       return;
     }
 

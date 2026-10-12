@@ -89,13 +89,13 @@ const Sidebar = () => {
         {hasPermission(user, 'appointments') && (
           <NavLink to="/appointments" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <CalendarDays size={19} />
-            <span>المواعيد والتقويم</span>
+            <span>المواعيد</span>
           </NavLink>
         )}
         {hasPermission(user, 'patients') && (
           <NavLink to="/patients" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Users size={19} />
-            <span>سجلات المرضى</span>
+            <span>المرضى</span>
           </NavLink>
         )}
 
@@ -104,12 +104,12 @@ const Sidebar = () => {
           <>
             <NavLink to="/doctor-agent" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
               <Bot size={19} />
-              <span>مساعد الطبيب الذكي</span>
+              <span>مساعد الطبيب</span>
             </NavLink>
             {enableLabs && (
               <NavLink to="/labs" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                 <Layers size={19} />
-                <span>معمل التركيبات والتحاليل</span>
+                <span>المعمل</span>
               </NavLink>
             )}
           </>
@@ -119,19 +119,19 @@ const Sidebar = () => {
         {hasPermission(user, 'invoices') && (
           <NavLink to="/invoices" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Wallet size={19} />
-            <span>حسابات الخزينة (داخل وخارج)</span>
+            <span>الخزينة</span>
           </NavLink>
         )}
 
         {hasPermission(user, 'inventory') && enableInventory && (
           <NavLink to="/inventory" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
             <Package size={19} />
-            <span>المخزون والمستلزمات</span>
+            <span>المخزون</span>
           </NavLink>
         )}
         <NavLink to="/attendance" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
           <UserCheck size={19} />
-          <span>الحضور والانصراف</span>
+          <span>الحضور</span>
         </NavLink>
 
         <NavLink to="/notifications" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
@@ -146,12 +146,12 @@ const Sidebar = () => {
             {canAccessSms && (
               <NavLink to="/sms-integration" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
                 <Smartphone size={19} />
-                <span>بوابة الرسائل النصية (SMS)</span>
+                <span>الرسائل</span>
               </NavLink>
             )}
             <NavLink to="/settings" className={({isActive}) => isActive ? 'nav-item active' : 'nav-item'}>
               <Settings size={19} />
-              <span>إدارة وإعدادات العيادة</span>
+              <span>الإعدادات</span>
             </NavLink>
           </>
         )}
@@ -163,8 +163,8 @@ const Sidebar = () => {
             title="الانتقال إلى لوحة تحكم إدارة الساس المركزية"
           >
             <ShieldCheck size={19} className="text-purple-400" />
-            <span>إدارة منصة الساس</span>
-            <span className="saas-badge-tag">Admin</span>
+            <span>إدارة المنصة</span>
+            <span className="saas-badge-tag">إدارة</span>
           </NavLink>
         )}
         <a 
@@ -175,7 +175,7 @@ const Sidebar = () => {
           title="معاينة وفتح صفحة الحجز العامة للمرضى في نافذة جديدة"
         >
           <Globe size={19} />
-          <span>بوابة الحجز (للمرضى)</span>
+          <span>صفحة الحجز</span>
         </a>
       </nav>
 

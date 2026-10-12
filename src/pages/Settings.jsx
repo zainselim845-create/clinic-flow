@@ -206,12 +206,12 @@ const Settings = () => {
             fontSize: '0.82rem',
             fontWeight: 700
           }}>
-            <span>وضع مدير الساس (Super Admin)</span>
+            <span>إدارة المنصة</span>
             <a 
               href="/super-admin"
               style={{ color: '#047857', textDecoration: 'underline', fontWeight: 800 }}
             >
-              الذهاب إلى لوحة إدارة الساس
+              الذهاب إلى لوحة إدارة المنصة
             </a>
           </div>
         )}
@@ -261,7 +261,7 @@ const Settings = () => {
             title="إعدادات المساعد الطبي الذكي ونماذج الذكاء الاصطناعي"
           >
             <Bot size={18} />
-            <span>المساعد الذكي</span>
+            <span>المساعد</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -270,7 +270,7 @@ const Settings = () => {
             title="متابعة باقة الاشتراك، الرصيد، والترخيص"
           >
             <CreditCard size={18} />
-            <span>الاشتراك والباقة</span>
+            <span>الاشتراك</span>
           </Tabs.Trigger>
 
           <Tabs.Trigger 
@@ -279,17 +279,17 @@ const Settings = () => {
             title="إدارة الدومين الخاص والـ SSL"
           >
             <Globe size={18} />
-            <span>الدومين الخاص</span>
+            <span>الرابط الخاص</span>
           </Tabs.Trigger>
 
           {isSuperAdmin && (
             <Tabs.Trigger 
               value="sms"
               className={`tab-btn admin-badge-tab ${activeTab === 'sms' ? 'active' : ''}`}
-              title="إعدادات بوابات الرسائل واسم المرسل (إدارة الساس فقط)"
+              title="رسائل الـ SMS واسم المرسل"
             >
               <Smartphone size={18} />
-              <span>رسائل الـ SMS واسم المرسل</span>
+              <span>الرسائل النصية</span>
             </Tabs.Trigger>
           )}
         </Tabs.List>

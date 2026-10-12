@@ -94,10 +94,10 @@ function WaitingRoomQueue({
                   type="button"
                   onClick={() => onOpenDossier(currentExamPatient)}
                   className="btn-exam-action outline"
-                  title="فتح ملف المريض والسجل التاريخي"
+                  title="عرض التشخيص والروشتة"
                 >
                   <FolderOpen size={15} />
-                  <span>الملف الطبي</span>
+                  <span>التشخيص</span>
                 </button>
               </div>
             </div>

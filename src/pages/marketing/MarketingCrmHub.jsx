@@ -237,10 +237,10 @@ export const MarketingCrmHub = () => {
         <div className="hero-content">
           <div className="hero-badge">
             <Activity size={15} />
-            <span>منظومة الـ CRM والنمو الذكي المتكاملة</span>
+            <span>رسائل المرضى</span>
           </div>
-          <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0.35rem 0', color: 'var(--text-primary)' }}>محرك التسويق والاحتفاظ بالمرضى (11 محركاً ذكياً)</h1>
-          <p>تقسيم تلقائي، استعادة المواعيد، تتبع الخطط العلاجية، تحويل التقييمات لجوجل، وبرامج ولاء وإحالة المرضى.</p>
+          <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0.35rem 0', color: 'var(--text-primary)' }}>متابعة ورعاية المرضى</h1>
+          <p>تذكير بالمواعيد، متابعة الخطط العلاجية، والتواصل السريع مع المرضى.</p>
         </div>
         <div className="hero-kpis-pill">
           <div className="kpi-micro">
@@ -249,12 +249,12 @@ export const MarketingCrmHub = () => {
           </div>
           <div className="divider-v"></div>
           <div className="kpi-micro">
-            <span className="lbl">عملاء مميزين (VIP)</span>
+            <span className="lbl">المرضى المميزون</span>
             <strong className="val text-primary">{crmStats.vipCount}</strong>
           </div>
           <div className="divider-v"></div>
           <div className="kpi-micro">
-            <span className="lbl">فرص إعادة التنشيط</span>
+            <span className="lbl">إعادة التواصل</span>
             <strong className="val text-warning">{crmStats.dormantCount}</strong>
           </div>
         </div>
@@ -276,7 +276,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('segmentation')}
           >
             <Users size={16} />
-            <span>التقسيم التلقائي ({crmStats.totalPatients})</span>
+            <span>شرائح المرضى ({crmStats.totalPatients})</span>
           </button>
 
           <button 
@@ -284,7 +284,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('reactivation')}
           >
             <RefreshCw size={16} />
-            <span>إعادة التنشيط ({crmStats.dormantCount})</span>
+            <span>إعادة التواصل ({crmStats.dormantCount})</span>
           </button>
 
           <button 
@@ -292,7 +292,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('cross_sell')}
           >
             <Zap size={16} />
-            <span>البيع المتقاطع ({(crossSellOpportunities || []).length})</span>
+            <span>خدمات إضافية ({(crossSellOpportunities || []).length})</span>
           </button>
 
           <button 
@@ -300,7 +300,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('recovery')}
           >
             <AlertTriangle size={16} />
-            <span>استعادة الفرص ({(abandonedLeads || []).length + (noShowAppointments || []).length})</span>
+            <span>استعادة المواعيد ({(abandonedLeads || []).length + (noShowAppointments || []).length})</span>
           </button>
 
           <button 
@@ -308,7 +308,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('feedback')}
           >
             <Star size={16} />
-            <span>متابعة ما بعد الكشف وجوجل</span>
+            <span>التقييمات</span>
           </button>
 
           <button 
@@ -316,7 +316,7 @@ export const MarketingCrmHub = () => {
             onClick={() => setActiveTab('treatment_plans')}
           >
             <Smile size={16} />
-            <span>الخطط غير المكتملة ({(unfinishedPlans || []).length})</span>
+            <span>خطط العلاج ({(unfinishedPlans || []).length})</span>
           </button>
 
           <button 

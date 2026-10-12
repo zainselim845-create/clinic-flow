@@ -455,7 +455,7 @@ const Dashboard = () => {
             title="مشاركة بوابة حجز العيادة، النطاق الرقمي، ورمز QR للمرضى"
           >
             <Share2 size={13} />
-            <span>مشاركة بوابة الحجز و QR</span>
+            <span>مشاركة الحجز</span>
           </button>
 
           {(isAdmin || user?.role === 'staff' || user?.role === 'receptionist') && (
@@ -466,7 +466,7 @@ const Dashboard = () => {
               title="تصفية الخزينة وتسليم وردية الاستقبال"
             >
               <Landmark size={13} />
-              <span>تسليم وردية الاستقبال</span>
+              <span>تسليم الوردية</span>
             </button>
           )}
 
@@ -476,7 +476,7 @@ const Dashboard = () => {
             className="btn btn-primary btn-sm"
           >
             <UserPlus size={15} />
-            <span>تسجيل كشف فوري (Walk-in)</span>
+            <span>كشف فوري</span>
           </button>
         </div>
       </div>
