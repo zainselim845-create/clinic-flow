@@ -21,7 +21,7 @@ export default function OnboardingStepDoctor({
           <span>بيانات الطبيب واسم المستخدم المخصص</span>
         </h2>
         <p>
-          أهلاً بك يا دكتور! يسعدنا انضمامك. خصص اسمك المهني واسم المستخدم الفريد (@handle) الذي سيظهر لمرضاك على الروشتات وإيصالات الحجز ورابط عيادتك المخصص.
+          أهلاً بك يا دكتور! يسعدنا انضمامك. خصص اسمك المهني واسم المستخدم الفريد (@handle) الذي سيظهر لمرضاك على إيصالات الحجز ورابط عيادتك المخصص.
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default function OnboardingStepDoctor({
               required
             />
           </div>
-          <span className="input-hint">الاسم الذي سيظهر لمرضاك على الروشتات وإيصالات الحجز.</span>
+          <span className="input-hint">الاسم الذي سيظهر لمرضاك على إيصالات الحجز والمتابعة.</span>
         </div>
 
         <div className="form-group">

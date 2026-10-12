@@ -94,7 +94,7 @@ function WaitingRoomQueue({
                   type="button"
                   onClick={() => onOpenDossier(currentExamPatient)}
                   className="btn-exam-action outline"
-                  title="عرض التشخيص والروشتة"
+                  title="عرض بيانات التشخيص"
                 >
                   <FolderOpen size={15} />
                   <span>التشخيص</span>

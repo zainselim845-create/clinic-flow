@@ -11,18 +11,17 @@
 3. [صفحة الحجز (Online Booking)](#3-صفحة-الحجز-online-booking)
 4. [إدارة الحجز (Manage Booking)](#4-إدارة-الحجز-manage-booking)
 5. [المرضى والتشخيص (Patients & Diagnosis)](#5-المرضى-والتشخيص-patients--diagnosis)
-6. [الروشتات (Digital Prescriptions)](#6-الروشتات-digital-prescriptions)
-7. [الخزينة (Treasury & Finance)](#7-الخزينة-treasury--finance)
-8. [المعمل (Laboratory & Diagnostics)](#8-المعمل-laboratory--diagnostics)
-9. [المخزون (Medical Inventory)](#9-المخزون-medical-inventory)
-10. [الحضور (Staff Attendance)](#10-الحضور-staff-attendance)
-11. [مساعد الطبيب (Doctor Assistant)](#11-مساعد-الطبيب-doctor-assistant)
-12. [رسائل المرضى وحملات النمو (Patient Retention & Growth)](#12-رسائل-المرضى-وحملات-النمو-patient-retention--growth)
-13. [طاقم العمل والصلاحيات (Staff & Access Control)](#13-طاقم-العمل-والصلاحيات-staff--access-control)
-14. [الربط متعدد الأطباء والمراكز (Multi-Doctor Architecture)](#14-الربط-متعدد-الأطباء-والمراكز-multi-doctor-architecture)
-15. [إعدادات العيادة والمظهر (Clinic Settings)](#15-إعدادات-العيادة-والمظهر-clinic-settings)
-16. [العمل دون اتصال والمزامنة (Offline Resilience)](#16-العمل-دون-اتصال-والمزامنة-offline-resilience)
-17. [إدارة المنصة المركزية (Super Admin Platform)](#17-إدارة-المنصة-المركزية-super-admin-platform)
+6. [الخزينة (Treasury & Finance)](#7-الخزينة-treasury--finance)
+7. [المعمل (Laboratory & Diagnostics)](#8-المعمل-laboratory--diagnostics)
+8. [المخزون (Medical Inventory)](#9-المخزون-medical-inventory)
+9. [الحضور (Staff Attendance)](#10-الحضور-staff-attendance)
+10. [مساعد الطبيب (Doctor Assistant)](#11-مساعد-الطبيب-doctor-assistant)
+11. [رسائل المرضى وحملات النمو (Patient Retention & Growth)](#12-رسائل-المرضى-وحملات-النمو-patient-retention--growth)
+12. [طاقم العمل والصلاحيات (Staff & Access Control)](#13-طاقم-العمل-والصلاحيات-staff--access-control)
+13. [الربط متعدد الأطباء والمراكز (Multi-Doctor Architecture)](#14-الربط-متعدد-الأطباء-والمراكز-multi-doctor-architecture)
+14. [إعدادات العيادة والمظهر (Clinic Settings)](#15-إعدادات-العيادة-والمظهر-clinic-settings)
+15. [العمل دون اتصال والمزامنة (Offline Resilience)](#16-العمل-دون-اتصال-والمزامنة-offline-resilience)
+16. [إدارة المنصة المركزية (Super Admin Platform)](#17-إدارة-المنصة-المركزية-super-admin-platform)
 
 ---
 
@@ -131,7 +130,7 @@
 
 ---
 
-## 7. الخزينة (Treasury & Finance)
+## 6. الخزينة (Treasury & Finance)
 **المسار في المنظومة:** `/invoices`
 
 * **تسليم وتقفيل الوردية (Shift Handover):**
@@ -149,7 +148,7 @@
 
 ---
 
-## 8. المعمل (Laboratory & Diagnostics)
+## 7. المعمل (Laboratory & Diagnostics)
 **المسار في المنظومة:** `/labs`
 
 * **ربط طلبات التحاليل والأشعة بالتشخيص:**
@@ -161,7 +160,7 @@
 
 ---
 
-## 9. المخزون (Medical Inventory)
+## 8. المخزون (Medical Inventory)
 **المسار في المنظومة:** `/inventory`
 
 * **جرد المستلزمات الطبية والخامات:**
@@ -173,7 +172,7 @@
 
 ---
 
-## 10. الحضور (Staff Attendance)
+## 9. الحضور (Staff Attendance)
 **المسار في المنظومة:** `/attendance`
 
 * **تسجيل الحضور والانصراف بلمسة:**
@@ -185,7 +184,7 @@
 
 ---
 
-## 11. مساعد الطبيب (Doctor Assistant)
+## 10. مساعد الطبيب (Doctor Assistant)
 **المسار في المنظومة:** `/doctor-agent`
 
 * **أوامر صوتية وكتابية سريعة:**
@@ -199,7 +198,7 @@
 
 ---
 
-## 12. رسائل المرضى وحملات النمو (Patient Retention & Growth)
+## 11. رسائل المرضى وحملات النمو (Patient Retention & Growth)
 **المسار في المنظومة:** مدمج في `/doctor-agent` وتبويبات رسائل المرضى
 
 * **تذكيرات المواعيد التلقائية:**
@@ -217,7 +216,7 @@
 
 ---
 
-## 13. طاقم العمل والصلاحيات (Staff & Access Control)
+## 12. طاقم العمل والصلاحيات (Staff & Access Control)
 **المسار في المنظومة:** `/settings` (طاقم العمل)
 
 * **صلاحيات صارمة تفصل الطبي عن المالي:**
@@ -230,7 +229,7 @@
 
 ---
 
-## 14. الربط متعدد الأطباء والمراكز (Multi-Doctor Architecture)
+## 13. الربط متعدد الأطباء والمراكز (Multi-Doctor Architecture)
 **المسار في المنظومة:** منظومة الربط المتقدمة للعيادات والمراكز
 
 * **ربط كذا دكتور بالعيادة أو المركز:**
@@ -242,7 +241,7 @@
 
 ---
 
-## 15. إعدادات العيادة والمظهر (Clinic Settings)
+## 14. إعدادات العيادة والمظهر (Clinic Settings)
 **المسار في المنظومة:** `/settings`
 
 * **ملف وهوية العيادة:**
@@ -260,7 +259,7 @@
 
 ---
 
-## 16. العمل دون اتصال والمزامنة (Offline Resilience)
+## 15. العمل دون اتصال والمزامنة (Offline Resilience)
 * **الاستمرارية بدون إنترنت:**
   - استمرار عمل العيادة بكفاءة كاملة وتسجيل المرضى والكشوفات حتى عند انقطاع الإنترنت.
 * **مزامنة ذكية تلقائية:**
@@ -268,7 +267,7 @@
 
 ---
 
-## 17. إدارة المنصة المركزية (Super Admin Platform)
+## 16. إدارة المنصة المركزية (Super Admin Platform)
 **المسار في المنظومة:** `/super-admin`
 
 * **لوحة التحكم المركزية للساس:**

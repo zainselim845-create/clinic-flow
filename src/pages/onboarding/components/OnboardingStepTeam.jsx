@@ -40,7 +40,7 @@ export const ROLES_INFO = [
     id: 'associate_doctor',
     title: 'طبيب ممارس / مساعد',
     defaultPerms: ['appointments', 'patients', 'sms'],
-    desc: 'الكشف السريري، تدوين الملاحظات والتشخيصات، وطباعة الروشتات الرقمية'
+    desc: 'الكشف السريري، تدوين الملاحظات والتشخيصات، وتوثيق خطة المتابعة'
   },
   {
     id: 'accountant',

@@ -203,7 +203,7 @@ export default function ClinicLogoUploader({
             شعار العيادة
           </h4>
           <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary, #71717A)' }}>
-            يظهر تلقائياً في ترويسة الروشتات المطبوعة، شريط التنقل العلوي، وبوابة حجز المرضى.
+            يظهر تلقائياً في شريط التنقل العلوي، إيصالات الدفع، وبوابة حجز المرضى.
           </p>
         </div>
 
