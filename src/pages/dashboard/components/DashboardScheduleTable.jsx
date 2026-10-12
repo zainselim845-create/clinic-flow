@@ -133,7 +133,14 @@ const DashboardScheduleTable = ({
                       <small dir="ltr">{appt.patientPhone}</small>
                     </div>
                   </td>
-                  <td>{appt.time}</td>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{appt.time}</div>
+                    {appt.doctorName && (
+                      <small style={{ color: 'var(--text-secondary)', display: 'block', fontSize: '0.74rem', marginTop: '2px' }}>
+                        {appt.doctorName}
+                      </small>
+                    )}
+                  </td>
                   <td><span className="type-chip">{appt.type || 'كشف'}</span></td>
                   <td>
                     <span className={`status-badge ${appt.status}`}>

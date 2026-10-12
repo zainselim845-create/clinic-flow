@@ -68,6 +68,12 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
         <div className="appt-chip type-chip">
           <span>{appointment.type || 'كشف عادي'}</span>
         </div>
+        {appointment.doctorName && (
+          <div className="appt-chip doc-chip" style={{ background: "#F0FDF4", color: "#166534", border: "1px solid #BBF7D0", fontSize: "0.75rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+            <Stethoscope size={12} />
+            <span>{appointment.doctorName}</span>
+          </div>
+        )}
         <div className="appt-chip fee-chip">
           <span>{appointment.fee || '300 ج.م'}</span>
         </div>

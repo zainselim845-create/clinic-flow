@@ -17,6 +17,7 @@ const NewAppointmentModal = ({
   appointments = [],
   blockedSlots = [],
   availableSlots = [],
+  doctors = [],
   onNavigateToNewPatient = () => {}
 }) => {
   return (
@@ -74,6 +75,31 @@ const NewAppointmentModal = ({
                 </select>
               </div>
 
+              {doctors && doctors.length > 0 && (
+                <div className="form-group">
+                  <label>الطبيب المعالج *</label>
+                  <select
+                    className="input-field"
+                    value={formData.doctorId || ''}
+                    onChange={(e) => {
+                      const selectedDoc = doctors.find(d => d.id === e.target.value);
+                      setFormData({
+                        ...formData,
+                        doctorId: e.target.value,
+                        doctorName: selectedDoc ? selectedDoc.name : ''
+                      });
+                    }}
+                  >
+                    <option value="">اختر الطبيب المعالج بالمركز...</option>
+                    {doctors.map(d => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} {d.specialty ? `(${d.specialty})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="form-row">
                 <div className="form-group">
                   <label>التاريخ *</label>
@@ -95,7 +121,7 @@ const NewAppointmentModal = ({
                   >
                     <option value="">اختر الوقت...</option>
                     {availableSlots.map(slot => {
-                      const isBooked = (appointments || []).some(a => a.date === formData.date && a.time === slot && a.status !== 'cancelled');
+                      const isBooked = (appointments || []).some(a => a.date === formData.date && a.time === slot && a.status !== 'cancelled' && (!formData.doctorId || !a.doctorId || a.doctorId === formData.doctorId));
                       const isBlocked = (blockedSlots || []).some(b => b.date === formData.date && (b.time === slot || b.isFullDay || b.time === 'FULL_DAY'));
                       const isUnavailable = isBooked || isBlocked;
 

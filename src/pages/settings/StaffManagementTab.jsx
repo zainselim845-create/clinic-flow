@@ -104,6 +104,21 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         type: 'UPDATE_STAFF',
         payload: updatedPayload
       });
+      if (staffForm.roleKey === "associate_doctor") {
+        dispatch({
+          type: "UPDATE_DOCTOR",
+          payload: {
+            id: editingStaff.id,
+            clinicId: staffClinicId,
+            name: staffForm.name,
+            phone: staffForm.phone,
+            email: staffForm.email,
+            specialty: staffForm.specialty || "طبيب سريري بالمركز",
+            commissionRate: staffForm.commissionRate || 50,
+            isActive: staffForm.status === "active"
+          }
+        });
+      }
     } else {
       const newStaff = {
         id: targetId,
@@ -123,6 +138,21 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         type: 'ADD_STAFF',
         payload: newStaff
       });
+      if (staffForm.roleKey === "associate_doctor") {
+        dispatch({
+          type: "ADD_DOCTOR",
+          payload: {
+            id: targetId,
+            clinicId: staffClinicId,
+            name: staffForm.name,
+            phone: staffForm.phone,
+            email: staffForm.email,
+            specialty: staffForm.specialty || "طبيب سريري بالمركز",
+            commissionRate: staffForm.commissionRate || 50,
+            isActive: staffForm.status === "active"
+          }
+        });
+      }
     }
 
     setIsStaffModalOpen(false);

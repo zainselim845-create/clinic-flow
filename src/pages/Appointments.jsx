@@ -46,8 +46,23 @@ const Appointments = () => {
   const currentClinic = state.clinicInfo || {};
   const defaultFee = currentClinic.regularFee || '300 ج.م';
 
+  const availableDoctors = useMemo(() => {
+    const list = [...(state.doctors || [])];
+    if (currentClinic?.doctorName && !list.some(d => d.name === currentClinic.doctorName)) {
+      list.unshift({
+        id: currentClinic.doctorId || "primary-doctor",
+        name: currentClinic.doctorName,
+        specialty: currentClinic.specialty || "طبيب المركز الأساسي",
+        commissionRate: 100
+      });
+    }
+    return list;
+  }, [state.doctors, currentClinic]);
+
   const [formData, setFormData] = useState({
     patientId: '',
+    doctorId: '',
+    doctorName: '',
     date: todayStr,
     time: '',
     type: 'كشف عيادة',
@@ -162,6 +177,8 @@ const Appointments = () => {
       id: Date.now().toString(),
       clinicId: currentClinicId,
       clinic_id: currentClinicId,
+      doctorId: formData.doctorId || availableDoctors[0]?.id || null,
+      doctorName: formData.doctorName || availableDoctors[0]?.name || null,
       patientId: formData.patientId,
       patientName: patient ? patient.name : 'مريض العيادة',
       patientPhone: patient ? patient.phone : '',
@@ -436,6 +453,7 @@ const Appointments = () => {
         appointments={appointments}
         blockedSlots={blockedSlots}
         availableSlots={availableSlots}
+        doctors={availableDoctors}
         onNavigateToNewPatient={() => {
           setIsModalOpen(false);
           navigate('/patients?action=new');
