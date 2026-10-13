@@ -76,7 +76,7 @@ export async function getPatients(clinicId, options = {}) {
     return await apiCache.wrap(cacheKey, async () => {
       let query = supabase
         .from('patients')
-        .select('*')
+        .select(options?.select || '*')
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 

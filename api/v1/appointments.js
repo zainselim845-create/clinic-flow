@@ -31,7 +31,10 @@ function getSupabase() {
   }
 
   if (!supabaseAdmin && (SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY)) {
-    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+      auth: { persistSession: false },
+      global: { headers: { 'x-client-info': 'clinicflow-api/2.0' } }
+    });
   }
   return supabaseAdmin;
 }
@@ -103,9 +106,10 @@ export default async function handler(req, res) {
         });
       }
 
+      const selectFields = req.query?.fields || 'id, patient_name, phone, date, time, service, status, clinic_id, created_at';
       let query = supabase
         .from('appointments')
-        .select('*')
+        .select(selectFields)
         .or(`clinic_id.eq.${clinicId},clinic_id.is.null`)
         .order('date', { ascending: true })
         .limit(limit);

@@ -84,7 +84,23 @@ export const getSupabase = () => {
   }
   const { url, key } = getSupabaseConfig();
   if (!clientInstance) {
-    clientInstance = createClient(url, key);
+    clientInstance = createClient(url, key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 10
+        }
+      },
+      global: {
+        headers: {
+          'x-client-info': 'clinicflow-web/2.0'
+        }
+      }
+    });
   }
   return clientInstance;
 };

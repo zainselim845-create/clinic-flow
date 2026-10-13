@@ -82,7 +82,7 @@ export async function getAppointments(clinicId, filters = {}) {
     return await apiCache.wrap(cacheKey, async () => {
       let query = supabase
         .from('appointments')
-        .select('*')
+        .select(filters.select || '*')
         .eq('clinic_id', clinicId);
       if (filters.status) {
         query = query.eq('status', filters.status);

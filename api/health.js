@@ -12,7 +12,10 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.en
 let supabaseAdmin = null;
 function getSupabase() {
   if (!supabaseAdmin && (SUPABASE_SERVICE_KEY || process.env.NODE_ENV === 'test')) {
-    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY || 'mock-health-key');
+    supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY || 'mock-health-key', {
+      auth: { persistSession: false },
+      global: { headers: { 'x-client-info': 'clinicflow-health/2.0' } }
+    });
   }
   return supabaseAdmin;
 }
