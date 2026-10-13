@@ -1,8 +1,14 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { apiCache } from './apiCacheService';
 import { appointmentSchema, validateWithSchema } from '../utils/validationSchemas';
+import { executeWithIdempotency } from './idempotencyService';
 
 const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
+
+export const DEFAULT_APPOINTMENT_COLUMNS = 'id, booking_code, clinic_id, doctor_id, doctor_name, branch_id, patient_id, patient_name, patient_phone, date, time, type, fee, status, checked_in_at, consultation_started_at, notes, reminder_sent, deleted_at, created_at';
+
+// In-flight slot lock map to serialize concurrent booking bursts for the same slot
+const inFlightSlotLocks = new Map();
 
 /**
  * Format DB snake_case record to client camelCase model
@@ -82,7 +88,7 @@ export async function getAppointments(clinicId, filters = {}) {
     return await apiCache.wrap(cacheKey, async () => {
       let query = supabase
         .from('appointments')
-        .select(filters.select || '*')
+        .select(filters.select || DEFAULT_APPOINTMENT_COLUMNS)
         .eq('clinic_id', clinicId);
       if (filters.status) {
         query = query.eq('status', filters.status);
@@ -183,9 +189,9 @@ export async function checkSlotCollision(clinicId, date, time, excludeAppointmen
 }
 
 /**
- * Add a new appointment
+ * Add a new appointment with atomic concurrency protection and idempotency
  */
-export async function addAppointment(appointment) {
+export async function addAppointment(appointment, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
@@ -213,29 +219,65 @@ export async function addAppointment(appointment) {
     return { data: null, error: new Error(`Validation Error: ${validation.error}`) };
   }
 
-  try {
-    const isColliding = await checkSlotCollision(clinicId, appointment.date, appointment.time);
-    if (isColliding) {
-      return { 
-        data: null, 
-        error: new Error(`Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked.`) 
-      };
+  const doctorId = appointment?.doctorId || appointment?.doctor_id || null;
+  const idempotencyKey = options.idempotencyKey || appointment?.idempotencyKey || appointment?.idempotency_key;
+
+  // Execute with idempotency wrapper to guard against duplicate retries/clicks
+  const { result } = await executeWithIdempotency(idempotencyKey, async () => {
+    // In-flight slot lock to serialize concurrent requests for the exact same slot within process
+    const slotLockKey = `${clinicId}::${doctorId || 'all'}::${appointment.date}::${appointment.time}`;
+    if (inFlightSlotLocks.has(slotLockKey)) {
+      try {
+        await inFlightSlotLocks.get(slotLockKey);
+      } catch {
+        // Continue after previous in-flight finishes
+      }
     }
 
-    const dbPayload = toDbAppointment(appointment);
-    const { data, error } = await supabase
-      .from('appointments')
-      .insert([dbPayload])
-      .select()
-      .single();
+    let releaseLock;
+    const lockPromise = new Promise(resolve => { releaseLock = resolve; });
+    inFlightSlotLocks.set(slotLockKey, lockPromise);
 
-    if (error) throw error;
-    apiCache.invalidateResource('appointments', clinicId);
-    return { data: fromDbAppointment(data), error: null };
-  } catch (error) {
-    console.error('Error adding appointment:', error);
-    return { data: null, error };
-  }
+    try {
+      // 1. Verify slot collision honoring doctorId
+      const isColliding = await checkSlotCollision(clinicId, appointment.date, appointment.time, null, [], doctorId);
+      if (isColliding) {
+        return { 
+          data: null, 
+          error: new Error(`Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked.`) 
+        };
+      }
+
+      const dbPayload = toDbAppointment(appointment);
+      const { data, error } = await supabase
+        .from('appointments')
+        .insert([dbPayload])
+        .select()
+        .single();
+
+      if (error) {
+        // Catch Postgres unique violation (code 23505) or duplicate slot key error
+        if (error.code === '23505' || String(error.message || '').toLowerCase().includes('unique') || String(error.message || '').toLowerCase().includes('duplicate')) {
+          return {
+            data: null,
+            error: new Error(`Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked.`)
+          };
+        }
+        throw error;
+      }
+
+      apiCache.invalidateResource('appointments', clinicId);
+      return { data: fromDbAppointment(data), error: null };
+    } catch (error) {
+      console.error('Error adding appointment:', error);
+      return { data: null, error };
+    } finally {
+      releaseLock?.();
+      inFlightSlotLocks.delete(slotLockKey);
+    }
+  }, { clinicId });
+
+  return result;
 }
 
 /**
@@ -300,7 +342,7 @@ export async function updateAppointmentStatus(id, status, extraFields = {}, clin
 }
 
 /**
- * Full update for an appointment
+ * Full update for an appointment with slot conflict verification on reschedule
  */
 export async function updateAppointment(id, updateData, clinicId = null) {
   if (!isSupabaseConfigured()) {
@@ -308,15 +350,36 @@ export async function updateAppointment(id, updateData, clinicId = null) {
   }
 
   try {
-    const dbPayload = toDbAppointment(updateData);
     const targetClinicId = clinicId || updateData?.clinicId || updateData?.clinic_id;
+    const doctorId = updateData?.doctorId || updateData?.doctor_id || null;
+
+    // If rescheduling to a new date or time, verify slot collision excluding current appointment
+    if (updateData?.date && updateData?.time) {
+      const isColliding = await checkSlotCollision(targetClinicId, updateData.date, updateData.time, id, [], doctorId);
+      if (isColliding) {
+        return {
+          data: null,
+          error: new Error(`Slot collision: The requested slot on ${updateData.date} at ${updateData.time} is already booked.`)
+        };
+      }
+    }
+
+    const dbPayload = toDbAppointment(updateData);
     let query = supabase.from('appointments').update(dbPayload).eq('id', id);
     if (targetClinicId) {
       query = query.eq('clinic_id', targetClinicId);
     }
     const { data, error } = await query.select().single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '23505' || String(error.message || '').toLowerCase().includes('unique') || String(error.message || '').toLowerCase().includes('duplicate')) {
+        return {
+          data: null,
+          error: new Error(`Slot collision: The requested slot on ${updateData.date} at ${updateData.time} is already booked.`)
+        };
+      }
+      throw error;
+    }
     apiCache.invalidateResource('appointments', targetClinicId);
     return { data: fromDbAppointment(data), error: null };
   } catch (error) {

@@ -7,6 +7,7 @@
 class ApiCacheService {
   constructor(maxSize = 1000) {
     this.cache = new Map();
+    this.inFlight = new Map();
     this.maxSize = maxSize;
     this.defaultTtl = 30000; // 30 seconds default TTL
   }
@@ -82,13 +83,27 @@ class ApiCacheService {
       return cached;
     }
 
-    const fresh = await fetcherFn();
-    if (fresh !== undefined && fresh !== null) {
-      if (!fresh?.error) {
-        this.set(key, fresh, ttlMs);
-      }
+    // Coalesce concurrent requests for the exact same key (Single-Flight Barrier)
+    if (this.inFlight.has(key)) {
+      return await this.inFlight.get(key);
     }
-    return fresh;
+
+    const promise = (async () => {
+      try {
+        const fresh = await fetcherFn();
+        if (fresh !== undefined && fresh !== null) {
+          if (!fresh?.error) {
+            this.set(key, fresh, ttlMs);
+          }
+        }
+        return fresh;
+      } finally {
+        this.inFlight.delete(key);
+      }
+    })();
+
+    this.inFlight.set(key, promise);
+    return await promise;
   }
 
   /**
@@ -131,6 +146,7 @@ class ApiCacheService {
    */
   clear() {
     this.cache.clear();
+    this.inFlight.clear();
   }
 }
 

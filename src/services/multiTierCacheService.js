@@ -14,6 +14,7 @@ export class MultiTierCacheService {
     this.defaultTtlMs = options.defaultTtlMs || 60000; // 1 minute default
     this.staleTtlMs = options.staleTtlMs || 300000; // 5 minutes stale grace
     this.l1 = new Map(); // LRU memory map
+    this.l2Keys = new Set(); // Tracked L2 storage keys
     this.circuitBreaker = new CircuitBreaker();
     this.stats = {
       l1Hits: 0,
@@ -86,7 +87,7 @@ export class MultiTierCacheService {
     const l2Raw = safeStorage.getItem(`cf_l2_${key}`, null);
     if (l2Raw) {
       try {
-        const l2Entry = JSON.parse(l2Raw);
+        const l2Entry = typeof l2Raw === 'string' ? JSON.parse(l2Raw) : l2Raw;
         if (now < l2Entry.expiresAt) {
           this.stats.l2Hits += 1;
           // Promote to L1
@@ -130,6 +131,7 @@ export class MultiTierCacheService {
 
     // Set L2
     try {
+      this.l2Keys.add(key);
       safeStorage.setItem(`cf_l2_${key}`, JSON.stringify(entry));
     } catch (err) {
       console.warn(`[MultiTierCache] Failed to persist L2 entry for "${key}":`, err);
@@ -144,14 +146,18 @@ export class MultiTierCacheService {
     for (const k of this.l1.keys()) {
       if (k === keyOrPattern || k.startsWith(keyOrPattern)) {
         this.l1.delete(k);
+        this.l2Keys.delete(k);
+        safeStorage.removeItem(`cf_l2_${k}`);
+      }
+    }
+    for (const k of this.l2Keys) {
+      if (k === keyOrPattern || k.startsWith(keyOrPattern)) {
+        this.l2Keys.delete(k);
         safeStorage.removeItem(`cf_l2_${k}`);
       }
     }
   }
 
-  /**
-   * Clears all cache entries across L1 memory and resets stats
-   */
   clear() {
     this.l1.clear();
     this.stats = {
@@ -160,6 +166,28 @@ export class MultiTierCacheService {
       misses: 0,
       revalidations: 0
     };
+    for (const k of this.l2Keys) {
+      safeStorage.removeItem(`cf_l2_${k}`);
+    }
+    this.l2Keys.clear();
+
+    try {
+      const storage = typeof window !== 'undefined' && window.localStorage
+        ? window.localStorage
+        : (typeof globalThis !== 'undefined' && globalThis.localStorage ? globalThis.localStorage : null);
+      if (storage) {
+        const keysToRemove = [];
+        for (let i = 0; i < storage.length; i++) {
+          const k = storage.key(i);
+          if (k && k.startsWith('cf_l2_')) {
+            keysToRemove.push(k);
+          }
+        }
+        keysToRemove.forEach(k => safeStorage.removeItem(k));
+      }
+    } catch {
+      // ignore
+    }
   }
 
   /**

@@ -2,6 +2,8 @@ import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '../lib/sup
 import { apiCache } from './apiCacheService';
 import { patientSchema, validateWithSchema } from '../utils/validationSchemas';
 
+export const DEFAULT_PATIENT_COLUMNS = 'id, clinic_id, name, age, gender, phone, email, blood_type, medical_alerts, diagnosis, notes, attachments, total_visits, last_visit, deleted_at, created_at';
+
 /**
  * Format DB snake_case record to client camelCase model
  */
@@ -76,7 +78,7 @@ export async function getPatients(clinicId, options = {}) {
     return await apiCache.wrap(cacheKey, async () => {
       let query = supabase
         .from('patients')
-        .select(options?.select || '*')
+        .select(options?.select || DEFAULT_PATIENT_COLUMNS)
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 

@@ -25,6 +25,11 @@ import {
 } from '../utils/safeStorage';
 import TenantContext from './TenantContext';
 import { canAccess, CLINIC_PERMISSIONS, CLINIC_ROLE_PERMISSIONS } from '../services/organizationService';
+import { localDb } from '../db/localDatabase';
+import { apiCache } from '../services/apiCacheService';
+import { multiTierCache } from '../services/multiTierCacheService';
+import { clearIdempotencyStore } from '../services/idempotencyService';
+import { patientIndex } from '../services/indexedSearchService';
 
 const AuthContext = createContext({});
 
@@ -762,6 +767,20 @@ export const AuthProvider = ({ children }) => {
         entityType: 'auth'
       });
     }
+
+    // Tenant and sensitive data wiping on logout to enforce strict privacy
+    try {
+      if (typeof localDb?.clearAllData === 'function') {
+        await localDb.clearAllData();
+      }
+      apiCache?.clear?.();
+      multiTierCache?.clear?.();
+      clearIdempotencyStore?.();
+      patientIndex?.clearIndex?.();
+    } catch (clearErr) {
+      console.warn('[AuthContext] Session data clearing notice:', clearErr);
+    }
+
     persistUser(null);
     localStorage.removeItem('clinicflow_role');
     sessionStorage.removeItem('clinicflow_role');

@@ -300,34 +300,96 @@ export const localDb = {
 
       request.onsuccess = () => {
         const all = request.result || [];
-        resolve(store.indexNames && store.indexNames.contains('by_status')
+        const pending = store.indexNames && store.indexNames.contains('by_status')
           ? all
-          : all.filter(item => item.status === 'pending')
-        );
+          : all.filter(item => item.status === 'pending');
+        // Enforce strict FIFO chronological order
+        pending.sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
+        resolve(pending);
       };
       request.onerror = () => reject(request.error);
     });
   },
 
-  updateSyncItemStatus: async (queueId, status) => {
+  updateSyncItemStatus: async (queueIdOrId, status) => {
     if (status === 'completed') {
-      return performTransaction('sync_queue', 'readwrite', (store) => store.delete(queueId));
+      return performTransaction('sync_queue', 'readwrite', (store) => {
+        if (typeof queueIdOrId === 'number') {
+          return store.delete(queueIdOrId);
+        }
+        // If string ID, delete matching item
+        const req = store.getAll();
+        req.onsuccess = () => {
+          const match = (req.result || []).find(i => i.id === queueIdOrId || i.queueId === queueIdOrId);
+          if (match && match.queueId) store.delete(match.queueId);
+        };
+        return req;
+      });
     }
     const db = await openLocalDatabase();
     if (!db) return null;
     return new Promise((resolve, reject) => {
       const transaction = db.transaction('sync_queue', 'readwrite');
       const store = transaction.objectStore('sync_queue');
-      const getReq = store.get(queueId);
-      getReq.onsuccess = () => {
-        const row = getReq.result;
-        if (row) {
-          row.status = status;
-          store.put(row);
+      const req = store.getAll();
+      req.onsuccess = () => {
+        const match = (req.result || []).find(i => i.queueId === queueIdOrId || i.id === queueIdOrId);
+        if (match) {
+          match.status = status;
+          store.put(match);
         }
         resolve(true);
       };
-      getReq.onerror = () => reject(getReq.error);
+      req.onerror = () => reject(req.error);
     });
+  },
+
+  // --- Multi-Tenant Isolation & Session Cleansing ---
+  clearTenantData: async (clinicId) => {
+    if (!clinicId) return true;
+    const db = await openLocalDatabase();
+    if (!db) return true;
+
+    const stores = ['patients', 'appointments', 'invoices'];
+    return Promise.all(stores.map(storeName => {
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(storeName, 'readwrite');
+          const store = tx.objectStore(storeName);
+          const req = store.getAll();
+          req.onsuccess = () => {
+            const items = req.result || [];
+            items.forEach(item => {
+              if (item.clinicId === clinicId) {
+                store.delete(item.id);
+              }
+            });
+            resolve(true);
+          };
+          req.onerror = () => resolve(false);
+        } catch {
+          resolve(false);
+        }
+      });
+    }));
+  },
+
+  clearAllData: async () => {
+    const db = await openLocalDatabase();
+    if (!db) return true;
+    const stores = ['patients', 'appointments', 'invoices', 'sync_queue'];
+    return Promise.all(stores.map(storeName => {
+      return new Promise((resolve) => {
+        try {
+          const tx = db.transaction(storeName, 'readwrite');
+          const store = tx.objectStore(storeName);
+          const req = store.clear();
+          req.onsuccess = () => resolve(true);
+          req.onerror = () => resolve(false);
+        } catch {
+          resolve(false);
+        }
+      });
+    }));
   }
 };

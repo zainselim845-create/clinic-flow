@@ -16,21 +16,63 @@ export const OUTBOX_STATUS = {
   PENDING: 'pending',
   PROCESSING: 'processing',
   COMPLETED: 'completed',
-  FAILED: 'failed'
+  FAILED: 'failed',
+  CONFLICT: 'conflict'
 };
 
 /**
- * Merges local and remote entity payloads non-destructively
- * Field-level merge favoring latest updated fields while protecting medical notes
+ * Merges local and remote entity payloads non-destructively.
+ * Never silently overwrites clinical notes or diagnoses. Preserves both
+ * versions in conflict fields and records audit revision logs.
  */
 export function mergeConflictingPayloads(localPayload = {}, remotePayload = {}) {
   const merged = { ...remotePayload, ...localPayload };
-  if (remotePayload.notes && !localPayload.notes) {
+  const hasNotesConflict = Boolean(
+    remotePayload.notes && localPayload.notes && remotePayload.notes.trim() !== localPayload.notes.trim()
+  );
+  const hasDiagnosisConflict = Boolean(
+    remotePayload.diagnosis && localPayload.diagnosis && remotePayload.diagnosis.trim() !== localPayload.diagnosis.trim()
+  );
+
+  if (hasNotesConflict) {
+    merged.notes = `${localPayload.notes}\n\n[تعارض تعديل متزامن - النسخة السحابية]: ${remotePayload.notes}`;
+    merged.hasConflict = true;
+    merged.conflictFields = [...(merged.conflictFields || []), 'notes'];
+    merged.requiresReview = true;
+  } else if (remotePayload.notes && !localPayload.notes) {
     merged.notes = remotePayload.notes;
   }
-  if (remotePayload.diagnosis && !localPayload.diagnosis) {
+
+  if (hasDiagnosisConflict) {
+    merged.diagnosis = `${localPayload.diagnosis} | [تشخيص سحابي متزامن]: ${remotePayload.diagnosis}`;
+    merged.hasConflict = true;
+    merged.conflictFields = [...(merged.conflictFields || []), 'diagnosis'];
+    merged.requiresReview = true;
+  } else if (remotePayload.diagnosis && !localPayload.diagnosis) {
     merged.diagnosis = remotePayload.diagnosis;
   }
+
+  // Preserve audit revision history
+  const remoteRev = {
+    source: 'remote',
+    version: remotePayload.version || 1,
+    notes: remotePayload.notes || null,
+    diagnosis: remotePayload.diagnosis || null,
+    updatedAt: remotePayload.updatedAt || new Date().toISOString()
+  };
+  const localRev = {
+    source: 'local',
+    version: localPayload.version || 1,
+    notes: localPayload.notes || null,
+    diagnosis: localPayload.diagnosis || null,
+    updatedAt: localPayload.updatedAt || new Date().toISOString()
+  };
+  merged.revisionHistory = [
+    ...(remotePayload.revisionHistory || []),
+    ...(localPayload.revisionHistory || []),
+    ...(hasNotesConflict || hasDiagnosisConflict ? [remoteRev, localRev] : [])
+  ];
+
   merged.version = Math.max(Number(localPayload.version) || 0, Number(remotePayload.version) || 0) + 1;
   merged.updatedAt = new Date().toISOString();
   return merged;
@@ -187,7 +229,9 @@ class SyncOutbox {
     switch (entityType) {
       case 'appointment': {
         if (action === 'create') {
-          const res = await appointmentsService.addAppointment(payload);
+          const res = item.id
+            ? await appointmentsService.addAppointment(payload, { idempotencyKey: item.id })
+            : await appointmentsService.addAppointment(payload);
           if (res?.error) throw res.error;
           return true;
         }
