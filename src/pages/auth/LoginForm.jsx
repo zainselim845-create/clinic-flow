@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Lock, Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, Loader2, ShieldCheck, ArrowLeft } from 'lucide-react';
 
 /**
  * LoginForm - Doctor / Staff Login tab component
@@ -17,15 +17,16 @@ export default function LoginForm({
   isLocked,
   lockoutTimer,
   handleSubmit,
-  handleGoogleSignInClick
+  handleGoogleSignInClick,
+  onForgotPasswordClick
 }) {
   return (
-    <div>
+    <div className="auth-tab-content">
       {/* Google OAuth Primary Callout */}
-      <div className="google-primary-cta-card">
+      <div className="google-primary-cta-card google-login-card">
         <div className="google-cta-badge">
-          <ShieldCheck size={14} />
-          <span>تسجيل الدخول الأساسي والموصى به</span>
+          <ShieldCheck size={13} />
+          <span>الدخول الفوري السريع والموصى به</span>
         </div>
         <button 
           type="button" 
@@ -48,7 +49,7 @@ export default function LoginForm({
       </div>
 
       <div className="auth-separator">
-        <span>أو تسجيل الدخول اليدوي بكلمة المرور</span>
+        <span>أو تسجيل الدخول بكلمة المرور</span>
       </div>
 
       <form onSubmit={handleSubmit} className="auth-form">
@@ -75,9 +76,18 @@ export default function LoginForm({
         </div>
 
         <div className="form-field-group">
-          <label className="field-label" htmlFor="password">
-            <span>كلمة المرور</span>
-          </label>
+          <div className="field-label-row">
+            <label className="field-label" htmlFor="password">
+              <span>كلمة المرور</span>
+            </label>
+            <button
+              type="button"
+              className="btn-forgot-password-inline"
+              onClick={onForgotPasswordClick}
+            >
+              نسيت كلمة المرور؟
+            </button>
+          </div>
           <div className="field-input-wrapper">
             <Lock className="input-icon" size={18} />
             <input
@@ -129,7 +139,10 @@ export default function LoginForm({
           ) : isLocked ? (
             <span>يرجى الانتظار ({lockoutTimer} ثانية)...</span>
           ) : (
-            <span>تسجيل الدخول إلى العيادة</span>
+            <>
+              <span>تسجيل الدخول إلى العيادة</span>
+              <ArrowLeft size={18} />
+            </>
           )}
         </button>
       </form>

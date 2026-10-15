@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AlertTriangle, CheckCircle2, Globe, Stethoscope } from 'lucide-react';
+import { 
+  AlertTriangle, CheckCircle2, Globe, Stethoscope, 
+  X, KeyRound, MessageSquare, Mail, Sparkles 
+} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Tabs } from '@/components/ui/tabs';
 import { triggerGoogleOAuthPopup } from '@/features/auth/services/googleAuthService';
@@ -28,7 +31,7 @@ const CLINIC_SPECIALTIES_LIST = [
 ];
 
 /**
- * Login & Clinic Onboarding Page - Modular Orchestrator Component
+ * Login & Clinic Onboarding Page - World-Class Medical SaaS Orchestrator
  */
 export default function Login() {
   const navigate = useNavigate();
@@ -48,6 +51,7 @@ export default function Login() {
   }, [location.search, navigate]);
 
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [showForgotModal, setShowForgotModal] = useState(false);
   
   // Login Form State
   const [identifier, setIdentifier] = useState(() => safeGetItem(REMEMBERED_USER_KEY, '') || '');
@@ -74,6 +78,24 @@ export default function Login() {
   });
   
   const from = location.state?.from?.pathname || '/dashboard';
+
+  // Keep activeTab in sync with URL search params
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam === 'register') {
+      setActiveTab('register');
+    } else if (tabParam === 'login') {
+      setActiveTab('login');
+    }
+  }, [location.search]);
+
+  const handleTabChange = (newTab) => {
+    setActiveTab(newTab);
+    setError('');
+    setSuccessMessage('');
+    navigate(`?tab=${newTab}`, { replace: true });
+  };
 
   // Password Strength Calculation
   const passwordStrength = useMemo(() => {
@@ -275,17 +297,25 @@ export default function Login() {
       <div className="login-card-container">
         <div className="login-dual-card glass-panel">
           
-          {/* Left Column: Brand Hero */}
+          {/* Left Column: Brand Hero & Testimonial */}
           <LoginHeroPane />
 
           {/* Right Column: Authentication & Onboarding Forms */}
           <div className="login-forms-pane">
             <div className="forms-header">
+              <div className="header-badge-row">
+                <span className="platform-tag">
+                  <Sparkles size={13} className="text-emerald" />
+                  ClinicFlow 2.0
+                </span>
+              </div>
               <h1 className="form-main-title">
                 {activeTab === 'login' ? 'مرحباً بك مجدداً دكتور' : 'تأسيس وتدشين حساب عيادة جديدة'}
               </h1>
               <p className="form-subtitle">
-                {activeTab === 'login' ? 'أدخل بيانات حسابك للمتابعة إلى لوحة التحكم' : 'ابدأ استخدام المنظومة بدقائق وبدون تعقيد'}
+                {activeTab === 'login' 
+                  ? 'سجّل دخولك للوصول الفوري إلى لوحة التحكم والسجلات الطبية' 
+                  : 'ابدأ استخدام المنظومة بدقائق وبدون تعقيد مع تجربة مجانية'}
               </p>
             </div>
 
@@ -316,11 +346,7 @@ export default function Login() {
             {/* Tabs between Login and Register */}
             <Tabs.Root 
               value={activeTab} 
-              onValueChange={(details) => { 
-                setActiveTab(details.value); 
-                setError(''); 
-                setSuccessMessage(''); 
-              }}
+              onValueChange={(details) => handleTabChange(details.value)}
               className="auth-tabs-root"
             >
               <Tabs.List className="auth-tabs-header">
@@ -353,6 +379,7 @@ export default function Login() {
                   lockoutTimer={lockoutTimer}
                   handleSubmit={handleSubmit}
                   handleGoogleSignInClick={handleGoogleSignInClick}
+                  onForgotPasswordClick={() => setShowForgotModal(true)}
                 />
               </Tabs.Content>
 
@@ -391,6 +418,99 @@ export default function Login() {
           </div>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="auth-modal-backdrop" onClick={() => setShowForgotModal(false)}>
+          <div 
+            className="auth-modal-card" 
+            onClick={(e) => e.stopPropagation()} 
+            role="dialog" 
+            aria-modal="true"
+            aria-labelledby="forgot-modal-title"
+          >
+            <div className="auth-modal-header">
+              <div className="modal-header-title">
+                <div className="modal-header-icon-wrap">
+                  <KeyRound size={20} className="text-emerald" />
+                </div>
+                <div>
+                  <h3 id="forgot-modal-title">استعادة كلمة المرور / وصول حساب العيادة</h3>
+                  <span className="modal-sub">خيارات آمنة لاستعادة الوصول لحسابك</span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                className="btn-modal-close" 
+                onClick={() => setShowForgotModal(false)}
+                aria-label="إغلاق"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="auth-modal-body">
+              <p className="modal-desc">
+                لحماية خصوصية المرضى وأمان السجلات الطبية لعيادتك، تم تأمين وصول الحسابات. يمكنك الاختيار من بين الطرق الآتية:
+              </p>
+
+              <div className="modal-options-list">
+                {/* Method 1: Google SSO */}
+                <div className="modal-option-item">
+                  <div className="option-badge">الخيار 1 (فوري)</div>
+                  <div className="option-content">
+                    <h4>تسجيل الدخول الفوري بحساب Google</h4>
+                    <p>إذا كان بريدك الإلكتروني مسجلاً لدى Google، يمكنك الدخول بضغطة زر دون الحاجة لكلمة مرور.</p>
+                    <button
+                      type="button"
+                      className="btn-modal-action-google"
+                      onClick={() => {
+                        setShowForgotModal(false);
+                        handleGoogleSignInClick();
+                      }}
+                    >
+                      <svg className="google-svg" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
+                        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+                      </svg>
+                      <span>المتابعة عبر Google الآن</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Method 2: Support Assistance */}
+                <div className="modal-option-item">
+                  <div className="option-badge secondary">الخيار 2</div>
+                  <div className="option-content">
+                    <h4>التواصل المباشر مع فريق الدعم الفني</h4>
+                    <p>فريق الدعم الفني للمنصة متاح للتحقق من هوية الطبيب وإعادة تعيين بيانات الحساب فوراً.</p>
+                    <div className="modal-support-links">
+                      <a 
+                        href="https://wa.me/201000000000?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%D9%8B%D8%8C%20%D8%A3%D8%AD%D8%AA%D8%A7%D8%AC%20%D9%85%D8%B3%D8%A7%D8%B9%D8%AF%D8%A9%20%D9%81%D9%8A%20%D8%A7%D8%B3%D8%AA%D8%B9%D8%A7%D8%AF%D8%A9%20%D9%83%D9%84%D9%85%D8%A9%20%D9%85%D8%B1%D9%88%D8%B1%20%D8%AD%D8%B3%D8%A7%D8%A8%20%D8%A7%D9%84%D8%B9%D9%8A%D8%A7%D8%AF%D8%A9" 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="btn-support-link whatsapp"
+                      >
+                        <MessageSquare size={15} />
+                        <span>محادثة واتساب مباشرة للدعم</span>
+                      </a>
+                      <a 
+                        href="mailto:support@clinicflow.com?subject=طلب استعادة كلمة مرور حساب العيادة" 
+                        className="btn-support-link email"
+                      >
+                        <Mail size={15} />
+                        <span>مراسلة الدعم بالبريد الإلكتروني</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
