@@ -4,15 +4,15 @@ import {
   Layers, Plus, Search, Clock, CheckCircle2, 
   AlertCircle, ChevronRight, Calendar, Settings, RefreshCw 
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
-import LabOrderModal from '../components/LabOrderModal';
-import { Skeleton } from '../components/ui/Skeleton';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
+import LabOrderModal from '@/components/LabOrderModal';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { 
   getLabOrders, addLabOrder, updateLabOrderStatus, 
   LAB_ORDER_STATUSES 
 } from '@/features/clinical/services/labsService';
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import './Labs.css';
 
 const Labs = () => {

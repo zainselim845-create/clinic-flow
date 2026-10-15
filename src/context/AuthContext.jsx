@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { fromDbClinic, findClinicByEmailOrIdentifier } from '@/features/platform/services/clinicsService';
 import { 
   registerDoctorAndClinic, 
@@ -22,10 +22,10 @@ import {
   safeSessionSetJSON, 
   safeSessionRemoveItem,
   safeSessionSetItem
-} from '../utils/safeStorage';
-import TenantContext from './TenantContext';
+} from '@/utils/safeStorage';
+import TenantContext from '@/context/TenantContext';
 import { canAccess, CLINIC_PERMISSIONS, CLINIC_ROLE_PERMISSIONS } from '@/features/auth/services/organizationService';
-import { localDb } from '../db/localDatabase';
+import { localDb } from '@/db/localDatabase';
 import { apiCache } from '@/features/platform/services/apiCacheService';
 import { multiTierCache } from '@/features/platform/services/multiTierCacheService';
 import { clearIdempotencyStore } from '@/features/platform/services/idempotencyService';

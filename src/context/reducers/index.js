@@ -1,9 +1,9 @@
-import { systemReducer } from './systemReducer';
-import { patientsReducer } from './patientsReducer';
-import { appointmentsReducer } from './appointmentsReducer';
-import { financeReducer } from './financeReducer';
-import { settingsReducer } from './settingsReducer';
-import { notificationsReducer } from './notificationsReducer';
+import { systemReducer } from '@/context/reducers/systemReducer';
+import { patientsReducer } from '@/context/reducers/patientsReducer';
+import { appointmentsReducer } from '@/context/reducers/appointmentsReducer';
+import { financeReducer } from '@/context/reducers/financeReducer';
+import { settingsReducer } from '@/context/reducers/settingsReducer';
+import { notificationsReducer } from '@/context/reducers/notificationsReducer';
 
 /**
  * Clean Root Reducer composing specialized domain sub-reducers.

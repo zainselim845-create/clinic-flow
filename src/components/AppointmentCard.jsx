@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { XCircle, Clock, MessageCircle, Check, Stethoscope, UserPlus } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import ConfirmationModal from './ConfirmationModal';
+import { useApp } from '@/context/AppContext';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import './AppointmentCard.css';
 
 const AppointmentCard = ({ appointment, onUpdateStatus }) => {

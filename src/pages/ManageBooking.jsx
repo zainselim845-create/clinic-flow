@@ -6,15 +6,15 @@ import {
   KeyRound, Lock, Unlock, MessageSquare, UserCheck, HelpCircle
 } from 'lucide-react';
 
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
-import { generateDynamicSlots, getTodayDateStr, parseLocalDate } from '../utils/timeSlots';
-import { cleanEgyptianPhone } from '../utils/phoneValidation';
-import { checkActionRateLimit } from '../utils/rateLimiter';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
+import { generateDynamicSlots, getTodayDateStr, parseLocalDate } from '@/utils/timeSlots';
+import { cleanEgyptianPhone } from '@/utils/phoneValidation';
+import { checkActionRateLimit } from '@/utils/rateLimiter';
 import * as appointmentsService from '@/features/appointments/services/appointmentsService';
-import { isSupabaseConfigured } from '../lib/supabase';
-import Breadcrumbs from '../components/Breadcrumbs';
-import ConfirmationModal from '../components/ConfirmationModal';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import './ManageBooking.css';
 
 const ManageBooking = () => {

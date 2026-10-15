@@ -13,7 +13,7 @@ import {
 } from '@/features/marketing/services/leadRecoveryService';
 import { generateNoShowRecoveryMessage } from '@/features/patients/services/noShowRecoveryService';
 import { sendSmsBatchAsync } from '@/features/marketing/services/smsService';
-import { useTenant } from '../../../context/TenantContext';
+import { useTenant } from '@/context/TenantContext';
 
 export function RecoveryTab({ abandonedLeads: initialAbandonedLeads, noShowAppointments, currentClinic }) {
   const { hasFeature, tenant } = useTenant();

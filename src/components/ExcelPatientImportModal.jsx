@@ -3,7 +3,7 @@ import {
   FileSpreadsheet, Upload, Download, CheckCircle2, AlertTriangle, 
   X, Loader2, RefreshCw
 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { parsePatientsExcelFile, downloadPatientImportTemplate } from '@/features/patients/services/excelImportService';
 import './ExcelPatientImportModal.css';

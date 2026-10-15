@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AlertTriangle, CheckCircle2, Globe, Stethoscope } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { Tabs } from '../components/ui/tabs';
+import { useAuth } from '@/context/AuthContext';
+import { Tabs } from '@/components/ui/tabs';
 import { triggerGoogleOAuthPopup } from '@/features/auth/services/googleAuthService';
-import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/safeStorage';
-import { LoginHeroPane, LoginForm, RegisterClinicForm } from './auth';
+import { safeGetItem, safeSetItem, safeRemoveItem } from '@/utils/safeStorage';
+import { LoginHeroPane, LoginForm, RegisterClinicForm } from '@/pages/auth';
 import './Login.css';
 
 const MAX_FAILED_ATTEMPTS = 5;

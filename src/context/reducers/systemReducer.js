@@ -1,4 +1,4 @@
-import { getInitialData } from '../../data/demoData';
+import { getInitialData } from '@/data/demoData';
 
 export function systemReducer(state, action) {
   switch (action.type) {

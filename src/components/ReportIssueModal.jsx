@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { reportUserBug } from '@/features/platform/services/systemErrorService';
-import { useTenant } from '../context/TenantContext';
-import { useAuth } from '../context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
+import { useAuth } from '@/context/AuthContext';
 import { AlertCircle, X, Send, CheckCircle2, Bug, Zap, Layout, HelpCircle } from 'lucide-react';
 
 const ReportIssueModal = ({ isOpen, onClose }) => {

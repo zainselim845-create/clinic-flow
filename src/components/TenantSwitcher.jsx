@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Menu } from '@ark-ui/react/menu';
 import { Portal } from '@ark-ui/react/portal';
-import { useTenant } from '../context/TenantContext';
-import { useAuth } from '../context/AuthContext';
-import { canSwitchTenants, getUserAllowedClinics } from '../utils/permissions';
+import { useTenant } from '@/context/TenantContext';
+import { useAuth } from '@/context/AuthContext';
+import { canSwitchTenants, getUserAllowedClinics } from '@/utils/permissions';
 import { Building2, ChevronDown, Check, ShieldCheck, Copy, CheckCheck, Lock } from 'lucide-react';
-import { copyToClipboard } from '../utils/clipboard';
+import { copyToClipboard } from '@/utils/clipboard';
 import './TenantSwitcher.css';
 
 export default function TenantSwitcher({ renderLockedOnDedicated = false }) {

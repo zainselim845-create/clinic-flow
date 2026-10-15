@@ -4,16 +4,16 @@ import {
   Bot, Send, X, Maximize2, RotateCcw, 
   User, Calendar, MessageSquare, ArrowUpRight 
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
-import { useTenant } from '../context/TenantContext';
-import { processDoctorIntent } from '../utils/clinicalAssistantActions';
+import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
+import { processDoctorIntent } from '@/utils/clinicalAssistantActions';
 import { askDoctorAiAssistant } from '@/features/clinical/services/aiAssistantService';
 import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
 import * as appointmentsService from '@/features/appointments/services/appointmentsService';
 import * as patientsService from '@/features/patients/services/patientsService';
 import * as expensesService from '@/features/billing/services/expensesService';
-import { safeGetJSON, safeSetJSON, safeRemoveItem } from '../utils/safeStorage';
+import { safeGetJSON, safeSetJSON, safeRemoveItem } from '@/utils/safeStorage';
 import './DoctorAiFloatingWidget.css';
 
 export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggle }) {

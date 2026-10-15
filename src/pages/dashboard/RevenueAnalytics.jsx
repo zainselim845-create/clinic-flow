@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Wallet, CreditCard, Banknote, ArrowUpRight, ArrowDownRight, BellRing, Receipt, ShieldCheck } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '@/context/AppContext';
 
 function RevenueAnalytics({
   todayRevenue = 0,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Download, CheckCircle2, Check, RefreshCw, Eye, EyeOff } from 'lucide-react';
-import { getSupabaseConfig, saveSupabaseConfig } from '../../../../lib/supabase';
+import { getSupabaseConfig, saveSupabaseConfig } from '@/lib/supabase';
 import { getRegisteredTenants, getAllPlatformUsers } from '@/features/auth/services/authService';
 
 export function SupabaseDatabaseTab({ allTenants = [] }) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
-import { Portal } from './ui';
+import { Portal } from '@/components/ui';
 
 /**
  * Reusable Confirmation Modal Dialog for destructive or sensitive actions.

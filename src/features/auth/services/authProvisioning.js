@@ -7,7 +7,7 @@
 
 import { CLINIC_SPECIALTIES } from '@/data/specialtiesData';
 import { formatSenderId } from '@/features/marketing/services/smsService';
-import { verifyPassword, slugifyClinic } from './auth/authCrypto';
+import { verifyPassword, slugifyClinic } from '@/features/auth/services/auth/authCrypto';
 import {
   getRegisteredTenants,
   getRegisteredUsers,
@@ -16,8 +16,8 @@ import {
   registeredSlugsSet,
   registeredEmailsSet,
   registeredPhonesSet
-} from './authRegistry';
-import { isUsernameAvailable } from './authUsernames';
+} from '@/features/auth/services/authRegistry';
+import { isUsernameAvailable } from '@/features/auth/services/authUsernames';
 
 
 /**

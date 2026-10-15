@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { Stethoscope, ShieldCheck, ArrowLeft, CheckCircle2, ChevronDown, Phone, Lock, Activity, DollarSign, Clock, Building2, Calendar, Sun, Moon, Menu, X, Mail } from 'lucide-react';
-import { getWhatsAppSupportUrl } from '../utils/utmTracking';
-import { safeSetItem } from '../utils/safeStorage';
+import { getWhatsAppSupportUrl } from '@/utils/utmTracking';
+import { safeSetItem } from '@/utils/safeStorage';
 import './LandingPage.css';
 
 const PRICING_PLANS = [

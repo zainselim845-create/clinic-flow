@@ -6,7 +6,7 @@ import {
   saveClinicDomainSettings, 
   sanitizeDomain 
 } from '@/features/platform/services/customDomainService';
-import { copyToClipboard } from '../../../../utils/clipboard';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export function CustomDomainsTab({ allTenants = [], updateTenantDomain }) {
   const [domainInputs, setDomainInputs] = useState(() => {

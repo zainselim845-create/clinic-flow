@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { SYSTEM_PERMISSIONS } from '../../../utils/permissions';
+import { SYSTEM_PERMISSIONS } from '@/utils/permissions';
 
 export const TEAM_SIZES = [
   {

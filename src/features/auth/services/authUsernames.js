@@ -3,8 +3,8 @@
  * (Extracted from authService.js — public API re-exported by the facade.)
  */
 
-import { getRegisteredTenants, getRegisteredUsers } from './authRegistry';
-import { isDemoOrCorruptedTenant } from './auth/authValidation';
+import { getRegisteredTenants, getRegisteredUsers } from '@/features/auth/services/authRegistry';
+import { isDemoOrCorruptedTenant } from '@/features/auth/services/auth/authValidation';
 
 export const RESERVED_USERNAMES = new Set([
   'admin', 'super-admin', 'superadmin', 'saas-admin', 'administrator', 

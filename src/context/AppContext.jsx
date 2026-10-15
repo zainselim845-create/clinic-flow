@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { combinedAppReducer } from './reducers';
-import TenantContext from './TenantContext';
-import { isSupabaseConfigured, supabase } from '../lib/supabase';
+import { combinedAppReducer } from '@/context/reducers';
+import TenantContext from '@/context/TenantContext';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import * as patientsService from '@/features/patients/services/patientsService';
 import * as appointmentsService from '@/features/appointments/services/appointmentsService';
 import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
@@ -12,13 +12,13 @@ import * as expensesService from '@/features/billing/services/expensesService';
 import * as recallsService from '@/features/patients/services/recallsService';
 import * as doctorsService from '@/features/clinical/services/doctorsService';
 import { sendReminder } from '@/features/marketing/services/smsService';
-import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
+import { parseArabicTime, arabicTimeToDate } from '@/utils/parseArabicTime';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS, playChime } from '@/features/platform/services/realtimeSyncService';
-import { localDb } from '../db/localDatabase';
-import { safeGetItem, safeSetJSON } from '../utils/safeStorage';
+import { localDb } from '@/db/localDatabase';
+import { safeGetItem, safeSetJSON } from '@/utils/safeStorage';
 import { cloudCircuitBreaker } from '@/lib/circuitBreaker';
-import { migrateTenantPayload } from '../lib/schemaMigration';
-import { syncOutbox } from '../lib/syncOutbox';
+import { migrateTenantPayload } from '@/lib/schemaMigration';
+import { syncOutbox } from '@/lib/syncOutbox';
 
 export const DATA_SCHEMA_VERSION = 'v5_clean_zero_state';
 

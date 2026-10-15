@@ -6,7 +6,7 @@ import {
   Plus, Trash2, Edit2, CheckCircle2, 
   DollarSign, Globe, Check, X 
 } from 'lucide-react';
-import { Dialog } from '../../components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 
 import './VisitTypesTab.css';

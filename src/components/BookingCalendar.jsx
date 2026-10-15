@@ -6,7 +6,7 @@ import {
   formatLocalDate, 
   parseLocalDate, 
   getTodayDateStr 
-} from '../utils/timeSlots';
+} from '@/utils/timeSlots';
 import './BookingCalendar.css';
 
 const ARABIC_MONTHS = [

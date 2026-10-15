@@ -5,7 +5,7 @@ import {
   generatePersonalizedOccasionMessage 
 } from '@/features/marketing/services/occasionCampaignService';
 import { sendSmsBatchAsync } from '@/features/marketing/services/smsService';
-import { useTenant } from '../../../context/TenantContext';
+import { useTenant } from '@/context/TenantContext';
 
 export function OccasionsTab({
   selectedOccasion,

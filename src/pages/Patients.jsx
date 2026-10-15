@@ -1,20 +1,20 @@
 import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
-import PatientRecallModal from '../components/PatientRecallModal';
-import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
-import ExcelPatientImportModal from '../components/ExcelPatientImportModal';
-import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
+import PatientRecallModal from '@/components/PatientRecallModal';
+import PatientDossierDrawer from '@/pages/dashboard/PatientDossierDrawer';
+import ExcelPatientImportModal from '@/components/ExcelPatientImportModal';
+import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
 import { patientIndex } from '@/features/platform/services/indexedSearchService';
 import * as patientsService from '@/features/patients/services/patientsService';
-import { syncOutbox } from '../lib/syncOutbox';
+import { syncOutbox } from '@/lib/syncOutbox';
 import {
   PatientsHeader,
   PatientsFiltersBar,
   PatientsGrid,
   PatientFormModal
-} from '../components/patients';
+} from '@/components/patients';
 import './Patients.css';
 
 const Patients = () => {

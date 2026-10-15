@@ -4,8 +4,8 @@
  * and draining them idempotently to the cloud when connections are healthy.
  */
 
-import { localDb } from '../db/localDatabase';
-import { cloudCircuitBreaker } from './circuitBreaker';
+import { localDb } from '@/db/localDatabase';
+import { cloudCircuitBreaker } from '@/lib/circuitBreaker';
 import * as appointmentsService from '@/features/appointments/services/appointmentsService';
 import * as patientsService from '@/features/patients/services/patientsService';
 import * as expensesService from '@/features/billing/services/expensesService';

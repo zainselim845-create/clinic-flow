@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Wallet, CreditCard, Banknote, Smartphone, X, Check, ShieldCheck } from 'lucide-react';
-import { Dialog } from '../../components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 
 export default function QuickPaymentModal({

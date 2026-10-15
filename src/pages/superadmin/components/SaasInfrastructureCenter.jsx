@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Database, Server, ShieldCheck, CheckCircle2, Smartphone, Globe, CreditCard, Zap, Cpu } from 'lucide-react';
-import { useTenant } from '../../../context/TenantContext';
+import { useTenant } from '@/context/TenantContext';
 import { 
   SupabaseDatabaseTab, 
   SmsGatewaysTab, 
@@ -9,7 +9,7 @@ import {
   SubscriptionPlansTab, 
   GoogleOAuthTab, 
   Resilience100MTab 
-} from './infrastructure';
+} from '@/pages/superadmin/components/infrastructure';
 
 export function SaasInfrastructureCenter({ allTenants = [] }) {
   const [subTab, setSubTab] = useState('database');

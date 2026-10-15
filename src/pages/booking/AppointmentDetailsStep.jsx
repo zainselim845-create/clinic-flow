@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, Users, UserPlus, AlertCircle, Loader2, Stethoscope, CreditCard, Banknote, Bolt, Smartphone, MapPin, ExternalLink } from 'lucide-react';
-import BookingCalendar from '../../components/BookingCalendar';
-import { EGYPT_PAYMENT_METHODS } from '../../features/egypt-national';
+import BookingCalendar from '@/components/BookingCalendar';
+import { EGYPT_PAYMENT_METHODS } from '@/features/egypt-national';
 import { calculateDistanceKm, formatDistanceAr } from '@/features/platform/services/autoLocationService';
 
 const maskName = (name) => {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from 'react';
-import { useApp } from '../AppContext';
+import { useApp } from '@/context/AppContext';
 
 const ClinicalContext = createContext(null);
 

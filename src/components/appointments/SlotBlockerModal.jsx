@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Lock, Unlock } from 'lucide-react';
-import { Dialog } from '../ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 
 /**

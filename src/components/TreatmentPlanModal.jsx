@@ -4,7 +4,7 @@ import { addInvoice } from '@/features/billing/services/invoicesService';
 import { 
   FileSpreadsheet, Plus, Trash2, CheckCircle2, X, Receipt 
 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import './TreatmentPlanModal.css';
 

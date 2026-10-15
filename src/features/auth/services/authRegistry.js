@@ -8,8 +8,8 @@
 import { isSupabaseConfigured, CLOUD_TENANTS_REGISTRY_URL } from '@/lib/supabase';
 import { createClinicInDb, deleteClinicFromDb } from '@/features/platform/services/clinicsService';
 import { safeStorage } from '@/utils/safeStorage';
-import { broadcastTenantUpdate } from './auth/authBroadcast';
-import { isDemoOrCorruptedTenant, isDemoOrCorruptedUser } from './auth/authValidation';
+import { broadcastTenantUpdate } from '@/features/auth/services/auth/authBroadcast';
+import { isDemoOrCorruptedTenant, isDemoOrCorruptedUser } from '@/features/auth/services/auth/authValidation';
 
 const REGISTERED_TENANTS_KEY = 'clinicflow_registered_tenants';
 const REGISTERED_USERS_KEY = 'clinicflow_registered_users';

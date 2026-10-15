@@ -1,7 +1,7 @@
 import React from 'react';
 import { captureSystemError, reportUserBug } from '@/features/platform/services/systemErrorService';
 import { AlertTriangle, RefreshCw, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
-import { copyToClipboard } from '../utils/clipboard';
+import { copyToClipboard } from '@/utils/clipboard';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

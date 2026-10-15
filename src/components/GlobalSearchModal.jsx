@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
 import { 
   Search, User, Calendar, Clock, ArrowLeft, X, 
   Smartphone, Users, CheckCircle2, AlertCircle, ShieldCheck,
   Package, Layers, Bot, SunMoon, UserPlus, CalendarPlus, CreditCard, ArrowUpRight
 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 
 import './GlobalSearchModal.css';

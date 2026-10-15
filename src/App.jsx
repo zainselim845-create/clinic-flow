@@ -1,24 +1,24 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate, Outlet } from 'react-router-dom';
-import { useApp } from './context/AppContext';
-import { useAuth } from './context/AuthContext';
-import { useTenant } from './context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
 import { ShieldCheck, ArrowLeft } from 'lucide-react';
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
-import DoctorAiFloatingWidget from './components/DoctorAiFloatingWidget';
-import ProtectedRoute from './components/ProtectedRoute';
-import ErrorBoundary from './components/ErrorBoundary';
-import PageErrorBoundary from './components/PageErrorBoundary';
-import SeoHeadManager from './components/SeoHeadManager';
-import Breadcrumbs from './components/Breadcrumbs';
-import ScrollProgressBar from './components/ui/ScrollProgressBar';
-import ScrollToTopButton from './components/ui/ScrollToTopButton';
-import CookieBanner from './components/CookieBanner';
-import FloatingContactButton from './components/FloatingContactButton';
-import NetworkStatusBanner from './components/NetworkStatusBanner';
+import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
+import DoctorAiFloatingWidget from '@/components/DoctorAiFloatingWidget';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import PageErrorBoundary from '@/components/PageErrorBoundary';
+import SeoHeadManager from '@/components/SeoHeadManager';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import ScrollProgressBar from '@/components/ui/ScrollProgressBar';
+import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
+import CookieBanner from '@/components/CookieBanner';
+import FloatingContactButton from '@/components/FloatingContactButton';
+import NetworkStatusBanner from '@/components/NetworkStatusBanner';
 import { initGlobalErrorListeners } from '@/features/platform/services/systemErrorService';
-import { safeSessionGetJSON, safeSessionSetJSON } from './utils/safeStorage';
+import { safeSessionGetJSON, safeSessionSetJSON } from '@/utils/safeStorage';
 import './App.css';
 
 // Smart Lazy Load with Auto-Retry on Deployment Update & Missing Export Shield
@@ -40,25 +40,25 @@ const lazyWithRetry = (componentImport) =>
   });
 
 // Lazy Loaded Pages for Instant Initial Page Load & Low Bandwidth
-const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
-const Appointments = lazyWithRetry(() => import('./pages/Appointments'));
-const Patients = lazyWithRetry(() => import('./pages/Patients'));
-const Notifications = lazyWithRetry(() => import('./pages/Notifications'));
-const Booking = lazyWithRetry(() => import('./pages/Booking'));
-const ManageBooking = lazyWithRetry(() => import('./pages/ManageBooking'));
-const Login = lazyWithRetry(() => import('./pages/Login'));
-const Settings = lazyWithRetry(() => import('./pages/Settings'));
-const DoctorAssistant = lazyWithRetry(() => import('./pages/DoctorAssistant'));
-const Invoices = lazyWithRetry(() => import('./pages/Invoices'));
-const Inventory = lazyWithRetry(() => import('./pages/Inventory'));
-const Attendance = lazyWithRetry(() => import('./pages/Attendance'));
-const SuperAdminDashboard = lazyWithRetry(() => import('./pages/superadmin/SuperAdminDashboard'));
-const SuperAdminLogin = lazyWithRetry(() => import('./pages/superadmin/SuperAdminLogin'));
-const Onboarding = lazyWithRetry(() => import('./pages/Onboarding'));
-const LandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
-const SmsIntegration = lazyWithRetry(() => import('./pages/SmsIntegration'));
-const Labs = lazyWithRetry(() => import('./pages/Labs'));
-const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
+const Dashboard = lazyWithRetry(() => import('@/pages/Dashboard'));
+const Appointments = lazyWithRetry(() => import('@/pages/Appointments'));
+const Patients = lazyWithRetry(() => import('@/pages/Patients'));
+const Notifications = lazyWithRetry(() => import('@/pages/Notifications'));
+const Booking = lazyWithRetry(() => import('@/pages/Booking'));
+const ManageBooking = lazyWithRetry(() => import('@/pages/ManageBooking'));
+const Login = lazyWithRetry(() => import('@/pages/Login'));
+const Settings = lazyWithRetry(() => import('@/pages/Settings'));
+const DoctorAssistant = lazyWithRetry(() => import('@/pages/DoctorAssistant'));
+const Invoices = lazyWithRetry(() => import('@/pages/Invoices'));
+const Inventory = lazyWithRetry(() => import('@/pages/Inventory'));
+const Attendance = lazyWithRetry(() => import('@/pages/Attendance'));
+const SuperAdminDashboard = lazyWithRetry(() => import('@/pages/superadmin/SuperAdminDashboard'));
+const SuperAdminLogin = lazyWithRetry(() => import('@/pages/superadmin/SuperAdminLogin'));
+const Onboarding = lazyWithRetry(() => import('@/pages/Onboarding'));
+const LandingPage = lazyWithRetry(() => import('@/pages/LandingPage'));
+const SmsIntegration = lazyWithRetry(() => import('@/pages/SmsIntegration'));
+const Labs = lazyWithRetry(() => import('@/pages/Labs'));
+const NotFound = lazyWithRetry(() => import('@/pages/NotFound'));
 
 const pageTitles = {
   '/': 'لوحة التحكم السريرية',

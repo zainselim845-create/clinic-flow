@@ -8,7 +8,7 @@ import {
   getSmsConfig, saveSmsConfig, sendSMS, formatSenderId,
   getClinicSenderId
 } from '@/features/marketing/services/smsService';
-import { useTenant } from '../context/TenantContext';
+import { useTenant } from '@/context/TenantContext';
 import './SmsIntegration.css';
 
 const SMS_PROVIDERS = [

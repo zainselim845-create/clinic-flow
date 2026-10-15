@@ -7,10 +7,10 @@
  * - authProvisioning.js  : registration, provisioning, auth & onboarding
  */
 
-export * from './authRegistry';
-export * from './authUsernames';
-export * from './authProvisioning';
+export * from '@/features/auth/services/authRegistry';
+export * from '@/features/auth/services/authUsernames';
+export * from '@/features/auth/services/authProvisioning';
 
-export { hashPassword, verifyPassword, slugifyClinic } from './auth/authCrypto';
-export { broadcastTenantUpdate } from './auth/authBroadcast';
-export { isDemoOrCorruptedTenant, isDemoOrCorruptedUser } from './auth/authValidation';
+export { hashPassword, verifyPassword, slugifyClinic } from '@/features/auth/services/auth/authCrypto';
+export { broadcastTenantUpdate } from '@/features/auth/services/auth/authBroadcast';
+export { isDemoOrCorruptedTenant, isDemoOrCorruptedUser } from '@/features/auth/services/auth/authValidation';

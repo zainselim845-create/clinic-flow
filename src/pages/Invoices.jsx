@@ -1,21 +1,21 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Download, ArrowUpRight } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
-import InvoiceModal from '../components/InvoiceModal';
-import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
+import InvoiceModal from '@/components/InvoiceModal';
+import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
 import { getInvoices, addInvoice } from '@/features/billing/services/invoicesService';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { getExpenses, addExpense, deleteExpense as apiDeleteExpense } from '@/features/billing/services/expensesService';
 import { recordJournalEntry, CHART_OF_ACCOUNTS } from '@/features/billing/services/generalLedgerService';
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import {
   InvoicesMetricsGrid,
   InvoicesFiltersBar,
   InvoicesTable,
   ExpenseModal
-} from '../components/invoices';
+} from '@/components/invoices';
 import './Invoices.css';
 
 const Invoices = () => {

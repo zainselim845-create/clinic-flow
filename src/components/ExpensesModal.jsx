@@ -2,13 +2,13 @@ import React, { useState, useMemo } from 'react';
 import { 
   X, Plus, Trash2, Wallet, Download 
 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 
-import { useApp } from '../context/AppContext';
-import { getTodayDateStr } from '../utils/timeSlots';
-import { expenseCategories } from '../data/demoData';
-import ConfirmationModal from './ConfirmationModal';
+import { useApp } from '@/context/AppContext';
+import { getTodayDateStr } from '@/utils/timeSlots';
+import { expenseCategories } from '@/data/demoData';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import './ExpensesModal.css';
 
 export const ExpensesModal = ({ isOpen, onClose }) => {

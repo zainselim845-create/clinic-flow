@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTenant, getCombinedTenants } from '../../context/TenantContext';
-import { useAuth } from '../../context/AuthContext';
+import { useTenant, getCombinedTenants } from '@/context/TenantContext';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Building2, Plus, ShieldCheck, 
   ExternalLink, AlertTriangle, Globe, LogOut, Server, Users, MapPin
@@ -17,8 +17,8 @@ import {
   deleteBugReport,
   clearBugReports 
 } from '@/features/platform/services/systemErrorService';
-import { toast } from '../../lib/toast';
-import { copyToClipboard } from '../../utils/clipboard';
+import { toast } from '@/lib/toast';
+import { copyToClipboard } from '@/utils/clipboard';
 import {
   SaasStatsGrid,
   ClinicsTable,
@@ -32,9 +32,9 @@ import {
   SaasBrandingModal,
   ClinicSubscriptionControlModal,
   SaasGeographicAnalytics
-} from './components';
+} from '@/pages/superadmin/components';
 import { getSaaSBillingMetrics } from '@/features/platform/services/saasSubscriptionPlansService';
-import Breadcrumbs from '../../components/Breadcrumbs';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { 
   saveRegisteredTenant, 
   saveRegisteredUser,

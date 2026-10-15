@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { safeStorage } from '../utils/safeStorage';
+import { safeStorage } from '@/utils/safeStorage';
 
 if (typeof globalThis !== 'undefined' && typeof globalThis.WebSocket === 'undefined') {
   globalThis.WebSocket = class DummyWebSocket {

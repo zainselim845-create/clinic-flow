@@ -4,9 +4,9 @@
  * Microsoft Authenticator, and 1Password for HIPAA/GDPR/Egyptian Health Data compliance.
  */
 
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
-import { recordAuditEvent } from './auditLoggerService';
-import { supabase } from '../lib/supabase';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
+import { recordAuditEvent } from '@/services/auditLoggerService';
+import { supabase } from '@/lib/supabase';
 
 const TWO_FACTOR_CONFIG_KEY = 'clinicflow_2fa_settings';
 

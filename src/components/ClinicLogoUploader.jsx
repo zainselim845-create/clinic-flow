@@ -10,7 +10,7 @@ import {
   Smile,
   AlertCircle
 } from 'lucide-react';
-import { useTenant } from '../context/TenantContext';
+import { useTenant } from '@/context/TenantContext';
 
 export const MEDICAL_PRESET_LOGOS = [
   { id: 'stethoscope', name: 'سماعة سريرية', icon: Stethoscope, label: 'طب عام واستشارات' },

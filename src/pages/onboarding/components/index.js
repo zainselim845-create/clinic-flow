@@ -1,6 +1,6 @@
-export { default as OnboardingStepper } from './OnboardingStepper';
-export { default as OnboardingStepDoctor } from './OnboardingStepDoctor';
-export { default as OnboardingStepClinic } from './OnboardingStepClinic';
-export { default as OnboardingStepBranding, COLOR_PALETTES } from './OnboardingStepBranding';
-export { default as OnboardingStepTeam, TEAM_SIZES, ROLES_INFO } from './OnboardingStepTeam';
-export { default as OnboardingSuccess } from './OnboardingSuccess';
+export { default as OnboardingStepper } from '@/pages/onboarding/components/OnboardingStepper';
+export { default as OnboardingStepDoctor } from '@/pages/onboarding/components/OnboardingStepDoctor';
+export { default as OnboardingStepClinic } from '@/pages/onboarding/components/OnboardingStepClinic';
+export { default as OnboardingStepBranding, COLOR_PALETTES } from '@/pages/onboarding/components/OnboardingStepBranding';
+export { default as OnboardingStepTeam, TEAM_SIZES, ROLES_INFO } from '@/pages/onboarding/components/OnboardingStepTeam';
+export { default as OnboardingSuccess } from '@/pages/onboarding/components/OnboardingSuccess';

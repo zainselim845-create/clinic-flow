@@ -13,8 +13,8 @@ import {
   updateClinicSubscriptionDetails
 } from '@/features/platform/services/saasSubscriptionPlansService';
 import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
-import EditPlanTierModal from '../EditPlanTierModal';
-import ClinicSubscriptionControlModal from '../ClinicSubscriptionControlModal';
+import EditPlanTierModal from '@/pages/superadmin/components/EditPlanTierModal';
+import ClinicSubscriptionControlModal from '@/pages/superadmin/components/ClinicSubscriptionControlModal';
 
 export function SubscriptionPlansTab({ 
   allTenants = [], 

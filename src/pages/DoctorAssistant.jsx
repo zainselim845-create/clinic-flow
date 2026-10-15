@@ -1,22 +1,22 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Bot, Activity } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
-import { useTenant } from '../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
 import { askDoctorAiAssistant } from '@/features/clinical/services/aiAssistantService';
 import { sendSMS } from '@/features/marketing/services/smsService';
-import { processDoctorIntent } from '../utils/clinicalAssistantActions';
+import { processDoctorIntent } from '@/utils/clinicalAssistantActions';
 import { 
   CAMPAIGN_TEMPLATES, 
   formatDoctorName, 
   personalizeMessage, 
   filterTargetPatients 
-} from '../utils/doctorAgentHelpers';
-import MarketingCrmHub from './marketing/MarketingCrmHub';
-import { safeGetJSON, safeSetJSON, safeRemoveItem } from '../utils/safeStorage';
-import { AssistantHeroHeader, AssistantChatConsole, AssistantActionHub } from './assistant';
-import { executeDoctorAction } from './assistant/useClinicalActionExecutor';
+} from '@/utils/doctorAgentHelpers';
+import MarketingCrmHub from '@/pages/marketing/MarketingCrmHub';
+import { safeGetJSON, safeSetJSON, safeRemoveItem } from '@/utils/safeStorage';
+import { AssistantHeroHeader, AssistantChatConsole, AssistantActionHub } from '@/pages/assistant';
+import { executeDoctorAction } from '@/pages/assistant/useClinicalActionExecutor';
 import './DoctorAssistant.css';
 
 /**

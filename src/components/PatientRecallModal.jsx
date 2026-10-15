@@ -2,11 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { 
   X, Plus, BellRing, MessageCircle, Trash2
 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
-import { getTodayDateStr } from '../utils/timeSlots';
-import { recallPresets } from '../data/demoData';
+import { Dialog } from '@/components/ui/dialog';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
+import { getTodayDateStr } from '@/utils/timeSlots';
+import { recallPresets } from '@/data/demoData';
 import './PatientRecallModal.css';
 
 export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {

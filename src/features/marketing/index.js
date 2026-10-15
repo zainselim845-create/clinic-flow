@@ -3,5 +3,5 @@
  * Encapsulates SMS gateways, occasion campaigns, lead recovery, reactivation, and referral tracking.
  */
 
-export * from './services';
+export * from '@/features/marketing/services';
 export * from '@/utils/utmTracking';

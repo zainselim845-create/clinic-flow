@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useTenant } from '../context/TenantContext';
+import { useTenant } from '@/context/TenantContext';
 
 /**
  * Route-specific metadata mapping

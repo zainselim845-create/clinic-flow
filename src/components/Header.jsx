@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Bell, Sun, Moon, LogOut, Menu, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
-import { useTenant } from '../context/TenantContext';
-import GlobalSearchModal from './GlobalSearchModal';
-import TenantSwitcher from './TenantSwitcher';
-import ReportIssueModal from './ReportIssueModal';
-import ConfirmationModal from './ConfirmationModal';
+import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
+import GlobalSearchModal from '@/components/GlobalSearchModal';
+import TenantSwitcher from '@/components/TenantSwitcher';
+import ReportIssueModal from '@/components/ReportIssueModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import './Header.css';
 
 const Header = ({ title }) => {

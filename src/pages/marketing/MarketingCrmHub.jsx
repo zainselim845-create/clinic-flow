@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Users, RefreshCw, AlertTriangle, Layers, Star, Activity, Bot, HeartHandshake, Smile, CheckCircle2, Zap, Cake } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
-import { useAuth } from '../../context/AuthContext';
-import { useTenant } from '../../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
 import { 
   segmentAllPatients, 
   filterPatientsBySegment 
@@ -33,9 +33,9 @@ import {
   OccasionsTab,
   ReferralsTab,
   AiComposerTab
-} from './tabs';
-import { AddPackageModal } from './tabs/AddPackageModal';
-import { copyToClipboard } from '../../utils/clipboard';
+} from '@/pages/marketing/tabs';
+import { AddPackageModal } from '@/pages/marketing/tabs/AddPackageModal';
+import { copyToClipboard } from '@/utils/clipboard';
 import './MarketingCrmHub.css';
 
 export const MarketingCrmHub = () => {

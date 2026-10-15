@@ -8,9 +8,9 @@ import {
   getClinicQrCodeUrl, 
   getClinicBookingWhatsAppShareUrl,
   SAAS_PLATFORM_DOMAIN
-} from '../utils/clinicUrls';
-import { toast } from '../lib/toast';
-import { copyToClipboard } from '../utils/clipboard';
+} from '@/utils/clinicUrls';
+import { toast } from '@/lib/toast';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export default function BookingShareModal({ isOpen, onClose, tenant }) {
   const [copiedLink, setCopiedLink] = useState(false);

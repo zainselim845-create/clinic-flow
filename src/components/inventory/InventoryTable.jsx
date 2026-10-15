@@ -1,6 +1,6 @@
 import React from 'react';
 import { Package, Plus, Clock, AlertCircle, RefreshCw } from 'lucide-react';
-import { Skeleton } from '../ui/Skeleton';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { INVENTORY_CATEGORIES } from '@/features/inventory/services/inventoryService';
 
 /**

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Navigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useTenant } from '../context/TenantContext';
-import { hasPermission, isDoctorRole } from '../utils/permissions';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
+import { hasPermission, isDoctorRole } from '@/utils/permissions';
 import { Loader2, AlertOctagon, LogOut, PhoneCall, ShieldAlert, Clock } from 'lucide-react';
 
 const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {

@@ -10,9 +10,9 @@ import {
   ShieldCheck, 
   Stethoscope 
 } from 'lucide-react';
-import { Dialog, Portal } from '../../../components/ui';
-import { CURATED_CLINIC_PALETTES, PALETTE_CATEGORIES } from '../../../components/ClinicPalettePicker';
-import { MEDICAL_PRESET_LOGOS } from '../../../components/ClinicLogoUploader';
+import { Dialog, Portal } from '@/components/ui';
+import { CURATED_CLINIC_PALETTES, PALETTE_CATEGORIES } from '@/components/ClinicPalettePicker';
+import { MEDICAL_PRESET_LOGOS } from '@/components/ClinicLogoUploader';
 
 export default function SaasBrandingModal({
   isOpen,

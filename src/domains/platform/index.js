@@ -11,4 +11,4 @@ export * from '@/features/platform/services/webhookService';
 export * from '@/lib/circuitBreaker';
 export * from '@/features/platform/services/multiTierCacheService';
 export * from '@/features/platform/services/cursorPaginationService';
-export { default as FeatureErrorBoundary } from '../../components/FeatureErrorBoundary';
+export { default as FeatureErrorBoundary } from '@/components/FeatureErrorBoundary';

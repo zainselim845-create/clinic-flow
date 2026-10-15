@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '@/context/AppContext';
 import { CheckCheck, Trash2, Bell, Smartphone } from 'lucide-react';
-import NotificationItem from '../components/NotificationItem';
-import EmptyState from '../components/EmptyState';
+import NotificationItem from '@/components/NotificationItem';
+import EmptyState from '@/components/EmptyState';
 import './Notifications.css';
 
 const Notifications = () => {

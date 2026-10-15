@@ -1,4 +1,4 @@
-import { safeStorage } from './safeStorage';
+import { safeStorage } from '@/utils/safeStorage';
 
 const RATE_LIMIT_PREFIX = 'clinicflow_ratelimit_';
 
