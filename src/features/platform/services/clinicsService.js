@@ -220,3 +220,48 @@ export async function findClinicByDoctorEmail(email) {
   const result = await findClinicByEmailOrIdentifier(email);
   return result?.data || null;
 }
+
+/**
+ * Subscribes to real-time changes on the clinics table across the platform
+ * (Used by Super Admin Dashboard for instant multi-tenant reactivity)
+ * @param {Object} options
+ * @param {Function} options.onClinicChange
+ * @param {Function} [options.onStatusChange]
+ * @returns {{ unsubscribe: Function }}
+ */
+export function subscribeToPlatformClinics({ onClinicChange, onStatusChange } = {}) {
+  if (!isSupabaseConfigured()) {
+    return { unsubscribe: () => {} };
+  }
+
+  try {
+    const channel = supabase.channel('platform-clinics-realtime');
+    channel.on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'clinics'
+      },
+      (payload) => {
+        onClinicChange?.(payload);
+      }
+    );
+
+    channel.subscribe((status) => {
+      onStatusChange?.(status);
+    });
+
+    return {
+      unsubscribe: () => {
+        try {
+          supabase.removeChannel(channel);
+        } catch {}
+      }
+    };
+  } catch (err) {
+    console.warn('[ClinicsService] subscribeToPlatformClinics warning:', err);
+    return { unsubscribe: () => {} };
+  }
+}
+

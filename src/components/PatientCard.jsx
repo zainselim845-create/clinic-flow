@@ -1,6 +1,8 @@
 import React from 'react';
 import { Phone, Calendar, Hash, MessageCircle, Edit3 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { maskEgyptianPhone } from '@/utils/phoneValidation';
 import './PatientCard.css';
 
 const formatLastVisit = (dateStr) => {
@@ -11,9 +13,13 @@ const formatLastVisit = (dateStr) => {
 
 const PatientCard = ({ patient, onClick, onEdit }) => {
   const { state } = useApp();
+  const { user } = useAuth();
   if (!patient) return null;
 
-  const name = patient.name || (patient.phone ? `مريض (${patient.phone})` : 'مريض مسجل بالعيادة');
+  const isRestrictedSpecialist = user?.role === 'specialist' || user?.role === 'associate_doctor';
+  const displayedPhone = isRestrictedSpecialist ? maskEgyptianPhone(patient.phone) : patient.phone;
+
+  const name = patient.name || (patient.phone ? `مريض (${displayedPhone})` : 'مريض مسجل بالعيادة');
   const initials = name.split(' ').filter(Boolean).map(n => n[0]).slice(0, 2).join('') || 'م';
   const clinicName = state.clinicInfo?.name || 'العيادة';
 
@@ -67,7 +73,7 @@ const PatientCard = ({ patient, onClick, onEdit }) => {
         <div className="patient-info-item">
           <Phone size={14} className="info-icon" />
           <span className="info-label">الهاتف:</span>
-          <span dir="ltr" className="info-value phone-value">{patient.phone || 'بدون هاتف'}</span>
+          <span dir="ltr" className="info-value phone-value">{displayedPhone || 'بدون هاتف'}</span>
         </div>
 
         <div className="patient-info-item">

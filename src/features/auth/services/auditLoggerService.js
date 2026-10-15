@@ -339,3 +339,31 @@ export function filterAuditLogs({ query = '', eventType = 'all', startDate = '',
     return true;
   });
 }
+
+/**
+ * Fetches platform-wide audit logs directly from Supabase DB
+ * Accessible to platform Super Admin via RLS cf_is_platform_admin()
+ * @param {Object} options
+ * @param {number} [options.limit=100]
+ * @returns {Promise<{ data: Array, error: Error|null }>}
+ */
+export async function fetchPlatformAuditLogsFromDb({ limit = 100 } = {}) {
+  if (!isSupabaseConfigured()) {
+    return { data: getAuditLogs().slice(0, limit), error: null };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('platform_audit_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return { data: data || [], error: null };
+  } catch (err) {
+    console.warn('[AuditLoggerService] fetchPlatformAuditLogsFromDb error:', err);
+    return { data: getAuditLogs().slice(0, limit), error: err };
+  }
+}
+

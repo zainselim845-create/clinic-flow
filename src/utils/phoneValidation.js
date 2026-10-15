@@ -49,3 +49,19 @@ export const validateEgyptianPhone = (phone) => {
   const egPhoneRegex = /^01[0125][0-9]{8}$/;
   return egPhoneRegex.test(cleanDigits);
 };
+
+/**
+ * Masks an Egyptian phone number for privacy preservation.
+ * e.g., '01012345678' -> '010••••5678'
+ * @param {string|null|undefined} phone
+ * @returns {string}
+ */
+export const maskEgyptianPhone = (phone) => {
+  if (!phone || typeof phone !== 'string') return '';
+  const clean = cleanEgyptianPhone(phone);
+  if (clean.length === 11) {
+    return `${clean.slice(0, 3)}••••${clean.slice(7)}`;
+  }
+  return phone.replace(/\d(?=\d{4})/g, '•');
+};
+

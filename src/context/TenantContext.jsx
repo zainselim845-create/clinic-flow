@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useInRouterContext } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { fromDbClinic, getAllClinicsFromDb } from '@/features/platform/services/clinicsService';
+import { fromDbClinic, getAllClinicsFromDb, subscribeToPlatformClinics } from '@/features/platform/services/clinicsService';
 import { canSwitchTenants } from '@/utils/permissions';
 import { patientIndex } from '@/features/platform/services/indexedSearchService';
 import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus, deleteRegisteredTenant, syncTenantsFromCloud } from '@/features/auth/services/authService';
@@ -290,12 +290,36 @@ export const TenantProvider = ({ children }) => {
   const [isLoadingTenant, setIsLoadingTenant] = useState(true);
 
   // Expose immediate force-refresh helper for tenants directory
-  const refreshTenants = useCallback(() => {
-    syncTenantsFromCloud().then(() => {
-      setAllTenants(getCombinedTenants(true));
-    }).catch(() => {});
+  const refreshTenants = useCallback(async () => {
+    try {
+      await syncTenantsFromCloud();
+    } catch (_) {}
+
     const fresh = getCombinedTenants(true);
     setAllTenants(fresh);
+
+    if (isSupabaseConfigured()) {
+      try {
+        const { data: dbClinics } = await getAllClinicsFromDb();
+        if (Array.isArray(dbClinics) && dbClinics.length > 0) {
+          setAllTenants(prev => {
+            const merged = [...prev];
+            dbClinics.forEach(dbc => {
+              const idx = merged.findIndex(t => t.id === dbc.id || t.slug === dbc.slug);
+              if (idx >= 0) {
+                merged[idx] = { ...merged[idx], ...dbc };
+              } else {
+                merged.push(dbc);
+              }
+            });
+            return merged;
+          });
+        }
+      } catch (err) {
+        console.warn('[TenantContext] Cloud clinics refresh notice:', err);
+      }
+    }
+
     return fresh;
   }, []);
 
@@ -349,36 +373,69 @@ export const TenantProvider = ({ children }) => {
     };
   }, []);
 
-  // 2. Background Cloud Clinics Synchronization (Public Storage CDN & Supabase DB)
+  // 2. Background Cloud Clinics Synchronization & Realtime DB Subscription
   useEffect(() => {
     let isMounted = true;
+
+    const pullLatestClinics = () => {
+      if (isSupabaseConfigured()) {
+        getAllClinicsFromDb().then(({ data: dbClinics }) => {
+          if (!isMounted || !Array.isArray(dbClinics) || dbClinics.length === 0) return;
+          setAllTenants(prev => {
+            const merged = [...prev];
+            dbClinics.forEach(dbc => {
+              const idx = merged.findIndex(t => t.id === dbc.id || t.slug === dbc.slug);
+              if (idx >= 0) {
+                merged[idx] = { ...merged[idx], ...dbc };
+              } else {
+                merged.push(dbc);
+              }
+            });
+            return merged;
+          });
+        }).catch(err => console.warn('Cloud clinics fetch notice:', err));
+      }
+    };
 
     // A. Instant synchronization from Cloud Tenants Registry
     syncTenantsFromCloud().then(() => {
       if (!isMounted) return;
       setAllTenants(getCombinedTenants(true));
+      pullLatestClinics();
     }).catch(err => console.warn('[TenantContext] Cloud sync notice:', err));
 
-    // B. Relational Supabase database synchronization if configured
-    if (isSupabaseConfigured()) {
-      getAllClinicsFromDb().then(({ data: dbClinics }) => {
-        if (!isMounted || !Array.isArray(dbClinics) || dbClinics.length === 0) return;
-        setAllTenants(prev => {
-          const merged = [...prev];
-          dbClinics.forEach(dbc => {
-            const idx = merged.findIndex(t => t.id === dbc.id || t.slug === dbc.slug);
-            if (idx >= 0) {
-              merged[idx] = { ...merged[idx], ...dbc };
-            } else {
-              merged.push(dbc);
-            }
-          });
-          return merged;
-        });
-      }).catch(err => console.warn('Cloud clinics fetch notice:', err));
-    }
+    // B. Relational Supabase database synchronization
+    pullLatestClinics();
 
-    return () => { isMounted = false; };
+    // C. Postgres real-time change listener for clinics table
+    const realtimeSub = subscribeToPlatformClinics({
+      onClinicChange: (payload) => {
+        if (!isMounted) return;
+        if (payload?.eventType === 'INSERT' || payload?.eventType === 'UPDATE') {
+          const freshClinic = payload.new ? fromDbClinic(payload.new) : null;
+          if (freshClinic) {
+            setAllTenants(prev => {
+              const idx = prev.findIndex(t => t.id === freshClinic.id || t.slug === freshClinic.slug);
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = { ...next[idx], ...freshClinic };
+                return next;
+              }
+              return [freshClinic, ...prev];
+            });
+          }
+        } else if (payload?.eventType === 'DELETE' && payload.old?.id) {
+          setAllTenants(prev => prev.filter(t => t.id !== payload.old.id && t.slug !== payload.old.slug));
+        } else {
+          pullLatestClinics();
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      realtimeSub?.unsubscribe();
+    };
   }, []);
 
   // 3. Resolve Tenant from Subdomain, Custom Domain, or URL Path

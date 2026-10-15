@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rogkodgqeowiylpckspi.supabase.co';
 
 const DEFAULT_SUPABASE_KEY = 'sb_publishable_wuceFYy_wMujWGBRRVVfUg_oTXMFKrg';
+const HAS_SERVICE_ROLE_KEY = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
 const BUCKET_NAME = 'tenants';
 const REGISTRY_FILE = 'sync/tenants_registry.json';
@@ -10,6 +11,9 @@ const REGISTRY_FILE = 'sync/tenants_registry.json';
 let supabaseAdmin = null;
 function getSupabaseAdmin() {
   if (!supabaseAdmin) {
+    if (!HAS_SERVICE_ROLE_KEY && process.env.NODE_ENV === 'production') {
+      console.warn('[SyncTenants API] Warning: SUPABASE_SERVICE_ROLE_KEY not configured in environment. Storage operations may be restricted by RLS.');
+    }
     supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   }
   return supabaseAdmin;
