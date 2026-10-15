@@ -11,8 +11,8 @@ import {
   resetSaaSSubscriptionPlansToDefaults,
   getSaaSBillingMetrics,
   updateClinicSubscriptionDetails
-} from '../../../../services/saasSubscriptionPlansService';
-import { getClinicUsage } from '../../../../services/usageMeteringService';
+} from '@/features/platform/services/saasSubscriptionPlansService';
+import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
 import EditPlanTierModal from '../EditPlanTierModal';
 import ClinicSubscriptionControlModal from '../ClinicSubscriptionControlModal';
 

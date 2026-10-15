@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { parsePatientsExcelFile, downloadPatientImportTemplate } from '../services/excelImportService';
+import { parsePatientsExcelFile, downloadPatientImportTemplate } from '@/features/patients/services/excelImportService';
 import './ExcelPatientImportModal.css';
 
 export default function ExcelPatientImportModal({

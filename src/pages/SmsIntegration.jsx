@@ -7,7 +7,7 @@ import {
 import {
   getSmsConfig, saveSmsConfig, sendSMS, formatSenderId,
   getClinicSenderId
-} from '../services/smsService';
+} from '@/features/marketing/services/smsService';
 import { useTenant } from '../context/TenantContext';
 import './SmsIntegration.css';
 

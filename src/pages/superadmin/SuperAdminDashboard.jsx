@@ -16,7 +16,7 @@ import {
   updateBugReportStatus,
   deleteBugReport,
   clearBugReports 
-} from '../../services/systemErrorService';
+} from '@/features/platform/services/systemErrorService';
 import { toast } from '../../lib/toast';
 import { copyToClipboard } from '../../utils/clipboard';
 import {
@@ -33,7 +33,7 @@ import {
   ClinicSubscriptionControlModal,
   SaasGeographicAnalytics
 } from './components';
-import { getSaaSBillingMetrics } from '../../services/saasSubscriptionPlansService';
+import { getSaaSBillingMetrics } from '@/features/platform/services/saasSubscriptionPlansService';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import { 
   saveRegisteredTenant, 
@@ -44,9 +44,9 @@ import {
   toggleUserAccountStatus,
   deleteUserAccount,
   syncTenantsFromCloud
-} from '../../services/authService';
-import { formatSenderId } from '../../services/smsService';
-import { getClinicUsage } from '../../services/usageMeteringService';
+} from '@/features/auth/services/authService';
+import { formatSenderId } from '@/features/marketing/services/smsService';
+import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
 import './SuperAdminDashboard.css';
 
 export default function SuperAdminDashboard() {

@@ -11,9 +11,9 @@ import { useTenant } from '../../context/TenantContext';
 import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
 import TreatmentPlanModal from '../../components/TreatmentPlanModal';
 import PatientWalletPanel from '../../components/PatientWalletPanel';
-import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
-import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
-import { getWhatsAppUri } from '../../services/smsService';
+import { getPatientClinicalNotes } from '@/features/clinical/services/clinicalNotesService';
+import { getPatientTreatmentPlans } from '@/features/patients/services/treatmentPlansService';
+import { getWhatsAppUri } from '@/features/marketing/services/smsService';
 import { safeGetJSON } from '../../utils/safeStorage';
 import './PatientDossierDrawer.css';
 

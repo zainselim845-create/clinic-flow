@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Send, Eye, EyeOff } from 'lucide-react';
-import { getGlobalSmsProvider, saveGlobalSmsProvider, testSmsConnection } from '../../../../services/smsService';
+import { getGlobalSmsProvider, saveGlobalSmsProvider, testSmsConnection } from '@/features/marketing/services/smsService';
 
 export function SmsGatewaysTab() {
   const [smsProvider, setSmsProvider] = useState(() => getGlobalSmsProvider());

@@ -7,7 +7,7 @@ import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { 
   getStaffAttendance, recordCheckIn, recordCheckOut 
-} from '../services/attendanceService';
+} from '@/features/platform/services/attendanceService';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Attendance.css';
 

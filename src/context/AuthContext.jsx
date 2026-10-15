@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { fromDbClinic, findClinicByEmailOrIdentifier } from '../services/clinicsService';
+import { fromDbClinic, findClinicByEmailOrIdentifier } from '@/features/platform/services/clinicsService';
 import { 
   registerDoctorAndClinic, 
   authenticateUser, 
@@ -11,8 +11,8 @@ import {
   saveRegisteredUser,
   syncTenantsFromCloud,
   syncTenantAndUserToCloud
-} from '../services/authService';
-import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
+} from '@/features/auth/services/authService';
+import { recordAuditEvent, AUDIT_EVENT_TYPES } from '@/features/auth/services/auditLoggerService';
 import { 
   safeGetItem, 
   safeSetItem, 
@@ -24,12 +24,12 @@ import {
   safeSessionSetItem
 } from '../utils/safeStorage';
 import TenantContext from './TenantContext';
-import { canAccess, CLINIC_PERMISSIONS, CLINIC_ROLE_PERMISSIONS } from '../services/organizationService';
+import { canAccess, CLINIC_PERMISSIONS, CLINIC_ROLE_PERMISSIONS } from '@/features/auth/services/organizationService';
 import { localDb } from '../db/localDatabase';
-import { apiCache } from '../services/apiCacheService';
-import { multiTierCache } from '../services/multiTierCacheService';
-import { clearIdempotencyStore } from '../services/idempotencyService';
-import { patientIndex } from '../services/indexedSearchService';
+import { apiCache } from '@/features/platform/services/apiCacheService';
+import { multiTierCache } from '@/features/platform/services/multiTierCacheService';
+import { clearIdempotencyStore } from '@/features/platform/services/idempotencyService';
+import { patientIndex } from '@/features/platform/services/indexedSearchService';
 
 const AuthContext = createContext({});
 

@@ -3,17 +3,17 @@ import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import { clinicInfo, availableSlots } from '../data/demoData';
-import * as appointmentsService from '../services/appointmentsService';
-import * as patientsService from '../services/patientsService';
-import { saveBookingDraft, completeBookingDraft, getBookingDrafts } from '../services/leadRecoveryService';
-import { recordReferral } from '../services/referralService';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
+import * as patientsService from '@/features/patients/services/patientsService';
+import { saveBookingDraft, completeBookingDraft, getBookingDrafts } from '@/features/marketing/services/leadRecoveryService';
+import { recordReferral } from '@/features/marketing/services/referralService';
 import { Check } from 'lucide-react';
 
 import { validateEgyptianPhone, cleanEgyptianPhone } from '../utils/phoneValidation';
-import { patientIndex } from '../services/indexedSearchService';
+import { patientIndex } from '@/features/platform/services/indexedSearchService';
 import { getTodayDateStr } from '../utils/timeSlots';
 import { checkActionRateLimit } from '../utils/rateLimiter';
-import { getAutoUserLocation } from '../services/autoLocationService';
+import { getAutoUserLocation } from '@/features/platform/services/autoLocationService';
 import { copyToClipboard } from '../utils/clipboard';
 
 import BookingHeader from './booking/BookingHeader';

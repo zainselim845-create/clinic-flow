@@ -10,7 +10,7 @@ import {
   formatLocalDate, parseLocalDate, getTodayDateStr 
 } from '../../utils/timeSlots';
 import { isSupabaseConfigured } from '../../lib/supabase';
-import * as blockedSlotsService from '../../services/blockedSlotsService';
+import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
 import { safeGetJSON, safeSetJSON } from '../../utils/safeStorage';
 
 const ARABIC_MONTHS = [

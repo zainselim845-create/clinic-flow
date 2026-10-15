@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useInRouterContext } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { fromDbClinic, getAllClinicsFromDb } from '../services/clinicsService';
+import { fromDbClinic, getAllClinicsFromDb } from '@/features/platform/services/clinicsService';
 import { canSwitchTenants } from '../utils/permissions';
-import { patientIndex } from '../services/indexedSearchService';
-import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus, deleteRegisteredTenant, syncTenantsFromCloud } from '../services/authService';
-import { getClinicDomainSettings, saveClinicDomainSettings } from '../services/customDomainService';
+import { patientIndex } from '@/features/platform/services/indexedSearchService';
+import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus, deleteRegisteredTenant, syncTenantsFromCloud } from '@/features/auth/services/authService';
+import { getClinicDomainSettings, saveClinicDomainSettings } from '@/features/platform/services/customDomainService';
 import { safeGetItem, safeGetJSON, safeSetJSON, safeSessionGetJSON } from '../utils/safeStorage';
 
 const TenantContext = createContext(null);

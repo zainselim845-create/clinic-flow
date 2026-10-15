@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   DEFAULT_DENTAL_VISIT_TYPES, addVisitType, updateVisitType, deleteVisitType 
-} from '../../services/visitTypesService';
+} from '@/features/appointments/services/visitTypesService';
 import { 
   Plus, Trash2, Edit2, CheckCircle2, 
   DollarSign, Globe, Check, X 

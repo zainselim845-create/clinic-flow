@@ -14,8 +14,8 @@ import {
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import { availableSlots } from '../data/demoData';
 import { getTodayDateStr } from '../utils/timeSlots';
-import * as appointmentsService from '../services/appointmentsService';
-import * as blockedSlotsService from '../services/blockedSlotsService';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
+import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
 import { isDoctorRole } from '../utils/permissions';
 import { syncOutbox } from '../lib/syncOutbox';
 import './Appointments.css';

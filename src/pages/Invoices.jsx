@@ -5,10 +5,10 @@ import { useApp } from '../context/AppContext';
 import { useTenant } from '../context/TenantContext';
 import InvoiceModal from '../components/InvoiceModal';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
-import { getInvoices, addInvoice } from '../services/invoicesService';
+import { getInvoices, addInvoice } from '@/features/billing/services/invoicesService';
 import { isSupabaseConfigured } from '../lib/supabase';
-import { getExpenses, addExpense, deleteExpense as apiDeleteExpense } from '../services/expensesService';
-import { recordJournalEntry, CHART_OF_ACCOUNTS } from '../services/generalLedgerService';
+import { getExpenses, addExpense, deleteExpense as apiDeleteExpense } from '@/features/billing/services/expensesService';
+import { recordJournalEntry, CHART_OF_ACCOUNTS } from '@/features/billing/services/generalLedgerService';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import {
   InvoicesMetricsGrid,

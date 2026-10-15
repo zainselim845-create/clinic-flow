@@ -9,12 +9,12 @@ import { useAuth } from '../context/AuthContext';
 import { getTodayDateStr } from '../utils/timeSlots';
 import WaitingRoomQueue from './dashboard/WaitingRoomQueue';
 import RevenueAnalytics from './dashboard/RevenueAnalytics';
-import * as appointmentsService from '../services/appointmentsService';
-import * as patientsService from '../services/patientsService';
-import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
-import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
+import * as patientsService from '@/features/patients/services/patientsService';
+import { addInvoice, getNextInvoiceNumber } from '@/features/billing/services/invoicesService';
+import { recordAuditEvent, AUDIT_EVENT_TYPES } from '@/features/auth/services/auditLoggerService';
 import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '../utils/permissions';
-import { getBookingFunnelStats, getBookingDrafts } from '../services/leadRecoveryService';
+import { getBookingFunnelStats, getBookingDrafts } from '@/features/marketing/services/leadRecoveryService';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import { 
   DashboardMetricsGrid, 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Layers, CheckCircle2 } from 'lucide-react';
-import { saveSaaSSubscriptionPlan } from '../../../services/saasSubscriptionPlansService';
+import { saveSaaSSubscriptionPlan } from '@/features/platform/services/saasSubscriptionPlansService';
 
 export default function EditPlanTierModal({ isOpen, onClose, plan, onSaveSuccess, onSave }) {
   const [formData, setFormData] = useState({

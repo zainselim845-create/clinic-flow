@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from '../../../components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { X, Zap, Smartphone, Cpu, CheckCircle2 } from 'lucide-react';
-import { topUpClinicCredits, getClinicUsage } from '../../../services/usageMeteringService';
+import { topUpClinicCredits, getClinicUsage } from '@/features/platform/services/usageMeteringService';
 
 export function TopUpCreditsModal({
   isOpen,

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { getPatientWalletHistory, addWalletTransaction } from '../services/walletService';
+import { getPatientWalletHistory, addWalletTransaction } from '@/features/billing/services/walletService';
 import './PatientWalletPanel.css';
 
 const PatientWalletPanel = ({ patientId, patientName }) => {

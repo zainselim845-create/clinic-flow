@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { AlertTriangle, CheckCircle2, Globe, Stethoscope } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Tabs } from '../components/ui/tabs';
-import { triggerGoogleOAuthPopup } from '../services/googleAuthService';
+import { triggerGoogleOAuthPopup } from '@/features/auth/services/googleAuthService';
 import { safeGetItem, safeSetItem, safeRemoveItem } from '../utils/safeStorage';
 import { LoginHeroPane, LoginForm, RegisterClinicForm } from './auth';
 import './Login.css';

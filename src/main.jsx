@@ -7,7 +7,7 @@ import { TenantProvider } from './context/TenantContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LocaleProvider } from '@ark-ui/react/locale';
 import { Toaster } from 'sonner';
-import { initGlobalErrorListeners } from './services/systemErrorService';
+import { initGlobalErrorListeners } from '@/features/platform/services/systemErrorService';
 import App from './App';
 import './index.css';
 

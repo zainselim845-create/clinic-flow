@@ -4,8 +4,8 @@ import { Bot, Activity } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useTenant } from '../context/TenantContext';
-import { askDoctorAiAssistant } from '../services/aiAssistantService';
-import { sendSMS } from '../services/smsService';
+import { askDoctorAiAssistant } from '@/features/clinical/services/aiAssistantService';
+import { sendSMS } from '@/features/marketing/services/smsService';
 import { processDoctorIntent } from '../utils/clinicalAssistantActions';
 import { 
   CAMPAIGN_TEMPLATES, 

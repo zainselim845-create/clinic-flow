@@ -1,4 +1,4 @@
-import { computeSha256 } from '../auditLoggerService';
+import { computeSha256 } from '@/features/auth/services/auditLoggerService';
 
 export function hashPassword(plainPassword) {
   if (!plainPassword) return '';

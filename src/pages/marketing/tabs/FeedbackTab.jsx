@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, Send, ShieldCheck } from 'lucide-react';
-import { generatePostVisitFeedbackMessage } from '../../../services/feedbackService';
+import { generatePostVisitFeedbackMessage } from '@/features/platform/services/feedbackService';
 
 export function FeedbackTab({ 
   postVisitPatients, 

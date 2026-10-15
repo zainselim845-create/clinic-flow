@@ -5,4 +5,4 @@
 
 export * from './components';
 export * from './services';
-export * from '@/services/treatmentPlansService';
+export * from '@/features/patients/services/treatmentPlansService';

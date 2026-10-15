@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Save, CheckCircle2, CalendarDays, ArrowLeft, Stethoscope } from 'lucide-react';
 import { CLINIC_SPECIALTIES } from '../../data/specialtiesData';
-import { formatSenderId } from '../../services/smsService';
+import { formatSenderId } from '@/features/marketing/services/smsService';
 import BookingShareModal from '../../components/BookingShareModal';
 import ClinicPalettePicker from '../../components/ClinicPalettePicker';
 import ClinicLogoUploader from '../../components/ClinicLogoUploader';

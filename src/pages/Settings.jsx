@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 
 import { useApp } from '../context/AppContext';
-import * as clinicsService from '../services/clinicsService';
+import * as clinicsService from '@/features/platform/services/clinicsService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import GeneralSettingsTab from './settings/GeneralSettingsTab';

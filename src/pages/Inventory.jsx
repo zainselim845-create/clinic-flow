@@ -7,7 +7,7 @@ import InventoryItemModal from '../components/InventoryItemModal';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
 import { 
   getInventoryItems, addInventoryItem, adjustItemStock 
-} from '../services/inventoryService';
+} from '@/features/inventory/services/inventoryService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import {

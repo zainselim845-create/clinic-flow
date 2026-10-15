@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Send, Save, CheckCircle2, AlertCircle, RefreshCw, ShieldCheck } from 'lucide-react';
-import { getSmsConfig, saveSmsConfig, sendSMS, formatSenderId } from '../../services/smsService';
+import { getSmsConfig, saveSmsConfig, sendSMS, formatSenderId } from '@/features/marketing/services/smsService';
 import { useTenant } from '../../context/TenantContext';
 
 export default function SmsConfigTab() {

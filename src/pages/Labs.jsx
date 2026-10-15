@@ -11,7 +11,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { 
   getLabOrders, addLabOrder, updateLabOrderStatus, 
   LAB_ORDER_STATUSES 
-} from '../services/labsService';
+} from '@/features/clinical/services/labsService';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './Labs.css';
 

@@ -19,7 +19,7 @@ import {
   verifyDomainDnsAndSsl,
   saveClinicDomainSettings,
   getClinicDomainSettings
-} from '../../services/customDomainService';
+} from '@/features/platform/services/customDomainService';
 import { useApp } from '../../context/AppContext';
 import { useTenant } from '../../context/TenantContext';
 import CodeSnippet from '../../components/CodeSnippet';

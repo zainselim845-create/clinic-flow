@@ -17,7 +17,7 @@ import ScrollToTopButton from './components/ui/ScrollToTopButton';
 import CookieBanner from './components/CookieBanner';
 import FloatingContactButton from './components/FloatingContactButton';
 import NetworkStatusBanner from './components/NetworkStatusBanner';
-import { initGlobalErrorListeners } from './services/systemErrorService';
+import { initGlobalErrorListeners } from '@/features/platform/services/systemErrorService';
 import { safeSessionGetJSON, safeSessionSetJSON } from './utils/safeStorage';
 import './App.css';
 

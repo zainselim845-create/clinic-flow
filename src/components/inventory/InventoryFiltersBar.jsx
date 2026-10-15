@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search } from 'lucide-react';
-import { INVENTORY_CATEGORIES } from '../../services/inventoryService';
+import { INVENTORY_CATEGORIES } from '@/features/inventory/services/inventoryService';
 
 /**
  * InventoryFiltersBar

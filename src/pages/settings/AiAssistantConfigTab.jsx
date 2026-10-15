@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Bot, Save, CheckCircle2, AlertCircle, RefreshCw, KeyRound, Eye, EyeOff, Activity } from 'lucide-react';
-import { getAiConfig, saveAiConfig, askDoctorAiAssistant } from '../../services/aiAssistantService';
+import { getAiConfig, saveAiConfig, askDoctorAiAssistant } from '@/features/clinical/services/aiAssistantService';
 
 export default function AiAssistantConfigTab() {
   const [aiConfig, setAiConfig] = useState(getAiConfig());

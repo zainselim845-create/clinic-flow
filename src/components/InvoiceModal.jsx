@@ -3,7 +3,7 @@ import {
   Printer, Plus, CheckCircle2, X, MapPin, Phone, Send 
 } from 'lucide-react';
 import { Dialog } from './ui/dialog';
-import { recordPayment, getNextInvoiceNumber } from '../services/invoicesService';
+import { recordPayment, getNextInvoiceNumber } from '@/features/billing/services/invoicesService';
 import { useApp } from '../context/AppContext';
 
 import './InvoiceModal.css';

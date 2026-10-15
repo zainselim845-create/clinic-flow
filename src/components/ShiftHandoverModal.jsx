@@ -7,7 +7,7 @@ import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { useApp } from '../context/AppContext';
 import { getTodayDateStr } from '../utils/timeSlots';
-import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
+import { recordAuditEvent, AUDIT_EVENT_TYPES } from '@/features/auth/services/auditLoggerService';
 import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
 import './ShiftHandoverModal.css';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserX, ArrowRight, CheckCircle2, MessageCircle } from 'lucide-react';
-import { BOOKING_FUNNEL_STEPS, generateLeadRecoveryWhatsAppUrl } from '../../../services/leadRecoveryService';
+import { BOOKING_FUNNEL_STEPS, generateLeadRecoveryWhatsAppUrl } from '@/features/marketing/services/leadRecoveryService';
 
 /**
  * DashboardLeadRecoveryCard

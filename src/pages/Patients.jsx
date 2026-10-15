@@ -6,8 +6,8 @@ import PatientRecallModal from '../components/PatientRecallModal';
 import PatientDossierDrawer from './dashboard/PatientDossierDrawer';
 import ExcelPatientImportModal from '../components/ExcelPatientImportModal';
 import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
-import { patientIndex } from '../services/indexedSearchService';
-import * as patientsService from '../services/patientsService';
+import { patientIndex } from '@/features/platform/services/indexedSearchService';
+import * as patientsService from '@/features/patients/services/patientsService';
 import { syncOutbox } from '../lib/syncOutbox';
 import {
   PatientsHeader,

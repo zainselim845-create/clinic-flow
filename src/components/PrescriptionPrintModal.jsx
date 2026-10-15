@@ -2,8 +2,8 @@ import React from 'react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { Printer, MessageCircle, X, ShieldCheck, Stethoscope, QrCode } from 'lucide-react';
-import { formatPrescriptionForWhatsApp } from '../services/prescriptionService';
-import { getWhatsAppUri } from '../services/smsService';
+import { formatPrescriptionForWhatsApp } from '@/features/clinical/services/prescriptionService';
+import { getWhatsAppUri } from '@/features/marketing/services/smsService';
 import './PrescriptionPrintModal.css';
 
 export default function PrescriptionPrintModal({

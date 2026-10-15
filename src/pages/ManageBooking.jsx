@@ -11,7 +11,7 @@ import { useTenant } from '../context/TenantContext';
 import { generateDynamicSlots, getTodayDateStr, parseLocalDate } from '../utils/timeSlots';
 import { cleanEgyptianPhone } from '../utils/phoneValidation';
 import { checkActionRateLimit } from '../utils/rateLimiter';
-import * as appointmentsService from '../services/appointmentsService';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
 import { isSupabaseConfigured } from '../lib/supabase';
 import Breadcrumbs from '../components/Breadcrumbs';
 import ConfirmationModal from '../components/ConfirmationModal';

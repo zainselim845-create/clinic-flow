@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { matchesSpecialtyFilter } from '../../utils/specialtyUtils';
 import Breadcrumbs from '../../components/Breadcrumbs';
-import { getAutoUserLocation, calculateDistanceKm, formatDistanceAr } from '../../services/autoLocationService';
+import { getAutoUserLocation, calculateDistanceKm, formatDistanceAr } from '@/features/platform/services/autoLocationService';
 
 export default function ClinicDiscoveryView({
   allTenants,

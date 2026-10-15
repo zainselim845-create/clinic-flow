@@ -1,7 +1,7 @@
-import * as blockedSlotsService from '../../services/blockedSlotsService';
-import * as appointmentsService from '../../services/appointmentsService';
-import * as patientsService from '../../services/patientsService';
-import * as expensesService from '../../services/expensesService';
+import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
+import * as patientsService from '@/features/patients/services/patientsService';
+import * as expensesService from '@/features/billing/services/expensesService';
 
 /**
  * Executes structured clinical and administrative actions triggered by the AI assistant.

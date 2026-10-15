@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Smartphone, Send, CheckCircle2, AlertCircle, Key, Link as LinkIcon, Radio, Info, Building2, Eye, EyeOff } from 'lucide-react';
 import { Dialog } from './ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { getSmsConfig, saveSmsConfig, sendSMS } from '../services/smsService';
+import { getSmsConfig, saveSmsConfig, sendSMS } from '@/features/marketing/services/smsService';
 import './SmsSettingsModal.css';
 
 const SmsSettingsModal = ({ isOpen, onClose }) => {

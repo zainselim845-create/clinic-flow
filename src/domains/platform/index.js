@@ -3,12 +3,12 @@
  * Bounded Context: Tenant Catalog, SuperAdmin Control Plane, Custom Domains, DNS, Circuit Breaker & Realtime Sync
  */
 
-export * from '../../services/clinicsService';
-export * from '../../services/customDomainService';
-export * from '../../services/systemErrorService';
-export * from '../../services/realtimeSyncService';
-export * from '../../services/webhookService';
+export * from '@/features/platform/services/clinicsService';
+export * from '@/features/platform/services/customDomainService';
+export * from '@/features/platform/services/systemErrorService';
+export * from '@/features/platform/services/realtimeSyncService';
+export * from '@/features/platform/services/webhookService';
 export * from '../../utils/circuitBreaker';
-export * from '../../services/multiTierCacheService';
-export * from '../../services/cursorPaginationService';
+export * from '@/features/platform/services/multiTierCacheService';
+export * from '@/features/platform/services/cursorPaginationService';
 export { default as FeatureErrorBoundary } from '../../components/FeatureErrorBoundary';

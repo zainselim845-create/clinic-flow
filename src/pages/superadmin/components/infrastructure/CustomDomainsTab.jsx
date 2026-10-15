@@ -5,7 +5,7 @@ import {
   verifyDomainDnsAndSsl, 
   saveClinicDomainSettings, 
   sanitizeDomain 
-} from '../../../../services/customDomainService';
+} from '@/features/platform/services/customDomainService';
 import { copyToClipboard } from '../../../../utils/clipboard';
 
 export function CustomDomainsTab({ allTenants = [], updateTenantDomain }) {

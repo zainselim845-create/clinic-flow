@@ -10,9 +10,9 @@ import {
   generateLeadRecoveryMessage,
   generateLeadRecoveryWhatsAppUrl, 
   generateLeadRecoverySmsUrl 
-} from '../../../services/leadRecoveryService';
-import { generateNoShowRecoveryMessage } from '../../../services/noShowRecoveryService';
-import { sendSmsBatchAsync } from '../../../services/smsService';
+} from '@/features/marketing/services/leadRecoveryService';
+import { generateNoShowRecoveryMessage } from '@/features/patients/services/noShowRecoveryService';
+import { sendSmsBatchAsync } from '@/features/marketing/services/smsService';
 import { useTenant } from '../../../context/TenantContext';
 
 export function RecoveryTab({ abandonedLeads: initialAbandonedLeads, noShowAppointments, currentClinic }) {

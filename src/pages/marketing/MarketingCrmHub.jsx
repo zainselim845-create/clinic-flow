@@ -6,21 +6,21 @@ import { useTenant } from '../../context/TenantContext';
 import { 
   segmentAllPatients, 
   filterPatientsBySegment 
-} from '../../services/segmentationService';
-import { scanAllCrossSellingOpportunities } from '../../services/crossSellingService';
-import { getBookingDrafts } from '../../services/leadRecoveryService';
+} from '@/features/marketing/services/segmentationService';
+import { scanAllCrossSellingOpportunities } from '@/features/marketing/services/crossSellingService';
+import { getBookingDrafts } from '@/features/marketing/services/leadRecoveryService';
 import { 
   getPatientPackages, 
   savePatientPackage, 
   detectStalledPackages 
-} from '../../services/packagesService';
+} from '@/features/billing/services/packagesService';
 import { 
   getPostVisitEligiblePatients, 
   getStoredFeedbacks,
   saveFeedback
-} from '../../services/feedbackService';
-import { getOccasionCampaignCandidates } from '../../services/occasionCampaignService';
-import { detectUnfinishedTreatmentPlans } from '../../services/treatmentPlansService';
+} from '@/features/platform/services/feedbackService';
+import { getOccasionCampaignCandidates } from '@/features/marketing/services/occasionCampaignService';
+import { detectUnfinishedTreatmentPlans } from '@/features/patients/services/treatmentPlansService';
 import {
   CrmOverviewTab,
   SegmentationTab,

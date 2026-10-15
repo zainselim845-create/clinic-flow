@@ -5,7 +5,7 @@ import {
   CreditCard, Smartphone, Banknote
 } from 'lucide-react';
 import { parseArabicTime } from '../../utils/parseArabicTime';
-import { getBookingConfirmationWhatsAppUrl } from '../../services/smsService';
+import { getBookingConfirmationWhatsAppUrl } from '@/features/marketing/services/smsService';
 import { copyToClipboard } from '../../utils/clipboard';
 
 export default function BookingSuccessStep({

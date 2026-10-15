@@ -1,5 +1,5 @@
 import React from 'react';
-import { captureSystemError, reportUserBug } from '../services/systemErrorService';
+import { captureSystemError, reportUserBug } from '@/features/platform/services/systemErrorService';
 import { AlertTriangle, RefreshCw, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
 import { copyToClipboard } from '../utils/clipboard';
 
