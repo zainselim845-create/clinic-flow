@@ -221,7 +221,7 @@ async function runUiAudit() {
 
   // --- 5. VIEW INVOICES ---
   console.log('\n--- 5. Testing View: view-invoices ---');
-  await page.goto(BASE + '/invoices', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/invoices', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
 
   try {
@@ -234,7 +234,7 @@ async function runUiAudit() {
 
   // --- 6. VIEW INVENTORY ---
   console.log('\n--- 6. Testing View: view-inventory ---');
-  await page.goto(BASE + '/inventory', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/inventory', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
 
   try {
@@ -252,7 +252,7 @@ async function runUiAudit() {
     if (notifBtn) {
       await notifBtn.click();
     } else {
-      await page.goto(BASE + '/notifications', { waitUntil: 'networkidle' });
+      await page.goto(BASE + '/notifications', { waitUntil: 'domcontentloaded' });
     }
     await page.waitForTimeout(500);
     const notifPage = await page.waitForSelector('.notifications-page, h2:has-text("الإشعارات")', { timeout: 5000 });
@@ -263,7 +263,7 @@ async function runUiAudit() {
 
   // --- 8. VIEW DOCTOR AGENT ---
   console.log('\n--- 8. Testing View: view-doctor-agent ---');
-  await page.goto(BASE + '/doctor-agent', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/doctor-agent', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
 
   try {
@@ -275,7 +275,7 @@ async function runUiAudit() {
 
   // --- 9. VIEW SETTINGS ---
   console.log('\n--- 9. Testing View: view-settings ---');
-  await page.goto(BASE + '/settings', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/settings', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(500);
 
   try {
@@ -287,7 +287,7 @@ async function runUiAudit() {
 
   // --- 10. VIEW MARKETING CRM & GROWTH HUB ---
   console.log('\n--- 10. Testing View: view-crm-hub ---');
-  await page.goto(BASE + '/doctor-assistant', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/doctor-assistant', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
 
   try {
@@ -325,7 +325,7 @@ async function runUiAudit() {
     sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(adminUser));
     localStorage.setItem('clinicflow_role', 'super_admin');
   });
-  await page.goto(BASE + '/super-admin', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/super-admin', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(600);
 
   try {
@@ -352,7 +352,7 @@ async function runUiAudit() {
     localStorage.removeItem('clinicflow_auth_user');
     sessionStorage.removeItem('clinicflow_auth_user');
   });
-  await page.goto(BASE + '/booking', { waitUntil: 'networkidle' });
+  await page.goto(BASE + '/booking', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(500);
 
   // If on discovery view, select first clinic to enter the clinic-specific booking portal
