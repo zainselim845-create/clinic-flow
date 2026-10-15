@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   AlertTriangle, CheckCircle2, Globe, Stethoscope, 
-  X, KeyRound, MessageSquare, Mail, Sparkles 
+  X, KeyRound, MessageSquare, Mail 
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Tabs } from '@/components/ui/tabs';
@@ -303,19 +303,13 @@ export default function Login() {
           {/* Right Column: Authentication & Onboarding Forms */}
           <div className="login-forms-pane">
             <div className="forms-header">
-              <div className="header-badge-row">
-                <span className="platform-tag">
-                  <Sparkles size={13} className="text-emerald" />
-                  ClinicFlow 2.0
-                </span>
-              </div>
               <h1 className="form-main-title">
-                {activeTab === 'login' ? 'مرحباً بك مجدداً دكتور' : 'تأسيس وتدشين حساب عيادة جديدة'}
+                {activeTab === 'login' ? 'تسجيل الدخول' : 'إنشاء حساب عيادة جديدة'}
               </h1>
               <p className="form-subtitle">
                 {activeTab === 'login' 
-                  ? 'سجّل دخولك للوصول الفوري إلى لوحة التحكم والسجلات الطبية' 
-                  : 'ابدأ استخدام المنظومة بدقائق وبدون تعقيد مع تجربة مجانية'}
+                  ? 'أدخل بيانات حسابك للمتابعة إلى لوحة التحكم' 
+                  : 'ابدأ إدارة عيادتك الطبية في خطوات بسيطة وسريعة'}
               </p>
             </div>
 
