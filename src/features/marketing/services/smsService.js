@@ -1,7 +1,7 @@
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { safeStorage } from '@/utils/safeStorage';
 import { checkActionRateLimit } from '@/utils/rateLimiter';
-import { circuitBreaker } from '@/utils/circuitBreaker';
+import { circuitBreaker } from '@/lib/circuitBreaker';
 import { canClinicSendSms, deductSmsCredit } from '@/features/platform/services/usageMeteringService';
 import { demoClinics } from '@/data/demoData';
 import { globalAsyncQueue, JOB_PRIORITY } from '@/features/platform/services/asyncQueueService';

@@ -8,7 +8,7 @@ export * from '@/features/platform/services/customDomainService';
 export * from '@/features/platform/services/systemErrorService';
 export * from '@/features/platform/services/realtimeSyncService';
 export * from '@/features/platform/services/webhookService';
-export * from '../../utils/circuitBreaker';
+export * from '@/lib/circuitBreaker';
 export * from '@/features/platform/services/multiTierCacheService';
 export * from '@/features/platform/services/cursorPaginationService';
 export { default as FeatureErrorBoundary } from '../../components/FeatureErrorBoundary';

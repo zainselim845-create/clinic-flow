@@ -3,7 +3,7 @@
  * Connects to high-performance free & premium LLMs (e.g. NVIDIA Nemotron, LLaMA 3.3, OpenAI, Gemini)
  */
 
-import { circuitBreaker } from '@/utils/circuitBreaker';
+import { circuitBreaker } from '@/lib/circuitBreaker';
 import { canClinicUseAi, deductAiTokens } from '@/features/platform/services/usageMeteringService';
 
 export const DEFAULT_OPENROUTER_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OPENROUTER_API_KEY) || '';

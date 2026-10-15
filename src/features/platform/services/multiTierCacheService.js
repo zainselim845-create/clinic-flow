@@ -6,7 +6,7 @@
  */
 
 import { safeStorage } from '@/utils/safeStorage';
-import { CircuitBreaker } from '@/utils/circuitBreaker';
+import { ServiceCircuitBreaker as CircuitBreaker } from '@/lib/circuitBreaker';
 
 export class MultiTierCacheService {
   constructor(options = {}) {

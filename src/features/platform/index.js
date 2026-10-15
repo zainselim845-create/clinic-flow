@@ -5,5 +5,5 @@
 
 export * from './components';
 export * from './services';
-export * from '@/utils/circuitBreaker';
+export * from '@/lib/circuitBreaker';
 export * from '@/utils/clinicUrls';

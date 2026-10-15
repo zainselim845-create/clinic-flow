@@ -16,7 +16,7 @@ import { parseArabicTime, arabicTimeToDate } from '../utils/parseArabicTime';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS, playChime } from '@/features/platform/services/realtimeSyncService';
 import { localDb } from '../db/localDatabase';
 import { safeGetItem, safeSetJSON } from '../utils/safeStorage';
-import { cloudCircuitBreaker } from '../lib/circuitBreaker';
+import { cloudCircuitBreaker } from '@/lib/circuitBreaker';
 import { migrateTenantPayload } from '../lib/schemaMigration';
 import { syncOutbox } from '../lib/syncOutbox';
 
