@@ -3,9 +3,9 @@ import { Send, CheckCircle2, AlertCircle, RefreshCw, Zap } from 'lucide-react';
 import { 
   OCCASIONS, 
   generatePersonalizedOccasionMessage 
-} from '../../../services/occasionCampaignService';
-import { sendSmsBatchAsync } from '../../../services/smsService';
-import { useTenant } from '../../../context/TenantContext';
+} from '@/features/marketing/services/occasionCampaignService';
+import { sendSmsBatchAsync } from '@/features/marketing/services/smsService';
+import { useTenant } from '@/context/TenantContext';
 
 export function OccasionsTab({
   selectedOccasion,

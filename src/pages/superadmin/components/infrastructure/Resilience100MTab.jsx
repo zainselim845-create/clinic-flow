@@ -3,9 +3,9 @@ import {
   CheckCircle2, RefreshCw, Layers, ShieldAlert, Zap, 
   RotateCcw, Trash2, PlayCircle, PauseCircle 
 } from 'lucide-react';
-import { globalAsyncQueue } from '../../../../services/asyncQueueService';
-import { circuitBreaker } from '../../../../utils/circuitBreaker';
-import { multiTierCache } from '../../../../services/multiTierCacheService';
+import { globalAsyncQueue } from '@/features/platform/services/asyncQueueService';
+import { circuitBreaker } from '@/lib/circuitBreaker';
+import { multiTierCache } from '@/features/platform/services/multiTierCacheService';
 
 export function Resilience100MTab() {
   const [queueMetrics, setQueueMetrics] = useState(() => globalAsyncQueue.getMetrics());

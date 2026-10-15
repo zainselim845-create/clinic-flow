@@ -8,7 +8,7 @@ import {
   Tag, 
   AlertCircle 
 } from 'lucide-react';
-import { Dialog } from '../ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 
 const EXPENSE_CATEGORIES = [
   { id: 'خامات ومستلزمات طبية', label: 'خامات ومستلزمات طبية (شاش، قفازات، أدوية، مواد استهلاكية)' },

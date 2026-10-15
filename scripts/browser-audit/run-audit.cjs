@@ -91,13 +91,22 @@ async function runUiAudit() {
       tier: 'pro',
       status: 'active',
       subscriptionStatus: 'active',
-      isOnboardingCompleted: true
+      isOnboardingCompleted: true,
+      enableInventory: true
     };
     localStorage.setItem('clinicflow_auth_user', JSON.stringify(validDoctor));
     sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(validDoctor));
     localStorage.setItem('clinicflow_active_tenant', JSON.stringify(validTenant));
     sessionStorage.setItem('clinicflow_active_tenant', JSON.stringify(validTenant));
     localStorage.setItem('clinicflow_active_tenant_slug', 'dr-audit-clinic');
+    // Register the audit clinic in the tenants registry so TenantContext can
+    // resolve it by slug (the active-tenant blob alone is not consulted for
+    // module gating like enableInventory).
+    const registered = JSON.parse(localStorage.getItem('clinicflow_registered_tenants') || '[]');
+    if (!registered.some(t => t.slug === 'dr-audit-clinic')) {
+      registered.push(validTenant);
+      localStorage.setItem('clinicflow_registered_tenants', JSON.stringify(registered));
+    }
   });
 
   // --- 2. VIEW DASHBOARD ---
@@ -117,7 +126,7 @@ async function runUiAudit() {
   }
 
   try {
-    await page.click('button:has-text("تسليم وردية الاستقبال")');
+    await page.click('button:has-text("تسليم الوردية")');
     await page.waitForTimeout(300);
     const closeShift = await page.$('.shift-modal-card button.btn-close, button:has-text("إلغاء")');
     if (closeShift) await closeShift.click();
@@ -216,7 +225,7 @@ async function runUiAudit() {
   await page.waitForTimeout(600);
 
   try {
-    await page.fill('.filters-bar input[type="text"]', 'INV');
+    await page.fill('.invoices-filter-panel input[type="text"]', 'INV');
     await page.waitForTimeout(300);
     hit('view-invoices', 'invoices-search');
   } catch (e) {
@@ -289,7 +298,7 @@ async function runUiAudit() {
   }
 
   try {
-    const reactivateTab = await page.waitForSelector('button:has-text("إعادة التنشيط")', { timeout: 5000 });
+    const reactivateTab = await page.waitForSelector('button:has-text("إعادة التواصل")', { timeout: 5000 });
     if (reactivateTab) {
       await reactivateTab.click();
       await page.waitForTimeout(300);
@@ -324,7 +333,7 @@ async function runUiAudit() {
   }
 
   try {
-    const telemetryBtn = await page.waitForSelector('button:has-text("مركز الأعطال وبلاغات النظام")', { timeout: 5000 });
+    const telemetryBtn = await page.waitForSelector('button:has-text("الأعطال")', { timeout: 5000 });
     if (telemetryBtn) {
       await telemetryBtn.click();
       await page.waitForTimeout(300);

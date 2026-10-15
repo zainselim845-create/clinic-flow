@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
-import { getGoogleClientId, saveGoogleClientId, getGoogleOAuthSetupInfo } from '../../../../services/googleAuthService';
-import { copyToClipboard } from '../../../../utils/clipboard';
+import { getGoogleClientId, saveGoogleClientId, getGoogleOAuthSetupInfo } from '@/features/auth/services/googleAuthService';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export function GoogleOAuthTab() {
   const [googleClientId, setGoogleClientIdState] = useState(() => getGoogleClientId());

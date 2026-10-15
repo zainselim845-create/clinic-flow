@@ -1,9 +1,9 @@
 import React from 'react';
 import { Building2, Phone, Clock, QrCode, MessageSquare, Copy, ExternalLink, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { CLINIC_SPECIALTIES } from '../../../data/specialtiesData';
-import { SAAS_PLATFORM_DOMAIN } from '../../../utils/clinicUrls';
-import ClinicLocationGpsSection from './ClinicLocationGpsSection';
-import EgyptianPaymentSection from './EgyptianPaymentSection';
+import { CLINIC_SPECIALTIES } from '@/data/specialtiesData';
+import { SAAS_PLATFORM_DOMAIN } from '@/utils/clinicUrls';
+import ClinicLocationGpsSection from '@/pages/settings/components/ClinicLocationGpsSection';
+import EgyptianPaymentSection from '@/pages/settings/components/EgyptianPaymentSection';
 
 export default function ClinicIdentitySection({
   clinicForm,

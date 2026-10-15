@@ -1,6 +1,6 @@
 import React from 'react';
-import { useAuth } from '../context/AuthContext';
-import { hasCapability } from '../utils/permissions';
+import { useAuth } from '@/context/AuthContext';
+import { hasCapability } from '@/utils/permissions';
 
 /**
  * Custom React hook to evaluate capability for current authenticated user

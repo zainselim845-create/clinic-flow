@@ -11,10 +11,10 @@ import {
   resetSaaSSubscriptionPlansToDefaults,
   getSaaSBillingMetrics,
   updateClinicSubscriptionDetails
-} from '../../../../services/saasSubscriptionPlansService';
-import { getClinicUsage } from '../../../../services/usageMeteringService';
-import EditPlanTierModal from '../EditPlanTierModal';
-import ClinicSubscriptionControlModal from '../ClinicSubscriptionControlModal';
+} from '@/features/platform/services/saasSubscriptionPlansService';
+import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
+import EditPlanTierModal from '@/pages/superadmin/components/EditPlanTierModal';
+import ClinicSubscriptionControlModal from '@/pages/superadmin/components/ClinicSubscriptionControlModal';
 
 export function SubscriptionPlansTab({ 
   allTenants = [], 

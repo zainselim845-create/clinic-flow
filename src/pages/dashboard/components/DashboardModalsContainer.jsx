@@ -1,13 +1,13 @@
 import React from 'react';
-import WalkInRegistrationModal from '../WalkInRegistrationModal';
-import ConsultationModal from '../ConsultationModal';
-import PatientDossierDrawer from '../PatientDossierDrawer';
-import QuickPaymentModal from '../QuickPaymentModal';
-import ExpensesModal from '../../../components/ExpensesModal';
-import PatientRecallModal from '../../../components/PatientRecallModal';
-import ShiftHandoverModal from '../../../components/ShiftHandoverModal';
-import ConfirmationModal from '../../../components/ConfirmationModal';
-import BookingShareModal from '../../../components/BookingShareModal';
+import WalkInRegistrationModal from '@/pages/dashboard/WalkInRegistrationModal';
+import ConsultationModal from '@/pages/dashboard/ConsultationModal';
+import PatientDossierDrawer from '@/pages/dashboard/PatientDossierDrawer';
+import QuickPaymentModal from '@/pages/dashboard/QuickPaymentModal';
+import ExpensesModal from '@/components/ExpensesModal';
+import PatientRecallModal from '@/components/PatientRecallModal';
+import ShiftHandoverModal from '@/components/ShiftHandoverModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
+import BookingShareModal from '@/components/BookingShareModal';
 
 /**
  * DashboardModalsContainer - Encapsulates all dashboard modals, drawers, and overlay controls

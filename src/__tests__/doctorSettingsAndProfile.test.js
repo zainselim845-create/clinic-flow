@@ -159,7 +159,7 @@ describe('Doctor Settings, Professional Profile & Schedule Persistence', () => {
     const generalTabPath = path.join(__dirname, '../pages/settings/GeneralSettingsTab.jsx');
     const code = fs.readFileSync(generalTabPath, 'utf8');
 
-    expect(code).toContain("import { SAAS_PLATFORM_DOMAIN } from '../../utils/clinicUrls';");
+    expect(code).toContain("import { SAAS_PLATFORM_DOMAIN } from '@/utils/clinicUrls';");
     expect(code).toContain('clinicForm = {}');
     expect(code).toContain('const safeForm = clinicForm || {};');
   });

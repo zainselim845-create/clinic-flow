@@ -1,0 +1,348 @@
+import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '@/lib/supabase';
+import { invoiceSchema, validateWithSchema } from '@/utils/validationSchemas';
+
+export function fromDbInvoice(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    clinicId: row.clinic_id,
+    doctorId: row.doctor_id || row.doctorId || null,
+    doctorName: row.doctor_name || row.doctorName || '',
+    doctorCommissionRate: Number(row.doctor_commission_rate ?? row.doctorCommissionRate ?? 0),
+    doctorShare: Number(row.doctor_share ?? row.doctorShare ?? 0),
+    clinicShare: Number(row.clinic_share ?? row.clinicShare ?? 0),
+    patientId: row.patient_id,
+    patientName: row.patient_name || '',
+    patientPhone: row.patient_phone || '',
+    appointmentId: row.appointment_id,
+    invoiceNumber: row.invoice_number,
+    subtotal: Number(row.subtotal || 0),
+    discount: Number(row.discount || 0),
+    taxPercentage: Number(row.tax_percentage || 0),
+    taxAmount: Number(row.tax_amount || 0),
+    total: Number(row.total || 0),
+    insuranceShare: Number(row.insurance_share || 0),
+    patientShare: Number(row.patient_share !== undefined && row.patient_share !== null ? row.patient_share : (row.total || 0)),
+    paidAmount: Number(row.paid_amount || 0),
+    remainingBalance: Number(row.remaining_balance || 0),
+    paymentStatus: row.payment_status || 'unpaid',
+    items: row.items || [],
+    notes: row.notes || '',
+    createdAt: row.created_at,
+    deletedAt: row.deleted_at || null
+  };
+}
+
+export function toDbInvoice(data) {
+  if (!data) return {};
+  return {
+    id: data.id || undefined,
+    clinic_id: data.clinicId || undefined,
+    doctor_id: data.doctorId || data.doctor_id || null,
+    doctor_name: data.doctorName || data.doctor_name || null,
+    doctor_commission_rate: data.doctorCommissionRate !== undefined ? Number(data.doctorCommissionRate) : undefined,
+    doctor_share: data.doctorShare !== undefined ? Number(data.doctorShare) : undefined,
+    clinic_share: data.clinicShare !== undefined ? Number(data.clinicShare) : undefined,
+    patient_id: data.patientId,
+    appointment_id: data.appointmentId || null,
+    invoice_number: data.invoiceNumber,
+    subtotal: Number(data.subtotal || 0),
+    discount: Number(data.discount || 0),
+    tax_percentage: Number(data.taxPercentage || 0),
+    tax_amount: Number(data.taxAmount || 0),
+    total: Number(data.total || 0),
+    insurance_share: Number(data.insuranceShare || 0),
+    patient_share: Number(data.patientShare !== undefined && data.patientShare !== null ? data.patientShare : (data.total || 0)),
+    paid_amount: Number(data.paidAmount || 0),
+    remaining_balance: Number(data.remainingBalance || 0),
+    payment_status: data.paymentStatus || 'unpaid',
+    items: data.items || [],
+    notes: data.notes || '',
+    deleted_at: data.deletedAt || null
+  };
+}
+
+export async function getInvoices(clinicId, { limit = 200 } = {}) {
+  if (!isSupabaseConfigured()) {
+    return { data: [], error: NOT_CONFIGURED_ERROR };
+  }
+
+  if (!clinicId) {
+    return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
+  try {
+    let query = supabase
+      .from('invoices')
+      .select('*')
+      .eq('clinic_id', clinicId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return { data: (data || []).map(fromDbInvoice), error: null };
+  } catch (error) {
+    console.error('Error fetching invoices:', error);
+    return { data: [], error };
+  }
+}
+
+/**
+ * Get paginated invoices for high scale (financial records)
+ */
+export async function getInvoicesPaginated({ clinicId, page = 1, pageSize = 25, paymentStatus = null } = {}) {
+  if (!isSupabaseConfigured()) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: NOT_CONFIGURED_ERROR };
+  }
+
+  if (!clinicId) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
+  try {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from('invoices')
+      .select('*', { count: 'exact' })
+      .eq('clinic_id', clinicId)
+      .order('created_at', { ascending: false })
+      .range(from, to);
+
+    if (paymentStatus) query = query.eq('payment_status', paymentStatus);
+
+    const { data, count, error } = await query;
+    if (error) throw error;
+
+    return {
+      data: (data || []).map(fromDbInvoice),
+      total: count || 0,
+      page,
+      pageSize,
+      totalPages: Math.ceil((count || 0) / pageSize) || 1,
+      error: null
+    };
+  } catch (error) {
+    console.error('Error fetching paginated invoices:', error);
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error };
+  }
+}
+
+export async function addInvoice(invoice) {
+  if (!isSupabaseConfigured()) {
+    return { data: invoice, error: NOT_CONFIGURED_ERROR };
+  }
+
+  if (!invoice || (!invoice.clinicId && !invoice.clinic_id)) {
+    return { data: null, error: new Error('Clinic ID is strictly required to add an invoice') };
+  }
+
+  // Zod mutation guard
+  const validation = validateWithSchema(invoiceSchema, {
+    clinicId: invoice.clinicId || invoice.clinic_id,
+    patientId: invoice.patientId || invoice.patient_id || '',
+    invoiceNumber: invoice.invoiceNumber || invoice.invoice_number || '',
+    subtotal: Number(invoice.subtotal || 0),
+    discount: Number(invoice.discount || 0),
+    taxPercentage: Number(invoice.taxPercentage || invoice.tax_percentage || 0),
+    taxAmount: Number(invoice.taxAmount || invoice.tax_amount || 0),
+    total: Number(invoice.total || 0),
+    insuranceShare: Number(invoice.insuranceShare || invoice.insurance_share || 0),
+    patientShare: Number(invoice.patientShare ?? invoice.patient_share ?? invoice.total ?? 0),
+    paymentStatus: invoice.paymentStatus || invoice.payment_status || 'unpaid',
+    items: invoice.items || []
+  });
+  if (!validation.success) {
+    return { data: null, error: new Error(`Validation Error: ${validation.error}`) };
+  }
+
+  try {
+    const row = toDbInvoice(invoice);
+    const { data, error } = await supabase
+      .from('invoices')
+      .insert(row)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { data: fromDbInvoice(data), error: null };
+  } catch (error) {
+    console.error('Error adding invoice:', error);
+    return { data: invoice, error };
+  }
+}
+
+export async function recordPayment(invoiceId, paymentData) {
+  if (!isSupabaseConfigured()) {
+    return { data: paymentData, error: NOT_CONFIGURED_ERROR };
+  }
+
+  if (!invoiceId) {
+    return { success: false, error: new Error('Invoice ID is required to record a payment') };
+  }
+
+  try {
+    // 1. Fetch current invoice to guarantee isolation and get clinic_id
+    const { data: currentInv, error: fetchErr } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', invoiceId)
+      .single();
+
+    if (fetchErr || !currentInv) {
+      throw fetchErr || new Error('Invoice not found');
+    }
+
+    const clinicId = paymentData.clinicId || paymentData.clinic_id || currentInv.clinic_id;
+
+    // 2. Insert payment row with strict clinic_id scoping
+    await supabase.from('payments').insert({
+      clinic_id: clinicId,
+      invoice_id: invoiceId,
+      patient_id: paymentData.patientId || currentInv.patient_id,
+      amount: Number(paymentData.amount),
+      payment_method: paymentData.paymentMethod || 'cash',
+      transaction_ref: paymentData.transactionRef || '',
+      notes: paymentData.notes || ''
+    });
+
+    // 3. Update invoice status
+    const newPaid = Number(currentInv.paid_amount || 0) + Number(paymentData.amount);
+    const targetDue = Number(
+      currentInv.patient_share !== undefined && currentInv.patient_share !== null
+        ? currentInv.patient_share
+        : (currentInv.total || 0)
+    );
+    const remaining = Math.max(0, targetDue - newPaid);
+    const newStatus = remaining <= 0 ? 'paid' : (newPaid > 0 ? 'partial' : 'unpaid');
+
+    await supabase.from('invoices').update({
+      paid_amount: newPaid,
+      remaining_balance: remaining,
+      payment_status: newStatus
+    }).eq('id', invoiceId);
+
+    return { success: true, error: null };
+  } catch (error) {
+    console.error('Error recording payment:', error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Generates a deterministic, gapless monotonic invoice sequence per clinic
+ * Format: INV-YYYY-0001, INV-YYYY-0002, etc.
+ * 
+ * @param {string} clinicId - Clinic ID or slug
+ * @param {Object} options - Options containing existing invoices or specific year
+ * @returns {string} Next sequential invoice number
+ */
+export function getNextInvoiceNumber(clinicId, options = {}) {
+  const year = options.year || new Date().getFullYear();
+  const prefix = `INV-${year}-`;
+  let candidateInvoices = Array.isArray(options.existingInvoices) ? options.existingInvoices : [];
+
+  if (candidateInvoices.length === 0 && typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem(`clinicflow_invoices_${clinicId}`) 
+        || localStorage.getItem('clinicflow_invoices');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) candidateInvoices = parsed;
+      }
+    } catch (err) {
+      console.warn('[InvoicesService] Failed to read stored invoices for next number:', err);
+    }
+  }
+
+  let maxSequence = 0;
+  const seqRegex = new RegExp(`^INV-${year}-(\\d+)$`);
+
+  candidateInvoices.forEach(inv => {
+    const num = inv?.invoiceNumber || inv?.invoice_number;
+    if (typeof num === 'string') {
+      const match = num.match(seqRegex);
+      if (match && match[1]) {
+        const parsed = parseInt(match[1], 10);
+        if (!isNaN(parsed) && parsed > maxSequence) {
+          maxSequence = parsed;
+        }
+      }
+    }
+  });
+
+  const nextSeq = maxSequence + 1;
+  const padded = String(nextSeq).padStart(4, '0');
+  return `${prefix}${padded}`;
+}
+
+/**
+ * Validates and normalizes financial invoice ledger invariants
+ * Clamps all financial numbers to 2 decimal places and ensures non-negative numbers.
+ */
+export function normalizeInvoiceTotals({
+  subtotal = 0,
+  discount = 0,
+  discountAmount = 0,
+  taxPercentage = 0,
+  taxAmount: providedTaxAmount,
+  paidAmount = 0
+} = {}) {
+  const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
+  const cleanSubtotal = Math.max(0, round2(subtotal));
+  const rawDiscount = discount || discountAmount || 0;
+  const cleanDiscount = Math.min(cleanSubtotal, Math.max(0, round2(rawDiscount)));
+  const cleanTaxPercent = Math.max(0, round2(taxPercentage));
+  const taxable = Math.max(0, round2(cleanSubtotal - cleanDiscount));
+  const taxAmount = providedTaxAmount !== undefined 
+    ? round2(providedTaxAmount) 
+    : round2(taxable * (cleanTaxPercent / 100));
+  const total = round2(taxable + taxAmount);
+  const cleanPaid = Math.max(0, Math.min(total, round2(paidAmount)));
+  const remainingBalance = Math.max(0, round2(total - cleanPaid));
+  const paymentStatus = remainingBalance <= 0 ? 'paid' : (cleanPaid > 0 ? 'partial' : 'unpaid');
+
+  return {
+    subtotal: cleanSubtotal,
+    discount: cleanDiscount,
+    taxPercentage: cleanTaxPercent,
+    taxAmount,
+    total,
+    patientShare: total,
+    paidAmount: cleanPaid,
+    remainingBalance,
+    paymentStatus
+  };
+}
+
+/**
+ * Soft-deletes an invoice by setting deleted_at timestamp.
+ * Financial records are never hard-deleted for audit compliance.
+ * Strictly scoped to clinic_id to prevent cross-tenant data mutation.
+ */
+export async function softDeleteInvoice(invoiceId, clinicId) {
+  if (!isSupabaseConfigured()) {
+    return { success: false, error: NOT_CONFIGURED_ERROR };
+  }
+  if (!invoiceId || !clinicId) {
+    return { success: false, error: new Error('Invoice ID and Clinic ID are both required for soft deletion') };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('invoices')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', invoiceId)
+      .eq('clinic_id', clinicId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data: fromDbInvoice(data), error: null };
+  } catch (error) {
+    console.error('Error soft-deleting invoice:', error);
+    return { success: false, error };
+  }
+}

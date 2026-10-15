@@ -3,11 +3,11 @@
  * Tier-1 SaaS Bounded Contexts Registry
  */
 
-export * as IdentityDomain from './identity';
-export * as ClinicalDomain from './clinical';
-export * as BillingDomain from './billing';
-export * as SchedulingDomain from './scheduling';
-export * as PatientsDomain from './patients';
-export * as PlatformDomain from './platform';
-export * as MarketingDomain from '../features/marketing';
-export * as NationalEgyptDomain from '../features/egypt-national';
+export * as IdentityDomain from '@/domains/identity';
+export * as ClinicalDomain from '@/domains/clinical';
+export * as BillingDomain from '@/domains/billing';
+export * as SchedulingDomain from '@/domains/scheduling';
+export * as PatientsDomain from '@/domains/patients';
+export * as PlatformDomain from '@/domains/platform';
+export * as MarketingDomain from '@/features/marketing';
+export * as NationalEgyptDomain from '@/features/egypt-national';

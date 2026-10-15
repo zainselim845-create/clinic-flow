@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, X } from 'lucide-react';
-import { safeGetItem, safeSetItem } from '../utils/safeStorage';
+import { safeGetItem, safeSetItem } from '@/utils/safeStorage';
 
 /**
  * Clean, non-intrusive cookie and privacy consent banner.

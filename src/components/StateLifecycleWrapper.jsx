@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertCircle, RefreshCw, Inbox } from 'lucide-react';
-import EmptyState from './EmptyState';
-import Skeleton from './Skeleton';
+import EmptyState from '@/components/EmptyState';
+import Skeleton from '@/components/Skeleton';
 
 /**
  * Universal 4-State Lifecycle Wrapper

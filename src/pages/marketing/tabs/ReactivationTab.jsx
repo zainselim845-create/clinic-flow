@@ -4,9 +4,9 @@ import {
   REACTIVATION_STAGES, 
   REACTIVATION_STAGES_LIST,
   generateReactivationMessage 
-} from '../../../services/reactivationService';
-import { sendSmsBatchAsync } from '../../../services/smsService';
-import { useTenant } from '../../../context/TenantContext';
+} from '@/features/marketing/services/reactivationService';
+import { sendSmsBatchAsync } from '@/features/marketing/services/smsService';
+import { useTenant } from '@/context/TenantContext';
 
 export function ReactivationTab({ crmStats, segmentedPatients = [], currentClinic }) {
   const { hasFeature, tenant } = useTenant();

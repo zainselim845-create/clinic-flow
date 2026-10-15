@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { 
   DENTAL_WORK_TYPES, TOOTH_SHADES 
-} from '../services/labsService';
+} from '@/features/clinical/services/labsService';
 import { Layers, X, CheckCircle2 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import './LabOrderModal.css';
 

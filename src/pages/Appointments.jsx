@@ -1,23 +1,23 @@
 import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
-import { useTenant } from '../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
 import { Plus, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
-import AppointmentCard from '../components/AppointmentCard';
+import AppointmentCard from '@/components/AppointmentCard';
 import {
   MultiChairGrid,
   AppointmentFiltersBar,
   NewAppointmentModal,
   SlotBlockerModal
-} from '../components/appointments';
-import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
-import { availableSlots } from '../data/demoData';
-import { getTodayDateStr } from '../utils/timeSlots';
-import * as appointmentsService from '../services/appointmentsService';
-import * as blockedSlotsService from '../services/blockedSlotsService';
-import { isDoctorRole } from '../utils/permissions';
-import { syncOutbox } from '../lib/syncOutbox';
+} from '@/components/appointments';
+import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
+import { availableSlots } from '@/data/demoData';
+import { getTodayDateStr } from '@/utils/timeSlots';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
+import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
+import { isDoctorRole } from '@/utils/permissions';
+import { syncOutbox } from '@/lib/syncOutbox';
 import './Appointments.css';
 
 const Appointments = () => {

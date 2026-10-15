@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { addTreatmentPlan, updateTreatmentPlanStatus, deleteTreatmentPlan } from '../services/treatmentPlansService';
-import { addInvoice } from '../services/invoicesService';
+import { addTreatmentPlan, updateTreatmentPlanStatus, deleteTreatmentPlan } from '@/features/patients/services/treatmentPlansService';
+import { addInvoice } from '@/features/billing/services/invoicesService';
 import { 
   FileSpreadsheet, Plus, Trash2, CheckCircle2, X, Receipt 
 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import './TreatmentPlanModal.css';
 

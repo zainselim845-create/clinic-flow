@@ -6,7 +6,7 @@ import {
 import { 
   getSaaSSubscriptionPlans, 
   updateClinicSubscriptionDetails 
-} from '../../../services/saasSubscriptionPlansService';
+} from '@/features/platform/services/saasSubscriptionPlansService';
 
 export default function ClinicSubscriptionControlModal({ isOpen, onClose, tenant: propTenant, clinic: propClinic, onUpdateSuccess, onSuccess }) {
   const tenant = useMemo(() => propTenant || propClinic || {}, [propTenant, propClinic]);

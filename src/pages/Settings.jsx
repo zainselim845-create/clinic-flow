@@ -4,24 +4,24 @@ import {
   Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Smartphone, Bot
 } from 'lucide-react';
 
-import { useApp } from '../context/AppContext';
-import * as clinicsService from '../services/clinicsService';
-import { isSupabaseConfigured } from '../lib/supabase';
-import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
-import GeneralSettingsTab from './settings/GeneralSettingsTab';
-import { useAuth } from '../context/AuthContext';
-import ScheduleBuilderTab from './settings/ScheduleBuilderTab';
-import VisitTypesTab from './settings/VisitTypesTab';
-import StaffManagementTab from './settings/StaffManagementTab';
-import SubscriptionPlanTab from './settings/SubscriptionPlanTab';
-import CustomDomainTab from './settings/CustomDomainTab';
-import SmsConfigTab from './settings/SmsConfigTab';
-import AiAssistantTab from './settings/AiAssistantTab';
-import { useTenant } from '../context/TenantContext';
-import { clinicInfo as defaultClinicInfo } from '../data/demoData';
-import { Tabs } from '../components/ui/tabs';
-import { isAdminRole } from '../utils/permissions';
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import { useApp } from '@/context/AppContext';
+import * as clinicsService from '@/features/platform/services/clinicsService';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
+import GeneralSettingsTab from '@/pages/settings/GeneralSettingsTab';
+import { useAuth } from '@/context/AuthContext';
+import ScheduleBuilderTab from '@/pages/settings/ScheduleBuilderTab';
+import VisitTypesTab from '@/pages/settings/VisitTypesTab';
+import StaffManagementTab from '@/pages/settings/StaffManagementTab';
+import SubscriptionPlanTab from '@/pages/settings/SubscriptionPlanTab';
+import CustomDomainTab from '@/pages/settings/CustomDomainTab';
+import SmsConfigTab from '@/pages/settings/SmsConfigTab';
+import AiAssistantTab from '@/pages/settings/AiAssistantTab';
+import { useTenant } from '@/context/TenantContext';
+import { clinicInfo as defaultClinicInfo } from '@/data/demoData';
+import { Tabs } from '@/components/ui/tabs';
+import { isAdminRole } from '@/utils/permissions';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import './Settings.css';
 
 const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'aiAssistant', 'subscription', 'customDomain', 'sms'];

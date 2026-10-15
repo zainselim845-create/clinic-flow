@@ -1,5 +1,5 @@
-import { findPatientInText } from './dateResolvers';
-import { getTodayDateStr } from '../timeSlots';
+import { findPatientInText } from '@/utils/clinical/dateResolvers';
+import { getTodayDateStr } from '@/utils/timeSlots';
 
 /**
  * Evaluates clinic fees, service catalog, branch switching, secondary modules (Labs/Inventory), WhatsApp bot, navigation, and clinic summary

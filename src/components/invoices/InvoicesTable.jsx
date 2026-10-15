@@ -9,7 +9,7 @@ import {
   ArrowDownLeft, 
   ArrowUpRight 
 } from 'lucide-react';
-import { Skeleton } from '../ui/Skeleton';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function InvoicesTable({
   isLoading = false,

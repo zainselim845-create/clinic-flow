@@ -5,7 +5,7 @@
  * while logging structured diagnostics to the central error telemetry service.
  */
 
-import { captureSystemError } from '../services/systemErrorService';
+import { captureSystemError } from '@/features/platform/services/systemErrorService';
 
 const memoryStore = new Map();
 const sessionMemoryStore = new Map();

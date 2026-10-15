@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog } from '../../../components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { X, UserPlus } from 'lucide-react';
-import { getAllPlatformUsers } from '../../../services/authService';
+import { getAllPlatformUsers } from '@/features/auth/services/authService';
 
 export function CreateUserModal({
   isOpen,

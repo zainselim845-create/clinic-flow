@@ -1,3 +1,3 @@
-export { default as InventoryMetricsRow } from './InventoryMetricsRow';
-export { default as InventoryFiltersBar } from './InventoryFiltersBar';
-export { default as InventoryTable } from './InventoryTable';
+export { default as InventoryMetricsRow } from '@/components/inventory/InventoryMetricsRow';
+export { default as InventoryFiltersBar } from '@/components/inventory/InventoryFiltersBar';
+export { default as InventoryTable } from '@/components/inventory/InventoryTable';

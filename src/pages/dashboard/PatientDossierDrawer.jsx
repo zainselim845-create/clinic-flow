@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog } from '../../components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, MessageSquare, 
   FileSpreadsheet, X, Edit3, Wallet, Layers, Printer
 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
-import { useTenant } from '../../context/TenantContext';
-import ClinicalNotesPanel from '../../components/ClinicalNotesPanel';
-import TreatmentPlanModal from '../../components/TreatmentPlanModal';
-import PatientWalletPanel from '../../components/PatientWalletPanel';
-import { getPatientClinicalNotes } from '../../services/clinicalNotesService';
-import { getPatientTreatmentPlans } from '../../services/treatmentPlansService';
-import { getWhatsAppUri } from '../../services/smsService';
-import { safeGetJSON } from '../../utils/safeStorage';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
+import ClinicalNotesPanel from '@/components/ClinicalNotesPanel';
+import TreatmentPlanModal from '@/components/TreatmentPlanModal';
+import PatientWalletPanel from '@/components/PatientWalletPanel';
+import { getPatientClinicalNotes } from '@/features/clinical/services/clinicalNotesService';
+import { getPatientTreatmentPlans } from '@/features/patients/services/treatmentPlansService';
+import { getWhatsAppUri } from '@/features/marketing/services/smsService';
+import { safeGetJSON } from '@/utils/safeStorage';
 import './PatientDossierDrawer.css';
 
 const STATUS_LABELS = {

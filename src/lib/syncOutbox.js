@@ -4,13 +4,13 @@
  * and draining them idempotently to the cloud when connections are healthy.
  */
 
-import { localDb } from '../db/localDatabase';
-import { cloudCircuitBreaker } from './circuitBreaker';
-import * as appointmentsService from '../services/appointmentsService';
-import * as patientsService from '../services/patientsService';
-import * as expensesService from '../services/expensesService';
-import * as recallsService from '../services/recallsService';
-import * as notificationsService from '../services/notificationsService';
+import { localDb } from '@/db/localDatabase';
+import { cloudCircuitBreaker } from '@/lib/circuitBreaker';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
+import * as patientsService from '@/features/patients/services/patientsService';
+import * as expensesService from '@/features/billing/services/expensesService';
+import * as recallsService from '@/features/patients/services/recallsService';
+import * as notificationsService from '@/features/platform/services/notificationsService';
 
 export const OUTBOX_STATUS = {
   PENDING: 'pending',

@@ -5,7 +5,7 @@ import {
   Palette,
   SlidersHorizontal
 } from 'lucide-react';
-import { useTenant, applyTenantBranding } from '../context/TenantContext';
+import { useTenant, applyTenantBranding } from '@/context/TenantContext';
 
 export const PALETTE_CATEGORIES = [
   'الأساس المعماري الفاخر',

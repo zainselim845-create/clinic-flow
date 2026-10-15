@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle2, AlertTriangle, MessageCircle } from 'lucide-react';
-import { generateTreatmentPlanFollowUpMessage } from '../../../services/treatmentPlansService';
+import { generateTreatmentPlanFollowUpMessage } from '@/features/patients/services/treatmentPlansService';
 
 export function TreatmentPlansTab({ unfinishedPlans, currentClinic }) {
   return (

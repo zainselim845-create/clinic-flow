@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
-import { copyToClipboard } from '../utils/clipboard';
+import { copyToClipboard } from '@/utils/clipboard';
 
 /**
  * Reusable Code & DNS snippet box with built-in 1-click copy to clipboard.

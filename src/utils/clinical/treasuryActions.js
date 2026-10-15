@@ -1,5 +1,5 @@
-import { findPatientInText } from './dateResolvers';
-import { getTodayDateStr } from '../timeSlots';
+import { findPatientInText } from '@/utils/clinical/dateResolvers';
+import { getTodayDateStr } from '@/utils/timeSlots';
 
 /**
  * Evaluates treasury movements, cash flow, expenses, payments, invoices, and debt metrics

@@ -5,8 +5,8 @@ import {
   verifyDomainDnsAndSsl, 
   saveClinicDomainSettings, 
   sanitizeDomain 
-} from '../../../../services/customDomainService';
-import { copyToClipboard } from '../../../../utils/clipboard';
+} from '@/features/platform/services/customDomainService';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export function CustomDomainsTab({ allTenants = [], updateTenantDomain }) {
   const [domainInputs, setDomainInputs] = useState(() => {

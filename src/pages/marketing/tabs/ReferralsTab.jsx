@@ -3,7 +3,7 @@ import { Copy, Check } from 'lucide-react';
 import { 
   getPatientReferralCode, 
   getPatientReferralLink 
-} from '../../../services/referralService';
+} from '@/features/marketing/services/referralService';
 
 export function ReferralsTab({ 
   patients, 

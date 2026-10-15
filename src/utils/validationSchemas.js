@@ -8,7 +8,7 @@
  */
 
 import { z } from 'zod';
-import { validateEgyptianPhone, cleanEgyptianPhone } from './phoneValidation';
+import { validateEgyptianPhone, cleanEgyptianPhone } from '@/utils/phoneValidation';
 
 // ==========================================
 // LAYER 1: LEGACY FORM VALIDATORS

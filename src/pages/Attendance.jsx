@@ -3,12 +3,12 @@ import {
   LogIn, LogOut, Clock 
 } from 'lucide-react';
 
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
 import { 
   getStaffAttendance, recordCheckIn, recordCheckOut 
-} from '../services/attendanceService';
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+} from '@/features/platform/services/attendanceService';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import './Attendance.css';
 
 const Attendance = () => {

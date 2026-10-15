@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { addClinicalNote, deleteClinicalNote } from '../services/clinicalNotesService';
+import { addClinicalNote, deleteClinicalNote } from '@/features/clinical/services/clinicalNotesService';
 import { Plus, Trash2, FileText, CheckCircle2, User, Clock } from 'lucide-react';
 
 import './ClinicalNotesPanel.css';

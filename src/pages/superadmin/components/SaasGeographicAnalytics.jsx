@@ -4,14 +4,14 @@ import {
   detectClinicLocation,
   calculateHaversineDistanceKm,
   getClinicCoordinates
-} from '../../../data/saasGeoData';
+} from '@/data/saasGeoData';
 import {
   GeoCommandHeader,
   GeoKpiCards,
   GeoInteractiveMap,
   GeoGovernoratesList,
   GeoClinicsDirectory
-} from './geo';
+} from '@/pages/superadmin/components/geo';
 
 /**
  * SaasGeographicAnalytics - Modular Orchestrator for National & Regional Geo Intelligence

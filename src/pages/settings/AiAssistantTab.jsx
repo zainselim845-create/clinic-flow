@@ -9,10 +9,10 @@ import {
   saveAiConfig, 
   testAiConnection, 
   DEFAULT_AI_MODEL 
-} from '../../services/aiAssistantService';
-import { getClinicUsage } from '../../services/usageMeteringService';
-import { useTenant } from '../../context/TenantContext';
-import { useApp } from '../../context/AppContext';
+} from '@/features/clinical/services/aiAssistantService';
+import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
+import { useTenant } from '@/context/TenantContext';
+import { useApp } from '@/context/AppContext';
 
 export const AI_MODELS_CATALOG = [
   {

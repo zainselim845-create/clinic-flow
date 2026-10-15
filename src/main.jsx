@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { AppProvider } from './context/AppContext';
-import { TenantProvider } from './context/TenantContext';
-import ErrorBoundary from './components/ErrorBoundary';
+import { AuthProvider } from '@/context/AuthContext';
+import { AppProvider } from '@/context/AppContext';
+import { TenantProvider } from '@/context/TenantContext';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { LocaleProvider } from '@ark-ui/react/locale';
 import { Toaster } from 'sonner';
-import { initGlobalErrorListeners } from './services/systemErrorService';
-import App from './App';
+import { initGlobalErrorListeners } from '@/features/platform/services/systemErrorService';
+import App from '@/App';
 import './index.css';
 
 // Immediately trap all unhandled runtime errors & promise rejections across all browsers

@@ -3,12 +3,12 @@ import {
   X, Landmark, DollarSign, CreditCard, ArrowRightLeft, 
   CheckCircle2, AlertCircle, Printer
 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { useApp } from '../context/AppContext';
-import { getTodayDateStr } from '../utils/timeSlots';
-import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import { useApp } from '@/context/AppContext';
+import { getTodayDateStr } from '@/utils/timeSlots';
+import { recordAuditEvent, AUDIT_EVENT_TYPES } from '@/features/auth/services/auditLoggerService';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import './ShiftHandoverModal.css';
 
 export default function ShiftHandoverModal({ isOpen, onClose, onSaveShift }) {

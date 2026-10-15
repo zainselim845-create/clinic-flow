@@ -1,5 +1,5 @@
-import { resolveDateFromText, resolveTimeFromText, findPatientInText, extractCandidateName } from './dateResolvers';
-import { getTodayDateStr } from '../timeSlots';
+import { resolveDateFromText, resolveTimeFromText, findPatientInText, extractCandidateName } from '@/utils/clinical/dateResolvers';
+import { getTodayDateStr } from '@/utils/timeSlots';
 
 /**
  * Evaluates appointment booking, cancellation, rescheduling, status workflow, and schedule inspection

@@ -1,1 +1,1 @@
-export * from '@/services/inventoryService';
+export * from '@/features/inventory/services/inventoryService';

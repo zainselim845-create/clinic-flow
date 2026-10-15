@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
-import * as staffService from '../../services/staffService';
-import { provisionStaffAccount, deleteRegisteredUser, updateStaffAccountStatus } from '../../services/authService';
-import { SYSTEM_PERMISSIONS } from '../../utils/permissions';
-import { isSupabaseConfigured } from '../../lib/supabase';
-import { useTenant } from '../../context/TenantContext';
-import ConfirmationModal from '../../components/ConfirmationModal';
+import * as staffService from '@/features/platform/services/staffService';
+import { provisionStaffAccount, deleteRegisteredUser, updateStaffAccountStatus } from '@/features/auth/services/authService';
+import { SYSTEM_PERMISSIONS } from '@/utils/permissions';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { useTenant } from '@/context/TenantContext';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 export default function StaffManagementTab({ staffMembers, dispatch }) {
   const { tenant } = useTenant();

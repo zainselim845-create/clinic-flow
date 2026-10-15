@@ -3,8 +3,8 @@
  * Guarantees zero uncaught exceptions and graceful offline degradation.
  */
 
-import { cloudCircuitBreaker } from './circuitBreaker';
-import { syncOutbox } from './syncOutbox';
+import { cloudCircuitBreaker } from '@/lib/circuitBreaker';
+import { syncOutbox } from '@/lib/syncOutbox';
 
 /**
  * Executes a service operation with circuit breaker and local store fallback

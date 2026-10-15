@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
-import { captureSystemError } from '../services/systemErrorService';
+import { captureSystemError } from '@/features/platform/services/systemErrorService';
 
 /**
  * PageErrorBoundary

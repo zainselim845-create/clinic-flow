@@ -17,8 +17,8 @@ import {
 import { hasPermission, isAdminRole, isDoctorRole, canAccessRoute } from '../utils/permissions';
 import { syncOutbox, OUTBOX_STATUS } from '../lib/syncOutbox';
 import { cloudCircuitBreaker, CIRCUIT_STATE } from '../lib/circuitBreaker';
-import * as appointmentsService from '../services/appointmentsService';
-import * as patientsService from '../services/patientsService';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
+import * as patientsService from '@/features/patients/services/patientsService';
 
 const createStorageMock = () => {
   let store = {};

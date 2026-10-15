@@ -1,14 +1,25 @@
 /**
- * ClinicFlow Cloud Circuit Breaker (circuitBreaker.js)
- * Anti-Fragile Resilience Pattern for Cloud and Database operations.
- * Protects the UI from hanging, freezing, or crashing during backend outages.
+ * ClinicFlow Resilience — Circuit Breakers (canonical module)
+ * ==========================================================
+ * Single home for every circuit-breaker pattern in the codebase.
+ * Two specialized breakers live here:
  *
- * States:
- * - CLOSED: Remote database operations are healthy; requests proceed normally.
- * - OPEN: Remote database is unreachable, unmigrated (PGRST205), or failing.
- *         All operations immediately bypass network and use local-first storage (0ms latency).
- * - HALF_OPEN: Probe state where a single health check determines if the circuit can reset to CLOSED.
+ * 1. CloudCircuitBreaker (`cloudCircuitBreaker`)
+ *    Anti-fragile guard for Cloud/Database operations. Protects the UI from
+ *    hanging, freezing, or crashing during backend outages.
+ *    - CLOSED: remote DB healthy; requests proceed normally.
+ *    - OPEN:   remote DB unreachable, unmigrated (PGRST205), or failing —
+ *              operations immediately bypass network and use local-first storage.
+ *    - HALF_OPEN: probe state; a single health check decides reset.
+ *
+ * 2. ServiceCircuitBreaker (`circuitBreaker`)
+ *    Per-service registry breaker for third-party APIs (SMS gateways, AI
+ *    providers, Webhooks) with per-call timeouts and fallback execution.
  */
+
+/* ------------------------------------------------------------------ */
+/* 1. Cloud / Database breaker                                         */
+/* ------------------------------------------------------------------ */
 
 export const CIRCUIT_STATE = {
   CLOSED: 'CLOSED',
@@ -16,7 +27,7 @@ export const CIRCUIT_STATE = {
   HALF_OPEN: 'HALF_OPEN'
 };
 
-class CircuitBreaker {
+export class CloudCircuitBreaker {
   constructor(options = {}) {
     this.failureThreshold = options.failureThreshold || 3;
     this.resetTimeoutMs = options.resetTimeoutMs || 60000; // 60 seconds
@@ -67,8 +78,8 @@ class CircuitBreaker {
     this.lastFailureTime = Date.now();
     this.consecutiveFailures += 1;
 
-    const errMsg = typeof error === 'string' 
-      ? error 
+    const errMsg = typeof error === 'string'
+      ? error
       : (error?.message || error?.code || 'unknown_error');
 
     const isSchemaMissing = errMsg.includes('PGRST205') || errMsg.includes('schema cache');
@@ -139,9 +150,116 @@ class CircuitBreaker {
   }
 }
 
-export const cloudCircuitBreaker = new CircuitBreaker({
+export const cloudCircuitBreaker = new CloudCircuitBreaker({
   failureThreshold: 3,
   resetTimeoutMs: 60000
 });
+
+/* ------------------------------------------------------------------ */
+/* 2. Per-service third-party API breaker                              */
+/* ------------------------------------------------------------------ */
+
+export const CircuitState = {
+  CLOSED: 'CLOSED',
+  OPEN: 'OPEN',
+  HALF_OPEN: 'HALF_OPEN'
+};
+
+export class ServiceCircuitBreaker {
+  constructor(options = {}) {
+    this.failureThreshold = options.failureThreshold || 3;
+    this.cooldownPeriodMs = options.cooldownPeriodMs || 30000;
+    this.timeoutMs = options.timeoutMs || 5000;
+    this.circuits = new Map();
+  }
+
+  getCircuit(serviceName) {
+    let circuit = this.circuits.get(serviceName);
+    if (!circuit) {
+      circuit = {
+        state: CircuitState.CLOSED,
+        failureCount: 0,
+        lastFailureTime: 0,
+        successCountInHalfOpen: 0
+      };
+      this.circuits.set(serviceName, circuit);
+    }
+    return circuit;
+  }
+
+  isOpen(serviceName) {
+    const circuit = this.getCircuit(serviceName);
+    const now = Date.now();
+
+    if (circuit.state === CircuitState.OPEN) {
+      if (now - circuit.lastFailureTime > this.cooldownPeriodMs) {
+        circuit.state = CircuitState.HALF_OPEN;
+        circuit.successCountInHalfOpen = 0;
+        return false;
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  recordSuccess(serviceName) {
+    const circuit = this.getCircuit(serviceName);
+    if (circuit.state === CircuitState.HALF_OPEN) {
+      circuit.successCountInHalfOpen += 1;
+      if (circuit.successCountInHalfOpen >= 2) {
+        circuit.state = CircuitState.CLOSED;
+        circuit.failureCount = 0;
+      }
+    } else {
+      circuit.state = CircuitState.CLOSED;
+      circuit.failureCount = 0;
+    }
+  }
+
+  recordFailure(serviceName) {
+    const circuit = this.getCircuit(serviceName);
+    circuit.failureCount += 1;
+    circuit.lastFailureTime = Date.now();
+
+    if (circuit.failureCount >= this.failureThreshold || circuit.state === CircuitState.HALF_OPEN) {
+      circuit.state = CircuitState.OPEN;
+    }
+  }
+
+  async execute(serviceName, actionFn, fallbackFn = null) {
+    if (this.isOpen(serviceName)) {
+      if (fallbackFn) {
+        return fallbackFn(new Error(`Circuit breaker is OPEN for service '${serviceName}'`));
+      }
+      throw new Error(`Service '${serviceName}' is temporarily unavailable (circuit open)`);
+    }
+
+    let timerId = null;
+    try {
+      const timeoutPromise = new Promise((_, reject) => {
+        timerId = setTimeout(() => reject(new Error(`Operation timed out after ${this.timeoutMs}ms`)), this.timeoutMs);
+      });
+
+      const result = await Promise.race([actionFn(), timeoutPromise]);
+      if (timerId) clearTimeout(timerId);
+      this.recordSuccess(serviceName);
+      return result;
+    } catch (err) {
+      if (timerId) clearTimeout(timerId);
+      this.recordFailure(serviceName);
+      if (fallbackFn) {
+        return fallbackFn(err);
+      }
+      throw err;
+    }
+  }
+
+  reset(serviceName) {
+    this.circuits.delete(serviceName);
+  }
+}
+
+export const circuitBreaker = new ServiceCircuitBreaker();
 
 export default cloudCircuitBreaker;

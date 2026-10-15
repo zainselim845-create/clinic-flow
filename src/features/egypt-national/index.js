@@ -4,7 +4,7 @@
  * Medical Syndicate licensing, and National Payment Rails (InstaPay, Wallets, Fawry, Meeza).
  */
 
-export * from './governorates';
-export * from './nationalId';
-export * from './syndicateVerification';
-export * from './egyptPayments';
+export * from '@/features/egypt-national/governorates';
+export * from '@/features/egypt-national/nationalId';
+export * from '@/features/egypt-national/syndicateVerification';
+export * from '@/features/egypt-national/egyptPayments';

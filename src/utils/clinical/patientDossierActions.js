@@ -1,4 +1,4 @@
-import { findPatientInText, extractCandidateName } from './dateResolvers';
+import { findPatientInText, extractCandidateName } from '@/utils/clinical/dateResolvers';
 
 /**
  * Evaluates patient registration, medical dossiers, allergies, and patient searches

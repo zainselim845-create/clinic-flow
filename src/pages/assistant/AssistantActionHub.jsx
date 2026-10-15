@@ -3,7 +3,7 @@ import {
   CheckSquare, Square, MessageCircle, Filter, 
   MessageSquare, RefreshCw, Send, CheckCircle2 
 } from 'lucide-react';
-import { personalizeMessage } from '../../utils/doctorAgentHelpers';
+import { personalizeMessage } from '@/utils/doctorAgentHelpers';
 
 /**
  * AssistantActionHub - Targeted Patient Campaign Dispatch & SMS Broadcast Controller

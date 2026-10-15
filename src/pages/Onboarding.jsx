@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useTenant } from '../context/TenantContext';
-import { CLINIC_SPECIALTIES } from '../data/specialtiesData';
-import { isUsernameAvailable } from '../services/authService';
-import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
+import { CLINIC_SPECIALTIES } from '@/data/specialtiesData';
+import { isUsernameAvailable } from '@/features/auth/services/authService';
+import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
 import { HeartPulse, User, LogOut, AlertCircle, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import {
   OnboardingStepper,
@@ -15,7 +15,7 @@ import {
   OnboardingStepTeam,
   TEAM_SIZES,
   OnboardingSuccess
-} from './onboarding/components';
+} from '@/pages/onboarding/components';
 import './Onboarding.css';
 
 export default function Onboarding() {

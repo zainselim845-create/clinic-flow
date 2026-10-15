@@ -1,14 +1,26 @@
 const fs = require('fs');
 const path = require('path');
 
-const servicesDir = path.resolve(__dirname, '../../src/services');
-const serviceFiles = fs.readdirSync(servicesDir).filter(f => f.endsWith('.js') || f.endsWith('.jsx') || f.endsWith('.ts'));
+function collectServiceFiles(dir, out = []) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.isDirectory()) collectServiceFiles(path.join(dir, e.name), out);
+    else if (/\.(js|jsx|ts)$/.test(e.name)) out.push(path.join(dir, e.name));
+  }
+  return out;
+}
+// Scan the legacy services layer (compatibility shims + pinned modules)
+// AND the real feature-slice implementations.
+const serviceFiles = [
+  ...collectServiceFiles(path.resolve(__dirname, '../../src/services')),
+  ...collectServiceFiles(path.resolve(__dirname, '../../src/features'))
+].filter(f => !f.includes('__tests__'));
 
 const findings = [];
 
 serviceFiles.forEach(file => {
-  const filePath = path.join(servicesDir, file);
+  const filePath = file;
   const content = fs.readFileSync(filePath, 'utf8');
+  const relFile = path.relative(process.cwd(), filePath);
   const lines = content.split('\n');
 
   let inLoop = false;
@@ -34,7 +46,7 @@ serviceFiles.forEach(file => {
         // If it's a supabase call inside a loop
         if (line.includes('supabase.from(')) {
           findings.push({
-            file,
+            file: relFile,
             loopStartLine,
             loopType,
             queryLine: i + 1,

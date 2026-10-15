@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
 import { Plus } from 'lucide-react';
-import InventoryItemModal from '../components/InventoryItemModal';
-import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
+import InventoryItemModal from '@/components/InventoryItemModal';
+import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
 import { 
   getInventoryItems, addInventoryItem, adjustItemStock 
-} from '../services/inventoryService';
-import { isSupabaseConfigured } from '../lib/supabase';
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+} from '@/features/inventory/services/inventoryService';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import {
   InventoryMetricsRow,
   InventoryFiltersBar,
   InventoryTable
-} from '../components/inventory';
+} from '@/components/inventory';
 import './Inventory.css';
 
 const Inventory = () => {

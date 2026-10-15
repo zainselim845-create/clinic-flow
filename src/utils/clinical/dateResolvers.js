@@ -1,4 +1,4 @@
-import { formatLocalDate, getTodayDateStr } from '../timeSlots';
+import { formatLocalDate, getTodayDateStr } from '@/utils/timeSlots';
 
 export const ARABIC_DAYS_MAP = {
   'السبت': 6,

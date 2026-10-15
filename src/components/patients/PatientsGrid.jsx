@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
-import PatientCard from '../PatientCard';
+import PatientCard from '@/components/PatientCard';
 
 export default function PatientsGrid({
   viewMode = 'grid',

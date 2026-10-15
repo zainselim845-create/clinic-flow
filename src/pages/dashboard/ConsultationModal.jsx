@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Dialog } from '../../components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { 
   Stethoscope, Check, CalendarPlus, BellRing, X 
 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
-import { useTenant } from '../../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
 import './ConsultationModal.css';
 
 export default function ConsultationModal({

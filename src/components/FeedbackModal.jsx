@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Star, X, CheckCircle2 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
-import { addPatientFeedback } from '../services/feedbackService';
+import { addPatientFeedback } from '@/features/platform/services/feedbackService';
 
 import './FeedbackModal.css';
 

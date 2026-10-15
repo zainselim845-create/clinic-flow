@@ -1,26 +1,26 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Users, RefreshCw, AlertTriangle, Layers, Star, Activity, Bot, HeartHandshake, Smile, CheckCircle2, Zap, Cake } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
-import { useAuth } from '../../context/AuthContext';
-import { useTenant } from '../../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
 import { 
   segmentAllPatients, 
   filterPatientsBySegment 
-} from '../../services/segmentationService';
-import { scanAllCrossSellingOpportunities } from '../../services/crossSellingService';
-import { getBookingDrafts } from '../../services/leadRecoveryService';
+} from '@/features/marketing/services/segmentationService';
+import { scanAllCrossSellingOpportunities } from '@/features/marketing/services/crossSellingService';
+import { getBookingDrafts } from '@/features/marketing/services/leadRecoveryService';
 import { 
   getPatientPackages, 
   savePatientPackage, 
   detectStalledPackages 
-} from '../../services/packagesService';
+} from '@/features/billing/services/packagesService';
 import { 
   getPostVisitEligiblePatients, 
   getStoredFeedbacks,
   saveFeedback
-} from '../../services/feedbackService';
-import { getOccasionCampaignCandidates } from '../../services/occasionCampaignService';
-import { detectUnfinishedTreatmentPlans } from '../../services/treatmentPlansService';
+} from '@/features/platform/services/feedbackService';
+import { getOccasionCampaignCandidates } from '@/features/marketing/services/occasionCampaignService';
+import { detectUnfinishedTreatmentPlans } from '@/features/patients/services/treatmentPlansService';
 import {
   CrmOverviewTab,
   SegmentationTab,
@@ -33,9 +33,9 @@ import {
   OccasionsTab,
   ReferralsTab,
   AiComposerTab
-} from './tabs';
-import { AddPackageModal } from './tabs/AddPackageModal';
-import { copyToClipboard } from '../../utils/clipboard';
+} from '@/pages/marketing/tabs';
+import { AddPackageModal } from '@/pages/marketing/tabs/AddPackageModal';
+import { copyToClipboard } from '@/utils/clipboard';
 import './MarketingCrmHub.css';
 
 export const MarketingCrmHub = () => {

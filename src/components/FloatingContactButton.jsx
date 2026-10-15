@@ -1,5 +1,5 @@
 import React from 'react';
-import DoctorAiFloatingWidget from './DoctorAiFloatingWidget';
+import DoctorAiFloatingWidget from '@/components/DoctorAiFloatingWidget';
 
 /**
  * Floating AI Agent Widget.

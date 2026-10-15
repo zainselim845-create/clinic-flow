@@ -1,7 +1,8 @@
+import './SuperAdminDashboard.css';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTenant, getCombinedTenants } from '../../context/TenantContext';
-import { useAuth } from '../../context/AuthContext';
+import { useTenant, getCombinedTenants } from '@/context/TenantContext';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Building2, Plus, ShieldCheck, 
   ExternalLink, AlertTriangle, Globe, LogOut, Server, Users, MapPin
@@ -16,9 +17,9 @@ import {
   updateBugReportStatus,
   deleteBugReport,
   clearBugReports 
-} from '../../services/systemErrorService';
-import { toast } from '../../lib/toast';
-import { copyToClipboard } from '../../utils/clipboard';
+} from '@/features/platform/services/systemErrorService';
+import { toast } from '@/lib/toast';
+import { copyToClipboard } from '@/utils/clipboard';
 import {
   SaasStatsGrid,
   ClinicsTable,
@@ -32,9 +33,9 @@ import {
   SaasBrandingModal,
   ClinicSubscriptionControlModal,
   SaasGeographicAnalytics
-} from './components';
-import { getSaaSBillingMetrics } from '../../services/saasSubscriptionPlansService';
-import Breadcrumbs from '../../components/Breadcrumbs';
+} from '@/pages/superadmin/components';
+import { getSaaSBillingMetrics } from '@/features/platform/services/saasSubscriptionPlansService';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { 
   saveRegisteredTenant, 
   saveRegisteredUser,
@@ -44,10 +45,9 @@ import {
   toggleUserAccountStatus,
   deleteUserAccount,
   syncTenantsFromCloud
-} from '../../services/authService';
-import { formatSenderId } from '../../services/smsService';
-import { getClinicUsage } from '../../services/usageMeteringService';
-import './SuperAdminDashboard.css';
+} from '@/features/auth/services/authService';
+import { formatSenderId } from '@/features/marketing/services/smsService';
+import * as usageMeteringService from '@/services/usageMeteringService';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
@@ -98,11 +98,11 @@ export default function SuperAdminDashboard() {
   const pendingClinics = allTenants.filter(t => t.subscriptionStatus === 'pending_approval').length;
   const suspendedClinics = allTenants.filter(t => t.subscriptionStatus === 'suspended').length;
   const totalSmsUsed = allTenants.reduce((sum, t) => {
-    const usage = getClinicUsage(t.id, t.quotas, t.subscriptionTier);
+    const usage = usageMeteringService['getClinicUsage'](t.id, t.quotas, t.subscriptionTier);
     return sum + (usage.smsUsed || 0);
   }, 0);
   const totalSmsQuota = allTenants.reduce((sum, t) => {
-    const usage = getClinicUsage(t.id, t.quotas, t.subscriptionTier);
+    const usage = usageMeteringService['getClinicUsage'](t.id, t.quotas, t.subscriptionTier);
     return sum + (usage.totalSmsAllowed || usage.monthlySmsQuota || 1000);
   }, 0);
   const billingMetrics = getSaaSBillingMetrics(allTenants);

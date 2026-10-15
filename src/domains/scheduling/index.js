@@ -3,11 +3,11 @@
  * Bounded Context: Appointments Lifecycle, Waiting Room Queue, Operating Hours, Recalls, SMS
  */
 
-export * from '../../services/appointmentsService';
-export * from '../../services/blockedSlotsService';
-export * from '../../services/attendanceService';
-export * from '../../services/recallsService';
-export * from '../../services/smsService';
-export * from '../../utils/timeSlots';
-export * from '../../utils/parseArabicTime';
-export * from '../../components/appointments';
+export * from '@/features/appointments/services/appointmentsService';
+export * from '@/features/appointments/services/blockedSlotsService';
+export * from '@/features/platform/services/attendanceService';
+export * from '@/features/patients/services/recallsService';
+export * from '@/features/marketing/services/smsService';
+export * from '@/utils/timeSlots';
+export * from '@/utils/parseArabicTime';
+export * from '@/components/appointments';

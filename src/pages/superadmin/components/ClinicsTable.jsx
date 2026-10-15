@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone, FileText } from 'lucide-react';
+import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
 
 export function ClinicsTable({
   filteredTenants,

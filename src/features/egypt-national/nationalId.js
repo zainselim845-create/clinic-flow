@@ -3,7 +3,7 @@
  * Validation, demographic decoding, and civil registry mapping engine.
  */
 
-import { getGovernorateByCode } from './governorates';
+import { getGovernorateByCode } from '@/features/egypt-national/governorates';
 
 /**
  * Checks if a given year is a leap year in the Gregorian calendar

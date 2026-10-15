@@ -19,11 +19,11 @@ import {
   verifyDomainDnsAndSsl,
   saveClinicDomainSettings,
   getClinicDomainSettings
-} from '../../services/customDomainService';
-import { useApp } from '../../context/AppContext';
-import { useTenant } from '../../context/TenantContext';
-import CodeSnippet from '../../components/CodeSnippet';
-import { copyToClipboard } from '../../utils/clipboard';
+} from '@/features/platform/services/customDomainService';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
+import CodeSnippet from '@/components/CodeSnippet';
+import { copyToClipboard } from '@/utils/clipboard';
 import './CustomDomainTab.css';
 
 export default function CustomDomainTab() {

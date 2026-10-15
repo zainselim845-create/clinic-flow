@@ -1,21 +1,21 @@
 import React, { useMemo, useState } from 'react';
-import { useApp } from '../context/AppContext';
-import { useTenant } from '../context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { useTenant } from '@/context/TenantContext';
 import { 
   UserPlus, Share2, CalendarDays, Clock, Wallet, Landmark, BellRing 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { getTodayDateStr } from '../utils/timeSlots';
-import WaitingRoomQueue from './dashboard/WaitingRoomQueue';
-import RevenueAnalytics from './dashboard/RevenueAnalytics';
-import * as appointmentsService from '../services/appointmentsService';
-import * as patientsService from '../services/patientsService';
-import { addInvoice, getNextInvoiceNumber } from '../services/invoicesService';
-import { recordAuditEvent, AUDIT_EVENT_TYPES } from '../services/auditLoggerService';
-import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '../utils/permissions';
-import { getBookingFunnelStats, getBookingDrafts } from '../services/leadRecoveryService';
-import { safeGetJSON, safeSetJSON } from '../utils/safeStorage';
+import { useAuth } from '@/context/AuthContext';
+import { getTodayDateStr } from '@/utils/timeSlots';
+import WaitingRoomQueue from '@/pages/dashboard/WaitingRoomQueue';
+import RevenueAnalytics from '@/pages/dashboard/RevenueAnalytics';
+import * as appointmentsService from '@/features/appointments/services/appointmentsService';
+import * as patientsService from '@/features/patients/services/patientsService';
+import { addInvoice, getNextInvoiceNumber } from '@/features/billing/services/invoicesService';
+import { recordAuditEvent, AUDIT_EVENT_TYPES } from '@/features/auth/services/auditLoggerService';
+import { isDoctorRole, isAdminRole, hasCapability, CAPABILITIES } from '@/utils/permissions';
+import { getBookingFunnelStats, getBookingDrafts } from '@/features/marketing/services/leadRecoveryService';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import { 
   DashboardMetricsGrid, 
   DashboardScheduleTable, 
@@ -23,8 +23,8 @@ import {
   DashboardQuickDock,
   DashboardModalsContainer,
   DashboardPendingBanner
-} from './dashboard/components';
-import FeatureErrorBoundary from '../components/FeatureErrorBoundary';
+} from '@/pages/dashboard/components';
+import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
 import './Dashboard.css';
 
 /**

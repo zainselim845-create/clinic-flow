@@ -1,6 +1,6 @@
 import React from 'react';
 import { Phone, Calendar, Hash, MessageCircle, Edit3 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '@/context/AppContext';
 import './PatientCard.css';
 
 const formatLastVisit = (dateStr) => {

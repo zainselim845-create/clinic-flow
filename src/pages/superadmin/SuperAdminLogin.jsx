@@ -4,7 +4,7 @@ import {
   ShieldCheck, Lock, Mail, Eye, EyeOff, Loader2, 
   AlertTriangle, KeyRound, ShieldAlert, ArrowRight
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import './SuperAdminLogin.css';
 
 const MAX_FAILED_ATTEMPTS = 5;

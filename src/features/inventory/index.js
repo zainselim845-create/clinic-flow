@@ -3,5 +3,5 @@
  * Encapsulates stock levels, consumption logs, expiry dates, and supplier reorders.
  */
 
-export * from './components';
-export * from './services';
+export * from '@/features/inventory/components';
+export * from '@/features/inventory/services';

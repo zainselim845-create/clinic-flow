@@ -1,4 +1,4 @@
-import { resolveDateFromText, resolveTimeFromText } from './dateResolvers';
+import { resolveDateFromText, resolveTimeFromText } from '@/utils/clinical/dateResolvers';
 
 /**
  * Evaluates schedule, vacation blocks, duty roster, and availability unblock intents

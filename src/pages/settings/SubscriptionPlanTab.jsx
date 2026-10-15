@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { CreditCard, Smartphone, Users, ShieldCheck, ArrowUpRight, Database, Zap, AlertTriangle, History, Crown, CheckCircle2 } from 'lucide-react';
-import { useTenant } from '../../context/TenantContext';
-import { useApp } from '../../context/AppContext';
-import { getClinicUsage, getClinicUsageLedger } from '../../services/usageMeteringService';
+import { useTenant } from '@/context/TenantContext';
+import { useApp } from '@/context/AppContext';
+import { getClinicUsage, getClinicUsageLedger } from '@/features/platform/services/usageMeteringService';
 
 export default function SubscriptionPlanTab() {
   const { tenant } = useTenant();

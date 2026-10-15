@@ -11,7 +11,7 @@ import {
   MessageCircle,
   Activity
 } from 'lucide-react';
-import { getWhatsAppSupportUrl } from '../utils/utmTracking';
+import { getWhatsAppSupportUrl } from '@/utils/utmTracking';
 
 export default function NotFound() {
   const navigate = useNavigate();

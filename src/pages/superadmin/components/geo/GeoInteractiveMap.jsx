@@ -2,12 +2,12 @@ import React from 'react';
 import { 
   Compass, RefreshCw, LocateFixed, RotateCcw, AlertCircle, MapPin 
 } from 'lucide-react';
-import OpenStreetClinicMap from '../../../../components/common/OpenStreetClinicMap';
+import OpenStreetClinicMap from '@/components/common/OpenStreetClinicMap';
 import { 
   EGYPT_GOVERNORATES, 
   GULF_EXPANSION_REGIONS, 
   REGIONAL_CLUSTERS 
-} from '../../../../data/saasGeoData';
+} from '@/data/saasGeoData';
 
 /**
  * GeoInteractiveMap - Visual OpenStreetMap component with live GPS controls

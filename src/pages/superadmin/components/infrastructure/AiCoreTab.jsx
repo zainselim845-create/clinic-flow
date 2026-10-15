@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { RefreshCw, Eye, EyeOff } from 'lucide-react';
-import { getOpenRouterConfig, saveOpenRouterConfig, testOpenRouterConnection } from '../../../../services/aiAssistantService';
+import { getOpenRouterConfig, saveOpenRouterConfig, testOpenRouterConnection } from '@/features/clinical/services/aiAssistantService';
 
 export function AiCoreTab() {
   const [aiConfig, setAiConfig] = useState(() => getOpenRouterConfig());

@@ -8,10 +8,10 @@ import {
 import { 
   ARABIC_DAYS_MAP, generateDynamicSlots, formatTimeToArabic, 
   formatLocalDate, parseLocalDate, getTodayDateStr 
-} from '../../utils/timeSlots';
-import { isSupabaseConfigured } from '../../lib/supabase';
-import * as blockedSlotsService from '../../services/blockedSlotsService';
-import { safeGetJSON, safeSetJSON } from '../../utils/safeStorage';
+} from '@/utils/timeSlots';
+import { isSupabaseConfigured } from '@/lib/supabase';
+import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 
 const ARABIC_MONTHS = [
   'يناير', 'فبراير', 'مارس', 'إبريل', 'مايو', 'يونيو',

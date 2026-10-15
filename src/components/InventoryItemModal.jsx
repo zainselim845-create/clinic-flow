@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { INVENTORY_CATEGORIES } from '../services/inventoryService';
+import { INVENTORY_CATEGORIES } from '@/features/inventory/services/inventoryService';
 import { Package, X, CheckCircle2 } from 'lucide-react';
-import { Dialog } from './ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import './InventoryItemModal.css';
 

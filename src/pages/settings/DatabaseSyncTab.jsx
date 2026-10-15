@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Database, Server, HardDrive, Copy, Check, RefreshCw, CheckCircle2, AlertCircle, Download, KeyRound, Eye, EyeOff, Save, Trash2 } from 'lucide-react';
-import { getSupabaseConfig, saveSupabaseConfig, supabase } from '../../lib/supabase';
-import { copyToClipboard } from '../../utils/clipboard';
+import { getSupabaseConfig, saveSupabaseConfig, supabase } from '@/lib/supabase';
+import { copyToClipboard } from '@/utils/clipboard';
 
 export default function DatabaseSyncTab({ state, dispatch }) {
   const initialDb = getSupabaseConfig();

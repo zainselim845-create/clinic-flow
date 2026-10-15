@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Building2, Search, Stethoscope, Award, MapPin, Globe, ArrowLeft, Navigation, Compass 
 } from 'lucide-react';
-import { matchesSpecialtyFilter } from '../../utils/specialtyUtils';
-import Breadcrumbs from '../../components/Breadcrumbs';
-import { getAutoUserLocation, calculateDistanceKm, formatDistanceAr } from '../../services/autoLocationService';
+import { matchesSpecialtyFilter } from '@/utils/specialtyUtils';
+import Breadcrumbs from '@/components/Breadcrumbs';
+import { getAutoUserLocation, calculateDistanceKm, formatDistanceAr } from '@/features/platform/services/autoLocationService';
 
 export default function ClinicDiscoveryView({
   allTenants,

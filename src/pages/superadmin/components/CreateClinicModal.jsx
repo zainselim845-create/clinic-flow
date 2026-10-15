@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Dialog } from '../../../components/ui/dialog';
+import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { X, Eye, EyeOff } from 'lucide-react';
-import { slugifyClinic } from '../../../services/authService';
+import { slugifyClinic } from '@/features/auth/services/authService';
 
 export function CreateClinicModal({
   isOpen,

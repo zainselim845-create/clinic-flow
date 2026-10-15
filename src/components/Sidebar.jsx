@@ -5,10 +5,10 @@ import {
   Stethoscope, LogOut, Smartphone, Bot, Layers, 
   Package, UserCheck, Sparkles, ShieldCheck, Settings, Wallet
 } from 'lucide-react';
-import { useApp } from '../context/AppContext';
-import { useAuth } from '../context/AuthContext';
-import { useTenant } from '../context/TenantContext';
-import { hasPermission, isDoctorRole, isAdminRole } from '../utils/permissions';
+import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { useTenant } from '@/context/TenantContext';
+import { hasPermission, isDoctorRole, isAdminRole } from '@/utils/permissions';
 import './Sidebar.css';
 
 const Sidebar = () => {

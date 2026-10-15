@@ -13,7 +13,7 @@ import {
   evaluatePatientDossierActions,
   evaluateTreasuryActions,
   evaluateServicesAndStaffActions
-} from './clinical';
+} from '@/utils/clinical';
 
 // Re-export NLP extraction utilities for direct consumers and test suites
 export {
