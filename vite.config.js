@@ -17,6 +17,9 @@ export default defineConfig({
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
+        // Rolldown shared-chunk extraction can emit bindings out of link order
+        // (runtime "X is not defined" with exit-0 builds — rolldown#8812/#11003).
+        strictExecutionOrder: true,
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('xlsx')) {

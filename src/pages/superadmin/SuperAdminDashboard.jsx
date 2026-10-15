@@ -1,3 +1,4 @@
+import './SuperAdminDashboard.css';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenant, getCombinedTenants } from '@/context/TenantContext';
@@ -46,8 +47,7 @@ import {
   syncTenantsFromCloud
 } from '@/features/auth/services/authService';
 import { formatSenderId } from '@/features/marketing/services/smsService';
-import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
-import './SuperAdminDashboard.css';
+import * as usageMeteringService from '@/services/usageMeteringService';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
@@ -98,11 +98,11 @@ export default function SuperAdminDashboard() {
   const pendingClinics = allTenants.filter(t => t.subscriptionStatus === 'pending_approval').length;
   const suspendedClinics = allTenants.filter(t => t.subscriptionStatus === 'suspended').length;
   const totalSmsUsed = allTenants.reduce((sum, t) => {
-    const usage = getClinicUsage(t.id, t.quotas, t.subscriptionTier);
+    const usage = usageMeteringService['getClinicUsage'](t.id, t.quotas, t.subscriptionTier);
     return sum + (usage.smsUsed || 0);
   }, 0);
   const totalSmsQuota = allTenants.reduce((sum, t) => {
-    const usage = getClinicUsage(t.id, t.quotas, t.subscriptionTier);
+    const usage = usageMeteringService['getClinicUsage'](t.id, t.quotas, t.subscriptionTier);
     return sum + (usage.totalSmsAllowed || usage.monthlySmsQuota || 1000);
   }, 0);
   const billingMetrics = getSaaSBillingMetrics(allTenants);
