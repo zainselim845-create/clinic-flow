@@ -24,6 +24,7 @@ export { Input, default as InputDefault } from './input';
 export { Pagination, default as PaginationDefault } from './pagination';
 export { EmptyState, default as EmptyStateDefault } from './empty-state';
 export { default as Skeleton } from './Skeleton';
+export { ScreenState, default as ScreenStateDefault } from './ScreenState';
 
 // Aliases for explicit ark-namespaced imports
 export { Dialog as ArkDialog } from './dialog';

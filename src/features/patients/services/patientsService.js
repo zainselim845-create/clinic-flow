@@ -277,7 +277,7 @@ export async function findPatientByPhone(clinicId, phone) {
 
     let query = supabase
       .from('patients')
-      .select('*')
+      .select(DEFAULT_PATIENT_COLUMNS)
       .eq('clinic_id', clinicId)
       .or(`phone.eq.${cleanDigits},phone.eq.${standard11},phone.eq.${withCountry}`);
 
@@ -309,7 +309,7 @@ export async function getPatientsPaginated({ clinicId, page = 1, pageSize = 25, 
 
     let query = supabase
       .from('patients')
-      .select('*', { count: 'exact' })
+      .select(DEFAULT_PATIENT_COLUMNS, { count: 'exact' })
       .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false })
       .range(from, to);

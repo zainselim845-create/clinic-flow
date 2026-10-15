@@ -6,7 +6,6 @@
  * Prevents secret leaks, hardcoded overrides, and environment drift.
  */
 
-const isBrowser = typeof window !== 'undefined';
 const metaEnv = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
 
 // Environment detection
@@ -35,9 +34,10 @@ export const ENV_CONFIG = Object.freeze({
     clientId: metaEnv.VITE_GOOGLE_CLIENT_ID || '337379604098-6bp302kv7mmsuccf806ah1tba6grkoio.apps.googleusercontent.com'
   }),
 
-  // Super Admin Credentials
+  // Super Admin Infrastructure
   superAdmin: Object.freeze({
-    secret: metaEnv.VITE_SUPER_ADMIN_SECRET || ''
+    // Administrative master secrets must NEVER be bundled into client builds via VITE_*
+    isConfigured: false
   }),
 
   // AI Medical Reasoning (OpenRouter / DeepSeek)

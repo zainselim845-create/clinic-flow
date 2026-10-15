@@ -71,7 +71,7 @@ export const isSupabaseConfigured = () => {
     key && 
     key.length > 20 && 
     !key.includes('clinicflow_preconfigured') &&
-    key !== DEFAULT_SUPABASE_KEY
+    key !== '__DISABLED__'
   );
 };
 

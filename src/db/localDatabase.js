@@ -66,12 +66,52 @@ export function openLocalDatabase() {
   return dbPromise;
 }
 
+// In-memory fallback dictionary for Node.js test runners, SSR, or environments without indexedDB
+const memoryFallback = {
+  patients: new Map(),
+  appointments: new Map(),
+  invoices: new Map(),
+  sync_queue: []
+};
+let syncQueueAutoId = 1;
+
 /**
  * Generic helper for executing transactions
  */
 async function performTransaction(storeName, mode, callback) {
   const db = await openLocalDatabase();
-  if (!db) return null;
+  if (!db) {
+    const mockStore = {
+      get: (id) => ({ result: memoryFallback[storeName]?.get?.(id) || null }),
+      put: (item) => {
+        if (memoryFallback[storeName]?.set && item?.id) memoryFallback[storeName].set(item.id, item);
+        return { result: true };
+      },
+      add: (item) => {
+        if (storeName === 'sync_queue') {
+          const qItem = { ...item, queueId: item.queueId || syncQueueAutoId++ };
+          if (item && typeof item === 'object') item.queueId = qItem.queueId;
+          memoryFallback.sync_queue.push(qItem);
+          return { result: true };
+        }
+        if (memoryFallback[storeName]?.set && item?.id) memoryFallback[storeName].set(item.id, item);
+        return { result: true };
+      },
+      delete: (id) => {
+        if (memoryFallback[storeName]?.delete) memoryFallback[storeName].delete(id);
+        if (storeName === 'sync_queue') {
+          memoryFallback.sync_queue = memoryFallback.sync_queue.filter(i => i.queueId !== id && i.id !== id);
+        }
+        return { result: true };
+      }
+    };
+    try {
+      const res = callback(mockStore);
+      return res?.result !== undefined ? res.result : true;
+    } catch {
+      return null;
+    }
+  }
 
   return new Promise((resolve, reject) => {
     try {
@@ -287,9 +327,25 @@ export const localDb = {
     return performTransaction('sync_queue', 'readwrite', (store) => store.add(item));
   },
 
-  getPendingSyncItems: async () => {
+  getPendingSyncItems: async (filter = {}) => {
+    const { userId = null, clinicId = null } = (typeof filter === 'object' && filter !== null) ? filter : {};
     const db = await openLocalDatabase();
-    if (!db) return [];
+    if (!db) {
+      const now = Date.now();
+      const pending = memoryFallback.sync_queue.filter(item => {
+        if (item.status !== 'pending') return false;
+        if (item.nextAttemptAt && item.nextAttemptAt > now) return false;
+        if (userId && item.userId && item.userId !== userId) return false;
+        if (clinicId && item.clinicId && item.clinicId !== clinicId) return false;
+        return true;
+      });
+      pending.sort((a, b) => {
+        const timeDiff = (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0);
+        if (timeDiff !== 0) return timeDiff;
+        return (Number(a.sequence) || 0) - (Number(b.sequence) || 0);
+      });
+      return pending;
+    }
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction('sync_queue', 'readonly');
@@ -300,34 +356,95 @@ export const localDb = {
 
       request.onsuccess = () => {
         const all = request.result || [];
-        const pending = store.indexNames && store.indexNames.contains('by_status')
-          ? all
-          : all.filter(item => item.status === 'pending');
-        // Enforce strict FIFO chronological order
-        pending.sort((a, b) => (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0));
+        const now = Date.now();
+        const pending = all.filter(item => {
+          if (item.status !== 'pending') return false;
+          // Honor nextAttemptAt backoff delay
+          if (item.nextAttemptAt && item.nextAttemptAt > now) return false;
+          if (userId && item.userId && item.userId !== userId) return false;
+          if (clinicId && item.clinicId && item.clinicId !== clinicId) return false;
+          return true;
+        });
+        // Enforce strict deterministic FIFO chronological order
+        pending.sort((a, b) => {
+          const timeDiff = (Number(a.timestamp) || 0) - (Number(b.timestamp) || 0);
+          if (timeDiff !== 0) return timeDiff;
+          return (Number(a.sequence) || 0) - (Number(b.sequence) || 0);
+        });
         resolve(pending);
       };
       request.onerror = () => reject(request.error);
     });
   },
 
-  updateSyncItemStatus: async (queueIdOrId, status) => {
-    if (status === 'completed') {
-      return performTransaction('sync_queue', 'readwrite', (store) => {
-        if (typeof queueIdOrId === 'number') {
-          return store.delete(queueIdOrId);
-        }
-        // If string ID, delete matching item
-        const req = store.getAll();
-        req.onsuccess = () => {
-          const match = (req.result || []).find(i => i.id === queueIdOrId || i.queueId === queueIdOrId);
-          if (match && match.queueId) store.delete(match.queueId);
-        };
-        return req;
+  hasPendingSyncItemsForUser: async (userId, clinicId = null) => {
+    const db = await openLocalDatabase();
+    if (!db) {
+      return memoryFallback.sync_queue.some(i => {
+        const matchesUser = !userId || !i.userId || i.userId === userId;
+        const matchesClinic = !clinicId || !i.clinicId || i.clinicId === clinicId;
+        const isPending = i.status === 'pending' || i.status === 'processing';
+        return matchesUser && matchesClinic && isPending;
       });
     }
+
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction('sync_queue', 'readonly');
+        const store = tx.objectStore('sync_queue');
+        const req = store.getAll();
+        req.onsuccess = () => {
+          const items = req.result || [];
+          const hasPending = items.some(i => {
+            const matchesUser = !userId || !i.userId || i.userId === userId;
+            const matchesClinic = !clinicId || !i.clinicId || i.clinicId === clinicId;
+            const isPending = i.status === 'pending' || i.status === 'processing';
+            return matchesUser && matchesClinic && isPending;
+          });
+          resolve(hasPending);
+        };
+        req.onerror = () => resolve(false);
+      } catch {
+        resolve(false);
+      }
+    });
+  },
+
+  updateSyncItemStatus: async (queueIdOrId, status, extraFields = {}) => {
     const db = await openLocalDatabase();
-    if (!db) return null;
+    if (!db) {
+      if (status === 'completed') {
+        memoryFallback.sync_queue = memoryFallback.sync_queue.filter(i => i.id !== queueIdOrId && i.queueId !== queueIdOrId);
+        return true;
+      }
+      const match = memoryFallback.sync_queue.find(i => i.queueId === queueIdOrId || i.id === queueIdOrId);
+      if (match) {
+        match.status = status;
+        if (extraFields && typeof extraFields === 'object') {
+          Object.assign(match, extraFields);
+        }
+      }
+      return true;
+    }
+
+    if (status === 'completed') {
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction('sync_queue', 'readwrite');
+        const store = transaction.objectStore('sync_queue');
+        if (typeof queueIdOrId === 'number') {
+          store.delete(queueIdOrId);
+        } else {
+          const req = store.getAll();
+          req.onsuccess = () => {
+            const match = (req.result || []).find(i => i.id === queueIdOrId || i.queueId === queueIdOrId);
+            if (match && match.queueId) store.delete(match.queueId);
+          };
+        }
+        transaction.oncomplete = () => resolve(true);
+        transaction.onerror = () => reject(transaction.error);
+      });
+    }
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction('sync_queue', 'readwrite');
       const store = transaction.objectStore('sync_queue');
@@ -336,11 +453,69 @@ export const localDb = {
         const match = (req.result || []).find(i => i.queueId === queueIdOrId || i.id === queueIdOrId);
         if (match) {
           match.status = status;
+          if (extraFields && typeof extraFields === 'object') {
+            Object.assign(match, extraFields);
+          }
           store.put(match);
         }
-        resolve(true);
       };
-      req.onerror = () => reject(req.error);
+      transaction.oncomplete = () => resolve(true);
+      transaction.onerror = () => reject(transaction.error);
+    });
+  },
+
+  recoverStuckProcessingItems: async () => {
+    const db = await openLocalDatabase();
+    if (!db) {
+      let count = 0;
+      memoryFallback.sync_queue.forEach(item => {
+        if (item.status === 'processing') {
+          item.status = 'pending';
+          count++;
+        }
+      });
+      return count;
+    }
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('sync_queue', 'readwrite');
+      const store = transaction.objectStore('sync_queue');
+      const req = store.getAll();
+      let count = 0;
+      req.onsuccess = () => {
+        const items = req.result || [];
+        items.forEach(item => {
+          if (item.status === 'processing') {
+            item.status = 'pending';
+            store.put(item);
+            count++;
+          }
+        });
+      };
+      transaction.oncomplete = () => resolve(count);
+      transaction.onerror = () => reject(transaction.error);
+    });
+  },
+
+  getPendingSyncCount: async () => {
+    const db = await openLocalDatabase();
+    if (!db) {
+      return memoryFallback.sync_queue.filter(i => i.status === 'pending' || i.status === 'processing').length;
+    }
+
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction('sync_queue', 'readonly');
+        const store = tx.objectStore('sync_queue');
+        const req = store.getAll();
+        req.onsuccess = () => {
+          const items = (req.result || []).filter(i => i.status === 'pending' || i.status === 'processing');
+          resolve(items.length);
+        };
+        req.onerror = () => resolve(0);
+      } catch {
+        resolve(0);
+      }
     });
   },
 
@@ -374,10 +549,22 @@ export const localDb = {
     }));
   },
 
-  clearAllData: async () => {
+  clearAllData: async (options = { preserveSyncQueue: true }) => {
     const db = await openLocalDatabase();
-    if (!db) return true;
-    const stores = ['patients', 'appointments', 'invoices', 'sync_queue'];
+    if (!db) {
+      memoryFallback.patients.clear();
+      memoryFallback.appointments.clear();
+      memoryFallback.invoices.clear();
+      if (!options?.preserveSyncQueue) {
+        memoryFallback.sync_queue = [];
+      }
+      return true;
+    }
+
+    const stores = ['patients', 'appointments', 'invoices'];
+    if (!options?.preserveSyncQueue) {
+      stores.push('sync_queue');
+    }
     return Promise.all(stores.map(storeName => {
       return new Promise((resolve) => {
         try {

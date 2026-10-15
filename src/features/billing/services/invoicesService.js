@@ -1,6 +1,8 @@
 import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '@/lib/supabase';
 import { invoiceSchema, validateWithSchema } from '@/utils/validationSchemas';
 
+export const DEFAULT_INVOICE_COLUMNS = 'id, clinic_id, doctor_id, doctor_name, doctor_commission_rate, doctor_share, clinic_share, patient_id, patient_name, patient_phone, appointment_id, invoice_number, subtotal, discount, tax_percentage, tax_amount, total, insurance_share, patient_share, paid_amount, remaining_balance, payment_status, items, notes, created_at, deleted_at';
+
 export function fromDbInvoice(row) {
   if (!row) return null;
   return {
@@ -74,7 +76,7 @@ export async function getInvoices(clinicId, { limit = 200 } = {}) {
   try {
     let query = supabase
       .from('invoices')
-      .select('*')
+      .select(DEFAULT_INVOICE_COLUMNS)
       .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -106,7 +108,7 @@ export async function getInvoicesPaginated({ clinicId, page = 1, pageSize = 25, 
 
     let query = supabase
       .from('invoices')
-      .select('*', { count: 'exact' })
+      .select(DEFAULT_INVOICE_COLUMNS, { count: 'exact' })
       .eq('clinic_id', clinicId)
       .order('created_at', { ascending: false })
       .range(from, to);
@@ -187,7 +189,7 @@ export async function recordPayment(invoiceId, paymentData) {
     // 1. Fetch current invoice to guarantee isolation and get clinic_id
     const { data: currentInv, error: fetchErr } = await supabase
       .from('invoices')
-      .select('*')
+      .select('id, clinic_id, total, paid_amount, remaining_balance, payment_status')
       .eq('id', invoiceId)
       .single();
 

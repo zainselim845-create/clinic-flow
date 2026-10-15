@@ -33,6 +33,8 @@ export function toDbExpense(data) {
   return payload;
 }
 
+export const DEFAULT_EXPENSE_COLUMNS = 'id, clinic_id, amount, category, date, notes, created_at';
+
 export async function getExpenses(clinicId, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
@@ -41,7 +43,7 @@ export async function getExpenses(clinicId, options = {}) {
     return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
   }
   try {
-    let query = supabase.from('expenses').select('*').eq('clinic_id', clinicId);
+    let query = supabase.from('expenses').select(options?.select || DEFAULT_EXPENSE_COLUMNS).eq('clinic_id', clinicId);
     const limit = options?.limit || 200;
     const { data, error } = await query.order('date', { ascending: false }).limit(limit);
     if (error) throw error;

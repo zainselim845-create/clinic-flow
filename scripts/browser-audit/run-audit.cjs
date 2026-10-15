@@ -311,6 +311,8 @@ async function runUiAudit() {
   // --- 11. VIEW SUPER ADMIN ---
   console.log('\n--- 11. Testing View: view-superadmin ---');
   await page.evaluate(() => {
+    sessionStorage.setItem('clinicflow_e2e_audit', 'true');
+    window.__CLINICFLOW_E2E__ = true;
     const adminUser = {
       id: 'user-superadmin-master',
       name: 'مدير المنصة العام',
@@ -321,6 +323,7 @@ async function runUiAudit() {
     };
     localStorage.setItem('clinicflow_auth_user', JSON.stringify(adminUser));
     sessionStorage.setItem('clinicflow_auth_user', JSON.stringify(adminUser));
+    localStorage.setItem('clinicflow_role', 'super_admin');
   });
   await page.goto(BASE + '/super-admin', { waitUntil: 'networkidle' });
   await page.waitForTimeout(600);

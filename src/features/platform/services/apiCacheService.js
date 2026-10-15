@@ -17,10 +17,16 @@ class ApiCacheService {
    * @param {string} namespace - e.g. 'patients', 'appointments', 'dashboard'
    * @param {string} clinicId - Scoped clinic/tenant identifier
    * @param {Object|string} params - Query parameters or filter payload
+   * @param {Object|string} [userContext] - Optional user context ({ userId, role } or userId) for user-isolated queries
    */
-  createKey(namespace, clinicId, params = '') {
+  createKey(namespace, clinicId, params = '', userContext = null) {
     const serializedParams = typeof params === 'object' ? JSON.stringify(params) : String(params);
-    return `${namespace}:${clinicId || 'all'}:${serializedParams}`;
+    let userPart = '';
+    if (userContext) {
+      const uid = typeof userContext === 'object' ? (userContext.userId || userContext.role || '') : String(userContext);
+      if (uid) userPart = `:${uid}`;
+    }
+    return `${namespace}:${clinicId || 'all'}${userPart}:${serializedParams}`;
   }
 
   /**

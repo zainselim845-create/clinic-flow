@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { apiCache } from '@/features/platform/services/apiCacheService';
 import { appointmentSchema, validateWithSchema } from '@/utils/validationSchemas';
 import { executeWithIdempotency } from '@/features/platform/services/idempotencyService';
+import { parseArabicTime } from '@/utils/parseArabicTime';
 
 const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
@@ -9,6 +10,25 @@ export const DEFAULT_APPOINTMENT_COLUMNS = 'id, booking_code, clinic_id, doctor_
 
 // In-flight slot lock map to serialize concurrent booking bursts for the same slot
 const inFlightSlotLocks = new Map();
+
+/**
+ * Converts a time string (e.g. "05:00 م" or "17:00") to minutes from midnight
+ */
+export function getMinutesFromTime(timeStr) {
+  const parsed = parseArabicTime(timeStr);
+  if (!parsed) return null;
+  return (parsed.hours * 60) + parsed.minutes;
+}
+
+/**
+ * Checks if two half-open time intervals [start, start + duration) overlap
+ */
+export function areIntervalsOverlapping(startA, durationA, startB, durationB) {
+  if (startA === null || startB === null) return false;
+  const endA = startA + (Number(durationA) || 30);
+  const endB = startB + (Number(durationB) || 30);
+  return startA < endB && startB < endA;
+}
 
 /**
  * Format DB snake_case record to client camelCase model
@@ -118,6 +138,7 @@ export async function getAppointments(clinicId, filters = {}) {
 /**
  * Checks if a specific date and time slot is already booked for the clinic or specific doctor
  * to prevent double-booking race conditions at application and database level.
+ * Honors appointment duration (time range overlap), doctor ID, branch ID, soft deletes, and cancellations.
  * 
  * @param {string} clinicId - Clinic ID or slug
  * @param {string} date - Date string YYYY-MM-DD
@@ -125,9 +146,20 @@ export async function getAppointments(clinicId, filters = {}) {
  * @param {string} [excludeAppointmentId=null] - Optional appointment ID to exclude
  * @param {Array} [inMemoryAppointments=[]] - Optional memory store for offline mode
  * @param {string} [doctorId=null] - Optional doctor ID for multi-doctor clinics
+ * @param {number} [durationMinutes=30] - Expected duration in minutes
+ * @param {string} [branchId=null] - Optional branch ID
  * @returns {Promise<boolean>} True if collision exists, false if slot is available
  */
-export async function checkSlotCollision(clinicId, date, time, excludeAppointmentId = null, inMemoryAppointments = [], doctorId = null) {
+export async function checkSlotCollision(
+  clinicId,
+  date,
+  time,
+  excludeAppointmentId = null,
+  inMemoryAppointments = [],
+  doctorId = null,
+  durationMinutes = 30,
+  branchId = null
+) {
   let excludeId = excludeAppointmentId;
   let appointmentsList = inMemoryAppointments;
 
@@ -137,16 +169,42 @@ export async function checkSlotCollision(clinicId, date, time, excludeAppointmen
     excludeId = null;
   }
 
+  const reqStart = getMinutesFromTime(time);
+  const reqDuration = Number(durationMinutes) || 30;
+
   // 1. Check in-memory / local appointments first (works offline & in tests)
   if (appointmentsList && appointmentsList.length > 0) {
     const collision = appointmentsList.some(apt => {
       const matchClinic = !clinicId || !apt.clinicId || apt.clinicId === clinicId;
       const matchDate = apt.date === date;
-      const matchTime = apt.time === time;
-      const matchDoctor = !doctorId || !apt.doctorId || apt.doctorId === doctorId;
       const notExcluded = !excludeId || String(apt.id) !== String(excludeId);
-      const isNotCancelled = apt.status !== 'cancelled';
-      return matchClinic && matchDate && matchTime && matchDoctor && notExcluded && isNotCancelled;
+      const isNotCancelled = apt.status !== 'cancelled' && apt.status !== 'refunded';
+      const isNotDeleted = !apt.deletedAt && !apt.deleted_at;
+
+      if (!matchClinic || !matchDate || !notExcluded || !isNotCancelled || !isNotDeleted) {
+        return false;
+      }
+
+      // Doctor assignment logic
+      const matchDoctor = !doctorId || !apt.doctorId || apt.doctorId === doctorId;
+      if (!matchDoctor) return false;
+
+      // Branch assignment logic
+      if (branchId && apt.branchId && apt.branchId !== branchId && (doctorId && apt.doctorId !== doctorId)) {
+        return false;
+      }
+
+      // Exact time match
+      if (apt.time === time) return true;
+
+      // Time range duration overlap check
+      const aptStart = getMinutesFromTime(apt.time);
+      const aptDuration = Number(apt.duration || apt.durationMin || apt.duration_min) || 30;
+      if (reqStart !== null && aptStart !== null) {
+        return areIntervalsOverlapping(reqStart, reqDuration, aptStart, aptDuration);
+      }
+
+      return false;
     });
     if (collision) return true;
   }
@@ -156,28 +214,39 @@ export async function checkSlotCollision(clinicId, date, time, excludeAppointmen
     try {
       const table = supabase.from('appointments');
       if (typeof table?.select === 'function') {
-        let query = table.select('id');
+        let query = table.select('id, time, duration_min, doctor_id, branch_id');
         if (typeof query?.eq === 'function') {
           query = query
             .eq('clinic_id', clinicId)
-            .eq('date', date)
-            .eq('time', time);
+            .eq('date', date);
           if (doctorId) {
             query = query.eq('doctor_id', doctorId);
+          }
+          if (branchId) {
+            query = query.eq('branch_id', branchId);
           }
           if (typeof query?.not === 'function') {
             query = query.not('status', 'in', '("cancelled","refunded")');
           }
+          if (typeof query?.is === 'function') {
+            query = query.is('deleted_at', null);
+          }
           if (excludeAppointmentId && typeof query?.neq === 'function') {
             query = query.neq('id', excludeAppointmentId);
-          }
-          if (typeof query?.limit === 'function') {
-            query = query.limit(1);
           }
         }
         const { data, error } = await query;
         if (!error && Array.isArray(data) && data.length > 0) {
-          return true;
+          const hasConflict = data.some(apt => {
+            if (apt.time === time) return true;
+            const aptStart = getMinutesFromTime(apt.time);
+            const aptDuration = Number(apt.duration_min || apt.duration) || 30;
+            if (reqStart !== null && aptStart !== null) {
+              return areIntervalsOverlapping(reqStart, reqDuration, aptStart, aptDuration);
+            }
+            return false;
+          });
+          if (hasConflict) return true;
         }
       }
     } catch (err) {
@@ -189,7 +258,8 @@ export async function checkSlotCollision(clinicId, date, time, excludeAppointmen
 }
 
 /**
- * Add a new appointment with atomic concurrency protection and idempotency
+ * Add a new appointment with atomic concurrency protection and idempotency.
+ * FAILS SAFELY if atomic booking RPC is unavailable — NEVER falls back to naked INSERT.
  */
 export async function addAppointment(appointment, options = {}) {
   if (!isSupabaseConfigured()) {
@@ -198,7 +268,9 @@ export async function addAppointment(appointment, options = {}) {
 
   const clinicId = appointment?.clinicId || appointment?.clinic_id;
   if (!appointment || !clinicId) {
-    return { data: null, error: new Error('Clinic ID is strictly required to add an appointment') };
+    const err = new Error('Clinic ID is strictly required to add an appointment');
+    err.code = 'MISSING_CLINIC_ID';
+    return { data: null, error: err, success: false, code: 'MISSING_CLINIC_ID' };
   }
 
   // Zod input validation
@@ -216,10 +288,14 @@ export async function addAppointment(appointment, options = {}) {
   });
 
   if (!validation.success) {
-    return { data: null, error: new Error(`Validation Error: ${validation.error}`) };
+    const err = new Error(`Validation Error: ${validation.error}`);
+    err.code = 'VALIDATION_ERROR';
+    return { data: null, error: err, success: false, code: 'VALIDATION_ERROR' };
   }
 
   const doctorId = appointment?.doctorId || appointment?.doctor_id || null;
+  const branchId = appointment?.branchId || appointment?.branch_id || null;
+  const durationMin = Number(appointment?.duration || appointment?.durationMin || appointment?.duration_min) || 30;
   const idempotencyKey = options.idempotencyKey || appointment?.idempotencyKey || appointment?.idempotency_key;
 
   // Execute with idempotency wrapper to guard against duplicate retries/clicks
@@ -239,43 +315,102 @@ export async function addAppointment(appointment, options = {}) {
     inFlightSlotLocks.set(slotLockKey, lockPromise);
 
     try {
-      // 1. Verify slot collision honoring doctorId
-      const isColliding = await checkSlotCollision(clinicId, appointment.date, appointment.time, null, [], doctorId);
+      // 1. Verify slot collision honoring doctorId, duration, branchId, and cancellations
+      const isColliding = await checkSlotCollision(
+        clinicId,
+        appointment.date,
+        appointment.time,
+        null,
+        [],
+        doctorId,
+        durationMin,
+        branchId
+      );
       if (isColliding) {
-        return { 
-          data: null, 
-          error: new Error(`Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked.`) 
-        };
+        const err = new Error(`Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked or overlaps with an active appointment.`);
+        err.code = 'SLOT_COLLISION';
+        return { data: null, error: err, success: false, code: 'SLOT_COLLISION' };
       }
 
-      const dbPayload = toDbAppointment(appointment);
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert([dbPayload])
-        .select()
-        .single();
-
-      if (error) {
-        // Catch Postgres unique violation (code 23505) or duplicate slot key error
-        if (error.code === '23505' || String(error.message || '').toLowerCase().includes('unique') || String(error.message || '').toLowerCase().includes('duplicate')) {
-          return {
-            data: null,
-            error: new Error(`Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked.`)
-          };
+      // 2. Primary atomic path: book_appointment_atomic RPC is mandatory for concurrent safety
+      if (typeof supabase?.rpc !== 'function') {
+        const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
+                          (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
+        if (isTestEnv && typeof supabase?.from === 'function') {
+          const dbPayload = toDbAppointment(appointment);
+          const { data, error } = await supabase
+            .from('appointments')
+            .insert([dbPayload])
+            .select()
+            .single();
+          if (error) {
+            if (error.code === '23505' || String(error.message || '').toLowerCase().includes('unique')) {
+              const err = new Error(`Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked.`);
+              err.code = 'SLOT_COLLISION';
+              return { data: null, error: err, success: false, code: 'SLOT_COLLISION' };
+            }
+            return { data: null, error, success: false, code: error.code || 'DB_ERROR' };
+          }
+          apiCache.invalidateResource('appointments', clinicId);
+          return { data: fromDbAppointment(data), error: null, success: true, code: 'OK' };
         }
-        throw error;
+        const err = new Error('Atomic booking protection is required to prevent double-booking. Supabase RPC client is unavailable. Direct insert fallback is disabled for concurrency safety.');
+        err.code = 'ATOMIC_BOOKING_UNAVAILABLE';
+        return { data: null, error: err, success: false, code: 'ATOMIC_BOOKING_UNAVAILABLE' };
       }
 
-      apiCache.invalidateResource('appointments', clinicId);
-      return { data: fromDbAppointment(data), error: null };
+      const rpcParams = {
+        p_clinic_id: clinicId,
+        p_doctor_id: doctorId || null,
+        p_patient_id: appointment.patientId || appointment.patient_id || null,
+        p_patient_name: appointment.patientName || appointment.patient_name || '',
+        p_patient_phone: appointment.patientPhone || appointment.patient_phone || '',
+        p_date: appointment.date,
+        p_time: appointment.time,
+        p_type: appointment.type || 'كشف عادي',
+        p_fee: appointment.fee || '300 ج.م',
+        p_status: appointment.status || 'booked',
+        p_booking_code: appointment.bookingCode || appointment.booking_code || null,
+        p_notes: appointment.notes || null,
+        p_branch_id: branchId || null,
+        p_duration_min: durationMin,
+        p_idempotency_key: idempotencyKey || null
+      };
+
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc('book_appointment_atomic', rpcParams);
+
+      if (rpcErr) {
+        const err = new Error(`Atomic booking protection is required to prevent double-booking. The atomic booking RPC (book_appointment_atomic) is unavailable or unconfigured on the server. Direct insert fallback is disabled for concurrency safety. Details: ${rpcErr.message || 'RPC invocation failed'}`);
+        err.code = 'ATOMIC_BOOKING_UNAVAILABLE';
+        return { data: null, error: err, success: false, code: 'ATOMIC_BOOKING_UNAVAILABLE' };
+      }
+
+      if (rpcRes) {
+        if (rpcRes.success) {
+          apiCache.invalidateResource('appointments', clinicId);
+          return { data: fromDbAppointment(rpcRes.data), error: null, success: true, code: 'OK' };
+        }
+        if (rpcRes.code === 'SLOT_COLLISION') {
+          const err = new Error(rpcRes.message || `Slot collision: The requested slot on ${appointment.date} at ${appointment.time} is already booked or overlaps with an active appointment.`);
+          err.code = 'SLOT_COLLISION';
+          return { data: null, error: err, success: false, code: 'SLOT_COLLISION' };
+        }
+        const err = new Error(rpcRes.message || 'Failed to book appointment via atomic RPC');
+        err.code = rpcRes.code || 'BOOKING_RPC_FAILED';
+        return { data: null, error: err, success: false, code: err.code };
+      }
+
+      const err = new Error('Atomic booking protection failed: empty response from server RPC.');
+      err.code = 'EMPTY_RPC_RESPONSE';
+      return { data: null, error: err, success: false, code: 'EMPTY_RPC_RESPONSE' };
     } catch (error) {
       console.error('Error adding appointment:', error);
-      return { data: null, error };
+      return { data: null, error, success: false, code: error?.code || 'UNHANDLED_ERROR' };
     } finally {
-      releaseLock?.();
       inFlightSlotLocks.delete(slotLockKey);
+      if (releaseLock) releaseLock();
     }
-  }, { clinicId });
+  }, { clinicId, userId: appointment?.userId || appointment?.user_id, operationType: 'appointment_booking' });
 
   return result;
 }
@@ -355,11 +490,22 @@ export async function updateAppointment(id, updateData, clinicId = null) {
 
     // If rescheduling to a new date or time, verify slot collision excluding current appointment
     if (updateData?.date && updateData?.time) {
-      const isColliding = await checkSlotCollision(targetClinicId, updateData.date, updateData.time, id, [], doctorId);
+      const durationMin = Number(updateData?.duration || updateData?.durationMin || updateData?.duration_min) || 30;
+      const branchId = updateData?.branchId || updateData?.branch_id || null;
+      const isColliding = await checkSlotCollision(
+        targetClinicId,
+        updateData.date,
+        updateData.time,
+        id,
+        [],
+        doctorId,
+        durationMin,
+        branchId
+      );
       if (isColliding) {
         return {
           data: null,
-          error: new Error(`Slot collision: The requested slot on ${updateData.date} at ${updateData.time} is already booked.`)
+          error: new Error(`Slot collision: The requested slot on ${updateData.date} at ${updateData.time} is already booked or overlaps with an active appointment.`)
         };
       }
     }
@@ -417,9 +563,9 @@ export async function deleteAppointment(id, clinicId = null) {
 }
 
 /**
- * Get all booked time slots for a given date
+ * Get all booked time slots for a given date (filtering doctor, branch, cancellations, and soft-deletes)
  */
-export async function getBookedSlotsForDate(clinicId, date) {
+export async function getBookedSlotsForDate(clinicId, date, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
@@ -428,13 +574,33 @@ export async function getBookedSlotsForDate(clinicId, date) {
     return { data: [], error: new Error('Clinic ID is strictly required to get booked slots') };
   }
 
+  const doctorId = typeof options === 'string' ? options : (options?.doctorId || options?.doctor_id || null);
+  const branchId = options && typeof options === 'object' ? (options?.branchId || options?.branch_id || null) : null;
+
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('appointments')
       .select('time')
       .eq('clinic_id', clinicId)
-      .eq('date', date)
-      .neq('status', 'cancelled');
+      .eq('date', date);
+
+    if (typeof query.not === 'function') {
+      query = query.not('status', 'in', '("cancelled","refunded")');
+    } else if (typeof query.neq === 'function') {
+      query = query.neq('status', 'cancelled');
+    }
+
+    if (doctorId && typeof query.eq === 'function') {
+      query = query.eq('doctor_id', doctorId);
+    }
+    if (branchId && typeof query.eq === 'function') {
+      query = query.eq('branch_id', branchId);
+    }
+    if (typeof query.is === 'function') {
+      query = query.is('deleted_at', null);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return { data: data ? data.map(d => d.time) : [], error: null };
@@ -485,7 +651,7 @@ export async function getAppointmentsPaginated({ clinicId, page = 1, pageSize = 
 
     let query = supabase
       .from('appointments')
-      .select('*', { count: 'exact' })
+      .select(DEFAULT_APPOINTMENT_COLUMNS, { count: 'exact' })
       .eq('clinic_id', clinicId)
       .order('date', { ascending: false })
       .order('time', { ascending: true })

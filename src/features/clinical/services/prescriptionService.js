@@ -1,4 +1,5 @@
 import { safeStorage } from '@/utils/safeStorage';
+import { supabase, isSupabaseConfigured, NOT_CONFIGURED_ERROR } from '@/lib/supabase';
 
 /**
  * Curated library of common Egyptian clinic medications across Dental, General,
@@ -293,4 +294,153 @@ export function getPatientPrescriptionsFromStorage(patientId, clinicId) {
   const all = getStoredPrescriptions(clinicId);
   if (!patientId) return all;
   return all.filter(p => p.patientId === patientId || String(p.patientPhone).replace(/\D/g, '') === String(patientId).replace(/\D/g, ''));
+}
+
+/* =========================================================================
+ * Cloud Sync Layer (Supabase PostgreSQL — table: prescriptions)
+ * Tenant-strict: every cloud operation is scoped by clinic_id, mirroring the
+ * prescriptions RLS stakeholder policies (read=staff, write=prescribers).
+ * Local storage remains the offline-first source of truth; cloud is merged
+ * best-effort exactly like labsService / invoicesService.
+ * ========================================================================= */
+
+export function fromDbPrescription(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    clinicId: row.clinic_id,
+    patientId: row.patient_id,
+    patientName: row.patient_name || '',
+    patientPhone: row.patient_phone || '',
+    appointmentId: row.appointment_id,
+    date: row.date,
+    doctorName: row.doctor_name || '',
+    specialty: row.specialty || '',
+    diagnosis: row.diagnosis || '',
+    medications: Array.isArray(row.medications) ? row.medications : [],
+    labTests: row.lab_tests || '',
+    followUpDate: row.follow_up_date,
+    generalAdvice: row.general_advice || row.general_instructions || '',
+    verificationCode: row.verification_code || '',
+    createdAt: row.created_at
+  };
+}
+
+export function toDbPrescription(prescription) {
+  if (!prescription) return {};
+  return {
+    id: prescription.id || undefined,
+    clinic_id: prescription.clinicId || prescription.clinic_id || undefined,
+    patient_id: prescription.patientId || null,
+    patient_name: prescription.patientName,
+    patient_phone: prescription.patientPhone || null,
+    appointment_id: prescription.appointmentId || null,
+    date: prescription.date,
+    doctor_name: prescription.doctorName || null,
+    specialty: prescription.specialty || null,
+    diagnosis: prescription.diagnosis || null,
+    medications: Array.isArray(prescription.medications) ? prescription.medications : [],
+    lab_tests: prescription.labTests || prescription.lab_tests || null,
+    follow_up_date: prescription.followUpDate || null,
+    general_advice: prescription.generalAdvice || prescription.generalInstructions || null,
+    verification_code: prescription.verificationCode || null
+  };
+}
+
+/**
+ * Fetches prescriptions for a clinic, strictly tenant-scoped.
+ * @returns {Promise<{data: Array|null, error: Error|null}>}
+ */
+export async function fetchPrescriptionsFromCloud(clinicId) {
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to fetch prescriptions from the cloud');
+  }
+  if (!isSupabaseConfigured()) {
+    return { data: null, error: NOT_CONFIGURED_ERROR };
+  }
+  const { data, error } = await supabase
+    .from('prescriptions')
+    .select('*')
+    .eq('clinic_id', clinicId)
+    .order('date', { ascending: false })
+    .limit(500);
+  if (error) return { data: null, error };
+  return { data: (data || []).map(fromDbPrescription), error: null };
+}
+
+/**
+ * Merges cloud prescriptions into the clinic's local offline-first store
+ * (union by id; local ordering preserved, cloud rows appended when new).
+ */
+export async function syncPrescriptionsFromCloud(clinicId) {
+  const { data, error } = await fetchPrescriptionsFromCloud(clinicId);
+  if (error || !data) {
+    return { synced: 0, error: error || new Error('Cloud prescriptions unavailable') };
+  }
+  const existing = getStoredPrescriptions(clinicId);
+  const knownIds = new Set(existing.map(p => p.id));
+  const fresh = data.filter(p => p.id && !knownIds.has(p.id));
+  if (fresh.length > 0) {
+    safeStorage.setItem(`clinicflow_prescriptions_${clinicId}`, [...existing, ...fresh]);
+  }
+  return { synced: fresh.length, error: null };
+}
+
+/**
+ * Upserts one prescription into the cloud, strictly under its clinic_id.
+ * @returns {Promise<{data: Object|null, error: Error|null}>}
+ */
+export async function savePrescriptionToCloud(prescription) {
+  const clinicId = prescription?.clinicId || prescription?.clinic_id;
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to save a prescription to the cloud');
+  }
+  if (!isSupabaseConfigured()) {
+    return { data: null, error: NOT_CONFIGURED_ERROR };
+  }
+  const { data, error } = await supabase
+    .from('prescriptions')
+    .upsert(toDbPrescription(prescription), { onConflict: 'id' })
+    .select()
+    .single();
+  if (error) return { data: null, error };
+  return { data: fromDbPrescription(data), error: null };
+}
+
+/**
+ * Offline-first save: local storage immediately, cloud best-effort.
+ * Never rejects — cloud failures are surfaced in the result envelope.
+ */
+export async function savePrescriptionHybrid(prescription) {
+  const local = savePrescriptionToStorage(prescription);
+  let cloud = { data: null, error: new Error('Cloud save not attempted') };
+  try {
+    cloud = await savePrescriptionToCloud(prescription);
+  } catch (cloudErr) {
+    cloud = { data: null, error: cloudErr };
+  }
+  return { local, cloud };
+}
+
+/**
+ * High-level fetch with local fallback for backward compatibility
+ */
+export async function getPrescriptions(clinicId) {
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to get prescriptions');
+  }
+  const cloudResult = await fetchPrescriptionsFromCloud(clinicId).catch(() => ({ data: null }));
+  if (cloudResult && Array.isArray(cloudResult.data) && cloudResult.data.length > 0) {
+    return cloudResult.data;
+  }
+  return getStoredPrescriptions(clinicId);
+}
+
+/**
+ * High-level save with cloud sync for backward compatibility
+ */
+export async function savePrescription(prescription) {
+  if (!prescription) return null;
+  const result = await savePrescriptionHybrid(prescription);
+  return result?.cloud?.data || result?.local || prescription;
 }
