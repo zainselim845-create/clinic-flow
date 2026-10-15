@@ -43,8 +43,8 @@ const Appointments = () => {
   const [isBlockerModalOpen, setIsBlockerModalOpen] = useState(false);
   const [blockerDate, setBlockerDate] = useState(todayStr);
 
-  const currentClinic = state.clinicInfo || {};
-  const defaultFee = currentClinic.regularFee || '300 ج.م';
+  const currentClinic = state.clinicInfo;
+  const defaultFee = currentClinic?.regularFee || '300 ج.م';
 
   const availableDoctors = useMemo(() => {
     const list = [...(state.doctors || [])];
@@ -338,6 +338,8 @@ const Appointments = () => {
           appointments={filteredAppointments} 
           selectedDate={filterDate || todayStr} 
           onAppointmentClick={() => {}}
+          doctors={availableDoctors}
+          clinicInfo={currentClinic}
         />
       ) : (
         <>

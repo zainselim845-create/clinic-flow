@@ -2,38 +2,76 @@ import React, { useMemo } from 'react';
 import { Armchair, Clock } from 'lucide-react';
 import './MultiChairGrid.css';
 
-const DEFAULT_CLINIC_CHAIRS = [
-  { id: 'chair_1', name: 'كرسي 1 (رئيسي)', doctor: 'د. محمد عبد الرحمن', specialty: 'حشو وعلاج جذور', color: '#3b82f6' },
-  { id: 'chair_2', name: 'كرسي 2 (تجميل)', doctor: 'د. سارة المنشاوي', specialty: 'تقويم وتركيبات', color: '#10b981' },
-  { id: 'chair_3', name: 'كرسي 3 (جراحة)', doctor: 'د. أحمد توفيق', specialty: 'خلع جراحي وزراعة', color: '#8b5cf6' },
-  { id: 'room_xray', name: 'غرفة الأشعة والبانوراما', doctor: 'فني الأشعة', specialty: 'Panoramic & CBCT', color: '#f59e0b' }
-];
-
+/**
+ * MultiChairGrid - Dynamic Clinic Chair & Doctor Grid
+ * Strictly derives chairs from the tenant's actual doctors and configured rooms.
+ * Zero hardcoded mock doctors or fake templates.
+ */
 export default function MultiChairGrid({
   appointments = [],
   selectedDate,
-  onAppointmentClick
+  onAppointmentClick,
+  doctors = [],
+  clinicInfo = {}
 }) {
+  // Dynamically resolve chairs from actual clinic doctors or configuration
+  const activeChairs = useMemo(() => {
+    // 1. If clinic has configured explicit chairs in settings
+    if (Array.isArray(clinicInfo?.chairs) && clinicInfo.chairs.length > 0) {
+      return clinicInfo.chairs;
+    }
 
-  // Distribute appointments to chairs (assign deterministically if not explicitly set)
+    // 2. If clinic has real doctors registered
+    if (Array.isArray(doctors) && doctors.length > 0) {
+      const colors = ['#09090B', '#2563EB', '#059669', '#7C3AED', '#D97706'];
+      return doctors.map((doc, idx) => ({
+        id: doc.id || `chair_${idx + 1}`,
+        name: doc.chairName || (doctors.length === 1 ? 'عيادة الكشف' : `كرسي ${idx + 1}`),
+        doctor: doc.name || 'طبيب العيادة',
+        specialty: doc.specialty || clinicInfo?.specialty || 'كشف واستشارة',
+        color: colors[idx % colors.length]
+      }));
+    }
+
+    // 3. Fallback: Single chair bound to the current clinic doctor
+    const docName = clinicInfo?.doctorName || 'طبيب العيادة';
+    return [
+      {
+        id: 'chair_primary',
+        name: 'عيادة الكشف الرئيسية',
+        doctor: docName,
+        specialty: clinicInfo?.specialty || 'كشف واستشارة طبية',
+        color: '#09090B'
+      }
+    ];
+  }, [clinicInfo, doctors]);
+
+  // Distribute appointments strictly to available chairs
   const appointmentsByChair = useMemo(() => {
     const map = {};
-    DEFAULT_CLINIC_CHAIRS.forEach(c => { map[c.id] = []; });
+    activeChairs.forEach(c => { map[c.id] = []; });
 
     appointments.forEach((appt, idx) => {
-      // If appointment already has chairId use it, otherwise balance across chairs
-      const assignedChairId = appt.chairId || DEFAULT_CLINIC_CHAIRS[idx % DEFAULT_CLINIC_CHAIRS.length].id;
-      if (!map[assignedChairId]) map[assignedChairId] = [];
-      map[assignedChairId].push({ ...appt, assignedChairId });
+      // If appointment specifies chairId and it exists, use it
+      let assignedChairId = appt.chairId;
+      if (!assignedChairId || !map[assignedChairId]) {
+        // Assign to doctor's chair if doctor matches
+        const docChair = activeChairs.find(c => c.doctor === appt.doctorName || c.id === appt.doctorId);
+        assignedChairId = docChair ? docChair.id : activeChairs[idx % activeChairs.length]?.id;
+      }
+
+      if (assignedChairId && map[assignedChairId]) {
+        map[assignedChairId].push({ ...appt, assignedChairId });
+      }
     });
 
-    // Sort each chair's appointments by time
+    // Sort appointments on each chair by time
     Object.keys(map).forEach(key => {
       map[key].sort((a, b) => (a.time || '').localeCompare(b.time || ''));
     });
 
     return map;
-  }, [appointments]);
+  }, [appointments, activeChairs]);
 
   return (
     <div className="multi-chair-grid-container">
@@ -41,19 +79,19 @@ export default function MultiChairGrid({
       {/* Header Overview Banner */}
       <div className="chair-grid-header">
         <div className="title-area">
-          <Armchair className="text-primary" size={22} />
+          <Armchair className="text-primary" size={20} />
           <div>
-            <h4>مخطط الكراسي والعيادات المتزامنة (Simultaneous Chair-Grid View)</h4>
-            <span className="subtitle">إدارة تدفق ومواعيد الكراسي لليوم: {selectedDate}</span>
+            <h4>مخطط الكراسي والعيادات</h4>
+            <span className="subtitle">متابعة الكشوفات لليوم: {selectedDate}</span>
           </div>
         </div>
 
         <div className="chair-stats-summary">
-          {DEFAULT_CLINIC_CHAIRS.map(c => {
+          {activeChairs.map(c => {
             const count = (appointmentsByChair[c.id] || []).length;
             return (
               <div key={c.id} className="chair-mini-badge" style={{ borderRightColor: c.color }}>
-                <span className="name">{c.name.split(' ')[0]}</span>
+                <span className="name">{c.name}</span>
                 <strong className="count">{count} مريض</strong>
               </div>
             );
@@ -62,8 +100,13 @@ export default function MultiChairGrid({
       </div>
 
       {/* Multi-Column Synchronized Grid */}
-      <div className="chairs-columns-wrapper">
-        {DEFAULT_CLINIC_CHAIRS.map(chair => {
+      <div 
+        className="chairs-columns-wrapper"
+        style={{
+          gridTemplateColumns: activeChairs.length === 1 ? '1fr' : `repeat(${Math.min(activeChairs.length, 4)}, 1fr)`
+        }}
+      >
+        {activeChairs.map(chair => {
           const chairAppts = appointmentsByChair[chair.id] || [];
 
           return (
@@ -76,8 +119,8 @@ export default function MultiChairGrid({
                   <span className="chair-title">{chair.name}</span>
                 </div>
                 <div className="chair-doctor-row">
-                  <span>{chair.doctor}</span>
-                  <span className="specialty-pill">{chair.specialty}</span>
+                  <span className="chair-doc-name">{chair.doctor}</span>
+                  {chair.specialty && <span className="specialty-pill">{chair.specialty}</span>}
                 </div>
                 <div className="chair-load-bar">
                   <div 
@@ -94,7 +137,7 @@ export default function MultiChairGrid({
               <div className="chair-appts-body">
                 {chairAppts.length === 0 ? (
                   <div className="chair-empty-state">
-                    <span>الكرسي شاغر لهذا اليوم</span>
+                    <span>لا توجد كشوفات مسجلة على هذه العيادة اليوم</span>
                   </div>
                 ) : (
                   chairAppts.map(appt => {
@@ -114,12 +157,12 @@ export default function MultiChairGrid({
 
                         <div className="appt-patient-info">
                           <strong className="pat-name">{appt.patientName}</strong>
-                          <span className="pat-type">{appt.type || 'كشف أسنان'}</span>
+                          <span className="pat-type">{appt.type || 'كشف عيادة'}</span>
                         </div>
 
                         <div className="appt-footer-row">
                           <span className={`status-tag ${appt.status || 'confirmed'}`}>
-                            {appt.status === 'completed' ? 'تم الكشف' : appt.status === 'in_progress' ? 'على الكرسي الآن' : 'مؤكد'}
+                            {appt.status === 'completed' ? 'تم الكشف' : appt.status === 'in_progress' ? 'في الكشف الآن' : 'مؤكد'}
                           </span>
                           {appt.fee && <span className="fee-tag">{appt.fee}</span>}
                         </div>

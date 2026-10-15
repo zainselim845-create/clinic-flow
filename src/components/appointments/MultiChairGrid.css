@@ -1,4 +1,4 @@
-﻿.multi-chair-grid-container {
+.multi-chair-grid-container {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -66,7 +66,7 @@
 
 .chairs-columns-wrapper {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   align-items: start;
 }
