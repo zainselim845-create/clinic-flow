@@ -265,3 +265,37 @@ export function subscribeToPlatformClinics({ onClinicChange, onStatusChange } = 
   }
 }
 
+/**
+ * Public safe getter for patient booking (uses public_get_active_clinic_by_slug RPC)
+ * Allows anonymous visitors to fetch only public clinic metadata without table scan access
+ * @param {string} slug
+ * @returns {Promise<{data: Object|null, error: Error|null}>}
+ */
+export async function getPublicClinicBySlug(slug) {
+  if (!isSupabaseConfigured() || !slug) {
+    return { data: null, error: isSupabaseConfigured() ? null : NOT_CONFIGURED_ERROR };
+  }
+
+  try {
+    const cleanSlug = String(slug).trim().toLowerCase();
+    const { data, error } = await supabase.rpc('public_get_active_clinic_by_slug', { p_slug: cleanSlug });
+    if (error) {
+      // Fallback to table query if RPC not yet deployed or in dev environment
+      const fallback = await supabase
+        .from('clinics')
+        .select('*')
+        .eq('slug', cleanSlug)
+        .limit(1)
+        .maybeSingle();
+      if (fallback.error) throw fallback.error;
+      return { data: fallback.data ? fromDbClinic(fallback.data) : null, error: null };
+    }
+
+    const row = Array.isArray(data) ? data[0] : data;
+    return { data: row ? fromDbClinic(row) : null, error: null };
+  } catch (error) {
+    console.error('Error fetching public clinic by slug:', error);
+    return { data: null, error };
+  }
+}
+

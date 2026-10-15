@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { maskEgyptianPhone, validateEgyptianPhone, cleanEgyptianPhone } from '@/utils/phoneValidation';
-import { subscribeToPlatformClinics } from '@/features/platform/services/clinicsService';
+import { subscribeToPlatformClinics, getPublicClinicBySlug } from '@/features/platform/services/clinicsService';
 import { fetchPlatformAuditLogsFromDb } from '@/features/auth/services/auditLoggerService';
 
 describe('Phase 4: Shopify-Grade Super Admin Visibility & RLS Hardening', () => {
@@ -16,13 +16,22 @@ describe('Phase 4: Shopify-Grade Super Admin Visibility & RLS Hardening', () => 
       expect(sql.length).toBeGreaterThan(500);
     });
 
-    it('drops the legacy single-owner policy and introduces granular CRUD policies', () => {
+    it('drops legacy single-owner policy and enforces guarded policies without client-side hard DELETE', () => {
       const sql = fs.readFileSync(migrationPath, 'utf8');
       expect(sql).toContain('DROP POLICY IF EXISTS "Clinics owner CRUD" ON public.clinics');
       expect(sql).toContain('CREATE POLICY "clinics_read_policy" ON public.clinics');
       expect(sql).toContain('CREATE POLICY "clinics_insert_policy" ON public.clinics');
       expect(sql).toContain('CREATE POLICY "clinics_update_policy" ON public.clinics');
-      expect(sql).toContain('CREATE POLICY "clinics_delete_policy" ON public.clinics');
+      expect(sql).toContain('DROP POLICY IF EXISTS "clinics_delete_policy" ON public.clinics');
+      // Verify no permissive client-side delete policy is created
+      expect(sql).not.toContain('CREATE POLICY "clinics_delete_policy"');
+    });
+
+    it('exposes safe public_get_active_clinic_by_slug RPC for public bookings', () => {
+      const sql = fs.readFileSync(migrationPath, 'utf8');
+      expect(sql).toContain('CREATE OR REPLACE FUNCTION public.public_get_active_clinic_by_slug');
+      expect(sql).toContain('GRANT EXECUTE ON FUNCTION public.public_get_active_clinic_by_slug(text) TO anon, authenticated, service_role');
+      expect(sql).toContain('SECURITY DEFINER');
     });
 
     it('enforces cf_is_platform_admin() and cf_is_clinic_staff(id) on clinics', () => {
@@ -96,5 +105,12 @@ describe('Phase 4: Shopify-Grade Super Admin Visibility & RLS Hardening', () => 
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.error).toBeNull();
     });
+
+    it('resolves public clinic metadata via getPublicClinicBySlug gracefully', async () => {
+      const result = await getPublicClinicBySlug('dr-ahmed-cardio');
+      expect(result).toBeDefined();
+      expect(result.data).toBeNull();
+    });
   });
 });
+
