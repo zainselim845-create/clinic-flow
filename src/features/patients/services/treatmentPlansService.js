@@ -31,7 +31,8 @@ export function toDbTreatmentPlan(data) {
     discount: Number(data.discount || 0),
     net_cost: Number(data.netCost || 0),
     status: data.status || 'draft',
-    notes: data.notes || ''
+    notes: data.notes || '',
+    items: Array.isArray(data.items) ? data.items : []
   };
 }
 
@@ -184,4 +185,84 @@ export async function deleteTreatmentPlan(id) {
     console.error('Error deleting treatment plan:', error);
     return { success: false, error };
   }
+}
+
+/* =========================================================================
+ * Clinic-scoped cloud layer (strict tenant binding — prescriptionService pattern)
+ * The legacy getPatientTreatmentPlans() filters by patient only; these
+ * canonical helpers always bind clinic_id explicitly.
+ * ========================================================================= */
+
+/**
+ * Fetches all treatment plans for a clinic, strictly tenant-scoped.
+ */
+export async function getClinicTreatmentPlans(clinicId) {
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to fetch treatment plans');
+  }
+  if (!isSupabaseConfigured()) {
+    return { data: null, error: new Error('Supabase is not configured') };
+  }
+  const { data, error } = await supabase
+    .from('treatment_plans')
+    .select('*')
+    .eq('clinic_id', clinicId)
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error) return { data: null, error };
+  return { data: (data || []).map(fromDbTreatmentPlan), error: null };
+}
+
+/**
+ * Merges cloud plans into the clinic local store (union by id).
+ */
+export async function syncTreatmentPlansFromCloud(clinicId) {
+  const { data, error } = await getClinicTreatmentPlans(clinicId);
+  if (error || !data) {
+    return { synced: 0, error: error || new Error('Cloud treatment plans unavailable') };
+  }
+  const existing = getLocalTreatmentPlans(clinicId);
+  const knownIds = new Set(existing.map(p => p && p.id));
+  const fresh = data.filter(p => p.id && !knownIds.has(p.id));
+  if (fresh.length > 0) {
+    saveLocalTreatmentPlans([...existing, ...fresh], clinicId);
+  }
+  return { synced: fresh.length, error: null };
+}
+
+/**
+ * Offline-first save: local store immediately, cloud upsert best-effort.
+ * Never rejects; cloud failures are surfaced in the result envelope.
+ */
+export async function saveTreatmentPlanHybrid(plan) {
+  const clinicId = plan?.clinicId || plan?.clinic_id;
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to save a treatment plan');
+  }
+  const localPlans = getLocalTreatmentPlans(clinicId);
+  const stamped = { ...plan, id: plan.id || ('tp_' + Date.now()), createdAt: plan.createdAt || new Date().toISOString() };
+  const idx = localPlans.findIndex(p => p && p.id === stamped.id);
+  if (idx >= 0) {
+    localPlans[idx] = stamped;
+  } else {
+    localPlans.unshift(stamped);
+  }
+  saveLocalTreatmentPlans(localPlans, clinicId);
+
+  let cloud = { data: null, error: new Error('Cloud save not attempted') };
+  try {
+    if (!isSupabaseConfigured()) {
+      cloud = { data: null, error: new Error('Supabase is not configured') };
+    } else {
+      const { data, error } = await supabase
+        .from('treatment_plans')
+        .upsert(toDbTreatmentPlan(stamped), { onConflict: 'id' })
+        .select()
+        .single();
+      cloud = error ? { data: null, error } : { data: fromDbTreatmentPlan(data), error: null };
+    }
+  } catch (cloudErr) {
+    cloud = { data: null, error: cloudErr };
+  }
+  return { local: stamped, cloud };
 }

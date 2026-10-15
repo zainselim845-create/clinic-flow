@@ -115,3 +115,23 @@ export async function recordCheckOut(attendanceId, checkInTime, clinicId = null)
     return { data: null, error };
   }
 }
+
+/* =========================================================================
+ * Strict tenant layer — the legacy getStaffAttendance()/recordCheckIn()
+ * treat clinicId as OPTIONAL, which allows cross-clinic reads when omitted.
+ * These canonical variants refuse to run without an explicit clinic bound.
+ * ========================================================================= */
+
+export async function getStaffAttendanceForClinic(clinicId) {
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to fetch staff attendance');
+  }
+  return getStaffAttendance(clinicId);
+}
+
+export async function recordCheckInForClinic(staffId, staffName, clinicId) {
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to record a check-in');
+  }
+  return recordCheckIn(staffId, staffName, clinicId);
+}

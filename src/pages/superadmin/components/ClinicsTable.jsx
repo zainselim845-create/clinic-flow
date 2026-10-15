@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone, FileText } from 'lucide-react';
 import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
+import ScreenState from '@/components/ui/ScreenState';
 
 export function ClinicsTable({
   filteredTenants,
@@ -96,6 +97,15 @@ export function ClinicsTable({
 
       {/* Tenants Table */}
       <div className="saas-table-wrapper">
+        <ScreenState
+          isEmpty={filteredTenants.length === 0}
+          emptyTitle="لا توجد عيادات مطابقة لمعايير البحث والفلترة المحددة."
+          emptyMessage="عدّل معايير البحث أو أعِد ضبط الفلاتر لعرض كافة عيادات المنصة."
+          emptyActionLabel="تحديث القائمة"
+          onEmptyAction={onRefresh}
+          secondaryActionLabel="إعادة ضبط الفلاتر"
+          onSecondaryAction={() => { setSearchTerm(''); setTierFilter('all'); setStatusFilter('all'); }}
+        >
         <table className="saas-table">
           <thead>
             <tr>
@@ -109,14 +119,7 @@ export function ClinicsTable({
             </tr>
           </thead>
           <tbody>
-            {filteredTenants.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="saas-empty-row">
-                  لا توجد عيادات مطابقة لمعايير البحث والفلترة المحددة.
-                </td>
-              </tr>
-            ) : (
-              filteredTenants.map((t) => {
+            {filteredTenants.map((t) => {
                 const subStatus = t.subscriptionStatus || 'active';
                 const isSuspended = subStatus === 'suspended';
                 const isPending = subStatus === 'pending_approval';
@@ -471,10 +474,10 @@ export function ClinicsTable({
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
+              })}
+            </tbody>
         </table>
+        </ScreenState>
       </div>
     </div>
   );

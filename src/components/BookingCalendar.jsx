@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronRight, ChevronLeft, Calendar as CalendarIcon, Clock, CheckCircle2, AlertCircle, Coffee } from 'lucide-react';
+import ScreenState from '@/components/ui/ScreenState';
 import { 
   getSlotsForDate, 
   formatTimeToArabic, 
@@ -298,6 +299,13 @@ const BookingCalendar = ({
                 )}
               </div>
             )}
+            {dynamicSlots.length === 0 ? (
+              <ScreenState
+                isEmpty
+                emptyTitle="لا توجد مواعيد متاحة في هذا اليوم"
+                emptyMessage="كل فتحات هذا اليوم محجوزة أو مغلقة — يُرجى اختيار يوم آخر من التقويم."
+              />
+            ) : (
             <div className="interactive-time-slots-grid">
             {dynamicSlots.map((slot, idx) => {
               const availability = getSlotAvailability(slot);
@@ -335,6 +343,7 @@ const BookingCalendar = ({
               );
             })}
             </div>
+            )}
           </>
         )}
       </div>

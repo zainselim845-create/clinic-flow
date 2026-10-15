@@ -1,5 +1,6 @@
 import React from 'react';
-import { Users, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Users, ChevronRight, ChevronLeft } from 'lucide-react';
+import ScreenState from '@/components/ui/ScreenState';
 import PatientCard from '@/components/PatientCard';
 
 export default function PatientsGrid({
@@ -13,50 +14,37 @@ export default function PatientsGrid({
   setSearchQuery,
   handleOpenDetail,
   handleEditPatient,
-  onOpenNewPatient
+  onOpenNewPatient,
+  isLoading = false,
+  loadError = null,
+  onRetryFetch = null
 }) {
   return (
     <>
       <div className={`patients-${viewMode}`}>
-        {paginatedPatients.length > 0 ? (
-          paginatedPatients.map(patient => (
+        <ScreenState
+          isLoading={isLoading}
+          loadError={loadError}
+          isEmpty={paginatedPatients.length === 0}
+          errorTitle={loadError || 'تعذّر تحميل سجل المرضى'}
+          onRetry={onRetryFetch}
+          retryLabel="إعادة المحاولة"
+          emptyIcon={<Users size={48} className="empty-state-icon" aria-hidden="true" />}
+          emptyTitle={searchQuery ? 'لا يوجد مرضى مطابقين لمعايير البحث' : 'سجل المرضى فارغ حتى الآن'}
+          emptyMessage={searchQuery
+            ? 'جرّب كتابة اسم مريض آخر أو رقم هاتف صحيح، أو قم بإلغاء البحث.'
+            : 'ابدأ بإضافة أول مريض في عيادتك لإنشاء ملف طبي متكامل ومتابعة الكشوفات والتقارير.'}
+          emptyActionLabel={searchQuery ? null : 'إضافة أول مريض'}
+          onEmptyAction={searchQuery ? null : onOpenNewPatient}
+          secondaryActionLabel={searchQuery ? 'إلغاء البحث' : null}
+          onSecondaryAction={searchQuery ? () => setSearchQuery('') : null}
+        >
+          {paginatedPatients.map(patient => (
             <div key={patient.id} onClick={() => handleOpenDetail(patient)}>
               <PatientCard patient={patient} onEdit={handleEditPatient} />
             </div>
-          ))
-        ) : (
-          <div className="empty-state">
-            <Users size={48} className="empty-state-icon" aria-hidden="true" />
-            <h3 className="empty-state-title">
-              {searchQuery ? 'لا يوجد مرضى مطابقين لمعايير البحث' : 'سجل المرضى فارغ حتى الآن'}
-            </h3>
-            <p className="empty-state-desc">
-              {searchQuery 
-                ? 'جرّب كتابة اسم مريض آخر أو رقم هاتف صحيح، أو قم بإلغاء البحث.' 
-                : 'ابدأ بإضافة أول مريض في عيادتك لإنشاء ملف طبي متكامل ومتابعة الكشوفات والتقارير.'}
-            </p>
-            <div className="empty-state-action">
-              {searchQuery ? (
-                <button 
-                  type="button" 
-                  className="btn btn-secondary"
-                  onClick={() => setSearchQuery('')}
-                >
-                  إلغاء البحث
-                </button>
-              ) : (
-                <button 
-                  type="button" 
-                  className="btn btn-primary"
-                  onClick={onOpenNewPatient}
-                >
-                  <Plus size={18} />
-                  <span>إضافة أول مريض</span>
-                </button>
-              )}
-            </div>
-          </div>
-        )}
+          ))}
+        </ScreenState>
       </div>
 
       {/* High-Volume Pagination Controls */}

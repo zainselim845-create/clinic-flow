@@ -90,3 +90,44 @@ export async function deleteClinicalNote(id) {
     return { success: false, error };
   }
 }
+
+/* =========================================================================
+ * Clinic-scoped strict layer (tenant binding — prescriptionService pattern)
+ * ========================================================================= */
+
+/**
+ * Fetches clinical notes for a clinic (optionally narrowed to one patient),
+ * strictly bound to clinic_id.
+ */
+export async function getClinicClinicalNotes(clinicId, patientId = null) {
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to fetch clinical notes');
+  }
+  if (!isSupabaseConfigured()) {
+    return { data: null, error: NOT_CONFIGURED_ERROR };
+  }
+  let query = supabase
+    .from('clinical_notes')
+    .select('*')
+    .eq('clinic_id', clinicId);
+  if (patientId) {
+    query = query.eq('patient_id', patientId);
+  }
+  const { data, error } = await query
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error) return { data: null, error };
+  return { data: (data || []).map(fromDbClinicalNote), error: null };
+}
+
+/**
+ * Insert with a strict clinic binding — refuses notes that are not
+ * tenant-owned (defense in depth on top of the prescriber-write RLS tier).
+ */
+export async function addClinicalNoteForClinic(note) {
+  const clinicId = note?.clinicId || note?.clinic_id;
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to add a clinical note');
+  }
+  return addClinicalNote(note);
+}

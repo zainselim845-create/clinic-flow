@@ -1,8 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from 'react'; 
 import { 
   Receipt, 
-  AlertCircle, 
-  RefreshCw, 
   Eye, 
   Plus, 
   Trash2, 
@@ -10,7 +8,13 @@ import {
   ArrowUpRight 
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
+import ScreenState from '@/components/ui/ScreenState';
 
+/**
+ * InvoicesTable — unified financial ledger views (all / in / out).
+ * Lifecycle handled by the canonical ScreenState primitive
+ * (Loading → Error+Retry → Empty+CTA → Loaded), one adoption per view.
+ */
 export default function InvoicesTable({
   isLoading = false,
   loadError = null,
@@ -87,91 +91,57 @@ export default function InvoicesTable({
     });
   }, [filteredInvoices, filteredExpenses]);
 
+  const skeletonTable = (cols, keyPrefix) => (
+    <table className="invoices-main-table" aria-hidden="true">
+      <tbody>
+        {Array.from({ length: 5 }).map((_, idx) => (
+          <tr key={`${keyPrefix}-skel-${idx}`}>
+            {Array.from({ length: cols }).map((__, c) => (
+              <td key={`${keyPrefix}-skel-${idx}-${c}`}>
+                <Skeleton style={{ height: c === cols - 1 ? '28px' : '18px', width: c === 0 ? '85px' : '90px', borderRadius: '6px' }} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
   return (
     <div className="glass-card table-responsive-container">
       {/* View Mode 1: Unified Cash Flow (حركة الخزينة الشاملة) */}
       {viewMode === 'all' && (
-        <table className="invoices-main-table">
-          <thead>
-            <tr>
-              <th>نوع الحركة</th>
-              <th>البيان والتفاصيل</th>
-              <th>المرجع / الرقم</th>
-              <th>التاريخ</th>
-              <th>طريقة السداد</th>
-              <th>المبلغ (ج.م)</th>
-              <th>الحالة</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, idx) => (
-                <tr key={`cf-skel-${idx}`}>
-                  <td><Skeleton style={{ height: '24px', width: '85px', borderRadius: '12px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '160px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '75px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '75px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '75px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '20px', width: '60px', borderRadius: '12px' }} /></td>
-                  <td><Skeleton style={{ height: '28px', width: '75px', borderRadius: '6px' }} /></td>
-                </tr>
-              ))
-            ) : loadError ? (
+        <ScreenState
+          isLoading={isLoading}
+          loadError={loadError}
+          isEmpty={combinedTransactions.length === 0}
+          skeleton={skeletonTable(8, 'cf')}
+          errorTitle={loadError || 'تعذّر تحميل الحركات المالية'}
+          onRetry={fetchInvoices}
+          retryLabel="إعادة المحاولة الآن"
+          emptyIcon={<Receipt size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />}
+          emptyTitle="لا توجد حركات مالية مسجلة في الفترة المحددة"
+          emptyMessage="يمكنك إصدار فاتورة جديدة لتحصيل مقبوضات علاجية أو تسجيل سند صرف لمصروف تشغيلي."
+          emptyActionLabel="إصدار فاتورة (داخل)"
+          onEmptyAction={handleOpenNew}
+          secondaryActionLabel="تسجيل مصروف (خارج)"
+          onSecondaryAction={handleOpenNewExpense}
+        >
+          <table className="invoices-main-table">
+            <thead>
               <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                    <AlertCircle size={36} color="var(--danger, #DC2626)" aria-hidden="true" />
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>{loadError}</strong>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                      onClick={fetchInvoices}
-                    >
-                      <RefreshCw size={15} />
-                      <span>إعادة المحاولة الآن</span>
-                    </button>
-                  </div>
-                </td>
+                <th>نوع الحركة</th>
+                <th>البيان والتفاصيل</th>
+                <th>المرجع / الرقم</th>
+                <th>التاريخ</th>
+                <th>طريقة السداد</th>
+                <th>المبلغ (ج.م)</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
               </tr>
-            ) : combinedTransactions.length === 0 ? (
-              <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                    <Receipt size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
-                      لا توجد حركات مالية مسجلة في الفترة المحددة
-                    </strong>
-                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', maxWidth: '420px' }}>
-                      يمكنك إصدار فاتورة جديدة لتحصيل مقبوضات علاجية أو تسجيل سند صرف لمصروف تشغيلي.
-                    </p>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={handleOpenNew}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-                      >
-                        <Plus size={15} />
-                        <span>إصدار فاتورة (داخل)</span>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={handleOpenNewExpense}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', borderColor: 'var(--danger, #DC2626)', color: 'var(--danger, #DC2626)' }}
-                      >
-                        <ArrowUpRight size={15} />
-                        <span>تسجيل مصروف (خارج)</span>
-                      </button>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              combinedTransactions.map(tx => {
+            </thead>
+            <tbody>
+              {combinedTransactions.map(tx => {
                 const isInflow = tx.type === 'inflow';
                 return (
                   <tr key={`${tx.type}-${tx.id}`}>
@@ -250,67 +220,46 @@ export default function InvoicesTable({
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
+              })}
+            </tbody>
+          </table>
+        </ScreenState>
       )}
 
       {/* View Mode 2: Inflow Only (فلوس داخل - فواتير المرضى) */}
       {viewMode === 'in' && (
-        <table className="invoices-main-table">
-          <thead>
-            <tr>
-              <th>رقم الفاتورة</th>
-              <th>اسم المريض</th>
-              <th>الهاتف</th>
-              <th>التاريخ</th>
-              <th>الإجمالي</th>
-              <th>المدفوع (المحصل)</th>
-              <th>المتبقي</th>
-              <th>حالة السداد</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, idx) => (
-                <tr key={`inv-skel-${idx}`}>
-                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '130px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '90px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '80px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '70px', borderRadius: '4px' }} /></td>
-                  <td><Skeleton style={{ height: '18px', width: '60px', borderRadius: '12px' }} /></td>
-                  <td><Skeleton style={{ height: '28px', width: '85px', borderRadius: '6px' }} /></td>
-                </tr>
-              ))
-            ) : filteredInvoices.length === 0 ? (
+        <ScreenState
+          isLoading={isLoading}
+          loadError={loadError}
+          isEmpty={filteredInvoices.length === 0}
+          skeleton={skeletonTable(9, 'inv')}
+          errorTitle={loadError || 'تعذّر تحميل الفواتير'}
+          onRetry={fetchInvoices}
+          retryLabel="إعادة المحاولة الآن"
+          emptyIcon={<Receipt size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />}
+          emptyTitle={searchQuery || statusFilter !== 'all'
+            ? 'لا توجد فواتير مطابقة لمعايير البحث والتصفية'
+            : 'لا توجد مقبوضات علاجية صادرة في هذه الفترة'}
+          emptyMessage="أصدر فاتورة جديدة لتوثيق مقبوضات الكشوفات والعلاجات وتتبع حالات السداد."
+          emptyActionLabel="إصدار فاتورة جديدة"
+          onEmptyAction={handleOpenNew}
+        >
+          <table className="invoices-main-table">
+            <thead>
               <tr>
-                <td colSpan="9" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                    <Receipt size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
-                      {searchQuery || statusFilter !== 'all'
-                        ? 'لا توجد فواتير مطابقة لمعايير البحث والتصفية'
-                        : 'لا توجد مقبوضات علاجية صادرة في هذه الفترة'}
-                    </strong>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      style={{ marginTop: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
-                      onClick={handleOpenNew}
-                    >
-                      <Plus size={16} />
-                      <span>إصدار فاتورة جديدة</span>
-                    </button>
-                  </div>
-                </td>
+                <th>رقم الفاتورة</th>
+                <th>اسم المريض</th>
+                <th>الهاتف</th>
+                <th>التاريخ</th>
+                <th>الإجمالي</th>
+                <th>المدفوع (المحصل)</th>
+                <th>المتبقي</th>
+                <th>حالة السداد</th>
+                <th>إجراءات</th>
               </tr>
-            ) : (
-              filteredInvoices.map(inv => {
+            </thead>
+            <tbody>
+              {filteredInvoices.map(inv => {
                 const billed = Number(inv.total || inv.totalAmount || inv.amount || ((Number(inv.paidAmount || 0) + Number(inv.remainingBalance || 0))));
                 const paid = Number(inv.paidAmount || inv.paid || 0);
                 const remaining = inv.remainingBalance != null ? Number(inv.remainingBalance) : Math.max(0, billed - paid);
@@ -343,53 +292,43 @@ export default function InvoicesTable({
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
+              })}
+            </tbody>
+          </table>
+        </ScreenState>
       )}
 
       {/* View Mode 3: Outflow Only (فلوس خارج - المصروفات والنفقات التشغيلية) */}
       {viewMode === 'out' && (
-        <table className="invoices-main-table">
-          <thead>
-            <tr>
-              <th>تاريخ الصرف</th>
-              <th>بيان المصروف</th>
-              <th>التصنيف</th>
-              <th>طريقة الصرف</th>
-              <th>المبلغ المنصرف</th>
-              <th>رقم الإيصال</th>
-              <th>ملاحظات</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredExpenses.length === 0 ? (
+        <ScreenState
+          isLoading={isLoading}
+          loadError={loadError}
+          isEmpty={filteredExpenses.length === 0}
+          skeleton={skeletonTable(8, 'exp')}
+          errorTitle={loadError || 'تعذّر تحميل المصروفات'}
+          onRetry={fetchInvoices}
+          retryLabel="إعادة المحاولة الآن"
+          emptyIcon={<ArrowUpRight size={40} style={{ color: 'var(--danger, #DC2626)', opacity: 0.6 }} aria-hidden="true" />}
+          emptyTitle="لا توجد مصروفات تشغيلية مسجلة في هذه الفترة"
+          emptyMessage="سجّل فواتير المستلزمات الطبية، المعامل، المرافق، والرواتب لضبط الخزينة."
+          emptyActionLabel="تسجيل أول مصروف تشغيلي"
+          onEmptyAction={handleOpenNewExpense}
+        >
+          <table className="invoices-main-table">
+            <thead>
               <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                    <ArrowUpRight size={40} style={{ color: 'var(--danger, #DC2626)', opacity: 0.6 }} aria-hidden="true" />
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
-                      لا توجد مصروفات تشغيلية مسجلة في هذه الفترة
-                    </strong>
-                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
-                      سجّل فواتير المستلزمات الطبية، المعامل، المرافق، والرواتب لضبط الخزينة.
-                    </p>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      style={{ marginTop: '0.5rem', background: 'var(--danger, #DC2626)', borderColor: 'var(--danger, #DC2626)' }}
-                      onClick={handleOpenNewExpense}
-                    >
-                      <Plus size={16} />
-                      <span>تسجيل أول مصروف تشغيلي</span>
-                    </button>
-                  </div>
-                </td>
+                <th>تاريخ الصرف</th>
+                <th>بيان المصروف</th>
+                <th>التصنيف</th>
+                <th>طريقة الصرف</th>
+                <th>المبلغ المنصرف</th>
+                <th>رقم الإيصال</th>
+                <th>ملاحظات</th>
+                <th>إجراءات</th>
               </tr>
-            ) : (
-              filteredExpenses.map(exp => (
+            </thead>
+            <tbody>
+              {filteredExpenses.map(exp => (
                 <tr key={exp.id}>
                   <td>{exp.date ? new Date(exp.date).toLocaleDateString('ar-EG') : '—'}</td>
                   <td><strong>{exp.title}</strong></td>
@@ -427,12 +366,11 @@ export default function InvoicesTable({
                     </button>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </ScreenState>
       )}
     </div>
   );
 }
-
