@@ -9,19 +9,23 @@ export default function WalkInRegistrationModal({
   isOpen,
   onClose,
   onSubmit,
-  regularFee = ''
+  regularFee = '',
+  doctors = [],
+  defaultDoctorId = ''
 }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [fee, setFee] = useState(regularFee || '');
   const [notes, setNotes] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [selectedDoctorId, setSelectedDoctorId] = useState(defaultDoctorId || (doctors[0]?.id || ''));
 
   useEffect(() => {
     if (isOpen) {
       setFee(regularFee || '');
+      setSelectedDoctorId(defaultDoctorId || (doctors[0]?.id || ''));
     }
-  }, [isOpen, regularFee]);
+  }, [isOpen, regularFee, defaultDoctorId, doctors]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,9 +37,12 @@ export default function WalkInRegistrationModal({
     }
 
     const cleanedPhone = cleanEgyptianPhone(phone) || '01000000000';
+    const finalDoctorId = selectedDoctorId || defaultDoctorId || (doctors[0]?.id || null);
+
     onSubmit({
       name: name.trim(),
       phone: cleanedPhone,
+      doctorId: finalDoctorId,
       type: 'كشف عيادة',
       fee: fee?.trim() || regularFee || '0 ج.م',
       notes: notes.trim(),
@@ -92,6 +99,23 @@ export default function WalkInRegistrationModal({
             />
             {phoneError && <span className="input-error-msg">{phoneError}</span>}
           </div>
+
+          {doctors && doctors.length > 1 && (
+            <div className="form-group">
+              <label>الطبيب المعالج</label>
+              <select
+                className="input-field"
+                value={selectedDoctorId}
+                onChange={(e) => setSelectedDoctorId(e.target.value)}
+              >
+                {doctors.map(doc => (
+                  <option key={doc.id} value={doc.id}>
+                    {doc.name || 'طبيب'} {doc.specialty ? `(${doc.specialty})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
 
           <div className="form-group">

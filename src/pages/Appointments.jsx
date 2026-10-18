@@ -29,14 +29,14 @@ const Appointments = () => {
   const isDoctor = isDoctorRole(user);
   const { appointments = [], patients = [], blockedSlots = [] } = state;
 
+  const activeScheduleConfig = tenant?.scheduleConfig || state.clinicInfo?.scheduleConfig;
   const availableSlots = useMemo(() => {
-    const schedule = tenant?.scheduleConfig || state.clinicInfo?.scheduleConfig;
-    const start = schedule?.workingHours?.start || '17:00';
-    const end = schedule?.workingHours?.end || '22:00';
-    const duration = schedule?.slotDuration || 30;
-    const breakTime = schedule?.breakTime || null;
+    const start = activeScheduleConfig?.startTime || activeScheduleConfig?.workingHours?.start || '17:00';
+    const end = activeScheduleConfig?.endTime || activeScheduleConfig?.workingHours?.end || '22:00';
+    const duration = activeScheduleConfig?.slotDuration || 30;
+    const breakTime = activeScheduleConfig?.breakTime || null;
     return generateDynamicSlots(start, end, duration, breakTime);
-  }, [tenant, state.clinicInfo]);
+  }, [activeScheduleConfig]);
   const currentClinicId = tenant?.id || state.clinicInfo?.id;
 
   const todayStr = getTodayDateStr();
@@ -503,6 +503,7 @@ const Appointments = () => {
         appointments={appointments}
         blockedSlots={blockedSlots}
         availableSlots={availableSlots}
+        scheduleConfig={activeScheduleConfig}
         doctors={availableDoctors}
         onNavigateToNewPatient={() => {
           setIsModalOpen(false);
@@ -520,6 +521,7 @@ const Appointments = () => {
         onBlockFullDay={handleBlockFullDay}
         onUnblockFullDay={handleUnblockFullDay}
         availableSlots={availableSlots}
+        scheduleConfig={activeScheduleConfig}
         getSlotInfoForBlocker={getSlotInfoForBlocker}
         onToggleBlockSlot={handleToggleBlockSlot}
         onUnblockFullDaySlot={(date) => dispatch({ type: 'UNBLOCK_FULL_DAY', payload: { date } })}

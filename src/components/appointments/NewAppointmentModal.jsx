@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { X, Plus } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
+import { getSlotsForDate } from '@/utils/timeSlots';
 
 /**
  * NewAppointmentModal
@@ -18,8 +19,18 @@ const NewAppointmentModal = ({
   blockedSlots = [],
   availableSlots = [],
   doctors = [],
+  scheduleConfig = null,
   onNavigateToNewPatient = () => {}
 }) => {
+  const resolvedSlots = useMemo(() => {
+    if (formData.date && scheduleConfig) {
+      const res = getSlotsForDate(formData.date, scheduleConfig);
+      if (res && res.slots && res.slots.length > 0) {
+        return res.slots;
+      }
+    }
+    return availableSlots;
+  }, [formData.date, scheduleConfig, availableSlots]);
   return (
     <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()} lazyMount unmountOnExit>
       <Portal>
@@ -120,7 +131,7 @@ const NewAppointmentModal = ({
                     required
                   >
                     <option value="">اختر الوقت...</option>
-                    {availableSlots.map(slot => {
+                    {resolvedSlots.map(slot => {
                       const isBooked = (appointments || []).some(a => a.date === formData.date && a.time === slot && a.status !== 'cancelled' && (!formData.doctorId || !a.doctorId || a.doctorId === formData.doctorId));
                       const isBlocked = (blockedSlots || []).some(b => b.date === formData.date && (b.time === slot || b.isFullDay || b.time === 'FULL_DAY'));
                       const isUnavailable = isBooked || isBlocked;

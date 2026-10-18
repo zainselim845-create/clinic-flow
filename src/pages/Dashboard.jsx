@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { getTodayDateStr } from '@/utils/timeSlots';
+import { getTodayDateStr, formatTimeToArabic } from '@/utils/timeSlots';
 import WaitingRoomQueue from '@/pages/dashboard/WaitingRoomQueue';
 import RevenueAnalytics from '@/pages/dashboard/RevenueAnalytics';
 import * as appointmentsService from '@/features/appointments/services/appointmentsService';
@@ -328,6 +328,37 @@ const Dashboard = () => {
       });
     };
     const patientId = generateUuid();
+
+    // Explicit doctor assignment to prevent collision on zero-UUID in DB unique index
+    const assignedDoctorId = walkInData.doctorId || 
+      currentClinic.doctorId || 
+      currentClinic.doctor_id || 
+      tenant?.doctorId || 
+      (state.doctors && state.doctors[0]?.id) || 
+      generateUuid();
+
+    // Calculate non-colliding time slot for the assigned doctor
+    const now = new Date();
+    const rawHour = String(now.getHours()).padStart(2, '0');
+    const rawMin = String(now.getMinutes()).padStart(2, '0');
+    let targetTime = formatTimeToArabic(`${rawHour}:${rawMin}`);
+
+    let minuteOffset = 0;
+    while (
+      (state.appointments || []).some(a =>
+        a.date === walkInData.date &&
+        (a.doctorId === assignedDoctorId || a.doctor_id === assignedDoctorId) &&
+        a.time === targetTime &&
+        a.status !== 'cancelled'
+      ) && minuteOffset < 60
+    ) {
+      minuteOffset += 1;
+      const offsetDate = new Date(now.getTime() + minuteOffset * 60000);
+      const offHour = String(offsetDate.getHours()).padStart(2, '0');
+      const offMin = String(offsetDate.getMinutes()).padStart(2, '0');
+      targetTime = formatTimeToArabic(`${offHour}:${offMin}`);
+    }
+
     const newBooking = {
       id: generateUuid(),
       clinicId: currentClinicId,
@@ -335,8 +366,10 @@ const Dashboard = () => {
       patientId,
       patientName: walkInData.name,
       patientPhone: walkInData.phone,
+      doctorId: assignedDoctorId,
+      doctor_id: assignedDoctorId,
       date: walkInData.date,
-      time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
+      time: targetTime,
       type: walkInData.type || 'كشف عيادة',
       fee: walkInData.fee || currentClinic.regularFee || '0 ج.م',
       status: 'waiting',
@@ -663,6 +696,8 @@ const Dashboard = () => {
         isShareModalOpen={isShareModalOpen}
         setIsShareModalOpen={setIsShareModalOpen}
         tenant={tenant}
+        doctors={state.doctors || []}
+        defaultDoctorId={currentClinic?.doctorId || currentClinic?.doctor_id || tenant?.doctorId || (state.doctors && state.doctors[0]?.id) || ''}
         onScheduleAppointment={(recall) => {
           setIsRecallModalOpen(false);
           navigate(`/appointments?action=new&patientId=${encodeURIComponent(recall.patientId)}&date=${encodeURIComponent(recall.dueDate || today)}&type=${encodeURIComponent(recall.reason)}&recallId=${encodeURIComponent(recall.id)}`);

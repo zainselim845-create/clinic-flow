@@ -45,6 +45,9 @@ const BookingCalendar = ({
   // Dynamic slots based on selected date's specific shift, breaks, and vacations
   const selectedDateResolution = useMemo(() => {
     if (!selectedDate) return { isVacation: false, isDayOff: false, slots: [] };
+    if (scheduleConfig) {
+      return getSlotsForDate(selectedDate, scheduleConfig);
+    }
     if (availableSlots && availableSlots.length > 0) {
       return { isVacation: false, isDayOff: false, slots: availableSlots };
     }

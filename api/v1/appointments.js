@@ -168,6 +168,12 @@ export default async function handler(req, res) {
         .single();
 
       if (error) {
+        if (error.code === '23505' || String(error.message || '').includes('unique') || String(error.message || '').includes('slot')) {
+          return res.status(409).json({
+            error: 'Conflict: Slot already booked for this clinic/doctor/date/time',
+            code: 'SLOT_ALREADY_BOOKED'
+          });
+        }
         return res.status(500).json({ error: error.message });
       }
 

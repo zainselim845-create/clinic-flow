@@ -36,7 +36,9 @@ export default function DashboardModalsContainer({
   isShareModalOpen,
   setIsShareModalOpen,
   tenant,
-  onScheduleAppointment
+  onScheduleAppointment,
+  doctors = [],
+  defaultDoctorId = ''
 }) {
   return (
     <>
@@ -46,6 +48,8 @@ export default function DashboardModalsContainer({
         onClose={() => setIsWalkInModalOpen(false)}
         onSubmit={handleWalkInSubmit}
         regularFee={currentClinic.regularFee || ''}
+        doctors={doctors}
+        defaultDoctorId={defaultDoctorId || currentClinic?.doctorId || currentClinic?.doctor_id}
       />
 
       {/* Consultation Modal */}

@@ -25,6 +25,8 @@ export function fromDbClinic(row) {
     quotas: row.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
     googleMapsUrl: row.google_maps_url || row.googleMapsUrl || '',
     coordinates: row.coordinates || null,
+    deletedAt: row.deleted_at || null,
+    deleted_at: row.deleted_at || null,
     createdAt: row.created_at
   };
 }
@@ -55,17 +57,23 @@ export function toDbClinic(data) {
     payload.google_maps_url = data.googleMapsUrl || data.google_maps_url;
   }
   if (data.coordinates !== undefined) payload.coordinates = data.coordinates;
+  if (data.deletedAt !== undefined || data.deleted_at !== undefined) {
+    payload.deleted_at = data.deletedAt !== undefined ? data.deletedAt : data.deleted_at;
+  }
 
   return payload;
 }
 
-export async function getClinicInfo(clinicId = null) {
+export async function getClinicInfo(clinicId = null, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
   }
 
   try {
     let query = supabase.from('clinics').select('*');
+    if (!options.includeDeleted) {
+      query = query.is('deleted_at', null);
+    }
     if (clinicId) {
       query = query.eq('id', clinicId);
     }
@@ -78,13 +86,17 @@ export async function getClinicInfo(clinicId = null) {
   }
 }
 
-export async function getAllClinicsFromDb() {
+export async function getAllClinicsFromDb(options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
   }
 
   try {
-    const { data, error } = await supabase.from('clinics').select('*').order('created_at', { ascending: false });
+    let query = supabase.from('clinics').select('*');
+    if (!options.includeDeleted) {
+      query = query.is('deleted_at', null);
+    }
+    const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
     return { data: (data || []).map(fromDbClinic), error: null };
   } catch (error) {
@@ -112,7 +124,7 @@ export async function createClinicInDb(clinicData) {
   }
 }
 
-export async function deleteClinicFromDb(clinicId) {
+export async function deleteClinicFromDb(clinicId, options = {}) {
   if (!isSupabaseConfigured()) {
     return { success: false, error: NOT_CONFIGURED_ERROR };
   }
@@ -122,9 +134,23 @@ export async function deleteClinicFromDb(clinicId) {
   }
 
   try {
-    const { error } = await supabase.from('clinics').delete().eq('id', clinicId);
+    if (options.hardDelete) {
+      const { error } = await supabase.from('clinics').delete().eq('id', clinicId);
+      if (error) throw error;
+      return { success: true, error: null };
+    }
+
+    // Default: Soft-delete for compliance, audit trails, and financial retention
+    const { error } = await supabase
+      .from('clinics')
+      .update({ 
+        deleted_at: new Date().toISOString(),
+        subscription_status: 'cancelled'
+      })
+      .eq('id', clinicId);
+
     if (error) throw error;
-    return { success: true, error: null };
+    return { success: true, error: null, softDeleted: true };
   } catch (error) {
     console.error('Error deleting clinic from DB:', error);
     return { success: false, error };
