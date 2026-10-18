@@ -606,8 +606,18 @@ export function deleteRegisteredUser(userIdOrPhone, clinicSlugOrId = null) {
   const existing = getRegisteredUsers();
   const filtered = existing.filter(u => {
     // If clinic scope provided, do not touch accounts belonging to another clinic
-    if (clinicSlugOrId && u.clinicSlug && u.clinicId && u.clinicSlug !== clinicSlugOrId && u.clinicId !== clinicSlugOrId) {
-      return true;
+    if (clinicSlugOrId && (u.clinicSlug || u.clinicId)) {
+      const cleanScope = String(clinicSlugOrId).trim().replace(/^tenant-/, '');
+      const uSlug = (u.clinicSlug || '').replace(/^tenant-/, '');
+      const uId = (u.clinicId || '').replace(/^tenant-/, '');
+      const belongsToClinic = 
+        u.clinicSlug === clinicSlugOrId || 
+        u.clinicId === clinicSlugOrId || 
+        (uSlug && uSlug === cleanScope) || 
+        (uId && uId === cleanScope);
+      if (!belongsToClinic) {
+        return true;
+      }
     }
     // Delete by exact user ID
     if (u.id === clean) return false;

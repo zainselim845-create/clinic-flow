@@ -77,11 +77,20 @@ export function settingsReducer(state, action) {
         staffMembers: (state.staffMembers || []).map(s => s.id === action.payload.id ? action.payload : s)
       };
 
-    case 'DELETE_STAFF':
+    case 'DELETE_STAFF': {
+      const targetId = typeof action.payload === 'object' ? action.payload?.id : action.payload;
+      const targetPhone = typeof action.payload === 'object' ? action.payload?.phone : null;
+      const cleanPhone = targetPhone ? String(targetPhone).replace(/\D/g, '') : null;
       return {
         ...state,
-        staffMembers: (state.staffMembers || []).filter(s => s.id !== action.payload)
+        staffMembers: (state.staffMembers || []).filter(s => {
+          if (targetId && s.id === targetId) return false;
+          if (targetPhone && s.phone === targetPhone) return false;
+          if (cleanPhone && s.phone && String(s.phone).replace(/\D/g, '') === cleanPhone) return false;
+          return true;
+        })
       };
+    }
 
     case 'TOGGLE_STAFF_STATUS':
       return {

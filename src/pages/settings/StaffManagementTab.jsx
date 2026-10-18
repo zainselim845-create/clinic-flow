@@ -6,10 +6,12 @@ import { SYSTEM_PERMISSIONS } from '@/utils/permissions';
 import { useTenant } from '@/context/TenantContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
+import { toast } from '@/lib/toast';
 
 export default function StaffManagementTab({ staffMembers, dispatch }) {
   const { tenant } = useTenant();
   const [deleteTargetStaff, setDeleteTargetStaff] = useState(null);
+  const [deletedStaffIdentifiers, setDeletedStaffIdentifiers] = useState(() => new Set());
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [showStaffPass, setShowStaffPass] = useState(false);
@@ -32,16 +34,27 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     const currentSlug = tenant?.slug || 'clinic';
     const currentId = tenant?.id;
 
+    const isDeleted = (item) => {
+      if (!item) return true;
+      if (item.id && deletedStaffIdentifiers.has(item.id)) return true;
+      if (item.phone) {
+        if (deletedStaffIdentifiers.has(item.phone)) return true;
+        const cleanP = String(item.phone).replace(/\D/g, '');
+        if (cleanP && deletedStaffIdentifiers.has(cleanP)) return true;
+      }
+      return false;
+    };
+
     // 1. From AppContext state props
     (staffMembers || []).forEach(s => {
-      if (s?.id) map.set(s.id, s);
+      if (s?.id && !isDeleted(s)) map.set(s.id, s);
     });
 
     // 2. From resilient local staff cache
     const localCache = safeGetJSON(`clinicflow_staff_${currentSlug}`, []);
     if (Array.isArray(localCache)) {
       localCache.forEach(s => {
-        if (s?.id && !map.has(s.id)) map.set(s.id, s);
+        if (s?.id && !isDeleted(s) && !map.has(s.id)) map.set(s.id, s);
       });
     }
 
@@ -49,11 +62,11 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     try {
       const reg = getRegisteredUsers().filter(u =>
         (u.clinicId === currentId || u.clinicSlug === currentSlug || u.clinicId === currentSlug) &&
-        u.role !== 'doctor' && u.role !== 'super_admin'
+        u.role !== 'doctor' && u.role !== 'super_admin' && !isDeleted(u)
       );
       reg.forEach(u => {
         const existing = map.get(u.id) || Array.from(map.values()).find(s => s.phone === u.phone);
-        if (!existing) {
+        if (!existing && !isDeleted(u)) {
           map.set(u.id, {
             id: u.id,
             clinicId: u.clinicId || currentId || currentSlug,
@@ -75,7 +88,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     }
 
     return Array.from(map.values());
-  }, [staffMembers, tenant]);
+  }, [staffMembers, tenant, deletedStaffIdentifiers]);
 
   const handleOpenAddModal = () => {
     setEditingStaff(null);
@@ -547,32 +560,73 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         onClose={() => setDeleteTargetStaff(null)}
         onConfirm={async () => {
           if (!deleteTargetStaff) return;
-          const id = deleteTargetStaff.id;
+          const target = deleteTargetStaff;
+          const id = target.id;
+          const phone = target.phone;
+          const email = target.email;
+          const cleanPhone = phone ? String(phone).replace(/\D/g, '') : null;
           const staffClinicId = tenant?.id || (tenant?.slug ? `tenant-${tenant.slug}` : 'clinic-default');
           const staffClinicSlug = tenant?.slug || 'clinic';
 
-          try {
-            await staffService.deleteStaffMember(id, staffClinicSlug);
-          } catch (err) {
-            console.warn('Failed to delete staff in staffService:', err);
-          }
+          // 1. Instant optimistic removal from UI
+          setDeletedStaffIdentifiers(prev => {
+            const next = new Set(prev);
+            if (id) next.add(id);
+            if (phone) next.add(phone);
+            if (cleanPhone) next.add(cleanPhone);
+            return next;
+          });
 
+          // 2. Dispatch to AppContext immediately
+          dispatch({ type: 'DELETE_STAFF', payload: { id, phone } });
+
+          // 3. Clear from all local storage scopes
+          const allScopes = Array.from(new Set([staffClinicSlug, staffClinicId, tenant?.id, tenant?.slug].filter(Boolean)));
+          allScopes.forEach(keySlug => {
+            const scopedKey = `clinicflow_data_${keySlug}`;
+            const currentScoped = safeGetJSON(scopedKey, null);
+            if (currentScoped && typeof currentScoped === 'object' && Array.isArray(currentScoped.staffMembers)) {
+              currentScoped.staffMembers = currentScoped.staffMembers.filter(s => 
+                s.id !== id && 
+                (!phone || s.phone !== phone) && 
+                (!cleanPhone || String(s.phone || '').replace(/\D/g, '') !== cleanPhone)
+              );
+              safeSetJSON(scopedKey, currentScoped);
+            }
+
+            const staffCacheKey = `clinicflow_staff_${keySlug}`;
+            const cachedStaff = safeGetJSON(staffCacheKey, null);
+            if (Array.isArray(cachedStaff)) {
+              safeSetJSON(staffCacheKey, cachedStaff.filter(s => 
+                s.id !== id && 
+                (!phone || s.phone !== phone) && 
+                (!cleanPhone || String(s.phone || '').replace(/\D/g, '') !== cleanPhone)
+              ));
+            }
+          });
+
+          // 4. Purge from Auth Registry
           try {
+            deleteRegisteredUser(id);
+            if (phone) deleteRegisteredUser(phone);
+            if (cleanPhone) deleteRegisteredUser(cleanPhone);
+            if (email) deleteRegisteredUser(email);
+            deleteRegisteredUser(id, staffClinicSlug);
+            if (phone) deleteRegisteredUser(phone, staffClinicSlug);
             deleteRegisteredUser(id, staffClinicId);
-            if (deleteTargetStaff?.phone) deleteRegisteredUser(deleteTargetStaff.phone, staffClinicId);
-            if (deleteTargetStaff?.email) deleteRegisteredUser(deleteTargetStaff.email, staffClinicId);
+            if (phone) deleteRegisteredUser(phone, staffClinicId);
           } catch (err) {
             console.warn('[StaffManagementTab] Failed to delete registered staff user:', err);
           }
 
-          const scopedKey = `clinicflow_data_${staffClinicSlug}`;
-          const currentScoped = safeGetJSON(scopedKey, {});
-          if (currentScoped && typeof currentScoped === 'object' && Array.isArray(currentScoped.staffMembers)) {
-            currentScoped.staffMembers = currentScoped.staffMembers.filter(s => s.id !== id);
-            safeSetJSON(scopedKey, currentScoped);
+          // 5. Delete from staffService (Supabase & local)
+          try {
+            await staffService.deleteStaffMember(id, staffClinicSlug, { phone, email, tenantId: tenant?.id });
+          } catch (err) {
+            console.warn('Failed to delete staff in staffService:', err);
           }
 
-          dispatch({ type: 'DELETE_STAFF', payload: id });
+          toast.success(`تم حذف حساب الموظف (${target.name}) بنجاح`);
           setDeleteTargetStaff(null);
         }}
         title="حذف حساب الموظف"

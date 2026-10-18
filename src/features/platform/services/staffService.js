@@ -239,17 +239,32 @@ export async function updateStaffMember(id, updateData, clinicId = null) {
 /**
  * Delete a staff member
  */
-export async function deleteStaffMember(id, clinicId = null) {
-  if (clinicId) {
-    const cacheKey = `clinicflow_staff_${clinicId}`;
+export async function deleteStaffMember(id, clinicId = null, extraParams = {}) {
+  const phone = extraParams?.phone;
+  const email = extraParams?.email;
+  const tenantId = extraParams?.tenantId;
+  const cleanPhone = phone ? String(phone).replace(/\D/g, '') : null;
+
+  // Clean local staff caches across all potential keys
+  const cacheKeys = Array.from(new Set([clinicId, tenantId].filter(Boolean)));
+  cacheKeys.forEach(cid => {
+    const cacheKey = `clinicflow_staff_${cid}`;
     const local = safeGetJSON(cacheKey, []);
     if (Array.isArray(local)) {
-      safeSetJSON(cacheKey, local.filter(s => s.id !== id));
+      safeSetJSON(cacheKey, local.filter(s => {
+        if (id && s.id === id) return false;
+        if (phone && s.phone === phone) return false;
+        if (cleanPhone && s.phone && String(s.phone).replace(/\D/g, '') === cleanPhone) return false;
+        return true;
+      }));
     }
-  }
+  });
 
   try {
     deleteRegisteredAuthUser(id);
+    if (phone) deleteRegisteredAuthUser(phone);
+    if (cleanPhone) deleteRegisteredAuthUser(cleanPhone);
+    if (email) deleteRegisteredAuthUser(email);
   } catch (err) {
     console.warn('[StaffService] Auth user delete note:', err);
   }
@@ -259,17 +274,21 @@ export async function deleteStaffMember(id, clinicId = null) {
   }
 
   try {
-    const { error } = await supabase
-      .from('staff_members')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.warn('[StaffService] Remote staff delete note:', error.message);
+    if (id && UUID_REGEX.test(id)) {
+      await supabase
+        .from('staff_members')
+        .delete()
+        .eq('id', id);
+    }
+    if (phone) {
+      await supabase
+        .from('staff_members')
+        .delete()
+        .eq('phone', phone);
     }
     return { error: null };
   } catch (error) {
-    console.warn('[StaffService] Remote staff delete error:', error.message);
+    console.warn('[StaffService] Remote staff delete error:', error.message || error);
     return { error: null };
   }
 }

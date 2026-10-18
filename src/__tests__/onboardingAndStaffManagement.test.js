@@ -352,6 +352,23 @@ describe('Doctor Onboarding & Staff Management (Arabic SaaS Workflow)', () => {
       expect(authenticateUser('01033334444', 'pass')).toBeNull();
     });
 
+    it('successfully deletes staff even when clinicSlugOrId has tenant- prefix mismatch', () => {
+      const staffMember = provisionStaffAccount({
+        clinicId: 'uuid-1234-abcd',
+        clinicSlug: 'dr-test-prefix',
+        name: 'سارة تجربة',
+        phone: '01011122233',
+        password: 'pass',
+        role: 'receptionist'
+      });
+
+      expect(authenticateUser('01011122233', 'pass')).not.toBeNull();
+
+      // Calling deleteRegisteredUser with tenant-dr-test-prefix should successfully delete
+      deleteRegisteredUser(staffMember.id, 'tenant-dr-test-prefix');
+      expect(authenticateUser('01011122233', 'pass')).toBeNull();
+    });
+
     it('ensures completeClinicOnboarding configures dedicated senderId for the clinic', () => {
       const result = completeClinicOnboarding({
         userId: 'doc-sender-test',
