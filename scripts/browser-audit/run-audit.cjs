@@ -352,10 +352,11 @@ async function runUiAudit() {
     localStorage.removeItem('clinicflow_auth_user');
     sessionStorage.removeItem('clinicflow_auth_user');
   });
-  await page.goto(BASE + '/booking', { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(500);
+  // Navigate directly to the dedicated clinic portal
+  await page.goto(BASE + '/c/dr-audit-clinic', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(800);
 
-  // If on discovery view, select first clinic to enter the clinic-specific booking portal
+  // If on discovery view or landing redirect, select clinic button if present
   const selectClinicBtn = await page.$('button:has-text("احجز موعدك في هذه العيادة")');
   if (selectClinicBtn) {
     await selectClinicBtn.click();
@@ -363,6 +364,7 @@ async function runUiAudit() {
   }
 
   try {
+    await page.waitForSelector('input[type="tel"]', { timeout: 10000 });
     await page.fill('input[type="tel"]', '01029384756');
     hit('view-booking-portal', 'booking-phone-input');
   } catch (e) {
