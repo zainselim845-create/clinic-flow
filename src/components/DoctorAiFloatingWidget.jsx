@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Bot, Send, X, Maximize2, RotateCcw, 
@@ -92,8 +92,36 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
     }
   }, [isOpen]);
 
+  // Authorization & Visibility Guard:
+  // 1. Must be logged in (clinic staff or doctor). Never visible to public / unauthenticated visitors.
+  // 2. Hidden on all public / visitor routes (landing, booking, login, onboarding, public tenant page).
+  // 3. For clinic staff members: only visible if doctor explicitly granted the 'ai_assistant' permission.
+  const isAuthorized = useMemo(() => {
+    if (!user) return false;
+
+    const currentPath = location?.pathname || '';
+    const isPublicRoute = 
+      currentPath === '/' ||
+      currentPath.startsWith('/c/') ||
+      currentPath === '/booking' ||
+      currentPath === '/manage-booking' ||
+      currentPath === '/login' ||
+      currentPath === '/onboarding';
+    if (isPublicRoute) return false;
+
+    // Doctor, owner, or clinic admin always has permission
+    const isDoctorOrAdmin = ['doctor', 'owner', 'clinic_admin', 'admin', 'multi_clinic_owner', 'super_admin'].includes(user?.role) || user?.isAdmin;
+    if (isDoctorOrAdmin) return true;
+
+    // Staff members only if explicitly granted by doctor in permissions
+    const permissions = Array.isArray(user?.permissions) ? user.permissions : [];
+    return permissions.includes('ai_assistant') || permissions.includes('*');
+  }, [user, location?.pathname]);
+
   // Global Keyboard Shortcut: Alt + A
   useEffect(() => {
+    if (!isAuthorized) return;
+
     const handleKeyDown = (e) => {
       if ((e.altKey && (e.key === 'a' || e.key === 'A' || e.key === 'ش')) || (e.ctrlKey && e.code === 'Space')) {
         e.preventDefault();
@@ -105,7 +133,7 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, setIsOpen]);
+  }, [isAuthorized, isOpen, setIsOpen]);
 
   // Execute clinical actions dispatched by agent
   const executeDoctorAction = (actionResult) => {
@@ -318,8 +346,8 @@ export default function DoctorAiFloatingWidget({ isOpen: controlledOpen, onToggl
     }
   };
 
-  // Hide the floating widget if user is already on full /doctor-agent screen
-  if (location.pathname === '/doctor-agent') {
+  // Hide the floating widget if user is not authorized or is already on full /doctor-agent screen
+  if (!isAuthorized || location.pathname === '/doctor-agent') {
     return null;
   }
 

@@ -85,5 +85,27 @@ describe('ClinicFlow Permissions & Access Control Engine (test-guard compliant)'
       expect(hasPermission(null, 'appointments')).toBe(false);
       expect(canAccessRoute(undefined, '/appointments')).toBe(false);
     });
+
+    it('validates ai_assistant permission for staff vs doctor control', () => {
+      const staffWithAi = {
+        id: 'staff-ai',
+        role: 'staff',
+        permissions: ['appointments', 'ai_assistant']
+      };
+      const staffWithoutAi = {
+        id: 'staff-no-ai',
+        role: 'staff',
+        permissions: ['appointments']
+      };
+
+      expect(hasPermission(staffWithAi, 'ai_assistant')).toBe(true);
+      expect(hasPermission(staffWithoutAi, 'ai_assistant')).toBe(false);
+      expect(hasPermission(doctorUser, 'ai_assistant')).toBe(true);
+
+      const aiPermDef = SYSTEM_PERMISSIONS.find(p => p.id === 'ai_assistant');
+      expect(aiPermDef).toBeDefined();
+      expect(aiPermDef.name).toContain('المساعد الذكي');
+    });
   });
 });
+

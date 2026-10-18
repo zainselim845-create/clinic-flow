@@ -6,7 +6,6 @@ import { useTenant } from '@/context/TenantContext';
 import { ShieldCheck, ArrowLeft } from 'lucide-react';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import DoctorAiFloatingWidget from '@/components/DoctorAiFloatingWidget';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import PageErrorBoundary from '@/components/PageErrorBoundary';

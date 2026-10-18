@@ -68,4 +68,28 @@ describe('DoctorAiFloatingWidget & Ubiquitous Copilot Access', () => {
     const invResult = processDoctorIntent('عايز اعرف المخزون والمستلزمات', state);
     expect(invResult.replyText).toContain('وحدة اختيارية بالعيادة');
   });
+
+  it('verifies DoctorAiFloatingWidget enforces strict authorization and doctor-controlled staff permissions', () => {
+    const filePath = path.resolve(__dirname, '../components/DoctorAiFloatingWidget.jsx');
+    const content = fs.readFileSync(filePath, 'utf-8');
+
+    // 1. Authorization guard defined
+    expect(content).toContain('isAuthorized');
+    expect(content).toContain('ai_assistant');
+
+    // 2. Public route exclusion
+    expect(content).toContain("currentPath === '/'");
+    expect(content).toContain("currentPath.startsWith('/c/')");
+    expect(content).toContain("currentPath === '/booking'");
+    expect(content).toContain("currentPath === '/manage-booking'");
+    expect(content).toContain("currentPath === '/login'");
+    expect(content).toContain("currentPath === '/onboarding'");
+
+    // 3. Render guard returns null if !isAuthorized
+    expect(content).toContain('if (!isAuthorized || location.pathname === \'/doctor-agent\')');
+
+    // 4. Keyboard shortcut Alt+A protected by isAuthorized
+    expect(content).toContain('if (!isAuthorized) return;');
+  });
 });
+

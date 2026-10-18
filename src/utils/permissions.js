@@ -33,6 +33,12 @@ export const SYSTEM_PERMISSIONS = [
     name: 'إرسال رسائل SMS والحملات',
     description: 'إرسال تذكيرات المواعيد واستدعاء المتابعة ورسائل الـ SMS',
     badgeColor: '#0284C7'
+  },
+  {
+    id: 'ai_assistant',
+    name: 'المساعد الذكي (AI Copilot)',
+    description: 'ظهور زر المساعد الطبي الذكي العائم واستخدامه للاستعلامات والعمليات السريرية',
+    badgeColor: '#2563EB'
   }
 ];
 
