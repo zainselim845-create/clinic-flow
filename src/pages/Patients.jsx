@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useDeferredValue, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
 import PatientRecallModal from '@/components/PatientRecallModal';
@@ -18,11 +18,22 @@ import {
 import './Patients.css';
 
 const Patients = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { state, dispatch, refreshClinicData } = useApp();
   const { tenant } = useTenant();
   const { patients = [], appointments = [], useSupabase } = state;
   const currentClinicId = tenant?.id || state.clinicInfo?.id;
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const dueRecallsCount = useMemo(() => {
+    return (state?.recalls || []).filter(r => {
+      if (!r) return false;
+      const rClinicId = r.clinicId || r.clinic_id;
+      if (rClinicId && currentClinicId && rClinicId !== currentClinicId) return false;
+      return r.dueDate <= todayStr && r.status !== 'completed';
+    }).length;
+  }, [state?.recalls, currentClinicId, todayStr]);
 
   // Filter patients by clinic (Strict Tenant Isolation)
   const clinicPatients = useMemo(() => {
@@ -287,6 +298,8 @@ const Patients = () => {
           onOpenImport={() => setIsImportModalOpen(true)}
           onExportCSV={handleExportCSV}
           onOpenNewPatient={handleOpenNewPatient}
+          onOpenRecalls={() => setIsRecallModalOpen(true)}
+          dueRecallsCount={dueRecallsCount}
         />
       </FeatureErrorBoundary>
 
@@ -340,6 +353,11 @@ const Patients = () => {
             patientAppointments={getPatientAppointments(selectedPatient.id)}
             onClose={() => setIsDetailModalOpen(false)}
             onEdit={handleEditPatient}
+            onOpenRecall={(p) => {
+              setSelectedPatient(p);
+              setIsDetailModalOpen(false);
+              setIsRecallModalOpen(true);
+            }}
           />
         </FeatureErrorBoundary>
       )}
@@ -350,6 +368,10 @@ const Patients = () => {
           isOpen={isRecallModalOpen}
           onClose={() => setIsRecallModalOpen(false)}
           initialPatient={selectedPatient}
+          onScheduleAppointment={(recall) => {
+            setIsRecallModalOpen(false);
+            navigate(`/appointments?action=new&patientId=${encodeURIComponent(recall.patientId)}&date=${encodeURIComponent(recall.dueDate || todayStr)}&type=${encodeURIComponent(recall.reason)}&recallId=${encodeURIComponent(recall.id)}`);
+          }}
         />
       </FeatureErrorBoundary>
 

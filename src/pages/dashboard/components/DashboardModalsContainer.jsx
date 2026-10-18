@@ -35,7 +35,8 @@ export default function DashboardModalsContainer({
   setRoomWarningModal,
   isShareModalOpen,
   setIsShareModalOpen,
-  tenant
+  tenant,
+  onScheduleAppointment
 }) {
   return (
     <>
@@ -59,6 +60,10 @@ export default function DashboardModalsContainer({
       <PatientDossierDrawer
         patient={dossierPatient}
         onClose={() => setDossierPatient(null)}
+        onOpenRecall={() => {
+          setDossierPatient(null);
+          setIsRecallModalOpen(true);
+        }}
       />
 
       {/* Expenses Modal */}
@@ -71,6 +76,7 @@ export default function DashboardModalsContainer({
       <PatientRecallModal
         isOpen={isRecallModalOpen}
         onClose={() => setIsRecallModalOpen(false)}
+        onScheduleAppointment={onScheduleAppointment}
       />
 
       {/* Shift Handover Modal */}

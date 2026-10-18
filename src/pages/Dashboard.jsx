@@ -84,6 +84,15 @@ const Dashboard = () => {
       : 0;
   }, [todaysAppointments.length, completedToday.length]);
 
+  const dueRecallsCount = useMemo(() => {
+    return (state?.recalls || []).filter(r => {
+      if (!r) return false;
+      const rClinicId = r.clinicId || r.clinic_id;
+      if (rClinicId && currentClinicId && rClinicId !== currentClinicId) return false;
+      return r.dueDate <= today && r.status !== 'completed';
+    }).length;
+  }, [state?.recalls, currentClinicId, today]);
+
   // Calculate today's revenue strictly from completed appointments
   const todayRevenue = useMemo(() => {
     return completedToday.reduce((sum, a) => {
@@ -600,6 +609,18 @@ const Dashboard = () => {
                     <small>مرضى أنهوا الكشف وينتظرون دفع الرسوم</small>
                   </div>
                 </button>
+                <button 
+                  type="button" 
+                  onClick={() => setIsRecallModalOpen(true)} 
+                  className={`toolkit-action-btn ${dueRecallsCount > 0 ? 'highlight' : ''}`}
+                  style={dueRecallsCount > 0 ? { borderColor: '#ef4444', background: '#fef2f2' } : { borderColor: 'var(--primary-color)' }}
+                >
+                  <BellRing size={18} style={dueRecallsCount > 0 ? { color: '#ef4444' } : { color: 'var(--primary-color)' }} />
+                  <div className="btn-text">
+                    <strong>استدعاء وتأكيد المواعيد ({dueRecallsCount} مستحق)</strong>
+                    <small>تأكيد وتجديد مواعيد المتابعة الدورية مع العملاء</small>
+                  </div>
+                </button>
               </div>
             </div>
           )}
@@ -642,6 +663,10 @@ const Dashboard = () => {
         isShareModalOpen={isShareModalOpen}
         setIsShareModalOpen={setIsShareModalOpen}
         tenant={tenant}
+        onScheduleAppointment={(recall) => {
+          setIsRecallModalOpen(false);
+          navigate(`/appointments?action=new&patientId=${encodeURIComponent(recall.patientId)}&date=${encodeURIComponent(recall.dueDate || today)}&type=${encodeURIComponent(recall.reason)}&recallId=${encodeURIComponent(recall.id)}`);
+        }}
       />
 
       {/* Floating Quick Actions Command Dock */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, LayoutGrid, Armchair, Download, Lock, Plus } from 'lucide-react';
+import { Search, LayoutGrid, Armchair, Download, Lock, Plus, BellRing } from 'lucide-react';
 
 /**
  * AppointmentFiltersBar
@@ -23,7 +23,9 @@ const AppointmentFiltersBar = ({
   isDoctor = false,
   onExportCsv = () => {},
   onOpenBlockerModal = () => {},
-  onOpenNewAppointmentModal = () => {}
+  onOpenNewAppointmentModal = () => {},
+  onOpenRecallModal = () => {},
+  dueRecallsCount = 0
 }) => {
   const waitingCount = appointments.filter(a => a.status === 'waiting').length;
   const inProgressCount = appointments.filter(a => a.status === 'in_progress').length;
@@ -56,6 +58,16 @@ const AppointmentFiltersBar = ({
               <span>إغلاق / حظر مواعيد</span>
             </button>
           )}
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={onOpenRecallModal} 
+            title="استدعاء وتأكيد المواعيد الدورية مع العملاء"
+            style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)', fontWeight: 600 }}
+          >
+            <BellRing size={16} />
+            <span>استدعاء المتابعة {dueRecallsCount > 0 && `(${dueRecallsCount})`}</span>
+          </button>
           <button 
             type="button" 
             className="btn btn-primary" 

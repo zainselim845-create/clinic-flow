@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-  X, Plus, BellRing, MessageCircle, Trash2
+  X, Plus, BellRing, MessageCircle, Trash2, CalendarPlus, MessageSquare, PhoneCall
 } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
@@ -9,7 +10,8 @@ import { getTodayDateStr } from '@/utils/timeSlots';
 import { recallPresets } from '@/data/demoData';
 import './PatientRecallModal.css';
 
-export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
+export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onScheduleAppointment }) => {
+  const navigate = useNavigate();
   const { state, dispatch } = useApp();
   const { tenant } = useTenant();
   const today = getTodayDateStr();
@@ -112,15 +114,35 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
   };
 
   const generateSmsRecallUrl = (recall) => {
-    const clinicName = state.clinicInfo?.name || 'العيادة التخصصية';
-    const doctorPhone = state.clinicInfo?.phone || '01006285031';
+    const clinicName = tenant?.name || state.clinicInfo?.name || 'العيادة التخصصية';
+    const doctorPhone = tenant?.phone || state.clinicInfo?.phone || '01006285031';
     const cleanPhone = (recall.patientPhone || '').replace(/\D/g, '');
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow.com';
-    const bookingPath = state.clinicInfo?.slug ? `/c/${state.clinicInfo.slug}/booking` : '/';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow-lh3g.vercel.app';
+    const bookingPath = tenant?.slug ? `/c/${tenant.slug}` : (state.clinicInfo?.slug ? `/c/${state.clinicInfo.slug}` : '/');
     
     const message = `مرحباً أستاذ/ة ${recall.patientName}،\nنود تذكيركم بموعدكم الدوري لمتابعة [${recall.reason}] لدى ${clinicName}.\n\nللحجز وتأكيد الموعد المناسب لكم: ${origin}${bookingPath}\nأو الاتصال على: ${doctorPhone}\nنتمنى لكم دوام الصحة والعافية.`;
     
     return `sms:+2${cleanPhone}?body=${encodeURIComponent(message)}`;
+  };
+
+  const generateWhatsAppRecallUrl = (recall) => {
+    const clinicName = tenant?.name || state.clinicInfo?.name || 'العيادة التخصصية';
+    const cleanPhone = (recall.patientPhone || '').replace(/\D/g, '').replace(/^0/, '20');
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow-lh3g.vercel.app';
+    const bookingPath = tenant?.slug ? `/c/${tenant.slug}` : (state.clinicInfo?.slug ? `/c/${state.clinicInfo.slug}` : '/');
+    const fullBookingUrl = `${origin}${bookingPath}`;
+    const message = `مرحباً أستاذ/ة ${recall.patientName}،\nنود تذكيركم بموعدكم الدوري لمتابعة [${recall.reason}] لدى ${clinicName}.\n\nللحجز وتأكيد الموعد المناسب لكم مباشرة: ${fullBookingUrl}\nأو الرد على هذه الرسالة لتأكيد الموعد مباشرة مع الاستقبال.\nنتمنى لكم دوام الصحة والعافية.`;
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+  };
+
+  const handleConfirmAndSchedule = (recall) => {
+    handleUpdateStatus(recall.id, 'contacted');
+    if (onScheduleAppointment) {
+      onScheduleAppointment(recall);
+    } else {
+      navigate(`/appointments?action=new&patientId=${encodeURIComponent(recall.patientId)}&date=${encodeURIComponent(recall.dueDate || today)}&type=${encodeURIComponent(recall.reason)}&recallId=${encodeURIComponent(recall.id)}`);
+    }
+    onClose();
   };
 
   return (
@@ -287,7 +309,8 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                       <th>سبب الاستدعاء</th>
                       <th>تاريخ الاستحقاق</th>
                       <th>الحالة</th>
-                      <th style={{ textAlign: 'center' }}>تذكير SMS</th>
+                      <th style={{ textAlign: 'center' }}>تواصل وتأكيد</th>
+                      <th style={{ textAlign: 'center' }}>تأكيد وحجز</th>
                       <th style={{ textAlign: 'center' }}>إجراء</th>
                     </tr>
                   </thead>
@@ -297,7 +320,20 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                       return (
                         <tr key={rec.id} className={isOverdue ? 'row-overdue' : ''}>
                           <td style={{ fontWeight: 700 }}>{rec.patientName}</td>
-                          <td dir="ltr" style={{ textAlign: 'right' }}>{rec.patientPhone}</td>
+                          <td dir="ltr" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                            <span>{rec.patientPhone}</span>
+                            {rec.patientPhone && (
+                              <a 
+                                href={`tel:${rec.patientPhone}`}
+                                className="btn-call-inline"
+                                title="اتصال هاتفي مباشر لتأكيد الموعد"
+                                style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: '6px', color: 'var(--primary-color, #0284c7)' }}
+                                aria-label={`اتصال هاتفي بالمريض ${rec.patientName}`}
+                              >
+                                <PhoneCall size={14} />
+                              </a>
+                            )}
+                          </td>
                           <td>{rec.reason}</td>
                           <td>
                             <strong style={{ color: isOverdue ? '#ef4444' : 'inherit' }}>
@@ -318,17 +354,81 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
                               <option value="completed">مكتمل</option>
                             </select>
                           </td>
-                          <td style={{ textAlign: 'center' }}>
-                            <a 
-                              href={generateSmsRecallUrl(rec)}
-                              className="btn-send-sms-recall"
-                              onClick={() => handleUpdateStatus(rec.id, 'contacted')}
-                              title="إرسال رسالة تذكير مخصصة عبر SMS"
-                              aria-label={`إرسال رسالة تذكير SMS للمريض ${rec.patientName}`}
+                          <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                            <div style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
+                              <a 
+                                href={generateWhatsAppRecallUrl(rec)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn-send-whatsapp-recall"
+                                onClick={() => handleUpdateStatus(rec.id, 'contacted')}
+                                title="تأكيد الموعد عبر واتساب"
+                                aria-label={`تأكيد الموعد عبر واتساب مع المريض ${rec.patientName}`}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  background: '#25D366',
+                                  color: '#ffffff',
+                                  padding: '0.32rem 0.55rem',
+                                  borderRadius: '6px',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 700,
+                                  textDecoration: 'none'
+                                }}
+                              >
+                                <MessageSquare size={13} />
+                                <span>واتساب</span>
+                              </a>
+                              <a 
+                                href={generateSmsRecallUrl(rec)}
+                                className="btn-send-sms-recall"
+                                onClick={() => handleUpdateStatus(rec.id, 'contacted')}
+                                title="إرسال رسالة تذكير مخصصة عبر SMS"
+                                aria-label={`إرسال رسالة تذكير SMS للمريض ${rec.patientName}`}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  background: 'var(--clinic-primary, #09090B)',
+                                  color: '#ffffff',
+                                  padding: '0.32rem 0.55rem',
+                                  borderRadius: '6px',
+                                  fontSize: '0.76rem',
+                                  fontWeight: 700,
+                                  textDecoration: 'none'
+                                }}
+                              >
+                                <MessageCircle size={13} />
+                                <span>SMS</span>
+                              </a>
+                            </div>
+                          </td>
+                          <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                            <button 
+                              type="button" 
+                              className="btn-schedule-recall-now"
+                              onClick={() => handleConfirmAndSchedule(rec)}
+                              title="الانتقال إلى جدول المواعيد لتأكيد وتثبيت الحجز مع العميل"
+                              aria-label={`تأكيد وحجز موعد في الجدول للمريض ${rec.patientName}`}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                background: '#0284c7',
+                                color: '#ffffff',
+                                border: 'none',
+                                padding: '0.35rem 0.7rem',
+                                borderRadius: '6px',
+                                fontWeight: 700,
+                                fontSize: '0.78rem',
+                                cursor: 'pointer',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.08)'
+                              }}
                             >
-                              <MessageCircle size={15} />
-                              <span>SMS</span>
-                            </a>
+                              <CalendarPlus size={14} />
+                              <span>تأكيد وحجز</span>
+                            </button>
                           </td>
                           <td style={{ textAlign: 'center' }}>
                             <button 

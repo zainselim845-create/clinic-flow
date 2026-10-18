@@ -11,6 +11,7 @@ import {
   NewAppointmentModal,
   SlotBlockerModal
 } from '@/components/appointments';
+import PatientRecallModal from '@/components/PatientRecallModal';
 import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
 import { getTodayDateStr, generateDynamicSlots } from '@/utils/timeSlots';
 import * as appointmentsService from '@/features/appointments/services/appointmentsService';
@@ -49,7 +50,18 @@ const Appointments = () => {
   const PAGE_SIZE = 18;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBlockerModalOpen, setIsBlockerModalOpen] = useState(false);
+  const [isRecallModalOpen, setIsRecallModalOpen] = useState(false);
+  const [pendingRecallId, setPendingRecallId] = useState(null);
   const [blockerDate, setBlockerDate] = useState(todayStr);
+
+  const dueRecallsCount = useMemo(() => {
+    return (state?.recalls || []).filter(r => {
+      if (!r) return false;
+      const rClinicId = r.clinicId || r.clinic_id;
+      if (rClinicId && currentClinicId && rClinicId !== currentClinicId) return false;
+      return r.dueDate <= todayStr && r.status !== 'completed';
+    }).length;
+  }, [state?.recalls, currentClinicId, todayStr]);
 
   const currentClinic = state.clinicInfo;
   const defaultFee = currentClinic?.regularFee || '0 ج.م';
@@ -83,11 +95,30 @@ const Appointments = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('action') === 'new') {
+      const patientIdParam = params.get('patientId') || '';
+      const dateParam = params.get('date') || '';
+      const typeParam = params.get('type') || '';
+      const recallIdParam = params.get('recallId') || '';
+
+      if (patientIdParam || dateParam || typeParam || recallIdParam) {
+        setFormData(prev => ({
+          ...prev,
+          patientId: patientIdParam || prev.patientId,
+          date: (dateParam && dateParam >= todayStr) ? dateParam : todayStr,
+          type: typeParam || prev.type,
+          notes: recallIdParam ? `استدعاء دوري وتأكيد مع العميل: ${typeParam}` : prev.notes
+        }));
+        if (recallIdParam) {
+          setPendingRecallId(recallIdParam);
+        }
+      }
       setIsModalOpen(true);
     } else if (params.get('action') === 'block') {
       setIsBlockerModalOpen(true);
+    } else if (params.get('action') === 'recalls') {
+      setIsRecallModalOpen(true);
     }
-  }, [location.search]);
+  }, [location.search, todayStr]);
 
   const [toastMessage, setToastMessage] = useState(null);
   const showToast = (text, type = 'info') => {
@@ -228,7 +259,14 @@ const Appointments = () => {
 
 
     dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
-    showToast('تم حجز الموعد بنجاح', 'success');
+    if (pendingRecallId) {
+      dispatch({
+        type: 'UPDATE_RECALL_STATUS',
+        payload: { id: pendingRecallId, status: 'scheduled' }
+      });
+      setPendingRecallId(null);
+    }
+    showToast('تم حجز وتأكيد الموعد بنجاح', 'success');
     setIsModalOpen(false);
     setFormData({ patientId: '', date: todayStr, time: '', type: 'كشف عيادة', fee: defaultFee, paymentMethod: 'cash', notes: '' });
   };
@@ -338,6 +376,8 @@ const Appointments = () => {
           onExportCsv={handleExportAppointmentsCSV}
           onOpenBlockerModal={() => setIsBlockerModalOpen(true)}
           onOpenNewAppointmentModal={() => setIsModalOpen(true)}
+          onOpenRecallModal={() => setIsRecallModalOpen(true)}
+          dueRecallsCount={dueRecallsCount}
         />
       </FeatureErrorBoundary>
 
@@ -484,6 +524,26 @@ const Appointments = () => {
         onToggleBlockSlot={handleToggleBlockSlot}
         onUnblockFullDaySlot={(date) => dispatch({ type: 'UNBLOCK_FULL_DAY', payload: { date } })}
       />
+
+      {/* Modal 3: Patient Recall & Followup */}
+      <FeatureErrorBoundary featureName="نافذة استدعاء ومتابعة المرضى">
+        <PatientRecallModal
+          isOpen={isRecallModalOpen}
+          onClose={() => setIsRecallModalOpen(false)}
+          onScheduleAppointment={(recall) => {
+            setFormData(prev => ({
+              ...prev,
+              patientId: recall.patientId,
+              date: recall.dueDate && recall.dueDate >= todayStr ? recall.dueDate : todayStr,
+              type: recall.reason || 'متابعة دورية',
+              notes: `استدعاء دوري وتأكيد مع العميل: ${recall.reason}`
+            }));
+            setPendingRecallId(recall.id);
+            setIsRecallModalOpen(false);
+            setIsModalOpen(true);
+          }}
+        />
+      </FeatureErrorBoundary>
     </div>
   );
 };

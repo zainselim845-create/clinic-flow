@@ -1,15 +1,27 @@
 import React from 'react';
-import { Upload, Download, Plus } from 'lucide-react';
+import { Upload, Download, Plus, BellRing } from 'lucide-react';
 
 export default function PatientsHeader({
   onOpenImport,
   onExportCSV,
-  onOpenNewPatient
+  onOpenNewPatient,
+  onOpenRecalls,
+  dueRecallsCount = 0
 }) {
   return (
     <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
       <h1 style={{ margin: 0 }}>إدارة المرضى</h1>
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <button 
+          type="button" 
+          className="btn btn-secondary" 
+          onClick={onOpenRecalls} 
+          title="استدعاء وتأكيد المواعيد الدورية مع العملاء"
+          style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)', fontWeight: 600 }}
+        >
+          <BellRing size={18} />
+          <span>استدعاء ومتابعة المرضى {dueRecallsCount > 0 && `(${dueRecallsCount})`}</span>
+        </button>
         <button 
           type="button"
           className="btn btn-secondary" 

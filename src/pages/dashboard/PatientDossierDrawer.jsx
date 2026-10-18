@@ -4,7 +4,7 @@ import { Portal } from '@ark-ui/react/portal';
 import { Tabs } from '@ark-ui/react/tabs';
 import { 
   FolderOpen, Phone, Calendar, FileText, MessageCircle, MessageSquare, 
-  FileSpreadsheet, X, Edit3, Wallet, Layers, Printer
+  FileSpreadsheet, X, Edit3, Wallet, Layers, Printer, BellRing
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
@@ -31,7 +31,8 @@ export default function PatientDossierDrawer({
   patient,
   patientAppointments = [],
   onClose,
-  onEdit
+  onEdit,
+  onOpenRecall
 }) {
   const { state } = useApp();
   const { tenant } = useTenant();
@@ -136,6 +137,30 @@ export default function PatientDossierDrawer({
                   >
                     <Edit3 size={14} />
                     <span>تعديل البيانات</span>
+                  </button>
+                )}
+                {onOpenRecall && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenRecall(patient)}
+                    className="btn-dossier-recall"
+                    title="جدولة استدعاء دوري ومتابعة لهذا المريض"
+                    style={{
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-primary)',
+                      padding: '0.45rem 0.85rem',
+                      borderRadius: '8px',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <BellRing size={14} />
+                    <span>استدعاء دوري</span>
                   </button>
                 )}
                 <Dialog.CloseTrigger asChild>
