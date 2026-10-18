@@ -284,6 +284,8 @@ export function getNextInvoiceNumber(clinicId, options = {}) {
  * Validates and normalizes financial invoice ledger invariants
  * Clamps all financial numbers to 2 decimal places and ensures non-negative numbers.
  */
+export const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
+
 export function normalizeInvoiceTotals({
   subtotal = 0,
   discount = 0,
@@ -292,7 +294,6 @@ export function normalizeInvoiceTotals({
   taxAmount: providedTaxAmount,
   paidAmount = 0
 } = {}) {
-  const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
   const cleanSubtotal = Math.max(0, round2(subtotal));
   const rawDiscount = discount || discountAmount || 0;
   const cleanDiscount = Math.min(cleanSubtotal, Math.max(0, round2(rawDiscount)));

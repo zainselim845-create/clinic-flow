@@ -9,17 +9,17 @@ export default function WalkInRegistrationModal({
   isOpen,
   onClose,
   onSubmit,
-  regularFee = '300 ج.م'
+  regularFee = ''
 }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [fee, setFee] = useState(regularFee);
+  const [fee, setFee] = useState(regularFee || '');
   const [notes, setNotes] = useState('');
   const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
     if (isOpen) {
-      setFee(regularFee || '300 ج.م');
+      setFee(regularFee || '');
     }
   }, [isOpen, regularFee]);
 
@@ -37,7 +37,7 @@ export default function WalkInRegistrationModal({
       name: name.trim(),
       phone: cleanedPhone,
       type: 'كشف عيادة',
-      fee: fee?.trim() || regularFee || '300 ج.م',
+      fee: fee?.trim() || regularFee || '0 ج.م',
       notes: notes.trim(),
       date: getTodayDateStr()
     });
@@ -98,7 +98,7 @@ export default function WalkInRegistrationModal({
             <label>قيمة الكشف (ج.م)</label>
             <input
               type="text"
-              placeholder="300 ج.م"
+              placeholder="مثال: 250 ج.م"
               value={fee}
               onChange={(e) => setFee(e.target.value)}
             />

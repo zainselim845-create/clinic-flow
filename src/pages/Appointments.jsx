@@ -44,7 +44,7 @@ const Appointments = () => {
   const [blockerDate, setBlockerDate] = useState(todayStr);
 
   const currentClinic = state.clinicInfo;
-  const defaultFee = currentClinic?.regularFee || '300 ج.م';
+  const defaultFee = currentClinic?.regularFee || '0 ج.م';
 
   const availableDoctors = useMemo(() => {
     const list = [...(state.doctors || [])];
@@ -171,7 +171,7 @@ const Appointments = () => {
     if (!formData.patientId || !formData.date || !formData.time) return;
 
     const patient = patients.find(p => p.id === formData.patientId);
-    const determinedFee = formData.fee?.trim() || currentClinic.regularFee || '300 ج.م';
+    const determinedFee = formData.fee?.trim() || currentClinic.regularFee || '0 ج.م';
 
     const newAppointment = {
       id: Date.now().toString(),
@@ -290,7 +290,7 @@ const Appointments = () => {
       a.date || '',
       a.time || '',
       a.type || 'كشف عادي',
-      a.fee || '300 ج.م',
+      a.fee || '0 ج.م',
       a.status === 'completed' ? 'مكتمل' : a.status === 'upcoming' ? 'قادم' : 'ملغي',
       `"${(a.notes || '').replace(/"/g, '""')}"`
     ]);

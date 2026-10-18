@@ -16,8 +16,8 @@ export function fromDbDoctor(row) {
     specialty: row.specialty || 'طبيب عام',
     phone: row.phone || '',
     email: row.email || '',
-    regularFee: row.regular_fee || row.regularFee || '300 ج.م',
-    consultationFee: row.consultation_fee || row.consultationFee || '150 ج.م',
+    regularFee: row.regular_fee || row.regularFee || '',
+    consultationFee: row.consultation_fee || row.consultationFee || '',
     commissionRate: Number(row.commission_rate ?? row.commissionRate ?? 50), // Percentage, e.g. 50%
     workingHours: row.working_hours || row.workingHours || 'السبت - الخميس: ٥:٠٠ م - ١٠:٠٠ م',
     scheduleConfig: row.schedule_config || row.scheduleConfig || null,

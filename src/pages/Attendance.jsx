@@ -6,7 +6,9 @@ import {
 import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
 import { 
-  getStaffAttendance, recordCheckIn, recordCheckOut 
+  getStaffAttendanceForClinic, 
+  recordCheckInForClinic, 
+  recordCheckOutForClinic 
 } from '@/features/platform/services/attendanceService';
 import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import ScreenState from '@/components/ui/ScreenState';
@@ -52,7 +54,7 @@ const Attendance = () => {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const { data, error } = await getStaffAttendance(clinicId);
+      const { data, error } = await getStaffAttendanceForClinic(clinicId);
       if (error) {
         throw error;
       }
@@ -83,7 +85,7 @@ const Attendance = () => {
 
   const handleCheckInClick = async () => {
     const staff = staffList.find(s => s.id === selectedStaffId) || { name: 'عضو الفريق' };
-    const res = await recordCheckIn(selectedStaffId, staff.name, clinicId);
+    const res = await recordCheckInForClinic(selectedStaffId, staff.name, clinicId);
     if (res.data) {
       setAttendanceRecords(prev => [
         {
@@ -101,7 +103,7 @@ const Attendance = () => {
   };
 
   const handleCheckOutClick = async (attId, checkInTime) => {
-    const res = await recordCheckOut(attId, checkInTime, clinicId);
+    const res = await recordCheckOutForClinic(attId, checkInTime, clinicId);
     if (res.data) {
       setAttendanceRecords(prev => prev.map(a => 
         a.id === attId 

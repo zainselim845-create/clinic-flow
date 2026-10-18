@@ -135,3 +135,10 @@ export async function recordCheckInForClinic(staffId, staffName, clinicId) {
   }
   return recordCheckIn(staffId, staffName, clinicId);
 }
+
+export async function recordCheckOutForClinic(attendanceId, checkInTime, clinicId) {
+  if (!clinicId) {
+    throw new Error('clinicId is strictly required to record a check-out');
+  }
+  return recordCheckOut(attendanceId, checkInTime, clinicId);
+}

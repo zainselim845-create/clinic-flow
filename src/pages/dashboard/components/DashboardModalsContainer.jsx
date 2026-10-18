@@ -44,7 +44,7 @@ export default function DashboardModalsContainer({
         isOpen={isWalkInModalOpen}
         onClose={() => setIsWalkInModalOpen(false)}
         onSubmit={handleWalkInSubmit}
-        regularFee={currentClinic.regularFee || '300 ج.م'}
+        regularFee={currentClinic.regularFee || ''}
       />
 
       {/* Consultation Modal */}

@@ -152,7 +152,7 @@ const DashboardScheduleTable = ({
                       {appt.status === 'cancelled' && 'ملغي'}
                     </span>
                   </td>
-                  <td>{appt.fee || '300 ج.م'}</td>
+                  <td>{appt.fee ? (typeof appt.fee === 'number' ? `${appt.fee} ج.م` : appt.fee) : '—'}</td>
                   <td>
                     <div className="row-actions">
                       {appt.status === 'waiting' && (

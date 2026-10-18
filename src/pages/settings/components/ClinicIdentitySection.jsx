@@ -396,7 +396,7 @@ export default function ClinicIdentitySection({
             type="text" 
             value={clinicForm.regularFee || ''} 
             onChange={(e) => setClinicForm({ ...clinicForm, regularFee: e.target.value })}
-            placeholder="300 ج.م" 
+            placeholder="مثال: 250 ج.م" 
           />
         </div>
 

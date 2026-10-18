@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
 import { 
@@ -16,7 +16,7 @@ export default function ConsultationModal({
 }) {
   const { state, dispatch } = useApp();
   const { tenant } = useTenant();
-  const defaultClinicFee = tenant?.regularFee || state.clinicInfo?.regularFee || '300 ج.م';
+  const defaultClinicFee = tenant?.regularFee || state.clinicInfo?.regularFee || '0 ج.م';
   const [customFee, setCustomFee] = useState(appointment?.fee || defaultClinicFee);
   const [diagnosis, setDiagnosis] = useState('');
   const [procedures, setProcedures] = useState('');
@@ -26,7 +26,7 @@ export default function ConsultationModal({
 
   useEffect(() => {
     if (appointment) {
-      setCustomFee(appointment.fee || state.clinicInfo?.regularFee || '300 ج.م');
+      setCustomFee(appointment.fee || state.clinicInfo?.regularFee || '0 ج.م');
       setDiagnosis(appointment.diagnosis || '');
       setProcedures(appointment.procedures || '');
       setNotes(appointment.notes || '');

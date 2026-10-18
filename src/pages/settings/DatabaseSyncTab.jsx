@@ -102,8 +102,8 @@ CREATE TABLE IF NOT EXISTS clinics (
     address TEXT,
     phone TEXT,
     doctor_email TEXT,
-    regular_fee TEXT DEFAULT '300 ج.م',
-    consultation_fee TEXT DEFAULT '150 ج.م',
+    regular_fee TEXT DEFAULT '0 ج.م',
+    consultation_fee TEXT DEFAULT '0 ج.م',
     working_hours TEXT DEFAULT 'السبت - الخميس: ٥:٠٠ مساءً - ١٠:٠٠ مساءً',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     date DATE NOT NULL,
     time TEXT NOT NULL,
     type TEXT DEFAULT 'كشف عادي',
-    fee TEXT DEFAULT '300 ج.م',
+    fee TEXT DEFAULT '0 ج.م',
     status TEXT DEFAULT 'booked',
     booking_code TEXT,
     notes TEXT,

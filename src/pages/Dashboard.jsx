@@ -329,7 +329,7 @@ const Dashboard = () => {
       date: walkInData.date,
       time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }),
       type: walkInData.type || 'كشف عيادة',
-      fee: walkInData.fee || currentClinic.regularFee || '300 ج.م',
+      fee: walkInData.fee || currentClinic.regularFee || '0 ج.م',
       status: 'waiting',
       checkedInAt: new Date().toISOString(),
       notes: walkInData.notes

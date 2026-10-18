@@ -237,7 +237,7 @@ export function evaluateAppointmentActions(text, state = {}) {
     const isConsultation = text.includes('استشارة') || text.includes('استشاره');
     const isFollowup = text.includes('متابعة') || text.includes('متابعه');
     const visitType = isConsultation ? 'استشارة' : (isFollowup ? 'متابعة' : 'كشف عادي');
-    const defaultFee = state.clinicInfo?.services?.find(s => s.name?.includes(visitType))?.price || '300 ج.م';
+    const defaultFee = state.clinicInfo?.services?.find(s => s.name?.includes(visitType))?.price || state.clinicInfo?.regularFee || '0 ج.م';
 
     const patientName = candidateName || 'مريض جديد';
     const patientPhone = matchedPatient?.phone || '01000000000';

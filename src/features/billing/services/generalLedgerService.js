@@ -29,7 +29,7 @@ export const CHART_OF_ACCOUNTS = {
 
 let inMemoryJournalEntries = [];
 
-const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
+export const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
 
 /**
  * Generates a monotonic journal entry number per clinic

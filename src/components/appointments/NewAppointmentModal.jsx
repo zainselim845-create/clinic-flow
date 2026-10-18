@@ -152,7 +152,7 @@ const NewAppointmentModal = ({
                   <input 
                     type="text"
                     className="input-field"
-                    placeholder="300 ج.م"
+                    placeholder="مثال: 250 ج.م"
                     value={formData.fee || ''}
                     onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
                   />

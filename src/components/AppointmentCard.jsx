@@ -75,7 +75,7 @@ const AppointmentCard = ({ appointment, onUpdateStatus }) => {
           </div>
         )}
         <div className="appt-chip fee-chip">
-          <span>{appointment.fee || '300 ج.م'}</span>
+          <span>{appointment.fee ? (typeof appointment.fee === 'number' ? `${appointment.fee} ج.م` : appointment.fee) : '—'}</span>
         </div>
         {appointment.paymentMethod && appointment.paymentMethod !== 'cash' && (
           <div className="appt-chip" style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', fontSize: '0.72rem', fontWeight: 700 }}>

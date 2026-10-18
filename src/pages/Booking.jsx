@@ -357,7 +357,7 @@ const Booking = () => {
       const bookingCode = '#CF-' + Math.floor(1000 + Math.random() * 9000);
 
       const selectedService = (currentClinic?.services || []).find(s => s.name === formData.type);
-      const serviceFee = selectedService?.price || (currentClinic?.regularFee || '300 ج.م');
+      const serviceFee = selectedService?.price || (currentClinic?.regularFee || '0 ج.م');
 
       const newAppointment = {
         id: bookingId,

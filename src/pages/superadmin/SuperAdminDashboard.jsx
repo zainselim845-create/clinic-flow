@@ -337,7 +337,7 @@ export default function SuperAdminDashboard() {
         aiTokensUsed: 0
       },
       services: [
-        { id: '1', name: 'كشف وفحص تشخيصي أولي', price: '300 ج.م', duration: 30 }
+        { id: '1', name: 'كشف وفحص تشخيصي أولي', price: newClinic.regularFee || '0 ج.م', duration: 30 }
       ]
     };
 
