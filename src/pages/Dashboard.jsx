@@ -90,8 +90,8 @@ const Dashboard = () => {
       const rawFee = a.fee ?? a.paidAmount;
       const numericFee = typeof rawFee === 'number'
         ? rawFee
-        : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) : 300);
-      return sum + (isNaN(numericFee) ? 300 : numericFee);
+        : (rawFee ? parseInt(String(rawFee).replace(/\D/g, ''), 10) : 0);
+      return sum + (isNaN(numericFee) ? 0 : numericFee);
     }, 0);
   }, [completedToday]);
 

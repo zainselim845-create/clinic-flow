@@ -81,14 +81,14 @@ export default function PatientDossierDrawer({
           <Dialog.Content className="modal-content dossier-drawer" style={{ maxWidth: '880px', width: '95%' }}>
             
             {/* Drawer Header */}
-            <div className="modal-header" style={{ background: 'var(--primary)', color: '#FFFFFF' }}>
+            <div className="modal-header" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
               <div className="title-row">
-                <FolderOpen style={{ color: 'var(--accent)' }} size={22} />
+                <FolderOpen style={{ color: 'var(--text-secondary)' }} size={20} />
                 <div>
                   <Dialog.Title asChild>
-                    <h3 style={{ color: '#FFFFFF', margin: 0 }}>بيانات التشخيص: {patientName}</h3>
+                    <h3 style={{ color: 'var(--text-primary)', margin: 0, fontWeight: 700, fontSize: '1.1rem' }}>بيانات التشخيص: {patientName}</h3>
                   </Dialog.Title>
-                  <span style={{ fontSize: '0.78rem', opacity: 0.85 }}>رقم المريض: #{patient?.fileNumber || patient?.id?.slice(0, 8) || 'D-101'}</span>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>رقم المريض: #{patient?.fileNumber || patient?.id?.slice(0, 8) || 'D-101'}</span>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -98,17 +98,17 @@ export default function PatientDossierDrawer({
                   className="btn-print-dossier"
                   title="طباعة السجل والتقرير الطبي"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    border: '1px solid rgba(255, 255, 255, 0.35)',
-                    color: '#FFFFFF',
-                    padding: '0.35rem 0.75rem',
+                    background: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-primary)',
+                    padding: '0.4rem 0.8rem',
                     borderRadius: '8px',
                     fontSize: '0.8rem',
                     fontWeight: 600,
                     cursor: 'pointer',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '6px'
                   }}
                 >
                   <Printer size={14} />
@@ -121,17 +121,17 @@ export default function PatientDossierDrawer({
                     className="btn-edit-dossier"
                     title="تعديل بيانات المريض"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      border: '1px solid rgba(255, 255, 255, 0.35)',
-                      color: '#FFFFFF',
-                      padding: '0.35rem 0.75rem',
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-primary)',
+                      padding: '0.4rem 0.8rem',
                       borderRadius: '8px',
                       fontSize: '0.8rem',
                       fontWeight: 600,
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '6px'
                     }}
                   >
                     <Edit3 size={14} />
@@ -144,8 +144,20 @@ export default function PatientDossierDrawer({
                     onClick={onClose} 
                     className="btn-close-dossier" 
                     aria-label="إغلاق"
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-secondary)',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer'
+                    }}
                   >
-                    <X size={18} />
+                    <X size={16} />
                   </button>
                 </Dialog.CloseTrigger>
               </div>
@@ -158,20 +170,21 @@ export default function PatientDossierDrawer({
               style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
             >
               {/* Tab Navigation */}
-              <Tabs.List style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-tertiary)', padding: '0.6rem 1.25rem', borderBottom: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+              <Tabs.List style={{ display: 'flex', gap: '0.35rem', background: 'var(--bg-secondary)', padding: '0.5rem 1.25rem', borderBottom: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
                 <Tabs.Trigger value="overview" asChild>
                   <button
                     type="button"
                     className={`btn-dossier-tab ${activeTab === 'overview' ? 'active' : ''}`}
                     style={{
-                      background: activeTab === 'overview' ? 'var(--primary)' : 'var(--surface)',
-                      color: activeTab === 'overview' ? '#FFFFFF' : 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
+                      background: activeTab === 'overview' ? 'var(--clinic-primary, #09090B)' : 'transparent',
+                      color: activeTab === 'overview' ? '#FFFFFF' : 'var(--text-secondary)',
+                      border: 'none',
                       padding: '0.45rem 0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 700,
+                      borderRadius: '6px',
+                      fontWeight: 600,
                       fontSize: '0.84rem',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
                     }}
                   >نظرة عامة</button>
                 </Tabs.Trigger>
@@ -181,17 +194,18 @@ export default function PatientDossierDrawer({
                     type="button"
                     className={`btn-dossier-tab ${activeTab === 'notes' ? 'active' : ''}`}
                     style={{
-                      background: activeTab === 'notes' ? 'var(--primary)' : 'var(--surface)',
-                      color: activeTab === 'notes' ? '#FFFFFF' : 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
+                      background: activeTab === 'notes' ? 'var(--clinic-primary, #09090B)' : 'transparent',
+                      color: activeTab === 'notes' ? '#FFFFFF' : 'var(--text-secondary)',
+                      border: 'none',
                       padding: '0.45rem 0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 700,
+                      borderRadius: '6px',
+                      fontWeight: 600,
                       fontSize: '0.84rem',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '0.35rem'
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
                     }}
                   >
                     <FileText size={14} />
@@ -204,17 +218,18 @@ export default function PatientDossierDrawer({
                     type="button"
                     className={`btn-dossier-tab ${activeTab === 'plans' ? 'active' : ''}`}
                     style={{
-                      background: activeTab === 'plans' ? 'var(--primary)' : 'var(--surface)',
-                      color: activeTab === 'plans' ? '#FFFFFF' : 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
+                      background: activeTab === 'plans' ? 'var(--clinic-primary, #09090B)' : 'transparent',
+                      color: activeTab === 'plans' ? '#FFFFFF' : 'var(--text-secondary)',
+                      border: 'none',
                       padding: '0.45rem 0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 700,
+                      borderRadius: '6px',
+                      fontWeight: 600,
                       fontSize: '0.84rem',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '0.35rem'
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
                     }}
                   >
                     <FileSpreadsheet size={14} />
@@ -227,17 +242,18 @@ export default function PatientDossierDrawer({
                     type="button"
                     className={`btn-dossier-tab ${activeTab === 'wallet' ? 'active' : ''}`}
                     style={{
-                      background: activeTab === 'wallet' ? 'var(--primary)' : 'var(--surface)',
-                      color: activeTab === 'wallet' ? '#FFFFFF' : 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
+                      background: activeTab === 'wallet' ? 'var(--clinic-primary, #09090B)' : 'transparent',
+                      color: activeTab === 'wallet' ? '#FFFFFF' : 'var(--text-secondary)',
+                      border: 'none',
                       padding: '0.45rem 0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 700,
+                      borderRadius: '6px',
+                      fontWeight: 600,
                       fontSize: '0.84rem',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '0.35rem'
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
                     }}
                   >
                     <Wallet size={14} />
@@ -245,23 +261,23 @@ export default function PatientDossierDrawer({
                   </button>
                 </Tabs.Trigger>
 
-
                 <Tabs.Trigger value="labs" asChild>
                   <button
                     type="button"
                     className={`btn-dossier-tab ${activeTab === 'labs' ? 'active' : ''}`}
                     style={{
-                      background: activeTab === 'labs' ? 'var(--primary)' : 'var(--surface)',
-                      color: activeTab === 'labs' ? '#FFFFFF' : 'var(--text-primary)',
-                      border: '1px solid var(--border-color)',
+                      background: activeTab === 'labs' ? 'var(--clinic-primary, #09090B)' : 'transparent',
+                      color: activeTab === 'labs' ? '#FFFFFF' : 'var(--text-secondary)',
+                      border: 'none',
                       padding: '0.45rem 0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      fontWeight: 700,
+                      borderRadius: '6px',
+                      fontWeight: 600,
                       fontSize: '0.84rem',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '0.35rem'
+                      gap: '0.35rem',
+                      transition: 'all 0.15s ease'
                     }}
                   >
                     <Layers size={14} />

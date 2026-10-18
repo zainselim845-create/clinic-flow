@@ -121,10 +121,25 @@ export async function getAppointments(clinicId, filters = {}) {
       }
 
       const limit = filters.limit || 300;
-      const { data, error } = await query
+      let { data, error } = await query
         .order('date', { ascending: true })
         .order('time', { ascending: true })
         .limit(limit);
+
+      if (error && (error.code === '42703' || String(error.message || '').includes('does not exist'))) {
+        let fallbackQuery = supabase
+          .from('appointments')
+          .select('*')
+          .eq('clinic_id', clinicId);
+        if (filters.status) fallbackQuery = fallbackQuery.eq('status', filters.status);
+        if (filters.date) fallbackQuery = fallbackQuery.eq('date', filters.date);
+        const fallbackRes = await fallbackQuery
+          .order('date', { ascending: true })
+          .order('time', { ascending: true })
+          .limit(limit);
+        data = fallbackRes.data;
+        error = fallbackRes.error;
+      }
 
       if (error) throw error;
       return { data: (data || []).map(fromDbAppointment), error: null };

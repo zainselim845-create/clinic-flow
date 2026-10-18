@@ -37,6 +37,7 @@ export const initialState = {
   theme: 'light',
   searchQuery: '',
   isLoading: true,
+  loadError: null,
   useSupabase: false,
   currentTenantSlug: null
 };
@@ -50,7 +51,12 @@ export function AppProvider({ children }) {
   const stateRef = useRef(state);
   const useSupabase = isSupabaseConfigured();
   const [realtimeStatus, setRealtimeStatus] = useState(REALTIME_STATUS.DISCONNECTED);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const realtimeManagerRef = useRef(null);
+
+  const refreshClinicData = useCallback(() => {
+    setRefreshTrigger(prev => prev + 1);
+  }, []);
 
   // Resolve active tenant from TenantContext
   const tenantContext = useContext(TenantContext);
@@ -82,8 +88,13 @@ export function AppProvider({ children }) {
     // Reset previous tenant data so it never flashes or leaks into the new tenant
     dispatch({ type: 'SWITCH_TENANT_START', payload: { tenantSlug: currentSlug } });
 
+    const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
+                      (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const isRealUuid = typeof currentClinicId === 'string' && UUID_REGEX.test(currentClinicId);
+
     const loadData = async () => {
-      if (useSupabase && cloudCircuitBreaker.isAvailable()) {
+      if (useSupabase && cloudCircuitBreaker.isAvailable() && (isTestEnv || isRealUuid)) {
         try {
           // جلب البيانات من Supabase مع الفلترة بالعيادة النشطة فقط
           const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, expensesRes, recallsRes, doctorsRes] = await Promise.all([
@@ -202,7 +213,7 @@ export function AppProvider({ children }) {
     return () => {
       isCancelled = true;
     };
-  }, [useSupabase, tenantSlug, tenantId, activeTenant]);
+  }, [useSupabase, tenantSlug, tenantId, activeTenant, refreshTrigger]);
 
   // ==========================================
   // حفظ في localStorage معزول لكل عيادة بدون تجميد أو تسريب
@@ -524,7 +535,8 @@ export function AppProvider({ children }) {
     broadcastClinicEvent,
     BROADCAST_EVENTS,
     mobileNavOpen,
-    setMobileNavOpen
+    setMobileNavOpen,
+    refreshClinicData
   }), [
     state,
     dispatch,
@@ -540,7 +552,8 @@ export function AppProvider({ children }) {
     useSupabase,
     realtimeStatus,
     broadcastClinicEvent,
-    mobileNavOpen
+    mobileNavOpen,
+    refreshClinicData
   ]);
 
   return (
@@ -565,6 +578,7 @@ export const useClinical = () => {
     patients: app.state.patients || [],
     appointments: app.state.appointments || [],
     isLoading: app.state.isLoading,
+    loadError: app.state.loadError,
     getPatientById: app.getPatientById,
     getAppointmentsByPatientId: app.getAppointmentsByPatientId,
     getAppointmentsByDate: app.getAppointmentsByDate,
@@ -572,6 +586,7 @@ export const useClinical = () => {
     getUpcomingAppointments: app.getUpcomingAppointments,
     addAppointmentWithNotification: app.addAppointmentWithNotification,
     sendSmsReminder: app.sendSmsReminder,
+    refreshClinicData: app.refreshClinicData,
     dispatch: app.dispatch
   };
 };

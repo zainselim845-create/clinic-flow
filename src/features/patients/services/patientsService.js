@@ -85,7 +85,17 @@ export async function getPatients(clinicId, options = {}) {
       const limit = options?.limit || 300;
       query = query.limit(limit);
 
-      const { data, error } = await query;
+      let { data, error } = await query;
+      if (error && (error.code === '42703' || String(error.message || '').includes('does not exist'))) {
+        const fallbackRes = await supabase
+          .from('patients')
+          .select('*')
+          .eq('clinic_id', clinicId)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+        data = fallbackRes.data;
+        error = fallbackRes.error;
+      }
       if (error) throw error;
       return { data: (data || []).map(fromDbPatient), error: null };
     }, 20000); // 20s TTL

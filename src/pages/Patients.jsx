@@ -19,7 +19,7 @@ import './Patients.css';
 
 const Patients = () => {
   const location = useLocation();
-  const { state, dispatch } = useApp();
+  const { state, dispatch, refreshClinicData } = useApp();
   const { tenant } = useTenant();
   const { patients = [], appointments = [], useSupabase } = state;
   const currentClinicId = tenant?.id || state.clinicInfo?.id;
@@ -160,6 +160,14 @@ const Patients = () => {
       });
       showToast('تم تعديل بيانات المريض بنجاح', 'success');
     } else {
+      const cleanPhone = (formData.phone || '').trim().replace(/\D/g, '');
+      if (cleanPhone) {
+        const duplicate = clinicPatients.find(p => (p.phone || '').trim().replace(/\D/g, '') === cleanPhone);
+        if (duplicate) {
+          showToast(`تنبيه: يوجد مريض مسجل مسبقاً بنفس رقم الهاتف (${duplicate.name})`, 'warning');
+        }
+      }
+
       const newPatient = {
         id: Date.now().toString(),
         clinicId: currentClinicId,
@@ -306,6 +314,9 @@ const Patients = () => {
           handleOpenDetail={handleOpenDetail}
           handleEditPatient={handleEditPatient}
           onOpenNewPatient={handleOpenNewPatient}
+          isLoading={state.isLoading}
+          loadError={state.loadError}
+          onRetryFetch={refreshClinicData}
         />
       </FeatureErrorBoundary>
 

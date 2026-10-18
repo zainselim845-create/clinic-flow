@@ -6,6 +6,7 @@ export function systemReducer(state, action) {
       return {
         ...state,
         isLoading: true,
+        loadError: null,
         currentTenantSlug: action.payload.tenantSlug,
         patients: [],
         appointments: [],
@@ -20,11 +21,15 @@ export function systemReducer(state, action) {
         ...state, 
         ...action.payload, 
         currentTenantSlug: action.payload.currentTenantSlug || state.currentTenantSlug,
-        isLoading: false 
+        isLoading: false,
+        loadError: null
       };
 
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
+
+    case 'SET_LOAD_ERROR':
+      return { ...state, isLoading: false, loadError: action.payload };
 
     case 'RESET_TO_FRESH_START': {
       const fresh = getInitialData();
