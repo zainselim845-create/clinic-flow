@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { 
   Receipt, 
   Eye, 
-  Plus, 
   Trash2, 
   ArrowDownLeft, 
   ArrowUpRight 

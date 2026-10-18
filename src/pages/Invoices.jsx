@@ -220,6 +220,7 @@ const Invoices = () => {
     setSelectedInvoice(null);
     setIsInvoiceModalOpen(true);
   };
+  const handleCreateInvoice = handleOpenNew;
 
   const handleViewInvoice = (inv) => {
     setSelectedInvoice(inv);
@@ -435,6 +436,7 @@ const Invoices = () => {
           setSearchQuery={setSearchQuery}
           setStatusFilter={setStatusFilter}
           handleOpenNew={handleOpenNew}
+          handleCreateInvoice={handleCreateInvoice}
           handleOpenNewExpense={handleOpenNewExpense}
           handleViewInvoice={handleViewInvoice}
           handleDeleteExpense={handleDeleteExpense}
