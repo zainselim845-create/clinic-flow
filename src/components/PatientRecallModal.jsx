@@ -7,6 +7,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
 import { getTodayDateStr } from '@/utils/timeSlots';
+import { generateUuid } from '@/utils/uuid';
 import './PatientRecallModal.css';
 
 export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onScheduleAppointment }) => {
@@ -84,7 +85,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
 
     // 1. Create recall item
     const newRecall = {
-      id: 'rec-' + Date.now(),
+      id: generateUuid(),
       clinicId: currentClinicId,
       clinic_id: currentClinicId,
       patientId: targetPatient.id,
@@ -110,7 +111,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
         '';
 
       const newAppointment = {
-        id: 'apt-' + Date.now(),
+        id: generateUuid(),
         clinicId: currentClinicId,
         clinic_id: currentClinicId,
         patientId: targetPatient.id,

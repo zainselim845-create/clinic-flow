@@ -1,5 +1,3 @@
-import { getInitialData } from '@/data/demoData';
-
 export function systemReducer(state, action) {
   switch (action.type) {
     case 'SWITCH_TENANT_START':

@@ -207,7 +207,7 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Degree 3: Neutral Surface & Harmonic Borders */
   --clinic-surface: #FFFFFF;
-  --clinic-surface-border: #E4E4E7;
+  --clinic-surface-border: #CBD5E1;
   --clinic-bg-subtle: #F8FAFC;
   --clinic-ring: var(--clinic-accent, #2563EB);
 
@@ -243,39 +243,39 @@ h1, h2, h3, h4, h5, h6 {
 [data-theme="light"], :root {
   --bg-primary: #F8FAFC;       /* Clean Minimalist Slate 50 */
   --bg-secondary: #FFFFFF;     /* Crisp Pure White Surface */
-  --bg-tertiary: #F4F4F5;      /* Subtle Neutral Fill */
+  --bg-tertiary: #F1F5F9;      /* Subtle Neutral Fill (Slate 100) */
   --surface: #FFFFFF;
   --card-bg: #FFFFFF;
   --surface-container: #F8FAFC;
-  --surface-container-high: #F4F4F5;
+  --surface-container-high: #F1F5F9;
   
   --text-primary: #09090B;     /* Deep Noir - High Contrast */
-  --text-secondary: #52525B;   /* Zinc 600 - Medium Contrast */
-  --text-tertiary: #A1A1AA;    /* Zinc 400 - Subtle */
+  --text-secondary: #475569;   /* Slate 600 - Medium Contrast */
+  --text-tertiary: #94A3B8;    /* Slate 400 - Subtle */
   
-  --border-color: #E4E4E7;     /* Zinc 200 - Hairline Divider */
-  --border-subtle: #F4F4F5;    /* Zinc 100 - Extra Subtle Border */
+  --border-color: #CBD5E1;     /* Slate 300 - Crisp Tactile Frame Border */
+  --border-subtle: #E2E8F0;    /* Slate 200 - High-Definition Subtle Divider */
   
   /* Precision Luxury Elevation Shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 10px 24px -4px rgba(0, 0, 0, 0.07), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
-  --shadow-xl: 0 20px 32px -8px rgba(0, 0, 0, 0.10);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
-  --shadow-card-hover: 0 6px 18px -2px rgba(0, 0, 0, 0.07), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 32px -8px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.16);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 6px 18px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
 
-  --glass-bg: rgba(255, 255, 255, 0.90);
-  --glass-border: #E4E4E7;
-  --glass-sidebar: #FAFAFA;
+  --glass-bg: rgba(255, 255, 255, 0.94);
+  --glass-border: #CBD5E1;
+  --glass-sidebar: #F8FAFC;
 
-  --bg-hover: #F4F4F5;
-  --text-muted: #71717A;
+  --bg-hover: #F1F5F9;
+  --text-muted: #64748B;
   --color-bg: #F8FAFC;
   --color-card: #FFFFFF;
   --bg-card: #FFFFFF;
-  --color-border: #E4E4E7;
+  --color-border: #CBD5E1;
   --color-text: #09090B;
 }
 
@@ -303,8 +303,8 @@ h1, h2, h3, h4, h5, h6 {
   --text-secondary: #A1A1AA;   /* Medium Contrast */
   --text-tertiary: #71717A;    /* Subtle */
   
-  --border-color: #27272A;     /* Hairline subtle divider */
-  --border-subtle: #18181B;
+  --border-color: #3F3F46;     /* Zinc 700 - Distinct Structural Frame */
+  --border-subtle: #27272A;
 
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
@@ -312,11 +312,11 @@ h1, h2, h3, h4, h5, h6 {
   --shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.6);
   --shadow-xl: 0 12px 36px 0 rgba(0, 0, 0, 0.7);
   --shadow-2xl: 0 16px 48px 0 rgba(0, 0, 0, 0.8);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px #27272A;
-  --shadow-card-hover: 0 6px 20px 0 rgba(0, 0, 0, 0.65), 0 0 0 1px #3F3F46;
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px #3F3F46;
+  --shadow-card-hover: 0 6px 20px 0 rgba(0, 0, 0, 0.65), 0 0 0 1px #52525B;
 
   --glass-bg: rgba(18, 18, 21, 0.92);
-  --glass-border: #27272A;
+  --glass-border: #3F3F46;
   --glass-sidebar: #0E0E11;
 
   --bg-hover: #18181B;
@@ -324,7 +324,7 @@ h1, h2, h3, h4, h5, h6 {
   --color-bg: #09090B;
   --color-card: #121215;
   --bg-card: #121215;
-  --color-border: #27272A;
+  --color-border: #3F3F46;
   --color-text: #FAFAFA;
 }
 
@@ -344,7 +344,7 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--text-tertiary);
 }
 
-/* 4. Luxury Executive Cards */
+/* 4. Luxury Executive Framed Cards */
 .glass-card, .card {
   background: var(--surface);
   border: 1px solid var(--border-color);
@@ -356,6 +356,21 @@ h1, h2, h3, h4, h5, h6 {
 
 .glass-card:hover, .card:hover {
   box-shadow: var(--shadow-card-hover);
+  border-color: var(--border-color);
+}
+
+/* Structural Header & Container Framing */
+.card-header, .panel-header, .section-header {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.framed-container, .table-frame {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
 }
 
 /* 5. Minimalist Architecture Buttons (Linear / Stripe Standard) */

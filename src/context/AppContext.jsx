@@ -20,6 +20,7 @@ import { getRegisteredUsers } from '@/features/auth/services/authService';
 import { cloudCircuitBreaker } from '@/lib/circuitBreaker';
 import { migrateTenantPayload } from '@/lib/schemaMigration';
 import { syncOutbox } from '@/lib/syncOutbox';
+import { generateUuid, isUuid } from '@/utils/uuid';
 
 export const DATA_SCHEMA_VERSION = 'v5_clean_zero_state';
 
@@ -89,7 +90,7 @@ export const initialState = {
   currentTenantSlug: null
 };
 
-const generateId = () => Math.random().toString(36).substring(2, 9);
+const generateId = () => generateUuid();
 
 export const appReducer = combinedAppReducer;
 
@@ -137,8 +138,7 @@ export function AppProvider({ children }) {
 
     const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
                       (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
-    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    const isRealUuid = typeof currentClinicId === 'string' && UUID_REGEX.test(currentClinicId);
+    const isRealUuid = isUuid(currentClinicId);
 
     const loadData = async () => {
       if (useSupabase && cloudCircuitBreaker.isAvailable() && (isTestEnv || isRealUuid)) {

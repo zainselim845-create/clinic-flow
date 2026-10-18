@@ -18,6 +18,7 @@ import {
   registeredPhonesSet
 } from '@/features/auth/services/authRegistry';
 import { isUsernameAvailable } from '@/features/auth/services/authUsernames';
+import { generateUuid } from '@/utils/uuid';
 
 
 /**
@@ -64,8 +65,8 @@ export function registerDoctorAndClinic({
     throw new Error('البريد الإلكتروني أو رقم الهاتف مسجل بالفعل في النظام.');
   }
 
-  // Generate unique Tenant ID and clean Slug in O(1)
-  const tenantId = `clinic-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  // Generate unique Tenant ID as valid RFC 4122 UUID and clean Slug in O(1)
+  const tenantId = generateUuid();
   const baseSlug = customSlug?.trim() || slugifyClinic(cleanClinicName, specialty);
   let uniqueSlug = baseSlug;
   let counter = 1;
@@ -415,7 +416,7 @@ export function completeClinicOnboarding({
     t.id === `clinic-${userId}`
   );
 
-  const tenantId = tenantIdx >= 0 ? existingTenants[tenantIdx].id : `clinic-${userId || Date.now()}`;
+  const tenantId = tenantIdx >= 0 ? existingTenants[tenantIdx].id : generateUuid();
 
   const updatedTenant = {
     ...(tenantIdx >= 0 ? existingTenants[tenantIdx] : {}),
