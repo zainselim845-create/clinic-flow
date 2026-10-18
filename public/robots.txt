@@ -3,7 +3,7 @@
 
 User-agent: *
 Allow: /
-Allow: /booking
+Disallow: /booking
 Allow: /manage-booking
 Allow: /login
 Allow: /c/

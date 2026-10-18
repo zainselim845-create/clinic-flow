@@ -222,15 +222,13 @@ function App() {
                 <div className="app-wrapper booking-layout" data-theme={state.theme}><Onboarding /></div>
               </ProtectedRoute>
             } />
-            <Route path="/booking" element={
-              <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
-            } />
+            <Route path="/booking" element={<Navigate to="/" replace />} />
             <Route path="/manage-booking" element={
               <div className="app-wrapper booking-layout" data-theme={state.theme}><ManageBooking /></div>
             } />
 
             {/* Multi-Tenant Public Pages & Tenant Slugs (Direct Real Links for Doctors) */}
-            <Route path="/c" element={<Navigate to="/booking" replace />} />
+            <Route path="/c" element={<Navigate to="/" replace />} />
             <Route path="/c/:clinicSlug" element={
               <div className="app-wrapper booking-layout" data-theme={state.theme}><Booking /></div>
             } />

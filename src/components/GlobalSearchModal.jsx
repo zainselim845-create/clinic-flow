@@ -4,7 +4,7 @@ import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
 import { 
   Search, User, Calendar, Clock, ArrowLeft, X, 
-  Smartphone, Users, CheckCircle2, AlertCircle, ShieldCheck,
+  Smartphone, Users, AlertCircle, ShieldCheck,
   Package, Layers, Bot, SunMoon, UserPlus, CalendarPlus, CreditCard, ArrowUpRight
 } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
@@ -83,7 +83,6 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
     { id: 'act-sms', title: 'إعدادات الرسائل', icon: Smartphone, path: '/settings?tab=sms', category: 'الإعدادات' },
     { id: 'act-sub', title: 'اشتراك العيادة', icon: CreditCard, path: '/settings?tab=subscription', category: 'الإعدادات' },
     { id: 'act-theme', title: 'تبديل المظهر (داكن / فاتح)', icon: SunMoon, actionFn: toggleTheme, category: 'النظام' },
-    { id: 'act-booking', title: 'صفحة الحجز الإلكتروني العامة', icon: CheckCircle2, path: '/booking', category: 'بوابات المرضى' },
     { id: 'act-manage', title: 'بوابة المريض لإدارة المواعيد', icon: ArrowLeft, path: '/manage-booking', category: 'بوابات المرضى' },
   ], [toggleTheme]);
 

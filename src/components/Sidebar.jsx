@@ -168,11 +168,11 @@ const Sidebar = () => {
           </NavLink>
         )}
         <a 
-          href={tenant?.slug ? `/c/${tenant.slug}/booking` : '/booking'} 
+          href={tenant?.slug ? `/c/${tenant.slug}/booking` : '/'} 
           target="_blank" 
           rel="noreferrer" 
           className="nav-item" 
-          title="معاينة وفتح صفحة الحجز العامة للمرضى في نافذة جديدة"
+          title="معاينة وفتح صفحة الحجز لمرضى العيادة في نافذة جديدة"
         >
           <Globe size={19} />
           <span>صفحة الحجز</span>

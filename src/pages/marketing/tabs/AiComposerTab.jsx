@@ -56,8 +56,8 @@ export function AiComposerTab({
               const service = p.diagnosis || 'كشف الأسنان والفحص الدوري';
               const clinicSlug = currentClinic?.slug;
               const bookingLink = typeof window !== 'undefined' 
-                ? (clinicSlug ? `${window.location.origin}/c/${clinicSlug}/booking` : `${window.location.origin}/booking`)
-                : (clinicSlug ? `/c/${clinicSlug}/booking` : '/booking');
+                ? (clinicSlug ? `${window.location.origin}/c/${clinicSlug}/booking` : `${window.location.origin}/`)
+                : (clinicSlug ? `/c/${clinicSlug}/booking` : '/');
 
               const msg = 
                 `مرحباً بك ${patientFirst}.\n\n` +

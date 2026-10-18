@@ -14,7 +14,7 @@ describe('Production Hardening, SEO & AI Discovery Verification', () => {
       expect(content).toContain('<?xml version="1.0" encoding="UTF-8"?>');
       expect(content).toContain('<urlset');
       expect(content).toContain('https://clinicflow.app/');
-      expect(content).toContain('https://clinicflow.app/booking');
+      expect(content).not.toContain('https://clinicflow.app/booking');
       expect(content).toContain('https://clinicflow.app/manage-booking');
       expect(content).toContain('https://clinicflow.app/login');
       expect(content).toContain('https://clinicflow.app/c/dr-ahmed/booking');
@@ -28,7 +28,7 @@ describe('Production Hardening, SEO & AI Discovery Verification', () => {
       const content = fs.readFileSync(robotsPath, 'utf8');
       expect(content).toContain('User-agent: *');
       expect(content).toContain('Allow: /');
-      expect(content).toContain('Allow: /booking');
+      expect(content).toContain('Disallow: /booking');
       expect(content).toContain('Allow: /manage-booking');
       expect(content).toContain('Disallow: /dashboard');
       expect(content).toContain('Disallow: /super-admin');

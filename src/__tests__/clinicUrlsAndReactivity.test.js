@@ -100,7 +100,7 @@ describe('Clinic URLs and Domain Resolution Suite', () => {
 
     it('handles fallback gracefully when tenant has no slug', () => {
       const localLocation = { origin: 'http://localhost:5173', hostname: 'localhost' };
-      expect(getClinicBookingUrl(null, localLocation)).toBe('http://localhost:5173/booking');
+      expect(getClinicBookingUrl(null, localLocation)).toBe('http://localhost:5173/');
     });
   });
 

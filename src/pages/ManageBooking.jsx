@@ -398,7 +398,7 @@ const ManageBooking = () => {
 
             <div className="new-booking-hint">
               <span>تريد حجز موعد جديد بالكامل؟</span>
-              <Link to={currentSlug ? `/c/${currentSlug}/booking` : "/booking"} className="link-booking">احجز موعد جديد الآن </Link>
+              <Link to={currentSlug ? `/c/${currentSlug}/booking` : "/"} className="link-booking">احجز موعد جديد الآن </Link>
             </div>
           </div>
         )}

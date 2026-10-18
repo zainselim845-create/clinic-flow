@@ -6,9 +6,9 @@ export default function BookingHeader({ clinic, onNavigate }) {
     <header className="nebras-top-bar">
       <div 
         className="nebras-brand" 
-        onClick={() => onNavigate('/booking')} 
+        onClick={() => onNavigate(clinic?.slug ? `/c/${clinic.slug}/booking` : '/')} 
         style={{ cursor: 'pointer' }}
-        title="دليل العيادات والمراكز المعتمدة"
+        title={clinic?.name || 'الرئيسية'}
       >
         {(clinic?.logoUrl || clinic?.branding?.logoUrl) ? (
           <img 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
 import { clinicInfo, availableSlots } from '@/data/demoData';
@@ -17,7 +17,6 @@ import { getAutoUserLocation } from '@/features/platform/services/autoLocationSe
 import { copyToClipboard } from '@/utils/clipboard';
 
 import BookingHeader from '@/pages/booking/BookingHeader';
-import ClinicDiscoveryView from '@/pages/booking/ClinicDiscoveryView';
 import SuspendedClinicView from '@/pages/booking/SuspendedClinicView';
 import PhoneCheckStep from '@/pages/booking/PhoneCheckStep';
 import AppointmentDetailsStep from '@/pages/booking/AppointmentDetailsStep';
@@ -40,8 +39,6 @@ const Booking = () => {
   const clinicQuery = searchParams.get('clinic');
   const hasDirectClinic = Boolean(clinicSlug || clinicQuery || isDedicatedDomain);
 
-  const [discoverySearch, setDiscoverySearch] = useState('');
-  const [discoverySpecialty, setDiscoverySpecialty] = useState('الكل');
   const [detectedUserLocation, setDetectedUserLocation] = useState(null);
 
   // Silently detect user location without interrupting the user
@@ -441,19 +438,10 @@ const Booking = () => {
     setRecognizedPatient(null);
   };
 
-  // VIEW 0: GENERAL PLATFORM CLINIC DISCOVERY & SELECTOR (/booking on main domain)
+  // VIEW 0: GENERAL PLATFORM CLINIC DISCOVERY IS DISABLED (PRIVACY & TENANT ISOLATION)
+  // Prevent any public scraping or listing of doctors and clinics
   if (!hasDirectClinic) {
-    return (
-      <ClinicDiscoveryView
-        allTenants={allTenants}
-        discoverySearch={discoverySearch}
-        setDiscoverySearch={setDiscoverySearch}
-        discoverySpecialty={discoverySpecialty}
-        setDiscoverySpecialty={setDiscoverySpecialty}
-        onSelectClinic={(clinic) => navigate(`/c/${clinic.slug}/booking`)}
-        onNavigate={navigate}
-      />
-    );
+    return <Navigate to="/" replace />;
   }
 
   // GUARD: SUSPENDED CLINIC NOTICE

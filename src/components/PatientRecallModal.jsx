@@ -116,7 +116,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient }) => {
     const doctorPhone = state.clinicInfo?.phone || '01006285031';
     const cleanPhone = (recall.patientPhone || '').replace(/\D/g, '');
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow.com';
-    const bookingPath = state.clinicInfo?.slug ? `/c/${state.clinicInfo.slug}/booking` : '/booking';
+    const bookingPath = state.clinicInfo?.slug ? `/c/${state.clinicInfo.slug}/booking` : '/';
     
     const message = `مرحباً أستاذ/ة ${recall.patientName}،\nنود تذكيركم بموعدكم الدوري لمتابعة [${recall.reason}] لدى ${clinicName}.\n\nللحجز وتأكيد الموعد المناسب لكم: ${origin}${bookingPath}\nأو الاتصال على: ${doctorPhone}\nنتمنى لكم دوام الصحة والعافية.`;
     

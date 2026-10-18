@@ -397,9 +397,9 @@ export default function Login() {
             {/* Bottom Footer Navigation */}
             <div className="auth-footer-nav">
               <div className="footer-links-group">
-                <a href="/booking" className="footer-link" target="_blank" rel="noreferrer">
+                <a href="/manage-booking" className="footer-link">
                   <Globe size={14} />
-                  <span>بوابة حجز واستعلام المرضى</span>
+                  <span>بوابة استعلام وتعديل المواعيد</span>
                 </a>
                 <span className="footer-divider">•</span>
                 <a href="/" className="footer-link">

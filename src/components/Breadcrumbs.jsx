@@ -35,10 +35,10 @@ export default function Breadcrumbs({ customTrail = null, className = '' }) {
     let url = '/' + segments.slice(0, index + 1).join('/');
     let label = SEGMENT_NAMES[seg] || seg;
 
-    // Point 'c' segment to clinics directory
+    // Point 'c' segment to root
     if (seg === 'c') {
-      url = '/booking';
-      label = 'دليل العيادات';
+      url = '/';
+      label = 'الرئيسية';
     } else if (segments[index - 1] === 'c') {
       if (tenant?.slug === seg) {
         label = tenant.name || seg;

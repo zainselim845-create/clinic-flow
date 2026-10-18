@@ -454,12 +454,12 @@ export default function SuperAdminDashboard() {
               <span>الموقع العام</span>
             </button>
             <button 
-              onClick={() => window.open('/booking', '_blank')} 
+              onClick={() => window.open('/manage-booking', '_blank')} 
               className="back-to-app-btn booking-portal-btn" 
-              title="فتح بوابة حجز واستعلام المرضى في نافذة جديدة"
+              title="فتح بوابة إدارة واستعلام تذاكر المرضى في نافذة جديدة"
             >
               <ExternalLink size={15} />
-              <span>بوابة المرضى</span>
+              <span>إدارة تذاكر المرضى</span>
             </button>
           </div>
         </div>

@@ -182,7 +182,7 @@ export default function NotFound() {
           </Link>
 
           <Link
-            to="/booking"
+            to="/manage-booking"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -200,7 +200,7 @@ export default function NotFound() {
             }}
           >
             <Calendar size={16} color="var(--clinic-primary, #09090B)" />
-            <span>دليل العيادات</span>
+            <span>إدارة المواعيد</span>
           </Link>
 
           <Link

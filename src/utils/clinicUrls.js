@@ -46,7 +46,7 @@ export function getClinicBookingUrl(tenant, location = (typeof window !== 'undef
   const slug = (tenant?.slug || '').trim().toLowerCase();
   if (!slug) {
     const origin = location?.origin || `https://${SAAS_PLATFORM_DOMAIN}`;
-    return `${origin}/booking`;
+    return `${origin}/`;
   }
 
   const origin = location?.origin || '';
