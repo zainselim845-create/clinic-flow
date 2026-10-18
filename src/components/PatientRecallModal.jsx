@@ -45,7 +45,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
   const [selectedPatientId, setSelectedPatientId] = useState(initialPatient?.id || (patients[0]?.id || ''));
   const [customReason, setCustomReason] = useState('');
   const [appointmentDate, setAppointmentDate] = useState(defaultDateStr);
-  const [appointmentTime, setAppointmentTime] = useState('06:00 م');
+  const appointmentTime = '06:00 م';
   const [activePreset, setActivePreset] = useState('14d');
   const [bookDirectlyInCalendar, setBookDirectlyInCalendar] = useState(true);
   const [notes, setNotes] = useState('');
@@ -133,7 +133,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
 
     setSaveSuccessMsg(
       bookDirectlyInCalendar 
-        ? `تم تثبيت وحجز الموعد بنجاح للمريض (${targetPatient.name}) في جدول العيادة بتاريخ ${chosenDate} الساعة ${appointmentTime}!` 
+        ? `تم تثبيت وحجز الموعد بنجاح للمريض (${targetPatient.name}) في جدول العيادة بتاريخ ${chosenDate}!` 
         : `تم تسجيل تذكير المتابعة للمريض (${targetPatient.name}) بتاريخ ${chosenDate} بنجاح!`
     );
     setTimeout(() => setSaveSuccessMsg(''), 4500);
@@ -252,7 +252,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
               </span>
             </div>
 
-            <div className="form-grid-3col">
+            <div className="form-grid-2col">
               {/* Field 1: Patient select */}
               <div className="form-group">
                 <label htmlFor="rec-patient-select">المريض *</label>
@@ -286,27 +286,6 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
                   }}
                   required
                 />
-              </div>
-
-              {/* Field 3: Appointment Time */}
-              <div className="form-group">
-                <label htmlFor="rec-app-time">توقيت الموعد المفضل</label>
-                <select 
-                  id="rec-app-time"
-                  className="input-field"
-                  value={appointmentTime}
-                  onChange={(e) => setAppointmentTime(e.target.value)}
-                >
-                  <option value="04:00 م">04:00 مساءً</option>
-                  <option value="05:00 م">05:00 مساءً</option>
-                  <option value="06:00 م">06:00 مساءً</option>
-                  <option value="07:00 م">07:00 مساءً</option>
-                  <option value="08:00 م">08:00 مساءً</option>
-                  <option value="09:00 م">09:00 مساءً</option>
-                  <option value="10:00 م">10:00 مساءً</option>
-                  <option value="صباحاً">فترة صباحية</option>
-                  <option value="مساءً">فترة مسائية</option>
-                </select>
               </div>
 
               {/* Quick Presets row under date */}
