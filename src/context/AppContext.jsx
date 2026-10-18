@@ -15,12 +15,59 @@ import { sendReminder } from '@/features/marketing/services/smsService';
 import { parseArabicTime, arabicTimeToDate } from '@/utils/parseArabicTime';
 import { createClinicRealtimeManager, REALTIME_STATUS, BROADCAST_EVENTS, playChime } from '@/features/platform/services/realtimeSyncService';
 import { localDb } from '@/db/localDatabase';
-import { safeGetItem, safeSetJSON } from '@/utils/safeStorage';
+import { safeGetItem, safeSetJSON, safeGetJSON } from '@/utils/safeStorage';
+import { getRegisteredUsers } from '@/features/auth/services/authService';
 import { cloudCircuitBreaker } from '@/lib/circuitBreaker';
 import { migrateTenantPayload } from '@/lib/schemaMigration';
 import { syncOutbox } from '@/lib/syncOutbox';
 
 export const DATA_SCHEMA_VERSION = 'v5_clean_zero_state';
+
+function reconcileStaffList(remoteStaffList, clinicSlug, clinicId) {
+  const staffMap = new Map();
+  if (Array.isArray(remoteStaffList)) {
+    remoteStaffList.forEach(s => {
+      if (s?.id) staffMap.set(s.id, s);
+    });
+  }
+
+  const localStaffCache = safeGetJSON(`clinicflow_staff_${clinicSlug}`, []);
+  if (Array.isArray(localStaffCache)) {
+    localStaffCache.forEach(s => {
+      if (s?.id && !staffMap.has(s.id)) staffMap.set(s.id, s);
+    });
+  }
+
+  try {
+    const regStaff = getRegisteredUsers().filter(u =>
+      (u.clinicId === clinicId || u.clinicSlug === clinicSlug || u.clinicId === clinicSlug) &&
+      u.role !== 'doctor' && u.role !== 'super_admin'
+    );
+    regStaff.forEach(u => {
+      const match = staffMap.get(u.id) || Array.from(staffMap.values()).find(s => s.phone === u.phone);
+      if (!match) {
+        staffMap.set(u.id, {
+          id: u.id,
+          clinicId: u.clinicId || clinicId || clinicSlug,
+          clinicSlug: u.clinicSlug || clinicSlug,
+          name: u.name,
+          phone: u.phone,
+          email: u.email || '',
+          role: u.jobTitle || u.role,
+          roleKey: u.roleKey || u.role,
+          shift: u.shift || 'مسائي (04:00 م - 10:00 م)',
+          status: u.status || 'active',
+          permissions: u.permissions || ['appointments', 'patients', 'sms'],
+          createdAt: u.createdAt
+        });
+      }
+    });
+  } catch (err) {
+    console.warn('[AppContext] Error reading registered staff for reconciliation:', err);
+  }
+
+  return Array.from(staffMap.values());
+}
 
 const AppContext = createContext(null);
 
@@ -127,7 +174,7 @@ export function AppProvider({ children }) {
                 appointments: apptsRes?.data || [],
                 blockedSlots: blockedRes?.data || [],
                 notifications: notifsRes?.data || [],
-                staffMembers: staffRes?.data && staffRes.data.length > 0 ? staffRes.data : [],
+                staffMembers: reconcileStaffList(staffRes?.data, currentSlug, currentClinicId),
                 doctors: doctorsRes?.data || [],
                 clinicInfo: clinicRes?.data || activeTenant || null,
                 expenses: expensesRes?.data || [],
@@ -165,6 +212,8 @@ export function AppProvider({ children }) {
             migratedPayload.doctors = [];
           }
 
+          migratedPayload.staffMembers = reconcileStaffList(migratedPayload.staffMembers, currentSlug, currentClinicId);
+
           dispatch({ 
             type: 'INIT_DATA', 
             payload: migratedPayload
@@ -180,7 +229,7 @@ export function AppProvider({ children }) {
               blockedSlots: [],
               expenses: [],
               recalls: [],
-              staffMembers: [],
+              staffMembers: reconcileStaffList([], currentSlug, currentClinicId),
               doctors: [],
               clinicInfo: activeTenant || (currentSlug ? { slug: currentSlug, name: currentSlug } : null),
               useSupabase: false,
@@ -198,7 +247,7 @@ export function AppProvider({ children }) {
             blockedSlots: [],
             expenses: [],
             recalls: [],
-            staffMembers: [],
+            staffMembers: reconcileStaffList([], currentSlug, currentClinicId),
             doctors: [],
             clinicInfo: activeTenant || (currentSlug ? { slug: currentSlug, name: currentSlug } : null),
             useSupabase: false,

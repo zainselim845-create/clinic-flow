@@ -124,30 +124,32 @@ export async function syncTenantsFromCloud() {
       }
     }
 
-    if (cloudTenants.length === 0) return memoryTenantsCache || [];
+    if (cloudTenants.length === 0 && cloudUsers.length === 0) return memoryTenantsCache || [];
 
     // Merge into memoryTenantsCache and localStorage
-    const local = getRegisteredTenants(true);
-    const merged = [...local];
-    cloudTenants.forEach(ct => {
-      if (!ct || !ct.slug || isDemoOrCorruptedTenant(ct)) return;
-      const idx = merged.findIndex(m => m.id === ct.id || m.slug === ct.slug);
-      if (idx >= 0) {
-        merged[idx] = { ...merged[idx], ...ct };
-      } else {
-        merged.push(ct);
-      }
-      if (ct.slug) registeredSlugsSet.add(ct.slug);
-      if (ct.doctorEmail) registeredEmailsSet.add(ct.doctorEmail.toLowerCase());
-      if (ct.phone) registeredPhonesSet.add(ct.phone.replace(/\D/g, ''));
-    });
+    if (cloudTenants.length > 0) {
+      const local = getRegisteredTenants(true);
+      const merged = [...local];
+      cloudTenants.forEach(ct => {
+        if (!ct || !ct.slug || isDemoOrCorruptedTenant(ct)) return;
+        const idx = merged.findIndex(m => m.id === ct.id || m.slug === ct.slug);
+        if (idx >= 0) {
+          merged[idx] = { ...merged[idx], ...ct };
+        } else {
+          merged.push(ct);
+        }
+        if (ct.slug) registeredSlugsSet.add(ct.slug);
+        if (ct.doctorEmail) registeredEmailsSet.add(ct.doctorEmail.toLowerCase());
+        if (ct.phone) registeredPhonesSet.add(ct.phone.replace(/\D/g, ''));
+      });
 
-    memoryTenantsCache = merged;
-    if (typeof localStorage !== 'undefined') {
-      try {
-        localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(merged));
-      } catch (storageErr) {
-        console.warn('[AuthService] Failed to persist merged tenants to localStorage:', storageErr);
+      memoryTenantsCache = merged;
+      if (typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem(REGISTERED_TENANTS_KEY, JSON.stringify(merged));
+        } catch (storageErr) {
+          console.warn('[AuthService] Failed to persist merged tenants to localStorage:', storageErr);
+        }
       }
     }
 

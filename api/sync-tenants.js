@@ -138,25 +138,30 @@ function parseJsonBody(req) {
 }
 
 export default async function handler(req, res) {
-  // Security & CORS Headers — restrict to production origin (CWE-942)
+  // Security & CORS Headers — allow production, vercel deployments, and localhost
   const ALLOWED_ORIGINS = new Set([
     'https://clinic-flow-ten-sigma.vercel.app',
     process.env.ALLOWED_ORIGIN // Optional additional origin from env
   ].filter(Boolean));
   const requestOrigin = req.headers.origin || '';
-  const corsOrigin = ALLOWED_ORIGINS.has(requestOrigin) ? requestOrigin : '';
+  const isVercelDomain = /^https:\/\/clinic-flow.*\.vercel\.app$/.test(requestOrigin);
+  const isLocalhost = /^http:\/\/localhost(:\d+)?$/.test(requestOrigin);
+  const isAllowed = ALLOWED_ORIGINS.has(requestOrigin) || isVercelDomain || isLocalhost;
+  const corsOrigin = isAllowed ? requestOrigin : '';
   if (corsOrigin) {
     res.setHeader('Access-Control-Allow-Origin', corsOrigin);
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-sync-secret');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
   if (req.method === 'OPTIONS') {
-    // Respond to preflight even without origin match (browser requires 200)
-    if (!corsOrigin) {
+    // Respond to preflight
+    if (corsOrigin) {
+      res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    } else {
       res.setHeader('Access-Control-Allow-Origin', requestOrigin || '*');
     }
     return res.status(200).end();

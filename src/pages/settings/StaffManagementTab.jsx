@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck, Users } from 'lucide-react';
 import * as staffService from '@/features/platform/services/staffService';
-import { provisionStaffAccount, deleteRegisteredUser, updateStaffAccountStatus } from '@/features/auth/services/authService';
+import { provisionStaffAccount, deleteRegisteredUser, updateStaffAccountStatus, getRegisteredUsers } from '@/features/auth/services/authService';
 import { SYSTEM_PERMISSIONS } from '@/utils/permissions';
-import { isSupabaseConfigured } from '@/lib/supabase';
 import { useTenant } from '@/context/TenantContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 
 export default function StaffManagementTab({ staffMembers, dispatch }) {
   const { tenant } = useTenant();
@@ -20,13 +20,62 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
     phone: '',
     password: '',
     roleKey: 'receptionist',
-    role: 'سكرتير أول',
+    role: 'سكرتير أول (استقبال وحجوزات)',
     shift: 'مسائي (04:00 م - 10:00 م)',
     status: 'active',
     permissions: ['appointments', 'patients', 'sms']
   });
 
-  const useSupabase = isSupabaseConfigured();
+  // Reconcile staff list across AppContext state, scoped local storage cache, and auth registry
+  const displayStaffMembers = useMemo(() => {
+    const map = new Map();
+    const currentSlug = tenant?.slug || 'clinic';
+    const currentId = tenant?.id;
+
+    // 1. From AppContext state props
+    (staffMembers || []).forEach(s => {
+      if (s?.id) map.set(s.id, s);
+    });
+
+    // 2. From resilient local staff cache
+    const localCache = safeGetJSON(`clinicflow_staff_${currentSlug}`, []);
+    if (Array.isArray(localCache)) {
+      localCache.forEach(s => {
+        if (s?.id && !map.has(s.id)) map.set(s.id, s);
+      });
+    }
+
+    // 3. From auth registry registered staff users
+    try {
+      const reg = getRegisteredUsers().filter(u =>
+        (u.clinicId === currentId || u.clinicSlug === currentSlug || u.clinicId === currentSlug) &&
+        u.role !== 'doctor' && u.role !== 'super_admin'
+      );
+      reg.forEach(u => {
+        const existing = map.get(u.id) || Array.from(map.values()).find(s => s.phone === u.phone);
+        if (!existing) {
+          map.set(u.id, {
+            id: u.id,
+            clinicId: u.clinicId || currentId || currentSlug,
+            clinicSlug: u.clinicSlug || currentSlug,
+            name: u.name,
+            phone: u.phone,
+            email: u.email || '',
+            role: u.jobTitle || u.role,
+            roleKey: u.roleKey || u.role,
+            shift: u.shift || 'مسائي (04:00 م - 10:00 م)',
+            status: u.status || 'active',
+            permissions: u.permissions || ['appointments', 'patients', 'sms'],
+            createdAt: u.createdAt
+          });
+        }
+      });
+    } catch (err) {
+      console.warn('[StaffManagementTab] Error reading registered users:', err);
+    }
+
+    return Array.from(map.values());
+  }, [staffMembers, tenant]);
 
   const handleOpenAddModal = () => {
     setEditingStaff(null);
@@ -36,7 +85,8 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
       email: '',
       phone: '',
       password: '',
-      role: 'سكرتير أول',
+      roleKey: 'receptionist',
+      role: 'سكرتير أول (استقبال وحجوزات)',
       shift: 'مسائي (04:00 م - 10:00 م)',
       status: 'active',
       permissions: ['appointments', 'patients', 'sms']
@@ -93,17 +143,27 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         clinicId: staffClinicId,
         clinicSlug: staffClinicSlug
       };
-      if (useSupabase) {
-        try {
-          await staffService.updateStaffMember(editingStaff.id, updatedPayload);
-        } catch (err) {
-          console.error('Failed to update staff in Supabase:', err);
-        }
+
+      // Immediate Scoped Local Storage write
+      const scopedKey = `clinicflow_data_${staffClinicSlug}`;
+      const currentScoped = safeGetJSON(scopedKey, {});
+      if (currentScoped && typeof currentScoped === 'object') {
+        const existingStaff = Array.isArray(currentScoped.staffMembers) ? currentScoped.staffMembers : [];
+        currentScoped.staffMembers = existingStaff.map(s => s.id === editingStaff.id ? updatedPayload : s);
+        safeSetJSON(scopedKey, currentScoped);
       }
+
+      try {
+        await staffService.updateStaffMember(editingStaff.id, updatedPayload, staffClinicSlug);
+      } catch (err) {
+        console.warn('Failed to update staff in staffService:', err);
+      }
+
       dispatch({
         type: 'UPDATE_STAFF',
         payload: updatedPayload
       });
+
       if (staffForm.roleKey === "associate_doctor") {
         dispatch({
           type: "UPDATE_DOCTOR",
@@ -127,17 +187,27 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         ...staffForm,
         createdAt: new Date().toISOString().split('T')[0]
       };
-      if (useSupabase) {
-        try {
-          await staffService.addStaffMember(newStaff);
-        } catch (err) {
-          console.error('Failed to add staff in Supabase:', err);
-        }
+
+      // Immediate Scoped Local Storage write to prevent debounce loss
+      const scopedKey = `clinicflow_data_${staffClinicSlug}`;
+      const currentScoped = safeGetJSON(scopedKey, {});
+      if (currentScoped && typeof currentScoped === 'object') {
+        const existingStaff = Array.isArray(currentScoped.staffMembers) ? currentScoped.staffMembers : [];
+        currentScoped.staffMembers = [newStaff, ...existingStaff.filter(s => s.id !== newStaff.id && s.phone !== newStaff.phone)];
+        safeSetJSON(scopedKey, currentScoped);
       }
+
+      try {
+        await staffService.addStaffMember(newStaff);
+      } catch (err) {
+        console.warn('Failed to add staff in staffService:', err);
+      }
+
       dispatch({
         type: 'ADD_STAFF',
         payload: newStaff
       });
+
       if (staffForm.roleKey === "associate_doctor") {
         dispatch({
           type: "ADD_DOCTOR",
@@ -160,28 +230,37 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
   };
 
   const handleDeleteStaff = (id) => {
-    const member = staffMembers.find(s => s.id === id);
+    const member = displayStaffMembers.find(s => s.id === id);
     if (member) {
       setDeleteTargetStaff(member);
     }
   };
 
   const handleToggleStaffStatus = async (id) => {
-    const member = staffMembers.find(s => s.id === id);
+    const member = displayStaffMembers.find(s => s.id === id);
     const nextStatus = member?.status === 'active' ? 'inactive' : 'active';
-    if (member && useSupabase) {
-      try {
-        await staffService.updateStaffMember(id, { status: nextStatus });
-      } catch (err) {
-        console.error('Failed to toggle staff status in Supabase:', err);
-      }
+    const staffClinicSlug = tenant?.slug || 'clinic';
+
+    try {
+      await staffService.updateStaffMember(id, { status: nextStatus }, staffClinicSlug);
+    } catch (err) {
+      console.warn('Failed to toggle staff status in staffService:', err);
     }
+
     try {
       updateStaffAccountStatus(id, nextStatus);
       if (member?.phone) updateStaffAccountStatus(member.phone, nextStatus);
     } catch (err) {
       console.warn('[StaffManagementTab] Failed to update staff account status:', err);
     }
+
+    const scopedKey = `clinicflow_data_${staffClinicSlug}`;
+    const currentScoped = safeGetJSON(scopedKey, {});
+    if (currentScoped && typeof currentScoped === 'object' && Array.isArray(currentScoped.staffMembers)) {
+      currentScoped.staffMembers = currentScoped.staffMembers.map(s => s.id === id ? { ...s, status: nextStatus } : s);
+      safeSetJSON(scopedKey, currentScoped);
+    }
+
     dispatch({ type: 'TOGGLE_STAFF_STATUS', payload: id });
   };
 
@@ -199,8 +278,21 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         </button>
       </div>
 
-      <div className="staff-grid">
-        {staffMembers.map((member) => (
+      {displayStaffMembers.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem 1.5rem', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px dashed var(--border-color)', margin: '1rem 0' }}>
+          <Users size={40} style={{ color: 'var(--text-muted)', marginBottom: '0.75rem', opacity: 0.6 }} />
+          <h4 style={{ margin: '0 0 0.5rem 0', fontWeight: 600 }}>لا يوجد موظفون مسجلون حالياً</h4>
+          <p style={{ margin: '0 0 1.25rem 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            يمكنك إضافة موظفي الاستقبال، الأطباء المساعدين، والمحاسبين بالنقر على زر إضافة موظف جديد.
+          </p>
+          <button type="button" onClick={handleOpenAddModal} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <UserPlus size={16} />
+            <span>إضافة موظف الآن</span>
+          </button>
+        </div>
+      ) : (
+        <div className="staff-grid">
+          {displayStaffMembers.map((member) => (
           <div key={member.id} className={`staff-card ${member.status === 'inactive' ? 'inactive' : ''}`}>
             <div className="staff-card-header">
               <div className="staff-avatar">
@@ -281,7 +373,8 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
 
       {isStaffModalOpen && (
         <div className="modal-backdrop">
@@ -456,13 +549,14 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
           if (!deleteTargetStaff) return;
           const id = deleteTargetStaff.id;
           const staffClinicId = tenant?.id || (tenant?.slug ? `tenant-${tenant.slug}` : 'clinic-default');
-          if (isSupabaseConfigured()) {
-            try {
-              await staffService.deleteStaffMember(id);
-            } catch (err) {
-              console.error('Failed to delete staff in Supabase:', err);
-            }
+          const staffClinicSlug = tenant?.slug || 'clinic';
+
+          try {
+            await staffService.deleteStaffMember(id, staffClinicSlug);
+          } catch (err) {
+            console.warn('Failed to delete staff in staffService:', err);
           }
+
           try {
             deleteRegisteredUser(id, staffClinicId);
             if (deleteTargetStaff?.phone) deleteRegisteredUser(deleteTargetStaff.phone, staffClinicId);
@@ -470,6 +564,14 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
           } catch (err) {
             console.warn('[StaffManagementTab] Failed to delete registered staff user:', err);
           }
+
+          const scopedKey = `clinicflow_data_${staffClinicSlug}`;
+          const currentScoped = safeGetJSON(scopedKey, {});
+          if (currentScoped && typeof currentScoped === 'object' && Array.isArray(currentScoped.staffMembers)) {
+            currentScoped.staffMembers = currentScoped.staffMembers.filter(s => s.id !== id);
+            safeSetJSON(scopedKey, currentScoped);
+          }
+
           dispatch({ type: 'DELETE_STAFF', payload: id });
           setDeleteTargetStaff(null);
         }}
