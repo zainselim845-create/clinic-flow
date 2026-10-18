@@ -1,5 +1,5 @@
 import React from 'react';
-import { Package, Plus, Clock } from 'lucide-react';
+import { Package, Clock, History } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
 import ScreenState from '@/components/ui/ScreenState';
 import { INVENTORY_CATEGORIES } from '@/features/inventory/services/inventoryService';
@@ -19,7 +19,8 @@ export const InventoryTable = ({
   onResetFilters,
   onOpenNewItemModal,
   onRetryFetch,
-  onStockChange
+  onStockChange,
+  onOpenLedger
 }) => {
   const hasActiveFilters = Boolean(searchQuery) || selectedCategory !== 'all';
 
@@ -106,24 +107,46 @@ export const InventoryTable = ({
                     </span>
                   </td>
                   <td>
-                    <div className="stock-counter-ctrls">
-                      <button
-                        type="button"
-                        onClick={() => onStockChange(item.id, -1)}
-                        className="btn-counter minus"
-                        title="صرف وحدة من المخزون"
-                      >
-                        -
-                      </button>
-                      <span className="counter-num">{item.currentQty}</span>
-                      <button
-                        type="button"
-                        onClick={() => onStockChange(item.id, 1)}
-                        className="btn-counter plus"
-                        title="إضافة وتوريد وحدة"
-                      >
-                        +
-                      </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <div className="stock-counter-ctrls">
+                        <button
+                          type="button"
+                          onClick={() => onStockChange(item.id, -1)}
+                          className="btn-counter minus"
+                          title="صرف وحدة من المخزون"
+                        >
+                          -
+                        </button>
+                        <span className="counter-num">{item.currentQty}</span>
+                        <button
+                          type="button"
+                          onClick={() => onStockChange(item.id, 1)}
+                          className="btn-counter plus"
+                          title="إضافة وتوريد وحدة"
+                        >
+                          +
+                        </button>
+                      </div>
+                      {onOpenLedger && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenLedger(item)}
+                          title="سجل الحركات وتدقيق الرصيد (Audit Ledger)"
+                          style={{
+                            background: 'transparent',
+                            border: '1px solid var(--border-color)',
+                            color: 'var(--text-secondary)',
+                            borderRadius: '6px',
+                            padding: '5px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <History size={14} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

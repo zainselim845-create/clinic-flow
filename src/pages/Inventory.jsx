@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
-import { Plus } from 'lucide-react';
+import { Plus, History } from 'lucide-react';
 import InventoryItemModal from '@/components/InventoryItemModal';
 import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
 import { 
@@ -13,7 +13,8 @@ import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import {
   InventoryMetricsRow,
   InventoryFiltersBar,
-  InventoryTable
+  InventoryTable,
+  StockLedgerModal
 } from '@/components/inventory';
 import './Inventory.css';
 
@@ -42,6 +43,8 @@ const Inventory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+  const [selectedLedgerItem, setSelectedLedgerItem] = useState(null);
 
   // Deep-linking from Command Palette (action=new)
   useEffect(() => {
@@ -100,19 +103,31 @@ const Inventory = () => {
   }, [items, searchQuery, selectedCategory, currentClinicId]);
 
   const handleStockChange = async (itemId, delta) => {
+    let nextQty = 0;
+    let prevQty = 0;
+    let targetItem = null;
+
     setItems(prev => prev.map(it => {
       if (it.id === itemId) {
-        const nextQty = Math.max(0, it.currentQty + delta);
+        prevQty = it.currentQty;
+        nextQty = Math.max(0, it.currentQty + delta);
+        targetItem = it;
         return { ...it, currentQty: nextQty };
       }
       return it;
     }));
 
-    if (currentClinicId && isSupabaseConfigured()) {
+    if (currentClinicId) {
       try {
-        await adjustItemStock(itemId, delta, currentClinicId);
+        await adjustItemStock(itemId, nextQty, currentClinicId, {
+          itemName: targetItem?.name || '',
+          previousQty: prevQty,
+          type: delta > 0 ? 'in' : 'out',
+          delta,
+          reason: delta > 0 ? 'توريد وإضافة للمخزون (+)' : 'صرف استهلاك كشف (-)'
+        });
       } catch (err) {
-        console.error('Remote stock adjust failed:', err);
+        console.error('Remote stock adjust notice:', err);
       }
     }
   };
@@ -163,7 +178,16 @@ const Inventory = () => {
           <h1>مخزون المستلزمات الطبية (Dental Materials & Inventory)</h1>
           <p>متابعة كميات الكومبوزيت، البنج، مواد الطبعات، والتعقيم مع إنذارات النقص والصلاحية</p>
         </div>
-        <div className="header-actions-btns">
+        <div className="header-actions-btns" style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <button 
+            type="button"
+            onClick={() => { setSelectedLedgerItem(null); setIsLedgerOpen(true); }} 
+            className="btn btn-secondary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <History size={16} />
+            <span>سجل حركات وتدقيق المخزون (Ledger)</span>
+          </button>
           <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
             <Plus size={18} />
             <span>إضافة صنف جديد</span>
@@ -202,14 +226,27 @@ const Inventory = () => {
           onOpenNewItemModal={() => setIsModalOpen(true)}
           onRetryFetch={fetchInventory}
           onStockChange={handleStockChange}
+          onOpenLedger={(item) => { setSelectedLedgerItem(item); setIsLedgerOpen(true); }}
         />
       </FeatureErrorBoundary>
 
-      {/* Modal */}
+      {/* Add / Edit Item Modal */}
       <InventoryItemModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSaveItem={handleSaveItem}
+      />
+
+      {/* Stock Audit Ledger Modal */}
+      <StockLedgerModal
+        isOpen={isLedgerOpen}
+        onClose={() => { setIsLedgerOpen(false); setSelectedLedgerItem(null); }}
+        selectedItem={selectedLedgerItem}
+        clinicId={currentClinicId}
+        clinicSlug={currentSlug}
+        onStockUpdated={(id, updatedQty) => {
+          setItems(prev => prev.map(it => it.id === id ? { ...it, currentQty: updatedQty } : it));
+        }}
       />
     </div>
   );

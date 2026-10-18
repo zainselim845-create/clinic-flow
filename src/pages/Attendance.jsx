@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   LogIn, LogOut, Clock 
 } from 'lucide-react';
@@ -9,12 +9,13 @@ import {
   getStaffAttendance, recordCheckIn, recordCheckOut 
 } from '@/features/platform/services/attendanceService';
 import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
+import ScreenState from '@/components/ui/ScreenState';
 import './Attendance.css';
 
 const Attendance = () => {
   const { state } = useApp();
   const { tenant } = useTenant();
-  const staffList = state.staffMembers || [];
+  const staffList = useMemo(() => state.staffMembers || [], [state.staffMembers]);
 
   const currentSlug = tenant?.slug || state.clinicInfo?.slug || '';
   const clinicId = tenant?.id || currentSlug;
@@ -27,34 +28,58 @@ const Attendance = () => {
   }, []);
 
   const [attendanceRecords, setAttendanceRecords] = useState(() => loadScopedAttendance(currentSlug));
-
-  const [selectedStaffId, setSelectedStaffId] = useState(staffList[0]?.id || 'staff-1');
+  const [selectedStaffId, setSelectedStaffId] = useState(staffList[0]?.id || '');
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('ar-EG'));
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     setAttendanceRecords(loadScopedAttendance(currentSlug));
   }, [currentSlug, loadScopedAttendance]);
 
   useEffect(() => {
+    if (!selectedStaffId && staffList.length > 0) {
+      setSelectedStaffId(staffList[0].id);
+    }
+  }, [staffList, selectedStaffId]);
+
+  useEffect(() => {
     safeSetJSON(`clinicflow_attendance_${currentSlug}`, attendanceRecords);
   }, [attendanceRecords, currentSlug]);
 
-  useEffect(() => {
-    async function loadAttendance() {
-      if (!clinicId) return;
-      const { data } = await getStaffAttendance(clinicId);
+  const loadAttendance = useCallback(async () => {
+    if (!clinicId) return;
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const { data, error } = await getStaffAttendance(clinicId);
+      if (error) {
+        throw error;
+      }
       if (data && data.length > 0) {
         setAttendanceRecords(data);
       }
+    } catch (err) {
+      console.warn('Could not fetch remote attendance, using local cache:', err);
+      const local = loadScopedAttendance(currentSlug);
+      if (local.length > 0) {
+        setAttendanceRecords(local);
+      } else {
+        setLoadError(err?.message || 'تعذر تحميل سجل الحضور والانصراف');
+      }
+    } finally {
+      setIsLoading(false);
     }
+  }, [clinicId, currentSlug, loadScopedAttendance]);
+
+  useEffect(() => {
     loadAttendance();
 
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString('ar-EG'));
     }, 1000);
     return () => clearInterval(timer);
-  }, [clinicId]);
-
+  }, [loadAttendance]);
 
   const handleCheckInClick = async () => {
     const staff = staffList.find(s => s.id === selectedStaffId) || { name: 'عضو الفريق' };
@@ -76,7 +101,7 @@ const Attendance = () => {
   };
 
   const handleCheckOutClick = async (attId, checkInTime) => {
-    const res = await recordCheckOut(attId, checkInTime);
+    const res = await recordCheckOut(attId, checkInTime, clinicId);
     if (res.data) {
       setAttendanceRecords(prev => prev.map(a => 
         a.id === attId 
@@ -103,7 +128,7 @@ const Attendance = () => {
       <div className="clock-terminal-card">
         <div className="terminal-time-side">
           <div className="live-clock-badge">
-            <Clock size={18} className="text-nebras-orange" />
+            <Clock size={18} className="text-zinc-400" />
             <span className="live-time-str">{currentTime}</span>
           </div>
           <span className="live-date-str">
@@ -158,35 +183,29 @@ const Attendance = () => {
       {/* Attendance Log Table */}
       <div className="glass-card table-responsive-container">
         <h4 className="log-title">سجل الحضور والانصراف اليومي:</h4>
-        <table className="attendance-main-table">
-          <thead>
-            <tr>
-              <th>اسم الموظف</th>
-              <th>الوظيفة / الدور</th>
-              <th>وقت الحضور</th>
-              <th>وقت الانصراف</th>
-              <th>إجمالي ساعات العمل</th>
-              <th>الحالة الحالية</th>
-              <th>الإجراء</th>
-            </tr>
-          </thead>
-          <tbody>
-            {attendanceRecords.length === 0 ? (
+        <ScreenState
+          isLoading={isLoading}
+          loadError={loadError}
+          onRetry={loadAttendance}
+          isEmpty={attendanceRecords.length === 0}
+          emptyIcon={<Clock size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />}
+          emptyTitle="لم يسجل أي موظف حضوره اليوم حتى الآن"
+          emptyDescription="يمكن للموظفين والتمريض تسجيل بداية ونهاية الوردية من بطاقة تسجيل الحضور السريعة بالأعلى."
+        >
+          <table className="attendance-main-table">
+            <thead>
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '3.5rem 1.5rem', color: 'var(--text-secondary)' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.6rem' }}>
-                    <Clock size={40} style={{ color: 'var(--text-tertiary)', opacity: 0.6 }} aria-hidden="true" />
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
-                      لم يسجل أي موظف حضوره اليوم حتى الآن
-                    </strong>
-                    <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-secondary)', maxWidth: '380px' }}>
-                      يمكن للموظفين والتمريض تسجيل بداية ونهاية الوردية من بطاقة تسجيل الحضور السريعة بالأعلى.
-                    </p>
-                  </div>
-                </td>
+                <th>اسم الموظف</th>
+                <th>الوظيفة / الدور</th>
+                <th>وقت الحضور</th>
+                <th>وقت الانصراف</th>
+                <th>إجمالي ساعات العمل</th>
+                <th>الحالة الحالية</th>
+                <th>الإجراء</th>
               </tr>
-            ) : (
-              attendanceRecords.map(rec => (
+            </thead>
+            <tbody>
+              {attendanceRecords.map(rec => (
                 <tr key={rec.id}>
                   <td><strong>{rec.staffName}</strong></td>
                   <td><span className="role-tag">{rec.staffRole || 'استقبال'}</span></td>
@@ -216,10 +235,10 @@ const Attendance = () => {
                     )}
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        </ScreenState>
       </div>
 
     </div>
