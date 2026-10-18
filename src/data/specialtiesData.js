@@ -10,7 +10,7 @@ export const CLINIC_SPECIALTIES = [
     badge: 'شامل',
     description: 'كشف تشخيصي، حشوات تجميلية، علاج عصب، تركيبات وتنظيف جير',
     defaultServices: [
-      { id: 'srv-gen-1', name: 'كشف وفحص تشخيصي شامل للأسنان', price: '300 ج.م', duration: 30, description: 'فحص سريري كامل للأسنان واللثة مع خطة علاجية' },
+      { id: 'srv-gen-1', name: 'كشف وفحص تشخيصي شامل للأسنان', price: '350 ج.م', duration: 30, description: 'فحص سريري كامل للأسنان واللثة مع خطة علاجية' },
       { id: 'srv-gen-2', name: 'جلسة تنظيف وتلميع وإزالة جير الأسنان', price: '400 ج.م', duration: 30, description: 'إزالة الرواسب الجيرية بالألتراسونيك وتلميع الأسنان' },
       { id: 'srv-gen-3', name: 'حشو تجميلي ضوئي كومبوزيت ليزر', price: '500 ج.م', duration: 30, description: 'ترميم السن بحشوة مطابقة للون الطبيعي تماماً' },
       { id: 'srv-gen-4', name: 'علاج جذور وعصب السن (RCT)', price: '900 ج.م', duration: 45, description: 'سحب العصب وتطهير وحشو القنوات العصبية' },
@@ -34,7 +34,7 @@ export const CLINIC_SPECIALTIES = [
     description: 'تقويم ثابت ومتحرك، شفاف، وضبط إطباق الفكين للأطفال والبالغين',
     defaultServices: [
       { id: 'srv-ortho-1', name: 'استشارة وفحص تقويم الأسنان والفكين', price: '350 ج.م', duration: 30, description: 'دراسة قياسات الفكين والصور الشعاعية لتحديد الخطة' },
-      { id: 'srv-ortho-2', name: 'جلسة شد وضبط تقويم دورية (شهري)', price: '300 ج.م', duration: 20, description: 'تغيير الأسلاك والربطات المطاطية ومتابعة تقدم الحركة' },
+      { id: 'srv-ortho-2', name: 'جلسة شد وضبط تقويم دورية (شهري)', price: '280 ج.م', duration: 20, description: 'تغيير الأسلاك والربطات المطاطية ومتابعة تقدم الحركة' },
       { id: 'srv-ortho-3', name: 'تركيب جهاز تقويم معدني كامل للفكين', price: '6000 ج.م', duration: 60, description: 'تثبيت الحاصرات التقويمية على الأسنان بدقة' },
       { id: 'srv-ortho-4', name: 'تركيب مثبت تقويم نهائي (Retainer)', price: '900 ج.م', duration: 30, description: 'مثبت شفاف أو سلكي دائم لمنع انتكاس الأسنان' }
     ],
@@ -111,7 +111,7 @@ export const CLINIC_SPECIALTIES = [
     description: 'عناية وقائية وعلاجية خاصة بأسنان الأطفال بأسلوب نفسي ودود',
     defaultServices: [
       { id: 'srv-ped-1', name: 'كشف أسنان أطفال وتهيئة نفسية ودودة', price: '250 ج.م', duration: 30, description: 'فحص ممتع لكسر حاجز الخوف لدى الطفل' },
-      { id: 'srv-ped-2', name: 'جلسة تطبيق الفلورايد الوقائي المركز', price: '300 ج.م', duration: 20, description: 'تقوية مينا الأسنان اللبنية وحمايتها من التسوس' },
+      { id: 'srv-ped-2', name: 'جلسة تطبيق الفلورايد الوقائي المركز', price: '280 ج.م', duration: 20, description: 'تقوية مينا الأسنان اللبنية وحمايتها من التسوس' },
       { id: 'srv-ped-3', name: 'حشو عصب أطفال وبتر لبي (Pulpotomy)', price: '450 ج.م', duration: 30, description: 'علاج عصب الأسنان اللبنية دون ألم' },
       { id: 'srv-ped-4', name: 'طربوش ستانلس ستيل لحماية الضرس اللبني', price: '550 ج.م', duration: 30, description: 'تاج مخصص للأطفال للحفاظ على السن حتى التبديل' }
     ],
@@ -133,7 +133,7 @@ export const CLINIC_SPECIALTIES = [
     badge: 'باطنة',
     description: 'أمراض باطنة عامة، ارتفاع ضغط الدم، السكري، والجهاز الهضمي',
     defaultServices: [
-      { id: 'srv-int-1', name: 'كشف واستشارة باطنة تخصصية شاملة', price: '300 ج.م', duration: 30, description: 'فحص سريري ومراجعة شاملة للأعراض والتحاليل' },
+      { id: 'srv-int-1', name: 'كشف واستشارة باطنة تخصصية شاملة', price: '350 ج.م', duration: 30, description: 'فحص سريري ومراجعة شاملة للأعراض والتحاليل' },
       { id: 'srv-int-2', name: 'متابعة ضغط وسكر وأمراض مزمنة', price: '200 ج.م', duration: 20, description: 'ضبط جرعات الأدوية والاطمئنان على المؤشرات الحيوية' },
       { id: 'srv-int-3', name: 'فحص سونار بالموجات فوق الصوتية للبطن والحوض', price: '450 ج.م', duration: 30, description: 'فحص الكبد، الكلى، المرارة، والبنكرياس بالسونار' }
     ],
@@ -208,7 +208,7 @@ export const CLINIC_SPECIALTIES = [
     badge: 'عيون',
     description: 'فحص قاع العين، قياس النظر، المياه البيضاء، وتصحيح الإبصار',
     defaultServices: [
-      { id: 'srv-eye-1', name: 'كشف عيون متكامل وقياس حدة الإبصار', price: '300 ج.م', duration: 30, description: 'فحص القرنية، ضغط العين، وتحديد مقاس النظارة بالكمبيوتر' },
+      { id: 'srv-eye-1', name: 'كشف عيون متكامل وقياس حدة الإبصار', price: '350 ج.م', duration: 30, description: 'فحص القرنية، ضغط العين، وتحديد مقاس النظارة بالكمبيوتر' },
       { id: 'srv-eye-2', name: 'فحص قاع العين والشبكية بالمصباح الشقي', price: '400 ج.م', duration: 25, description: 'فحص شبكية العين لمريض السكر وتأثير الضغط' }
     ],
     defaultVisitTypes: [

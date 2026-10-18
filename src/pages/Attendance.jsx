@@ -56,18 +56,21 @@ const Attendance = () => {
     try {
       const { data, error } = await getStaffAttendanceForClinic(clinicId);
       if (error) {
-        throw error;
-      }
-      if (data && data.length > 0) {
-        setAttendanceRecords(data);
+        const local = loadScopedAttendance(currentSlug);
+        setAttendanceRecords(local);
+        if (!error.message?.includes('schema cache') && !error.message?.includes('does not exist')) {
+          setLoadError('تعذر تحميل سجل الحضور والانصراف من الخادم.');
+        }
+      } else {
+        const local = loadScopedAttendance(currentSlug);
+        setAttendanceRecords(data && data.length > 0 ? data : local);
       }
     } catch (err) {
       console.warn('Could not fetch remote attendance, using local cache:', err);
       const local = loadScopedAttendance(currentSlug);
-      if (local.length > 0) {
-        setAttendanceRecords(local);
-      } else {
-        setLoadError(err?.message || 'تعذر تحميل سجل الحضور والانصراف');
+      setAttendanceRecords(local);
+      if (!err?.message?.includes('schema cache') && !err?.message?.includes('does not exist')) {
+        setLoadError('تعذر تحميل سجل الحضور والانصراف من الخادم.');
       }
     } finally {
       setIsLoading(false);

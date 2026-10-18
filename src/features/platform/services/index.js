@@ -15,3 +15,4 @@ export * from '@/features/platform/services/attendanceService';
 export * from '@/features/platform/services/feedbackService';
 export * from '@/features/platform/services/notificationsService';
 export * from '@/features/platform/services/staffService';
+export * from '@/features/platform/services/schemaEvolutionGuard';

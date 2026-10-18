@@ -77,7 +77,7 @@ export default function ConsultationModal({
       diagnosis,
       procedures,
       notes,
-      fee: customFee?.trim() || appointment.fee || '300 ج.م',
+      fee: customFee?.trim() || appointment.fee || '0 ج.م',
       recallInterval,
       followUpOption
     });
@@ -117,7 +117,7 @@ export default function ConsultationModal({
               </div>
               <div className="badge-item">
                 <span className="badge-label">رسوم الكشف</span>
-                <strong className="badge-value" style={{ color: '#1E8E3E' }}>{appointment?.fee || '300 ج.م'}</strong>
+                <strong className="badge-value" style={{ color: '#1E8E3E' }}>{appointment?.fee || '0 ج.م'}</strong>
               </div>
             </div>
 
@@ -161,7 +161,7 @@ export default function ConsultationModal({
                 id="consult-fee"
                 type="text"
                 className="input-field"
-                placeholder="300 ج.م"
+                placeholder={appointment?.fee || '0 ج.م'}
                 value={customFee}
                 onChange={(e) => setCustomFee(e.target.value)}
                 style={{ fontWeight: 600, fontSize: '0.95rem' }}
