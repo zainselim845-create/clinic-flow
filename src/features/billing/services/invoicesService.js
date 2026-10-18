@@ -64,6 +64,8 @@ export function toDbInvoice(data) {
   };
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export async function getInvoices(clinicId, { limit = 200 } = {}) {
   if (!isSupabaseConfigured()) {
     return { data: [], error: NOT_CONFIGURED_ERROR };
@@ -71,6 +73,11 @@ export async function getInvoices(clinicId, { limit = 200 } = {}) {
 
   if (!clinicId) {
     return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
+  }
+
+  // UUID Guard: non-UUID tenant slugs (e.g. local offline dev) cannot query UUID columns in Postgres
+  if (!UUID_REGEX.test(clinicId)) {
+    return { data: [], error: null };
   }
 
   try {
@@ -81,8 +88,21 @@ export async function getInvoices(clinicId, { limit = 200 } = {}) {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    const { data, error } = await query;
-    if (error) throw error;
+    let { data, error } = await query;
+    if (error) {
+      // 42703 Fallback: if remote table misses specific columns, fallback to wildcard select
+      if (error.code === '42703' || error.message?.includes('does not exist')) {
+        const fallback = await supabase
+          .from('invoices')
+          .select('*')
+          .eq('clinic_id', clinicId)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+        data = fallback.data;
+        error = fallback.error;
+      }
+      if (error) throw error;
+    }
     return { data: (data || []).map(fromDbInvoice), error: null };
   } catch (error) {
     console.error('Error fetching invoices:', error);
@@ -102,6 +122,10 @@ export async function getInvoicesPaginated({ clinicId, page = 1, pageSize = 25, 
     return { data: [], total: 0, page, pageSize, totalPages: 1, error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
   }
 
+  if (!UUID_REGEX.test(clinicId)) {
+    return { data: [], total: 0, page, pageSize, totalPages: 1, error: null };
+  }
+
   try {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
@@ -115,8 +139,23 @@ export async function getInvoicesPaginated({ clinicId, page = 1, pageSize = 25, 
 
     if (paymentStatus) query = query.eq('payment_status', paymentStatus);
 
-    const { data, count, error } = await query;
-    if (error) throw error;
+    let { data, count, error } = await query;
+    if (error) {
+      if (error.code === '42703' || error.message?.includes('does not exist')) {
+        let fallbackQuery = supabase
+          .from('invoices')
+          .select('*', { count: 'exact' })
+          .eq('clinic_id', clinicId)
+          .order('created_at', { ascending: false })
+          .range(from, to);
+        if (paymentStatus) fallbackQuery = fallbackQuery.eq('payment_status', paymentStatus);
+        const fallback = await fallbackQuery;
+        data = fallback.data;
+        count = fallback.count;
+        error = fallback.error;
+      }
+      if (error) throw error;
+    }
 
     return {
       data: (data || []).map(fromDbInvoice),

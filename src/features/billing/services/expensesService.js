@@ -33,6 +33,8 @@ export function toDbExpense(data) {
   return payload;
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const DEFAULT_EXPENSE_COLUMNS = 'id, clinic_id, amount, category, date, notes, created_at';
 
 export async function getExpenses(clinicId, options = {}) {
@@ -42,11 +44,21 @@ export async function getExpenses(clinicId, options = {}) {
   if (!clinicId) {
     return { data: [], error: new Error('Clinic ID is strictly required to prevent multi-tenant data leaks') };
   }
+  if (!UUID_REGEX.test(clinicId)) {
+    return { data: [], error: null };
+  }
   try {
     let query = supabase.from('expenses').select(options?.select || DEFAULT_EXPENSE_COLUMNS).eq('clinic_id', clinicId);
     const limit = options?.limit || 200;
-    const { data, error } = await query.order('date', { ascending: false }).limit(limit);
-    if (error) throw error;
+    let { data, error } = await query.order('date', { ascending: false }).limit(limit);
+    if (error) {
+      if (error.code === '42703' || error.message?.includes('does not exist')) {
+        const fallback = await supabase.from('expenses').select('*').eq('clinic_id', clinicId).order('date', { ascending: false }).limit(limit);
+        data = fallback.data;
+        error = fallback.error;
+      }
+      if (error) throw error;
+    }
     return { data: (data || []).map(fromDbExpense), error: null };
   } catch (error) {
     console.warn('Expenses table fetch notice:', error.message);

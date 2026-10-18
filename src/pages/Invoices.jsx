@@ -78,22 +78,41 @@ const Invoices = () => {
 
   // Remote Invoices Fetch
   const fetchInvoices = useCallback(async () => {
-    if (!clinicId || !isSupabaseConfigured()) return;
+    if (!clinicId || !isSupabaseConfigured()) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setLoadError(null);
     try {
       const { data, error } = await getInvoices(clinicId);
-      if (error) throw error;
-      if (data && data.length > 0) {
+      if (error) {
+        const local = loadScopedInvoices(clinicSlug);
+        if (local && local.length > 0) {
+          setInvoicesList(local);
+        } else {
+          setLoadError('تعذر تحميل الفواتير من الخادم. يرجى إعادة المحاولة.');
+        }
+      } else if (data && data.length > 0) {
         setInvoicesList(data);
+      } else {
+        const local = loadScopedInvoices(clinicSlug);
+        if (local && local.length > 0) {
+          setInvoicesList(local);
+        }
       }
     } catch (err) {
-      console.error('Failed to load invoices:', err);
-      setLoadError('تعذر تحميل الفواتير من الخادم. يرجى إعادة المحاولة.');
+      console.warn('Failed to load remote invoices, using local cache:', err);
+      const local = loadScopedInvoices(clinicSlug);
+      if (local && local.length > 0) {
+        setInvoicesList(local);
+      } else {
+        setLoadError('تعذر تحميل الفواتير من الخادم. يرجى إعادة المحاولة.');
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [clinicId]);
+  }, [clinicId, clinicSlug]);
 
   // Remote Expenses Fetch
   const fetchExpenses = useCallback(async () => {
@@ -201,7 +220,6 @@ const Invoices = () => {
     setSelectedInvoice(null);
     setIsInvoiceModalOpen(true);
   };
-  const handleCreateInvoice = handleOpenNew;
 
   const handleViewInvoice = (inv) => {
     setSelectedInvoice(inv);
