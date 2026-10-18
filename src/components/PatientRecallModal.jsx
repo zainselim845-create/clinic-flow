@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  X, Plus, BellRing, MessageCircle, Trash2, CalendarPlus, MessageSquare, PhoneCall
+  X, Plus, BellRing, MessageCircle, Trash2, CalendarPlus, MessageSquare, PhoneCall, CheckCircle2
 } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
@@ -34,20 +34,29 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
     });
   }, [state?.recalls, currentClinicId]);
 
+  // Default follow-up date is 2 weeks from today
+  const defaultDateStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 14);
+    return d.toISOString().split('T')[0];
+  }, []);
+
   const [selectedPatientId, setSelectedPatientId] = useState(initialPatient?.id || (patients[0]?.id || ''));
   const [customReason, setCustomReason] = useState('');
-  const [intervalMonths, setIntervalMonths] = useState(3);
-  const [customDueDate, setCustomDueDate] = useState('');
+  const [appointmentDate, setAppointmentDate] = useState(defaultDateStr);
+  const [appointmentTime, setAppointmentTime] = useState('06:00 م');
+  const [activePreset, setActivePreset] = useState('14d');
+  const [bookDirectlyInCalendar, setBookDirectlyInCalendar] = useState(true);
   const [notes, setNotes] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
 
-  // Calculate default due date
-  const calculatedDueDate = useMemo(() => {
-    if (customDueDate) return customDueDate;
+  const handleQuickDate = (days, presetId) => {
     const d = new Date();
-    d.setMonth(d.getMonth() + Number(intervalMonths));
-    return d.toISOString().split('T')[0];
-  }, [intervalMonths, customDueDate]);
+    d.setDate(d.getDate() + days);
+    setAppointmentDate(d.toISOString().split('T')[0]);
+    setActivePreset(presetId);
+  };
 
   const targetPatient = useMemo(() => {
     return patients.find(p => p.id === selectedPatientId) || initialPatient || null;
@@ -70,8 +79,10 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
     e.preventDefault();
     if (!targetPatient) return;
 
-    const reasonText = customReason.trim() || 'متابعة دورية وفحص شامل';
+    const reasonText = customReason.trim() || 'كشف واستشارة متابعة دورية';
+    const chosenDate = appointmentDate || today;
 
+    // 1. Create recall item
     const newRecall = {
       id: 'rec-' + Date.now(),
       clinicId: currentClinicId,
@@ -80,15 +91,52 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
       patientName: targetPatient.name,
       patientPhone: targetPatient.phone,
       reason: reasonText,
-      intervalMonths: Number(intervalMonths),
-      dueDate: calculatedDueDate,
-      status: 'pending', // pending, contacted, scheduled, completed
+      time: appointmentTime,
+      dueDate: chosenDate,
+      status: bookDirectlyInCalendar ? 'scheduled' : 'pending',
       notes: notes.trim(),
       createdAt: new Date().toISOString(),
       lastContactedAt: null
     };
 
     dispatch({ type: 'ADD_RECALL', payload: newRecall });
+
+    // 2. Direct booking in calendar if patient is at clinic
+    if (bookDirectlyInCalendar) {
+      const assignedDoctorId = 
+        tenant?.doctorId || 
+        state?.clinicInfo?.doctorId || 
+        (state?.doctors && state?.doctors[0]?.id) || 
+        '';
+
+      const newAppointment = {
+        id: 'apt-' + Date.now(),
+        clinicId: currentClinicId,
+        clinic_id: currentClinicId,
+        patientId: targetPatient.id,
+        patientName: targetPatient.name,
+        patientPhone: targetPatient.phone,
+        doctorId: assignedDoctorId,
+        doctor_id: assignedDoctorId,
+        date: chosenDate,
+        time: appointmentTime,
+        type: reasonText,
+        fee: state?.clinicInfo?.regularFee || tenant?.regularFee || '0 ج.م',
+        status: 'confirmed',
+        notes: notes.trim() ? `متابعة واستدعاء: ${notes.trim()}` : `موعد متابعة مؤكد بالعيادة (${reasonText})`,
+        createdAt: new Date().toISOString()
+      };
+
+      dispatch({ type: 'ADD_APPOINTMENT', payload: newAppointment });
+    }
+
+    setSaveSuccessMsg(
+      bookDirectlyInCalendar 
+        ? `تم تثبيت وحجز الموعد بنجاح للمريض (${targetPatient.name}) في جدول العيادة بتاريخ ${chosenDate} الساعة ${appointmentTime}!` 
+        : `تم تسجيل تذكير المتابعة للمريض (${targetPatient.name}) بتاريخ ${chosenDate} بنجاح!`
+    );
+    setTimeout(() => setSaveSuccessMsg(''), 4500);
+
     setCustomReason('');
     setNotes('');
   };
@@ -152,7 +200,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
           <div className="modal-header">
             <div className="brand-title">
               <BellRing size={22} className="text-primary" />
-              <h3>نظام استدعاء ومتابعة المرضى الدوري (Patient Recall System)</h3>
+              <h3>نظام متابعة واستدعاء مواعيد المرضى بالعيادة</h3>
             </div>
             <Dialog.CloseTrigger className="btn-close-modal" onClick={onClose} aria-label="إغلاق النافذة">
               <X size={20} />
@@ -162,26 +210,51 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
         {/* Stats Strip */}
         <div className="recall-stats-strip">
           <div className="rec-stat-pill">
-            <span>مستحق المتابعة الآن:</span>
+            <span>مواعيد المتابعة المستحقة الآن:</span>
             <strong style={{ color: dueCount > 0 ? '#ef4444' : '#10b981' }}>{dueCount} مريض</strong>
           </div>
           <div className="rec-stat-pill">
-            <span>إجمالي خطط الاستدعاء:</span>
-            <strong>{clinicRecalls.length} استدعاء</strong>
+            <span>إجمالي المتابعات المجدولة:</span>
+            <strong>{clinicRecalls.length} مريض</strong>
           </div>
         </div>
+
+        {saveSuccessMsg && (
+          <div style={{
+            background: '#ecfdf5',
+            border: '1px solid #10b981',
+            color: '#065f46',
+            padding: '0.65rem 1rem',
+            borderRadius: '8px',
+            margin: '0.75rem 1.25rem 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontSize: '0.85rem',
+            fontWeight: 700
+          }}>
+            <CheckCircle2 size={18} color="#10b981" />
+            <span>{saveSuccessMsg}</span>
+          </div>
+        )}
 
         <div className="modal-body-scrollable">
           
           {/* Schedule Recall Form */}
           <form onSubmit={handleAddRecall} className="schedule-recall-form">
-            <h4 style={{ margin: '0 0 0.75rem 0', fontWeight: 800, fontSize: '0.95rem' }}>
-              جدولة استدعاء دوري جديد لمريض:
-            </h4>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.95rem' }}>
+                تحديد موعد مراجعة / استدعاء لمريض بالعيادة:
+              </h4>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                تحديد مباشر ومؤكد من داخل العيادة
+              </span>
+            </div>
 
             <div className="form-grid-3col">
+              {/* Field 1: Patient select */}
               <div className="form-group">
-                <label htmlFor="rec-patient-select">اختر المريض *</label>
+                <label htmlFor="rec-patient-select">المريض *</label>
                 <select 
                   id="rec-patient-select"
                   className="input-field"
@@ -197,54 +270,99 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
                 </select>
               </div>
 
+              {/* Field 2: Appointment Date */}
               <div className="form-group">
-                <label htmlFor="rec-interval-select">الفترة الزمنية (بالأشهر)</label>
-                <select 
-                  id="rec-interval-select"
-                  className="input-field"
-                  value={intervalMonths}
-                  onChange={(e) => {
-                    setIntervalMonths(Number(e.target.value));
-                    setCustomDueDate('');
-                  }}
-                >
-                  <option value={1}>بعد شهر واحد (1)</option>
-                  <option value={2}>بعد شهرين (2)</option>
-                  <option value={3}>بعد 3 أشهر (ربع سنوي)</option>
-                  <option value={6}>بعد 6 أشهر (نصف سنوي)</option>
-                  <option value={12}>بعد سنة (سنوي)</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="rec-due-date">تاريخ الاستحقاق المحسوب</label>
+                <label htmlFor="rec-due-date">تاريخ المراجعة / المتابعة القادمة *</label>
                 <input 
                   id="rec-due-date"
                   type="date" 
                   className="input-field"
-                  value={calculatedDueDate}
-                  onChange={(e) => setCustomDueDate(e.target.value)}
+                  value={appointmentDate}
+                  min={today}
+                  onChange={(e) => {
+                    setAppointmentDate(e.target.value);
+                    setActivePreset(null);
+                  }}
                   required
                 />
               </div>
 
+              {/* Field 3: Appointment Time */}
+              <div className="form-group">
+                <label htmlFor="rec-app-time">توقيت الموعد المفضل</label>
+                <select 
+                  id="rec-app-time"
+                  className="input-field"
+                  value={appointmentTime}
+                  onChange={(e) => setAppointmentTime(e.target.value)}
+                >
+                  <option value="04:00 م">04:00 مساءً</option>
+                  <option value="05:00 م">05:00 مساءً</option>
+                  <option value="06:00 م">06:00 مساءً</option>
+                  <option value="07:00 م">07:00 مساءً</option>
+                  <option value="08:00 م">08:00 مساءً</option>
+                  <option value="09:00 م">09:00 مساءً</option>
+                  <option value="10:00 م">10:00 مساءً</option>
+                  <option value="صباحاً">فترة صباحية</option>
+                  <option value="مساءً">فترة مسائية</option>
+                </select>
+              </div>
+
+              {/* Quick Presets row under date */}
+              <div className="form-group full-span-3" style={{ gridColumn: '1 / -1', marginTop: '-0.25rem' }}>
+                <div className="quick-presets-row">
+                  <span className="quick-presets-label">تحديد موعد سريع:</span>
+                  {[
+                    { label: 'بعد أسبوع (7 أيام)', days: 7, id: '7d' },
+                    { label: 'بعد أسبوعين (14 يوم)', days: 14, id: '14d' },
+                    { label: 'بعد شهر (30 يوم)', days: 30, id: '30d' },
+                    { label: 'بعد شهرين (60 يوم)', days: 60, id: '60d' },
+                    { label: 'بعد 3 أشهر', days: 90, id: '90d' },
+                    { label: 'بعد 6 أشهر', days: 180, id: '180d' },
+                  ].map(p => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className={`btn-quick-preset ${activePreset === p.id ? 'active' : ''}`}
+                      onClick={() => handleQuickDate(p.days, p.id)}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Field 4: Reason / Clinical Instructions */}
               <div className="form-group full-span-3" style={{ gridColumn: '1 / -1' }}>
-                <label htmlFor="rec-custom-reason">سبب أو تعليمات الاستدعاء</label>
+                <label htmlFor="rec-custom-reason">سبب المراجعة أو الإجراء المطلوب</label>
                 <input 
                   id="rec-custom-reason"
                   type="text" 
                   className="input-field" 
-                  placeholder="مثال: متابعة دورية، فحص وظائف كلى، تلميع أسنان..."
+                  placeholder="مثال: فحص دوري، فك غرز، متابعة تحليل، تلميع أسنان..."
                   value={customReason}
                   onChange={(e) => setCustomReason(e.target.value)}
                 />
               </div>
             </div>
 
-            <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
-              <button type="submit" className="btn-add-rec-action" aria-label="حفظ وجدولة الاستدعاء">
-                <Plus size={16} />
-                <span>حفظ وجدولة الاستدعاء</span>
+            {/* Direct Booking In Clinic Switch & Submit */}
+            <div className="direct-booking-banner">
+              <label className="toggle-container">
+                <input 
+                  type="checkbox"
+                  id="rec-direct-booking"
+                  checked={bookDirectlyInCalendar}
+                  onChange={(e) => setBookDirectlyInCalendar(e.target.checked)}
+                />
+                <span style={{ fontSize: '0.85rem' }}>
+                  <strong>تثبيت وتأكيد الحجز في جدول المواعيد مباشرة</strong> (المريض متواجد الآن بالعيادة)
+                </span>
+              </label>
+
+              <button type="submit" className="btn-add-rec-action" aria-label="تأكيد وحفظ الموعد">
+                {bookDirectlyInCalendar ? <CalendarPlus size={16} /> : <Plus size={16} />}
+                <span>{bookDirectlyInCalendar ? 'تثبيت وحجز الموعد بالجدول الآن' : 'حفظ تذكير للمتابعة'}</span>
               </button>
             </div>
           </form>
@@ -253,7 +371,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
           <div className="recalls-list-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
               <h4 style={{ margin: 0, fontWeight: 800, fontSize: '0.95rem' }}>
-                قائمة استدعاءات المرضى ({filteredRecalls.length}):
+                قائمة متابعات ومواعيد المرضى ({filteredRecalls.length}):
               </h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <label htmlFor="rec-filter-status" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>تصفية الحالة:</label>
@@ -284,8 +402,8 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
                     <tr>
                       <th>اسم المريض</th>
                       <th>رقم الهاتف</th>
-                      <th>سبب الاستدعاء</th>
-                      <th>تاريخ الاستحقاق</th>
+                      <th>سبب المراجعة</th>
+                      <th>موعد المتابعة</th>
                       <th>الحالة</th>
                       <th style={{ textAlign: 'center' }}>تواصل وتأكيد</th>
                       <th style={{ textAlign: 'center' }}>تأكيد وحجز</th>

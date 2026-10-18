@@ -140,3 +140,71 @@
 .btn-send-whatsapp-recall:hover {
   opacity: 0.9;
 }
+
+.quick-presets-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+.quick-presets-label {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  margin-inline-end: 0.2rem;
+}
+
+.btn-quick-preset {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color);
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-quick-preset:hover {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: #0284c7;
+  color: #0284c7;
+}
+
+.btn-quick-preset.active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+.direct-booking-banner {
+  background: rgba(2, 132, 199, 0.06);
+  border: 1px solid rgba(2, 132, 199, 0.2);
+  border-radius: var(--radius-md, 8px);
+  padding: 0.75rem 1rem;
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.direct-booking-banner .toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.direct-booking-banner input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  cursor: pointer;
+  accent-color: #0284c7;
+}
+

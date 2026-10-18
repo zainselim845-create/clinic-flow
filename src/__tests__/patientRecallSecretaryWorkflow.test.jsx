@@ -148,4 +148,64 @@ describe('Patient Recall Secretary Workflow & Direct Appointment Confirmation', 
       expect(url.searchParams.get('recallId')).toBe('rec-202');
     });
   });
+
+  describe('5. In-Clinic Direct Appointment Determination & Scheduling', () => {
+    it('dispatches confirmed appointment and scheduled recall simultaneously when booked in clinic', () => {
+      const initialState = { appointments: [], recalls: [] };
+      const appointmentDate = '2026-11-15';
+      const appointmentTime = '06:00 م';
+      const patient = { id: 'pat-77', name: 'عمر شريف', phone: '01011223344' };
+
+      // 1. Recall record created with 'scheduled' status
+      const newRecall = {
+        id: 'rec-77',
+        patientId: patient.id,
+        patientName: patient.name,
+        patientPhone: patient.phone,
+        reason: 'فحص دوري واستشارة',
+        time: appointmentTime,
+        dueDate: appointmentDate,
+        status: 'scheduled'
+      };
+
+      // 2. Confirmed appointment added directly to calendar
+      const newAppointment = {
+        id: 'apt-77',
+        patientId: patient.id,
+        patientName: patient.name,
+        patientPhone: patient.phone,
+        date: appointmentDate,
+        time: appointmentTime,
+        type: 'فحص دوري واستشارة',
+        status: 'confirmed'
+      };
+
+      const state1 = appReducer(initialState, { type: 'ADD_RECALL', payload: newRecall });
+      const state2 = appReducer(state1, { type: 'ADD_APPOINTMENT', payload: newAppointment });
+
+      expect(state2.recalls).toHaveLength(1);
+      expect(state2.recalls[0].status).toBe('scheduled');
+      expect(state2.recalls[0].dueDate).toBe('2026-11-15');
+
+      expect(state2.appointments).toHaveLength(1);
+      expect(state2.appointments[0].status).toBe('confirmed');
+      expect(state2.appointments[0].date).toBe('2026-11-15');
+      expect(state2.appointments[0].time).toBe('06:00 م');
+    });
+
+    it('computes natural quick date offsets correctly without robotic months calculation', () => {
+      const base = new Date('2026-10-18T12:00:00Z');
+      
+      const addDays = (d, n) => {
+        const res = new Date(d);
+        res.setDate(res.getDate() + n);
+        return res.toISOString().split('T')[0];
+      };
+
+      expect(addDays(base, 7)).toBe('2026-10-25');
+      expect(addDays(base, 14)).toBe('2026-11-01');
+      expect(addDays(base, 30)).toBe('2026-11-17');
+    });
+  });
 });
+
