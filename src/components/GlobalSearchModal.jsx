@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Dialog } from '@/components/ui/dialog';
 import { Portal } from '@ark-ui/react/portal';
+import useDebounce from '@/hooks/useDebounce';
 
 import './GlobalSearchModal.css';
 
@@ -20,6 +21,7 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
   const { patients = [], appointments = [], staffMembers = [] } = state;
 
   const [query, setQuery] = useState('');
+  const debouncedQuery = useDebounce(query, 250);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef(null);
   const resultsContainerRef = useRef(null);
@@ -34,7 +36,7 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  const cleanQuery = query.trim().toLowerCase();
+  const cleanQuery = debouncedQuery.trim().toLowerCase();
 
   // 1. Matching Patients (scoped to current clinic)
   const matchingPatients = useMemo(() => {

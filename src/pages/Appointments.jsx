@@ -18,6 +18,7 @@ import * as appointmentsService from '@/features/appointments/services/appointme
 import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
 import { isDoctorRole } from '@/utils/permissions';
 import { syncOutbox } from '@/lib/syncOutbox';
+import useDebounce from '@/hooks/useDebounce';
 import './Appointments.css';
 
 const Appointments = () => {
@@ -44,7 +45,8 @@ const Appointments = () => {
   const [filterStatus, setFilterStatus] = useState('all'); // all, upcoming, completed, cancelled
   const [filterDate, setFilterDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const deferredQuery = useDeferredValue(searchQuery);
+  const debouncedQuery = useDebounce(searchQuery, 200);
+  const deferredQuery = useDeferredValue(debouncedQuery);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'chairs'
   const PAGE_SIZE = 18;

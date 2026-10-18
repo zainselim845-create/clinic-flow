@@ -9,6 +9,7 @@ import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
 import { patientIndex } from '@/features/platform/services/indexedSearchService';
 import * as patientsService from '@/features/patients/services/patientsService';
 import { syncOutbox } from '@/lib/syncOutbox';
+import useDebounce from '@/hooks/useDebounce';
 import {
   PatientsHeader,
   PatientsFiltersBar,
@@ -46,7 +47,8 @@ const Patients = () => {
   }, [patients, currentClinicId]);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const deferredQuery = useDeferredValue(searchQuery);
+  const debouncedQuery = useDebounce(searchQuery, 200);
+  const deferredQuery = useDeferredValue(debouncedQuery);
   const [viewMode, setViewMode] = useState('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 18;

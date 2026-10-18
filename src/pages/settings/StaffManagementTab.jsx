@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck, Users } from 'lucide-react';
+import { UserPlus, Trash2, Edit3, Phone, Mail, KeyRound, Eye, EyeOff, ShieldCheck, Users, Search } from 'lucide-react';
 import * as staffService from '@/features/platform/services/staffService';
 import { provisionStaffAccount, deleteRegisteredUser, updateStaffAccountStatus, getRegisteredUsers } from '@/features/auth/services/authService';
 import { SYSTEM_PERMISSIONS } from '@/utils/permissions';
@@ -7,10 +7,15 @@ import { useTenant } from '@/context/TenantContext';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import { toast } from '@/lib/toast';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function StaffManagementTab({ staffMembers, dispatch }) {
   const { tenant } = useTenant();
   const [deleteTargetStaff, setDeleteTargetStaff] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 250);
   const [deletedStaffIdentifiers, setDeletedStaffIdentifiers] = useState(() => new Set());
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
@@ -89,6 +94,19 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
 
     return Array.from(map.values());
   }, [staffMembers, tenant, deletedStaffIdentifiers]);
+
+  // Debounced search filtering across staff members
+  const filteredStaffMembers = useMemo(() => {
+    const q = (debouncedSearch || '').trim().toLowerCase();
+    if (!q) return displayStaffMembers;
+    const cleanQ = q.replace(/\D/g, '');
+    return displayStaffMembers.filter(member => {
+      const matchName = member.name && member.name.toLowerCase().includes(q);
+      const matchPhone = member.phone && (member.phone.includes(q) || (cleanQ && member.phone.replace(/\D/g, '').includes(cleanQ)));
+      const matchRole = member.role && member.role.toLowerCase().includes(q);
+      return matchName || matchPhone || matchRole;
+    });
+  }, [displayStaffMembers, debouncedSearch]);
 
   const handleOpenAddModal = () => {
     setEditingStaff(null);
@@ -250,31 +268,38 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
   };
 
   const handleToggleStaffStatus = async (id) => {
-    const member = displayStaffMembers.find(s => s.id === id);
-    const nextStatus = member?.status === 'active' ? 'inactive' : 'active';
-    const staffClinicSlug = tenant?.slug || 'clinic';
-
+    if (togglingId === id) return;
+    setTogglingId(id);
     try {
-      await staffService.updateStaffMember(id, { status: nextStatus }, staffClinicSlug);
-    } catch (err) {
-      console.warn('Failed to toggle staff status in staffService:', err);
-    }
+      const member = displayStaffMembers.find(s => s.id === id);
+      const nextStatus = member?.status === 'active' ? 'inactive' : 'active';
+      const staffClinicSlug = tenant?.slug || 'clinic';
 
-    try {
-      updateStaffAccountStatus(id, nextStatus);
-      if (member?.phone) updateStaffAccountStatus(member.phone, nextStatus);
-    } catch (err) {
-      console.warn('[StaffManagementTab] Failed to update staff account status:', err);
-    }
+      try {
+        await staffService.updateStaffMember(id, { status: nextStatus }, staffClinicSlug);
+      } catch (err) {
+        console.warn('Failed to toggle staff status in staffService:', err);
+      }
 
-    const scopedKey = `clinicflow_data_${staffClinicSlug}`;
-    const currentScoped = safeGetJSON(scopedKey, {});
-    if (currentScoped && typeof currentScoped === 'object' && Array.isArray(currentScoped.staffMembers)) {
-      currentScoped.staffMembers = currentScoped.staffMembers.map(s => s.id === id ? { ...s, status: nextStatus } : s);
-      safeSetJSON(scopedKey, currentScoped);
-    }
+      try {
+        updateStaffAccountStatus(id, nextStatus);
+        if (member?.phone) updateStaffAccountStatus(member.phone, nextStatus);
+      } catch (err) {
+        console.warn('[StaffManagementTab] Failed to update staff account status:', err);
+      }
 
-    dispatch({ type: 'TOGGLE_STAFF_STATUS', payload: id });
+      const scopedKey = `clinicflow_data_${staffClinicSlug}`;
+      const currentScoped = safeGetJSON(scopedKey, {});
+      if (currentScoped && typeof currentScoped === 'object' && Array.isArray(currentScoped.staffMembers)) {
+        currentScoped.staffMembers = currentScoped.staffMembers.map(s => s.id === id ? { ...s, status: nextStatus } : s);
+        safeSetJSON(scopedKey, currentScoped);
+      }
+
+      dispatch({ type: 'TOGGLE_STAFF_STATUS', payload: id });
+      toast.success(nextStatus === 'active' ? 'تم تفعيل حساب الموظف' : 'تم تعطيل حساب الموظف');
+    } finally {
+      setTogglingId(null);
+    }
   };
 
 
@@ -291,6 +316,20 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         </button>
       </div>
 
+      {displayStaffMembers.length > 0 && (
+        <div style={{ marginBottom: '1.25rem', position: 'relative', maxWidth: '380px' }}>
+          <Search size={18} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="بحث في فريق العمل (بالاسم، الهاتف، أو الدور)..."
+            className="form-input"
+            style={{ paddingRight: '38px', width: '100%' }}
+          />
+        </div>
+      )}
+
       {displayStaffMembers.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem 1.5rem', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px dashed var(--border-color)', margin: '1rem 0' }}>
           <Users size={40} style={{ color: 'var(--text-muted)', marginBottom: '0.75rem', opacity: 0.6 }} />
@@ -303,9 +342,17 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
             <span>إضافة موظف الآن</span>
           </button>
         </div>
+      ) : filteredStaffMembers.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '2rem 1.5rem', background: 'var(--bg-secondary)', borderRadius: '12px', border: '1px dashed var(--border-color)', margin: '1rem 0' }}>
+          <Users size={32} style={{ color: 'var(--text-muted)', marginBottom: '0.5rem', opacity: 0.5 }} />
+          <h4 style={{ margin: '0 0 0.25rem 0', fontWeight: 600 }}>لا توجد نتائج مطابقة لبحثك</h4>
+          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            لم يتم العثور على أي موظف يطابق "{debouncedSearch}"
+          </p>
+        </div>
       ) : (
         <div className="staff-grid">
-          {displayStaffMembers.map((member) => (
+          {filteredStaffMembers.map((member) => (
           <div key={member.id} className={`staff-card ${member.status === 'inactive' ? 'inactive' : ''}`}>
             <div className="staff-card-header">
               <div className="staff-avatar">
@@ -619,11 +666,13 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
             console.warn('[StaffManagementTab] Failed to delete registered staff user:', err);
           }
 
-          // 5. Delete from staffService (Supabase & local)
           try {
+            setIsDeleting(true);
             await staffService.deleteStaffMember(id, staffClinicSlug, { phone, email, tenantId: tenant?.id });
           } catch (err) {
             console.warn('Failed to delete staff in staffService:', err);
+          } finally {
+            setIsDeleting(false);
           }
 
           toast.success(`تم حذف حساب الموظف (${target.name}) بنجاح`);
@@ -631,7 +680,7 @@ export default function StaffManagementTab({ staffMembers, dispatch }) {
         }}
         title="حذف حساب الموظف"
         message={`هل أنت متأكد من حذف حساب الموظف (${deleteTargetStaff?.name}) نهائياً؟ سيتم إلغاء وصوله وصلاحياته في العيادة.`}
-        confirmText="نعم، حذف الحساب"
+        confirmText={isDeleting ? "جاري الحذف..." : "نعم، حذف الحساب"}
         cancelText="إلغاء"
         isDestructive={true}
       />
