@@ -12,8 +12,7 @@ import {
   SlotBlockerModal
 } from '@/components/appointments';
 import FeatureErrorBoundary from '@/components/FeatureErrorBoundary';
-import { availableSlots } from '@/data/demoData';
-import { getTodayDateStr } from '@/utils/timeSlots';
+import { getTodayDateStr, generateDynamicSlots } from '@/utils/timeSlots';
 import * as appointmentsService from '@/features/appointments/services/appointmentsService';
 import * as blockedSlotsService from '@/features/appointments/services/blockedSlotsService';
 import { isDoctorRole } from '@/utils/permissions';
@@ -28,6 +27,15 @@ const Appointments = () => {
   const { user } = useAuth();
   const isDoctor = isDoctorRole(user);
   const { appointments = [], patients = [], blockedSlots = [] } = state;
+
+  const availableSlots = useMemo(() => {
+    const schedule = tenant?.scheduleConfig || state.clinicInfo?.scheduleConfig;
+    const start = schedule?.workingHours?.start || '17:00';
+    const end = schedule?.workingHours?.end || '22:00';
+    const duration = schedule?.slotDuration || 30;
+    const breakTime = schedule?.breakTime || null;
+    return generateDynamicSlots(start, end, duration, breakTime);
+  }, [tenant, state.clinicInfo]);
   const currentClinicId = tenant?.id || state.clinicInfo?.id;
 
   const todayStr = getTodayDateStr();

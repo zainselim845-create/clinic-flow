@@ -144,10 +144,20 @@ export async function addPatient(patient) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      if (error.code === '23505' || String(error.message || '').includes('idx_patients_clinic_phone') || String(error.message || '').toLowerCase().includes('unique')) {
+        const dupError = new Error(`Patient with phone (${patient.phone}) is already registered in this clinic.`);
+        dupError.code = 'PATIENT_PHONE_DUPLICATE';
+        return { data: null, error: dupError, isDuplicate: true };
+      }
+      throw error;
+    }
     apiCache.invalidateResource('patients', clinicId);
     return { data: fromDbPatient(data), error: null };
   } catch (error) {
+    if (error?.code === 'PATIENT_PHONE_DUPLICATE') {
+      return { data: null, error, isDuplicate: true };
+    }
     console.error('Error adding patient:', error);
     return { data: null, error };
   }

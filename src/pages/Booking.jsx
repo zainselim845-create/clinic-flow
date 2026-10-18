@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Navigate, useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
-import { clinicInfo, availableSlots } from '@/data/demoData';
 import * as appointmentsService from '@/features/appointments/services/appointmentsService';
 import * as patientsService from '@/features/patients/services/patientsService';
 import { saveBookingDraft, completeBookingDraft, getBookingDrafts } from '@/features/marketing/services/leadRecoveryService';
@@ -11,7 +10,7 @@ import { Check } from 'lucide-react';
 
 import { validateEgyptianPhone, cleanEgyptianPhone } from '@/utils/phoneValidation';
 import { patientIndex } from '@/features/platform/services/indexedSearchService';
-import { getTodayDateStr } from '@/utils/timeSlots';
+import { getTodayDateStr, generateDynamicSlots } from '@/utils/timeSlots';
 import { checkActionRateLimit } from '@/utils/rateLimiter';
 import { getAutoUserLocation } from '@/features/platform/services/autoLocationService';
 import { copyToClipboard } from '@/utils/clipboard';
@@ -59,8 +58,19 @@ const Booking = () => {
   }, [clinicSlug, tenant, switchTenant]);
 
   const targetSlug = clinicSlug || clinicQuery;
-  const resolvedTenant = (targetSlug ? allTenants.find(t => t.slug === targetSlug || t.id === targetSlug) : null) || (isDedicatedDomain ? tenant : null) || tenant;
-  const currentClinic = resolvedTenant || state.clinicInfo || clinicInfo;
+  const currentClinic = useMemo(() => {
+    const resolved = (targetSlug ? allTenants.find(t => t.slug === targetSlug || t.id === targetSlug) : null) || (isDedicatedDomain ? tenant : null) || tenant;
+    return resolved || state.clinicInfo || (targetSlug ? { slug: targetSlug, name: targetSlug } : null);
+  }, [targetSlug, allTenants, isDedicatedDomain, tenant, state.clinicInfo]);
+
+  const dynamicAvailableSlots = useMemo(() => {
+    const schedule = currentClinic?.scheduleConfig || tenant?.scheduleConfig;
+    const start = schedule?.workingHours?.start || '17:00';
+    const end = schedule?.workingHours?.end || '22:00';
+    const duration = schedule?.slotDuration || 30;
+    const breakTime = schedule?.breakTime || null;
+    return generateDynamicSlots(start, end, duration, breakTime);
+  }, [currentClinic, tenant]);
 
   // Tenant data isolation: filter local patients & appointments by active clinic
   const clinicPatients = patients.filter(p => !p.clinicId || p.clinicId === currentClinic?.id);
@@ -527,7 +537,7 @@ const Booking = () => {
             currentClinic={currentClinic}
             clinicAppointments={clinicAppointments}
             blockedSlots={blockedSlots}
-            availableSlots={availableSlots}
+            availableSlots={dynamicAvailableSlots}
             bookingError={bookingError}
             setBookingError={setBookingError}
             isSubmitting={isSubmitting}
