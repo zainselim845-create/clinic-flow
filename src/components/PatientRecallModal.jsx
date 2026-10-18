@@ -7,7 +7,6 @@ import { Dialog } from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
 import { useTenant } from '@/context/TenantContext';
 import { getTodayDateStr } from '@/utils/timeSlots';
-import { recallPresets } from '@/data/demoData';
 import './PatientRecallModal.css';
 
 export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onScheduleAppointment }) => {
@@ -36,7 +35,6 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
   }, [state?.recalls, currentClinicId]);
 
   const [selectedPatientId, setSelectedPatientId] = useState(initialPatient?.id || (patients[0]?.id || ''));
-  const [selectedPresetId, setSelectedPresetId] = useState(recallPresets[0]?.id || '');
   const [customReason, setCustomReason] = useState('');
   const [intervalMonths, setIntervalMonths] = useState(3);
   const [customDueDate, setCustomDueDate] = useState('');
@@ -72,8 +70,7 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
     e.preventDefault();
     if (!targetPatient) return;
 
-    const preset = recallPresets.find(p => p.id === selectedPresetId);
-    const reasonText = customReason.trim() || preset?.title || 'متابعة دورية وفحص شامل';
+    const reasonText = customReason.trim() || 'متابعة دورية وفحص شامل';
 
     const newRecall = {
       id: 'rec-' + Date.now(),
@@ -201,25 +198,6 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
               </div>
 
               <div className="form-group">
-                <label htmlFor="rec-preset-select">نوع ونموذج الاستدعاء</label>
-                <select 
-                  id="rec-preset-select"
-                  className="input-field"
-                  value={selectedPresetId}
-                  onChange={(e) => {
-                    setSelectedPresetId(e.target.value);
-                    const preset = recallPresets.find(p => p.id === e.target.value);
-                    if (preset) setIntervalMonths(preset.intervalMonths);
-                  }}
-                >
-                  {recallPresets.map((pr) => (
-                    <option key={pr.id} value={pr.id}>{pr.title} ({pr.intervalMonths} أشهر)</option>
-                  ))}
-                  <option value="custom">سبب مخصص آخر...</option>
-                </select>
-              </div>
-
-              <div className="form-group">
                 <label htmlFor="rec-interval-select">الفترة الزمنية (بالأشهر)</label>
                 <select 
                   id="rec-interval-select"
@@ -250,13 +228,13 @@ export const PatientRecallModal = ({ isOpen, onClose, initialPatient, onSchedule
                 />
               </div>
 
-              <div className="form-group full-span-2">
-                <label htmlFor="rec-custom-reason">سبب مخصص أو تعليمات الاستدعاء</label>
+              <div className="form-group full-span-3" style={{ gridColumn: '1 / -1' }}>
+                <label htmlFor="rec-custom-reason">سبب أو تعليمات الاستدعاء</label>
                 <input 
                   id="rec-custom-reason"
                   type="text" 
                   className="input-field" 
-                  placeholder="مثال: فحص وظائف كلى وتحليل سكر تراكمي..."
+                  placeholder="مثال: متابعة دورية، فحص وظائف كلى، تلميع أسنان..."
                   value={customReason}
                   onChange={(e) => setCustomReason(e.target.value)}
                 />
