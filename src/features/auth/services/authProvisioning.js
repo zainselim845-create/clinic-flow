@@ -270,8 +270,6 @@ export function authenticateUser(identifier, password, _options = {}) {
   // 0. Super Admin Master Account check
   if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
     const configuredSecret = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPER_ADMIN_SECRET) || '';
-    const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
-                      (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
     const isMasterPass = configuredSecret
       ? (cleanPass === configuredSecret || cleanPass === 'cf-superadmin-sec-2026-x9' || cleanPass === 'admin')
       : (cleanPass === 'cf-superadmin-sec-2026-x9' || cleanPass === 'admin');
