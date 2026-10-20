@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, HashRouter } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
 import { AppProvider } from '@/context/AppContext';
 import { TenantProvider } from '@/context/TenantContext';
@@ -68,11 +68,15 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator && !window.loc
   });
 }
 
+// Support HashRouter in desktop Electron mode while preserving BrowserRouter on web
+const isDesktop = typeof window !== 'undefined' && Boolean(window.desktopAPI?.isDesktop || window.location.protocol === 'file:');
+const Router = isDesktop ? HashRouter : BrowserRouter;
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
       <LocaleProvider locale="ar-EG" dir="rtl">
-        <BrowserRouter>
+        <Router>
           <TenantProvider>
             <AuthProvider>
               <AppProvider>
@@ -89,7 +93,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
               </AppProvider>
             </AuthProvider>
           </TenantProvider>
-        </BrowserRouter>
+        </Router>
       </LocaleProvider>
     </ErrorBoundary>
   </React.StrictMode>

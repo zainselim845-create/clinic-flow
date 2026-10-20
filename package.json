@@ -3,9 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "desktop:dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "desktop:build": "cross-env ELECTRON=true vite build && electron-builder --win nsis",
+    "desktop:portable": "cross-env ELECTRON=true vite build && electron-builder --win portable",
+    "desktop:pack": "cross-env ELECTRON=true vite build && electron-builder --dir",
     "lint": "oxlint",
     "test": "vitest run --testTimeout=30000",
     "audit": "node scripts/browser-audit/run-audit.cjs",
@@ -45,12 +50,52 @@
     "@vitejs/plugin-react": "^6.0.4",
     "artillery": "^2.0.34",
     "autocannon": "^8.0.0",
+    "concurrently": "^10.0.6",
+    "cross-env": "^10.1.0",
     "docx": "^9.10.0",
+    "electron": "^44.9.1",
+    "electron-builder": "^26.15.3",
     "oxlint": "^1.75.0",
     "playwright": "^1.62.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.0",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "wait-on": "^9.5.1"
+  },
+  "build": {
+    "appId": "com.clinicflow.desktop",
+    "productName": "ClinicFlow",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ClinicFlow"
+    }
   }
 }
