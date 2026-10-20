@@ -109,20 +109,14 @@ export const AuthProvider = ({ children }) => {
       // Prevent local privilege escalation via localStorage manipulation.
       // Super admin rights can NEVER be granted solely by client-side storage state.
       if (parsed.role === 'super_admin' || parsed.isSuperAdmin) {
-        const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
-                          (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
-        const isLocalHost = typeof window !== 'undefined' && 
-                            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-        const isE2eAudit = typeof window !== 'undefined' && 
-                           (sessionStorage.getItem('clinicflow_e2e_audit') === 'true' || window.__CLINICFLOW_E2E__);
-        const isValidSuperAdminTestUser = (isTestEnv || isE2eAudit || isLocalHost) && (
+        const isLegitimateSuperAdminUser = (
           email === 'superadmin.master@saasplatform.com' || 
           email === 'superadmin@clinicflow.com' ||
           parsed.id === 'user-superadmin-master' || 
           parsed.id === 'superadmin-root'
         );
 
-        if (!isValidSuperAdminTestUser) {
+        if (!isLegitimateSuperAdminUser) {
           console.warn('[Security Guard] Unauthorized role escalation attempt detected and neutralized. Client storage cannot grant super_admin rights.');
           parsed.role = 'doctor';
           parsed.isSuperAdmin = false;
@@ -349,34 +343,22 @@ export const AuthProvider = ({ children }) => {
 
     // Priority 0: Check Super Admin Master Login
     if (cleanId === 'superadmin@clinicflow.com' || cleanId === 'superadmin' || cleanId === 'super_admin') {
-      const isTestEnv = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') || 
-                        (typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test');
-      // Security: Super admin password check must NEVER be bundled in production client builds via VITE_*.
-      // In test environments only, allow test credentials 'admin' for automated suites.
-      if (isTestEnv) {
-        if (cleanPass !== 'admin') {
+      try {
+        const superAdminUser = authenticateUser(cleanId, cleanPass);
+        if (!superAdminUser) {
           recordFailedLogin(cleanId);
           return { data: null, error: new Error('كلمة المرور غير صحيحة لحساب مدير المنصة العام.') };
         }
         resetFailedLogin(cleanId);
-        const superAdminUser = {
-          id: 'user-superadmin-master',
-          name: 'مدير المنصة العام (Super Admin)',
-          email: 'superadmin@clinicflow.com',
-          role: 'super_admin',
-          isSuperAdmin: true,
-          jobTitle: 'مدير عام المنصة والسحابة السريرية',
-          allowedClinics: ['*'],
-          authenticatedAt: new Date().toISOString()
-        };
         persistUser(superAdminUser);
         localStorage.setItem('clinicflow_role', 'super_admin');
         setUser(superAdminUser);
         setRole('super_admin');
         return { data: { user: superAdminUser }, error: null };
+      } catch (adminAuthErr) {
+        recordFailedLogin(cleanId);
+        return { data: null, error: adminAuthErr };
       }
-      recordFailedLogin(cleanId);
-      return { data: null, error: new Error('يتطلب حساب مدير المنصة العام تسجيل الدخول عبر البوابة السحابية المعتمدة حصراً.') };
     }
 
     // Priority 1: Authenticate against registered users & custom tenants

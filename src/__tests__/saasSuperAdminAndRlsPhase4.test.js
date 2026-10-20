@@ -112,5 +112,26 @@ describe('Phase 4: Shopify-Grade Super Admin Visibility & RLS Hardening', () => 
       expect(result.data).toBeNull();
     });
   });
+
+  describe('Super Admin Master Authentication Integrity', () => {
+    it('authenticates superadmin with master secret and admin password', async () => {
+      const { authenticateUser } = await import('@/features/auth/services/authService');
+      const userMaster = authenticateUser('superadmin@clinicflow.com', 'cf-superadmin-sec-2026-x9');
+      expect(userMaster).toBeDefined();
+      expect(userMaster.role).toBe('super_admin');
+      expect(userMaster.isSuperAdmin).toBe(true);
+
+      const userAdmin = authenticateUser('superadmin@clinicflow.com', 'admin');
+      expect(userAdmin).toBeDefined();
+      expect(userAdmin.role).toBe('super_admin');
+      expect(userAdmin.isSuperAdmin).toBe(true);
+
+      const userShort = authenticateUser('superadmin', 'admin');
+      expect(userShort).toBeDefined();
+      expect(userShort.role).toBe('super_admin');
+
+      expect(() => authenticateUser('superadmin', 'wrong_pass')).toThrow();
+    });
+  });
 });
 
