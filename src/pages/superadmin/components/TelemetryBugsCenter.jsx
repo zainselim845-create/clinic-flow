@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bug, AlertTriangle, RefreshCw, Trash2, CheckCircle2, CheckCheck, Filter } from 'lucide-react';
+import { Bug, AlertTriangle, RefreshCw, Trash2, CheckCircle2, CheckCheck } from 'lucide-react';
 
 export function TelemetryBugsCenter({
   systemErrors = [],

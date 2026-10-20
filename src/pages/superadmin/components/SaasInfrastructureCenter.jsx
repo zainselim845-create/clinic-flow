@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, Server, ShieldCheck, CheckCircle2, Smartphone, Globe, CreditCard, Zap, Cpu } from 'lucide-react';
+import { Database, ShieldCheck, CheckCircle2, Smartphone, Globe, CreditCard, Zap, Cpu } from 'lucide-react';
 import { useTenant } from '@/context/TenantContext';
 import { 
   SupabaseDatabaseTab, 
@@ -11,8 +11,15 @@ import {
   Resilience100MTab 
 } from '@/pages/superadmin/components/infrastructure';
 
-export function SaasInfrastructureCenter({ allTenants = [] }) {
-  const [subTab, setSubTab] = useState('database');
+export function SaasInfrastructureCenter({ allTenants = [], defaultTab = 'database' }) {
+  const [subTab, setSubTab] = useState(defaultTab);
+
+  React.useEffect(() => {
+    if (defaultTab) {
+      setSubTab(defaultTab);
+    }
+  }, [defaultTab]);
+
   const { updateTenantDomain, updateTenantInfo, updateTenantStatus, refreshTenants } = useTenant();
 
   return (

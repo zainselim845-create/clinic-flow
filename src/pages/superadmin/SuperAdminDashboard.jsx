@@ -5,7 +5,7 @@ import { useTenant, getCombinedTenants } from '@/context/TenantContext';
 import { useAuth } from '@/context/AuthContext';
 import { 
   Building2, Plus, ShieldCheck, 
-  ExternalLink, AlertTriangle, Globe, LogOut, Server, Users, MapPin
+  ExternalLink, AlertTriangle, Globe, LogOut, Server, Users, MapPin, Key, Sparkles
 } from 'lucide-react';
 import { 
   getSystemErrors, 
@@ -32,7 +32,9 @@ import {
   SaasInfrastructureCenter,
   SaasBrandingModal,
   ClinicSubscriptionControlModal,
-  SaasGeographicAnalytics
+  SaasGeographicAnalytics,
+  ClinicDomainModal,
+  ClinicApiModal
 } from '@/pages/superadmin/components';
 import { getSaaSBillingMetrics } from '@/features/platform/services/saasSubscriptionPlansService';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -52,7 +54,7 @@ import * as usageMeteringService from '@/services/usageMeteringService';
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
   const { signOut, impersonateUser } = useAuth();
-  const { allTenants: contextTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant, updateTenantInfo, refreshTenants } = useTenant();
+  const { allTenants: contextTenants, setAllTenants, switchTenant, updateTenantStatus, deleteTenant, updateTenantInfo, updateTenantDomain, refreshTenants } = useTenant();
   const allTenants = contextTenants || [];
   const [activeTab, setActiveTab] = useState('clinics'); // 'clinics' | 'users' | 'telemetry_bugs' | 'infrastructure'
   const [systemErrors, setSystemErrors] = useState(getSystemErrors());
@@ -68,6 +70,10 @@ export default function SuperAdminDashboard() {
   const [selectedBrandingClinic, setSelectedBrandingClinic] = useState(null);
   const [isSubscriptionControlModalOpen, setIsSubscriptionControlModalOpen] = useState(false);
   const [selectedClinicForControl, setSelectedClinicForControl] = useState(null);
+  const [isDomainModalOpen, setIsDomainModalOpen] = useState(false);
+  const [selectedDomainClinic, setSelectedDomainClinic] = useState(null);
+  const [isApiModalOpen, setIsApiModalOpen] = useState(false);
+  const [selectedApiClinic, setSelectedApiClinic] = useState(null);
 
   // User accounts management state
   const [allUsers, setAllUsers] = useState(() => getAllPlatformUsers());
@@ -246,6 +252,31 @@ export default function SuperAdminDashboard() {
       deleteTenant(slugOrId);
       handleRefreshAll();
     }
+  };
+
+  const handleSaveClinicDomain = async (slugOrId, newDomain) => {
+    if (updateTenantDomain) {
+      await updateTenantDomain(slugOrId, newDomain);
+    } else if (updateTenantInfo) {
+      updateTenantInfo({
+        id: slugOrId,
+        slug: slugOrId,
+        customDomain: newDomain,
+        custom_domain: newDomain
+      });
+    }
+    handleRefreshAll();
+  };
+
+  const handleSaveClinicApis = async (slugOrId, apiUpdates) => {
+    if (updateTenantInfo) {
+      updateTenantInfo({
+        id: slugOrId,
+        slug: slugOrId,
+        ...apiUpdates
+      });
+    }
+    handleRefreshAll();
   };
 
   const handleImpersonateUser = (targetUser) => {
@@ -461,6 +492,26 @@ export default function SuperAdminDashboard() {
               <ExternalLink size={15} />
               <span>إدارة تذاكر المرضى</span>
             </button>
+            <button 
+              type="button"
+              onClick={() => setActiveTab('apis')} 
+              className={`back-to-app-btn ${activeTab === 'apis' ? 'active-shortcut' : ''}`}
+              title="إدارة بوابات الـ APIs ومفاتيح الربط المركزية"
+              style={{ borderColor: activeTab === 'apis' ? '#4F46E5' : undefined, color: activeTab === 'apis' ? '#4F46E5' : undefined }}
+            >
+              <Key size={15} color="#4F46E5" />
+              <span>الـ APIs والربط</span>
+            </button>
+            <button 
+              type="button"
+              onClick={() => setActiveTab('domains')} 
+              className={`back-to-app-btn ${activeTab === 'domains' ? 'active-shortcut' : ''}`}
+              title="إدارة وفحص الدومينات الخاصة للعيادات"
+              style={{ borderColor: activeTab === 'domains' ? '#059669' : undefined, color: activeTab === 'domains' ? '#059669' : undefined }}
+            >
+              <Globe size={15} color="#059669" />
+              <span>الدومينات الخاصة</span>
+            </button>
           </div>
         </div>
 
@@ -520,6 +571,22 @@ export default function SuperAdminDashboard() {
           >
             <Users size={16} />
             <span>المستخدمون ({allUsers.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('apis')}
+            className={`saas-tab-btn ${activeTab === 'apis' ? 'active-tab' : ''}`}
+          >
+            <Key size={16} />
+            <span>بوابات الـ APIs والربط</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('domains')}
+            className={`saas-tab-btn ${activeTab === 'domains' ? 'active-tab' : ''}`}
+          >
+            <Globe size={16} />
+            <span>الدومينات المخصصة</span>
           </button>
           <button
             type="button"
@@ -583,6 +650,14 @@ export default function SuperAdminDashboard() {
               setSelectedClinicForControl(clinic);
               setIsSubscriptionControlModalOpen(true);
             }}
+            onOpenDomainModal={(clinic) => {
+              setSelectedDomainClinic(clinic);
+              setIsDomainModalOpen(true);
+            }}
+            onOpenApiModal={(clinic) => {
+              setSelectedApiClinic(clinic);
+              setIsApiModalOpen(true);
+            }}
             onDeleteClinic={handleDeleteClinic}
             onRefresh={handleRefreshAll}
           />
@@ -606,6 +681,10 @@ export default function SuperAdminDashboard() {
             onOpenCreate={() => setIsCreateUserModalOpen(true)}
             onRefresh={handleRefreshAll}
           />
+        ) : activeTab === 'apis' ? (
+          <SaasInfrastructureCenter allTenants={allTenants} defaultTab="sms" />
+        ) : activeTab === 'domains' ? (
+          <SaasInfrastructureCenter allTenants={allTenants} defaultTab="domains" />
         ) : activeTab === 'telemetry_bugs' ? (
           <TelemetryBugsCenter
             systemErrors={systemErrors}
@@ -721,6 +800,29 @@ export default function SuperAdminDashboard() {
           }
           handleRefreshAll();
         }}
+      />
+
+      {/* Modal: Dedicated Custom Domain & DNS Binder */}
+      <ClinicDomainModal
+        isOpen={isDomainModalOpen}
+        onClose={() => {
+          setIsDomainModalOpen(false);
+          setSelectedDomainClinic(null);
+        }}
+        clinic={selectedDomainClinic}
+        onSaveDomain={handleSaveClinicDomain}
+        updateTenantDomain={updateTenantDomain}
+      />
+
+      {/* Modal: Clinic API Keys & Webhooks Management */}
+      <ClinicApiModal
+        isOpen={isApiModalOpen}
+        onClose={() => {
+          setIsApiModalOpen(false);
+          setSelectedApiClinic(null);
+        }}
+        clinic={selectedApiClinic}
+        onSaveApiSettings={handleSaveClinicApis}
       />
     </div>
   );

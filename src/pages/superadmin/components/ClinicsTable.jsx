@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone, FileText } from 'lucide-react';
+import { Search, ExternalLink, CheckCircle2, Copy, CheckCheck, AlertOctagon, Clock, Ban, Zap, Globe, MessageSquare, Trash2, Palette, ShieldAlert, Crown, RotateCcw, Phone, FileText, Key } from 'lucide-react';
 import { getClinicUsage } from '@/features/platform/services/usageMeteringService';
 import ScreenState from '@/components/ui/ScreenState';
 
@@ -24,6 +24,8 @@ export function ClinicsTable({
   onSwitchAndVisit,
   onTopUpClinic,
   onCustomizeBrand,
+  onOpenDomainModal,
+  onOpenApiModal,
   onManageSubscription,
   onDeleteClinic,
   onRefresh
@@ -262,8 +264,8 @@ export function ClinicsTable({
                           </span>
                         </div>
                       )}
-                      {(t.customDomain || t.custom_domain) && (
-                        <div style={{ marginTop: '4px' }}>
+                      {(t.customDomain || t.custom_domain) ? (
+                        <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <a
                             href={`https://${t.customDomain || t.custom_domain}`}
                             target="_blank"
@@ -287,8 +289,49 @@ export function ClinicsTable({
                             <Globe size={11} />
                             <span>{t.customDomain || t.custom_domain}</span>
                           </a>
+                          {onOpenDomainModal && (
+                            <button
+                              type="button"
+                              onClick={() => onOpenDomainModal(t)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#059669',
+                                cursor: 'pointer',
+                                padding: '2px',
+                                display: 'inline-flex',
+                                alignItems: 'center'
+                              }}
+                              title="تعديل وفحص الدومين المخصص"
+                            >
+                              <ExternalLink size={10} />
+                            </button>
+                          )}
                         </div>
-                      )}
+                      ) : onOpenDomainModal ? (
+                        <div style={{ marginTop: '4px' }}>
+                          <button
+                            type="button"
+                            onClick={() => onOpenDomainModal(t)}
+                            style={{
+                              background: 'none',
+                              border: '1px dashed #CBD5E1',
+                              borderRadius: '4px',
+                              fontSize: '0.7rem',
+                              color: '#64748B',
+                              padding: '1px 6px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            title="ربط دومين مخصص للعيادة (Custom Domain)"
+                          >
+                            <Globe size={10} />
+                            <span>+ ربط دومين خاص</span>
+                          </button>
+                        </div>
+                      ) : null}
                     </td>
 
                     <td>
@@ -430,6 +473,38 @@ export function ClinicsTable({
                           aria-label="تخصيص الهوية"
                         >
                           <Palette size={14} />
+                        </button>
+
+                        {/* Custom Domain Modal Trigger */}
+                        <button
+                          type="button"
+                          onClick={() => onOpenDomainModal && onOpenDomainModal(t)}
+                          className="btn-table-icon"
+                          style={{
+                            color: (t.customDomain || t.custom_domain) ? '#059669' : '#64748B',
+                            borderColor: (t.customDomain || t.custom_domain) ? 'rgba(16, 185, 129, 0.4)' : undefined,
+                            background: (t.customDomain || t.custom_domain) ? 'rgba(16, 185, 129, 0.08)' : undefined
+                          }}
+                          title="إدارة وربط الدومين المخصص للعيادة (Custom Domain & SSL)"
+                          aria-label="إدارة الدومين"
+                        >
+                          <Globe size={14} />
+                        </button>
+
+                        {/* Clinic APIs & Integrations Modal Trigger */}
+                        <button
+                          type="button"
+                          onClick={() => onOpenApiModal && onOpenApiModal(t)}
+                          className="btn-table-icon"
+                          style={{
+                            color: '#4F46E5',
+                            borderColor: 'rgba(79, 70, 229, 0.3)',
+                            background: 'rgba(79, 70, 229, 0.06)'
+                          }}
+                          title="مفاتيح الربط والـ APIs للعيادة (Clinic API Key & Gateways)"
+                          aria-label="مفاتيح الـ APIs"
+                        >
+                          <Key size={14} />
                         </button>
 
                         {/* Handover Credentials to Doctor Button */}

@@ -11,4 +11,5 @@ export { default as SaasBrandingModal } from '@/pages/superadmin/components/Saas
 export { default as EditPlanTierModal } from '@/pages/superadmin/components/EditPlanTierModal';
 export { default as ClinicSubscriptionControlModal } from '@/pages/superadmin/components/ClinicSubscriptionControlModal';
 export { default as SaasGeographicAnalytics } from '@/pages/superadmin/components/SaasGeographicAnalytics';
-
+export { default as ClinicDomainModal } from '@/pages/superadmin/components/ClinicDomainModal';
+export { default as ClinicApiModal } from '@/pages/superadmin/components/ClinicApiModal';
