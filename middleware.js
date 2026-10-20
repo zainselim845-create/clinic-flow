@@ -62,17 +62,22 @@ export function extractEdgeRouting(inputUrl) {
     return { type: 'platform', slug: null, customDomain: null };
   }
 
-  // Check primary platform domain (clinicflow.app)
-  if (cleanHostname === 'clinicflow.app') {
+  // Check primary platform domains (clinicflow.app and any configured domain)
+  const configuredDomain = ((typeof process !== 'undefined' && (process.env?.PLATFORM_DOMAIN || process.env?.VITE_PLATFORM_DOMAIN)) || '').toLowerCase().trim();
+  const knownPlatformDomains = Array.from(new Set(['clinicflow.app', ...(configuredDomain ? [configuredDomain] : [])]));
+
+  if (knownPlatformDomains.includes(cleanHostname)) {
     return { type: 'platform', slug: null, customDomain: null };
   }
 
-  if (cleanHostname.endsWith('.clinicflow.app')) {
-    // Requires >= 3 parts (e.g. dr-ahmed.clinicflow.app)
-    if (parts.length >= 3 && !RESERVED_SUBDOMAINS.has(parts[0])) {
-      return { type: 'subdomain', slug: parts[0], customDomain: null };
+  for (const domain of knownPlatformDomains) {
+    if (cleanHostname.endsWith('.' + domain)) {
+      // Requires >= 3 parts (e.g. dr-ahmed.clinicflow.app)
+      if (parts.length >= 3 && !RESERVED_SUBDOMAINS.has(parts[0])) {
+        return { type: 'subdomain', slug: parts[0], customDomain: null };
+      }
+      return { type: 'platform', slug: null, customDomain: null };
     }
-    return { type: 'platform', slug: null, customDomain: null };
   }
 
   // Check localhost subdomains (e.g. dr-ahmed.localhost)

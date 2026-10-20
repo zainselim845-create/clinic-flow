@@ -5,7 +5,7 @@
  * custom domains, QR codes, and WhatsApp sharing across production, staging, and local environments.
  */
 
-export const SAAS_PLATFORM_DOMAIN = 'clinicflow.app';
+export const SAAS_PLATFORM_DOMAIN = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PLATFORM_DOMAIN) || 'clinicflow.app';
 export const VERCEL_PRODUCTION_HOST = 'clinic-flow-ten-sigma.vercel.app';
 
 /**

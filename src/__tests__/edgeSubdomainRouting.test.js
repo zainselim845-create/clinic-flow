@@ -60,6 +60,20 @@ describe('Edge Subdomain & Dedicated Domain Routing Architecture', () => {
       expect(routing.type).toBe('customDomain');
       expect(routing.customDomain).toBe('dr-hazem-clinic.com');
     });
+
+    it('correctly extracts subdomains from dynamically configured PLATFORM_DOMAIN', () => {
+      process.env.PLATFORM_DOMAIN = 'myclinicflow.com';
+      try {
+        const root = extractEdgeRouting('https://myclinicflow.com/');
+        expect(root.type).toBe('platform');
+
+        const sub = extractEdgeRouting('https://dr-nour.myclinicflow.com/');
+        expect(sub.type).toBe('subdomain');
+        expect(sub.slug).toBe('dr-nour');
+      } finally {
+        delete process.env.PLATFORM_DOMAIN;
+      }
+    });
   });
 
   describe('2. Vercel Edge Middleware: Request Interception & Rewriting', () => {
