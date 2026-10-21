@@ -1,7 +1,6 @@
-﻿import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as clinicsService from '@/features/platform/services/clinicsService';
+import { describe, it, expect } from 'vitest';
 import { fromDbClinic, toDbClinic } from '@/features/platform/services/clinicsService';
-import { getSlotsForDate, formatTimeToArabic, formatLocalDate } from '@/utils/timeSlots';
+import { getSlotsForDate, formatTimeToArabic } from '@/utils/timeSlots';
 
 describe('Walk-in & Clinic Soft-Delete Hardening Suite', () => {
   describe('Clinics Soft-Delete & Data Integrity', () => {

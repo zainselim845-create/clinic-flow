@@ -5,7 +5,7 @@ import { useTenant, getCombinedTenants } from '@/context/TenantContext';
 import { useAuth } from '@/context/AuthContext';
 import { 
   Building2, Plus, ShieldCheck, 
-  ExternalLink, AlertTriangle, Globe, LogOut, Server, Users, MapPin, Key, Sparkles
+  ExternalLink, AlertTriangle, Globe, LogOut, Server, Users, MapPin, Key
 } from 'lucide-react';
 import { 
   getSystemErrors, 

@@ -77,7 +77,16 @@ export async function getClinicInfo(clinicId = null, options = {}) {
     if (clinicId) {
       query = query.eq('id', clinicId);
     }
-    const { data, error } = await query.limit(1).maybeSingle();
+    let { data, error } = await query.limit(1).maybeSingle();
+    if (error && (error.code === '42703' || String(error.message || '').includes('deleted_at'))) {
+      let fallbackQuery = supabase.from('clinics').select('*');
+      if (clinicId) {
+        fallbackQuery = fallbackQuery.eq('id', clinicId);
+      }
+      const fallback = await fallbackQuery.limit(1).maybeSingle();
+      data = fallback.data;
+      error = fallback.error;
+    }
     if (error) throw error;
     return { data: data ? fromDbClinic(data) : null, error: null };
   } catch (error) {
@@ -96,7 +105,12 @@ export async function getAllClinicsFromDb(options = {}) {
     if (!options.includeDeleted) {
       query = query.is('deleted_at', null);
     }
-    const { data, error } = await query.order('created_at', { ascending: false });
+    let { data, error } = await query.order('created_at', { ascending: false });
+    if (error && (error.code === '42703' || String(error.message || '').includes('deleted_at'))) {
+      const fallback = await supabase.from('clinics').select('*').order('created_at', { ascending: false });
+      data = fallback.data;
+      error = fallback.error;
+    }
     if (error) throw error;
     return { data: (data || []).map(fromDbClinic), error: null };
   } catch (error) {
@@ -141,13 +155,21 @@ export async function deleteClinicFromDb(clinicId, options = {}) {
     }
 
     // Default: Soft-delete for compliance, audit trails, and financial retention
-    const { error } = await supabase
+    let { error } = await supabase
       .from('clinics')
       .update({ 
         deleted_at: new Date().toISOString(),
         subscription_status: 'cancelled'
       })
       .eq('id', clinicId);
+
+    if (error && (error.code === '42703' || String(error.message || '').includes('deleted_at'))) {
+      const fallback = await supabase
+        .from('clinics')
+        .update({ subscription_status: 'cancelled' })
+        .eq('id', clinicId);
+      error = fallback.error;
+    }
 
     if (error) throw error;
     return { success: true, error: null, softDeleted: true };
