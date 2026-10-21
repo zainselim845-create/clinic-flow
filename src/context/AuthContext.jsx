@@ -540,9 +540,9 @@ export const AuthProvider = ({ children }) => {
         subscriptionStatus: 'active',
         isOnboardingCompleted: true,
         branding: {
-          primaryColor: '#09090B',
-          accentColor: '#10B981',
-          badgeText: 'العيادة الخاصة'
+          primaryColor: '#1769FF',
+          accentColor: '#48C8F5',
+          badgeText: 'اسمارت كلينك'
         }
       };
 

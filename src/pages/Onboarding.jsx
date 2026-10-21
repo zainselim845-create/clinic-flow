@@ -63,9 +63,9 @@ export default function Onboarding() {
   const [googleMapsUrl, setGoogleMapsUrl] = useState('');
 
   // Step 3: Brand Colors
-  const [selectedPaletteId, setSelectedPaletteId] = useState('monochrome');
-  const [primaryColor, setPrimaryColor] = useState('#09090B');
-  const [accentColor, setAccentColor] = useState('#18181B');
+  const [selectedPaletteId, setSelectedPaletteId] = useState('smart-clinic');
+  const [primaryColor, setPrimaryColor] = useState('#1769FF');
+  const [accentColor, setAccentColor] = useState('#48C8F5');
 
   // Step 4: Team Size & Staff Roles
   const [teamSize, setTeamSize] = useState('small');

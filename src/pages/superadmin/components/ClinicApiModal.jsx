@@ -23,6 +23,8 @@ export default function ClinicApiModal({
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [senderId, setSenderId] = useState('');
+  const [customSmsKey, setCustomSmsKey] = useState('');
+  const [customAiKey, setCustomAiKey] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [copiedKey, setCopiedKey] = useState(null);
@@ -34,6 +36,8 @@ export default function ClinicApiModal({
       const existingKey = clinic.apiKey || clinic.api_key || `cf_live_sec_${(clinic.slug || 'clinic').replace(/[^a-zA-Z0-9]/g, '')}_${Math.random().toString(36).substring(2, 10)}`;
       setApiKey(existingKey);
       setSenderId(clinic.senderId || '');
+      setCustomSmsKey(clinic.customSmsKey || clinic.custom_sms_key || '');
+      setCustomAiKey(clinic.customAiKey || clinic.custom_ai_key || '');
       setWhatsappNumber(clinic.whatsappNumber || clinic.phone || '');
       setWebhookUrl(clinic.webhookUrl || '');
       setAlert(null);
@@ -71,6 +75,10 @@ export default function ClinicApiModal({
         apiKey,
         api_key: apiKey,
         senderId: senderId.trim(),
+        customSmsKey: customSmsKey.trim(),
+        custom_sms_key: customSmsKey.trim(),
+        customAiKey: customAiKey.trim(),
+        custom_ai_key: customAiKey.trim(),
         whatsappNumber: whatsappNumber.trim(),
         webhookUrl: webhookUrl.trim()
       };
@@ -309,6 +317,54 @@ export default function ClinicApiModal({
                       }}
                     />
                     <span style={{ fontSize: '0.72rem', color: '#94A3B8' }}>يستخدم لإرسال تذكيرات المواعيد والفواتير للعيادة</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#475569', marginBottom: '0.35rem' }}>
+                      توكن بوابة SMS خاصة بالعيادة (Dedicated SMS Token - اختياري):
+                    </label>
+                    <input
+                      type="password"
+                      dir="ltr"
+                      placeholder="توكن خاص بالعيادة (SMSMisr / Twilio)..."
+                      value={customSmsKey}
+                      onChange={(e) => setCustomSmsKey(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem 0.8rem',
+                        borderRadius: '8px',
+                        border: '1px solid #CBD5E1',
+                        fontSize: '0.88rem',
+                        fontFamily: 'monospace',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                    <span style={{ fontSize: '0.72rem', color: '#94A3B8' }}>اتركه فارغاً إذا كانت العيادة تستهلك من رصيد المنصة المركزي الموزع</span>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontWeight: 600, fontSize: '0.82rem', color: '#475569', marginBottom: '0.35rem' }}>
+                      توكن محرك الذكاء الاصطناعي الخاص (Dedicated AI Key - اختياري):
+                    </label>
+                    <input
+                      type="password"
+                      dir="ltr"
+                      placeholder="sk-or-v1-xxxxxxxx... (OpenAI / OpenRouter)"
+                      value={customAiKey}
+                      onChange={(e) => setCustomAiKey(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem 0.8rem',
+                        borderRadius: '8px',
+                        border: '1px solid #CBD5E1',
+                        fontSize: '0.88rem',
+                        fontFamily: 'monospace',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                    <span style={{ fontSize: '0.72rem', color: '#94A3B8' }}>اتركه فارغاً لاستخدام مفتاح الذكاء الاصطناعي المركزي للمنصة</span>
                   </div>
                 </div>
 

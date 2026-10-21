@@ -682,9 +682,23 @@ export default function SuperAdminDashboard() {
             onRefresh={handleRefreshAll}
           />
         ) : activeTab === 'apis' ? (
-          <SaasInfrastructureCenter allTenants={allTenants} defaultTab="sms" />
+          <SaasInfrastructureCenter 
+            allTenants={allTenants} 
+            defaultTab="sms" 
+            onOpenApiModal={(clinic) => {
+              setSelectedApiClinic(clinic);
+              setIsApiModalOpen(true);
+            }}
+          />
         ) : activeTab === 'domains' ? (
-          <SaasInfrastructureCenter allTenants={allTenants} defaultTab="domains" />
+          <SaasInfrastructureCenter 
+            allTenants={allTenants} 
+            defaultTab="domains" 
+            onOpenApiModal={(clinic) => {
+              setSelectedApiClinic(clinic);
+              setIsApiModalOpen(true);
+            }}
+          />
         ) : activeTab === 'telemetry_bugs' ? (
           <TelemetryBugsCenter
             systemErrors={systemErrors}
@@ -704,7 +718,13 @@ export default function SuperAdminDashboard() {
         ) : activeTab === 'geographic' ? (
           <SaasGeographicAnalytics allTenants={allTenants} />
         ) : (
-          <SaasInfrastructureCenter allTenants={allTenants} />
+          <SaasInfrastructureCenter 
+            allTenants={allTenants} 
+            onOpenApiModal={(clinic) => {
+              setSelectedApiClinic(clinic);
+              setIsApiModalOpen(true);
+            }}
+          />
         )}
 
         {/* Security & Architectural Invariants */}

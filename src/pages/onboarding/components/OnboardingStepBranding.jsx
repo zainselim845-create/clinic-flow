@@ -3,6 +3,13 @@ import { Palette } from 'lucide-react';
 
 export const COLOR_PALETTES = [
   {
+    id: 'smart-clinic',
+    name: 'هوية اسمارت كلينك الرسمية (Smart Clinic)',
+    tag: 'الأزرق الكهربائي والسيان والكحلي الداكن والأبيض الثلجي',
+    primary: '#1769FF',
+    accent: '#48C8F5'
+  },
+  {
     id: 'monochrome',
     name: 'الأبيض والأسود المعماري النقي',
     tag: 'الأساس المعماري الافتراضي لكافة التخصصات',

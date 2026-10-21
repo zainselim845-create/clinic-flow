@@ -28,14 +28,14 @@ const Sidebar = () => {
   const enableLabs = Boolean(tenant?.enableLabs ?? state.clinicInfo?.enableLabs ?? clinicModules.labs);
   const enableInventory = Boolean(tenant?.enableInventory ?? state.clinicInfo?.enableInventory ?? clinicModules.inventory);
 
-  let brandTitle = tenant?.branding?.brandTitle || tenant?.name || 'كلينك فلو';
+  let brandTitle = tenant?.branding?.brandTitle || tenant?.name || 'اسمارت كلينك';
   if (!tenant?.branding?.brandTitle && !tenant?.name) {
     if (isDental) {
-      brandTitle = 'كلينيك فلو دنتال';
+      brandTitle = 'اسمارت كلينك دنتال';
     } else if (isDerma) {
-      brandTitle = 'كلينيك فلو ديرما';
+      brandTitle = 'اسمارت كلينك ديرما';
     } else {
-      brandTitle = 'كلينك فلو';
+      brandTitle = 'اسمارت كلينك';
     }
   }
 

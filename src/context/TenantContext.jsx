@@ -207,9 +207,9 @@ export function isDedicatedDomain(
 export function applyTenantBranding(branding) {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  const primary = branding?.primaryColor || '#09090B';
-  const accent = branding?.accentColor || '#10B981';
-  const isMonochrome = !primary || primary === 'monochrome' || primary === '#000000' || primary === '#09090B' || primary === '#18181B';
+  const primary = branding?.primaryColor || '#1769FF';
+  const accent = branding?.accentColor || '#48C8F5';
+  const isMonochrome = primary === 'monochrome' || primary === '#000000' || primary === '#09090B' || primary === '#18181B';
   const isDark = root.classList.contains('dark') || root.getAttribute('data-theme') === 'dark';
 
   // 1. Degree 1: Primary Brand Tone
@@ -253,9 +253,9 @@ export function applyTenantBranding(branding) {
   root.style.setProperty('--accent-glow', `${accent}33`);
 
   // 3. Degree 3: Neutral Surface & Harmonic Borders
-  const surface = branding?.surfaceColor || (isDark ? '#18181B' : '#FFFFFF');
-  const bgSubtle = isDark ? '#09090B' : '#F8FAFC';
-  const borderSubtle = isDark ? '#27272A' : '#E2E8F0';
+  const surface = branding?.surfaceColor || (isDark ? '#263548' : '#FFFFFF');
+  const bgSubtle = isDark ? '#1A2533' : '#F4F7FB';
+  const borderSubtle = isDark ? '#384A62' : '#D8E2EC';
 
   root.style.setProperty('--clinic-surface', surface);
   root.style.setProperty('--clinic-bg-subtle', bgSubtle);
@@ -476,7 +476,7 @@ export const TenantProvider = ({ children }) => {
           slug: currentUser.clinicSlug || identifier,
           subscriptionTier: 'pro',
           subscriptionStatus: 'active',
-          branding: { primaryColor: '#09090B', accentColor: '#10B981' },
+          branding: { primaryColor: '#1769FF', accentColor: '#48C8F5' },
           quotas: { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
         };
         saveRegisteredTenant(reconstructed);
@@ -527,7 +527,7 @@ export const TenantProvider = ({ children }) => {
             customDomain: domainClinic.custom_domain || parsed.customDomain,
             subscriptionTier: domainClinic.subscription_tier || 'pro',
             subscriptionStatus: domainClinic.subscription_status || 'active',
-            branding: domainClinic.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
+            branding: domainClinic.branding || { primaryColor: '#1769FF', accentColor: '#48C8F5' },
             quotas: domainClinic.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
           };
           setActiveTenant(merged);
@@ -553,7 +553,7 @@ export const TenantProvider = ({ children }) => {
             customDomain: data.custom_domain || parsed.customDomain,
             subscriptionTier: data.subscription_tier || 'pro',
             subscriptionStatus: data.subscription_status || 'active',
-            branding: data.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
+            branding: data.branding || { primaryColor: '#1769FF', accentColor: '#48C8F5' },
             quotas: data.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 }
           };
           setActiveTenant(merged);

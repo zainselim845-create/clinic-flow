@@ -7,7 +7,7 @@ import { useTenant } from '@/context/TenantContext';
  */
 const ROUTE_META = {
   '/': {
-    title: 'كلينك فلو (ClinicFlow) | منظومة إدارة العيادات والمراكز الطبية الذكية',
+    title: 'اسمارت كلينك (Smart Clinic) | منظومة إدارة العيادات والمراكز الطبية الذكية',
     description: 'المنظومة السحابية المتكاملة لإدارة العيادات الطبية ومجمعات الأسنان والجلدية. حجز فوري بالهاتف، ملفات مرضى إلكترونية، وفوترة ذكية.',
     schemaType: 'SoftwareApplication'
   },
@@ -117,7 +117,7 @@ export default function SeoHeadManager() {
     const isDedicatedManage = pathname.includes('/manage-booking') && pathname !== '/manage-booking';
 
     // 1. Resolve Page Title & Clinic Branding
-    const clinicName = tenant?.name || 'كلينك فلو';
+    const clinicName = tenant?.name || 'اسمارت كلينك';
     const doctorName = tenant?.doctorName || '';
     const baseMeta = ROUTE_META[cleanPath] || null;
 
@@ -139,7 +139,7 @@ export default function SeoHeadManager() {
       finalDesc = baseMeta.description;
     } else {
       // 404 or unknown
-      finalTitle = '404 - الصفحة غير موجودة | كلينك فلو (ClinicFlow)';
+      finalTitle = '404 - الصفحة غير موجودة | اسمارت كلينك (Smart Clinic)';
       finalDesc = 'عذراً، الصفحة التي تبحث عنها غير متوفرة أو تم تغيير رابطها. يمكنك العودة للصفحة الرئيسية.';
     }
 

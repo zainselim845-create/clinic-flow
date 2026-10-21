@@ -11,7 +11,7 @@ import {
   Resilience100MTab 
 } from '@/pages/superadmin/components/infrastructure';
 
-export function SaasInfrastructureCenter({ allTenants = [], defaultTab = 'database' }) {
+export function SaasInfrastructureCenter({ allTenants = [], defaultTab = 'database', onOpenApiModal }) {
   const [subTab, setSubTab] = useState(defaultTab);
 
   React.useEffect(() => {
@@ -106,7 +106,13 @@ export function SaasInfrastructureCenter({ allTenants = [], defaultTab = 'databa
       </div>
 
       {subTab === 'database' && <SupabaseDatabaseTab allTenants={allTenants} />}
-      {subTab === 'sms' && <SmsGatewaysTab />}
+      {subTab === 'sms' && (
+        <SmsGatewaysTab 
+          allTenants={allTenants} 
+          onOpenApiModal={onOpenApiModal} 
+          updateTenantInfo={updateTenantInfo} 
+        />
+      )}
       {subTab === 'ai' && <AiCoreTab />}
       {subTab === 'domains' && (
         <CustomDomainsTab 
