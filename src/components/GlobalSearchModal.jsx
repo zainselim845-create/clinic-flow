@@ -398,7 +398,7 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
             {/* Modal Footer */}
             <div className="search-modal-footer">
               <span>استخدم الأسهم <strong>↑ ↓</strong> للتنقل و <strong>Enter</strong> للاختيار</span>
-              <span>ClinicFlow Command Palette</span>
+              <span>Smart Clinic Command Palette</span>
             </div>
 
           </Dialog.Content>

@@ -169,7 +169,7 @@ export default function OnboardingStepBranding({
       <div className="live-preview-card-wrap">
         <div className="live-preview-bar">
           <span>معاينة حية فورية لصفحة العيادة والحجز</span>
-          <span style={{ color: primaryColor, fontWeight: 800 }}>ClinicFlow Live Theme</span>
+          <span style={{ color: primaryColor, fontWeight: 800 }}>اسمارت كلينك - Live Theme</span>
         </div>
 
         <div className="live-preview-body">

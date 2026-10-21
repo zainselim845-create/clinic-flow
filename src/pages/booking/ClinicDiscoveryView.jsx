@@ -69,7 +69,7 @@ export default function ClinicDiscoveryView({
       <header className="nebras-top-bar" style={{ background: 'var(--bg-secondary, #ffffff)', borderBottom: '1px solid var(--border-color, #e2e8f0)' }}>
         <div className="nebras-brand" onClick={() => onNavigate('/')} style={{ cursor: 'pointer' }}>
           <Stethoscope size={24} className="brand-logo-icon" />
-          <span className="brand-title">منظومة كلينيك فلو الموحدة</span>
+          <span className="brand-title">منظومة اسمارت كلينك الموحدة</span>
         </div>
         <div className="nebras-bar-links">
           <button onClick={() => onNavigate('/')} className="nebras-nav-btn">
@@ -112,7 +112,7 @@ export default function ClinicDiscoveryView({
             اختر عيادتك أو ابحث عن طبيبك لحجز موعد فوري
           </h1>
           <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '1.05rem', maxWidth: '640px', margin: '0 auto' }}>
-            لكل عيادة على منظومة كلينيك فلو رابط حجز مستقل ومحمي. ابحث عن طبيبك أدناه للانتقال لصفحة الحجز المعتمدة:
+            لكل عيادة على منظومة اسمارت كلينك رابط حجز مستقل ومحمي. ابحث عن طبيبك أدناه للانتقال لصفحة الحجز المعتمدة:
           </p>
         </div>
 

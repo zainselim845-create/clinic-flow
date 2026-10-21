@@ -99,7 +99,7 @@ export default function SuperAdminLogin() {
             <ShieldCheck size={28} />
           </div>
           <h2>إدارة المنصة المركزية</h2>
-          <span className="superadmin-subtitle">ClinicFlow SaaS Control Plane</span>
+          <span className="superadmin-subtitle">Smart Clinic SaaS Control Plane</span>
         </div>
 
         <div className="superadmin-security-alert">

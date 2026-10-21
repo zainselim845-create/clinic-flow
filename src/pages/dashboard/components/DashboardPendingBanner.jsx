@@ -23,7 +23,7 @@ export default function DashboardPendingBanner({ tenant, currentClinic, user }) 
 
   const contactPhone = user?.phone || tenant?.phone || 'رقم هاتفك';
   const whatsappUrl = `https://wa.me/201006285031?text=${encodeURIComponent(
-    `مرحباً فريق ClinicFlow، أنا الطبيب ${user?.name || ''} عيادة ${tenant?.name || ''} وأرغب في تأكيد وتفعيل حسابي سريعاً.`
+    `مرحباً فريق اسمارت كلينك، أنا الطبيب ${user?.name || ''} عيادة ${tenant?.name || ''} وأرغب في تأكيد وتفعيل حسابي سريعاً.`
   )}`;
 
   return (
@@ -72,7 +72,7 @@ export default function DashboardPendingBanner({ tenant, currentClinic, user }) 
             </span>
           </div>
           <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.86rem', color: '#B45309', lineHeight: 1.5 }}>
-            مرحباً بك {doctorDisplayName}! تم تدشين عيادتك بنجاح ويمكنك استكشاف النظام وإدخال بيانات المرضى والخدمات. سيقوم فريق ClinicFlow بالتواصل معك هاتفياً على ({contactPhone}) لتأكيد الاشتراك وتفعيل كافة الصلاحيات المتقدمة.
+            مرحباً بك {doctorDisplayName}! تم تدشين عيادتك بنجاح ويمكنك استكشاف النظام وإدخال بيانات المرضى والخدمات. سيقوم فريق اسمارت كلينك بالتواصل معك هاتفياً على ({contactPhone}) لتأكيد الاشتراك وتفعيل كافة الصلاحيات المتقدمة.
           </p>
         </div>
       </div>

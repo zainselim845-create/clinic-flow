@@ -101,7 +101,7 @@ export default function BookingShareModal({ isOpen, onClose, tenant }) {
             <div>
               <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800 }}>بوابة الحجز والنطاق الرقمي</h3>
               <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: 'var(--text-secondary, #71717A)' }}>
-                {tenant.name || 'عيادة كلينيك فلو'} • {tenant.doctorName ? `د. ${tenant.doctorName.replace(/^د\.?\s*/, '')}` : 'طبيب العيادة'}
+                {tenant.name || 'اسمارت كلينك'} • {tenant.doctorName ? `د. ${tenant.doctorName.replace(/^د\.?\s*/, '')}` : 'طبيب العيادة'}
               </p>
             </div>
           </div>

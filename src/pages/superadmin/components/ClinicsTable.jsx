@@ -174,7 +174,7 @@ export function ClinicsTable({
                               <span dir="ltr">{t.phone}</span>
                             </a>
                             <a
-                              href={`https://wa.me/20${t.phone.replace(/^0/, '')}?text=${encodeURIComponent(`مرحباً د. ${t.doctorName || ''}، نتواصل معك من إدارة منصة ClinicFlow بخصوص عيادتكم (${t.name}).`)}`}
+                              href={`https://wa.me/20${t.phone.replace(/^0/, '')}?text=${encodeURIComponent(`مرحباً د. ${t.doctorName || ''}، نتواصل معك من إدارة منصة اسمارت كلينك (Smart Clinic) بخصوص عيادتكم (${t.name}).`)}`}
                               target="_blank"
                               rel="noreferrer"
                               style={{

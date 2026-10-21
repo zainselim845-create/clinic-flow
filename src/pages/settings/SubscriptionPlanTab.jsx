@@ -178,7 +178,7 @@ export default function SubscriptionPlanTab() {
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <a
-            href="https://wa.me/201006285031?text=مرحباً، أود ترقية باقة عيادتي في ClinicFlow"
+            href="https://wa.me/201006285031?text=مرحباً، أود ترقية باقة عيادتي في اسمارت كلينك"
             target="_blank"
             rel="noopener noreferrer"
             style={{

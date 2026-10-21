@@ -185,7 +185,7 @@ const Header = ({ title }) => {
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={confirmLogout}
         title="تأكيد تسجيل الخروج"
-        message="هل أنت متأكد من رغبتك في تسجيل الخروج من نظام كلينيك فلو؟"
+        message="هل أنت متأكد من رغبتك في تسجيل الخروج من نظام اسمارت كلينك؟"
         confirmText="تسجيل الخروج"
         cancelText="البقاء في النظام"
         isDestructive={false}

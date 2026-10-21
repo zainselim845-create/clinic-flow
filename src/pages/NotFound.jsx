@@ -18,7 +18,7 @@ export default function NotFound() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    document.title = '404 - الصفحة غير موجودة | كلينك فلو (ClinicFlow)';
+    document.title = '404 - الصفحة غير موجودة | اسمارت كلينك (Smart Clinic)';
     let robots = document.querySelector('meta[name="robots"]');
     if (!robots) {
       robots = document.createElement('meta');
@@ -34,7 +34,7 @@ export default function NotFound() {
     navigate(`/booking?search=${encodeURIComponent(searchQuery.trim())}`);
   };
 
-  const supportUrl = getWhatsAppSupportUrl('مرحباً، واجهت صفحة غير موجودة (404) في منصة كلينيك فلو وأحتاج للمساعدة.');
+  const supportUrl = getWhatsAppSupportUrl('مرحباً، واجهت صفحة غير موجودة (404) في منصة اسمارت كلينك وأحتاج للمساعدة.');
 
   return (
     <div 
@@ -67,7 +67,7 @@ export default function NotFound() {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', padding: '4px 12px', borderRadius: '9999px', backgroundColor: '#ECFDF5', border: '1px solid #A7F3D0', color: '#065F46', fontSize: '0.78rem', fontWeight: 700, marginBottom: '1.25rem' }}>
           <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block', animation: 'pulse 1.5s infinite' }}></span>
           <Activity size={13} />
-          <span>خوادم وخدمات كلينيك فلو تعمل بكفاءة 100%</span>
+          <span>خوادم وخدمات اسمارت كلينك تعمل بكفاءة 100%</span>
         </div>
 
         {/* Medical Icon Badge */}

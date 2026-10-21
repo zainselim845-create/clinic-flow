@@ -80,7 +80,7 @@ export default function PrescriptionPrintModal({
                 </div>
 
                 <div className="rx-clinic-branding">
-                  <div className="rx-clinic-name">{prescription.clinicName || 'كلينيك فلو'}</div>
+                  <div className="rx-clinic-name">{prescription.clinicName || 'اسمارت كلينك'}</div>
                   <div className="rx-clinic-contact">
                     <div>{prescription.clinicSpecialty || 'عيادة تخصصية'}</div>
                     <div>{prescription.clinicPhone || 'هاتف العيادة'}</div>
@@ -160,7 +160,7 @@ export default function PrescriptionPrintModal({
                       <span>روشتة إلكترونية معتمدة</span>
                     </div>
                     <div>كود التحقق: <strong style={{ direction: 'ltr', display: 'inline-block' }}>{prescription.verificationCode}</strong></div>
-                    <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>صادرة عبر منظومة ClinicFlow السحابية</div>
+                    <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>صادرة عبر منظومة اسمارت كلينك (Smart Clinic) السحابية</div>
                   </div>
                 </div>
 

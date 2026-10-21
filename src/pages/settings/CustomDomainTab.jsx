@@ -467,7 +467,7 @@ export default function CustomDomainTab() {
 
         {selectedProvider === 'cloudflare' && (
           <div style={{ background: 'rgba(245, 158, 11, 0.08)', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '0.75rem', border: '1px solid rgba(245, 158, 11, 0.25)', fontSize: '0.86rem' }}>
-            <strong>ملاحظة لمستخدمي Cloudflare:</strong> يمكنك تفعيل ميزة التخزين السريع وحماية الـ DDoS عبر ترك السحابة برتقالية (Proxied) أو جعلها رمادية (DNS Only). نظام ClinicFlow يتعرف تلقائياً على خوادم Cloudflare ويُفعّل الربط المشفر مباشرة.
+            <strong>ملاحظة لمستخدمي Cloudflare:</strong> يمكنك تفعيل ميزة التخزين السريع وحماية الـ DDoS عبر ترك السحابة برتقالية (Proxied) أو جعلها رمادية (DNS Only). نظام اسمارت كلينك يتعرف تلقائياً على خوادم Cloudflare ويُفعّل الربط المشفر مباشرة.
           </div>
         )}
 
@@ -492,7 +492,7 @@ export default function CustomDomainTab() {
         <ol className="dns-guide-steps">
           <li>انسخ سجلات الـ DNS الموضحة في الجدول أعلاه وأضفها في لوحة تحكم الدومين الخاص بك.</li>
           <li>إذا كان نطاقك رئيسياً (مثل <code style={{ direction: 'ltr', display: 'inline-block' }}>dr-sara.com</code>)، احرص على إضافة سجل الـ A وسجل CNAME لـ www معاً.</li>
-          <li>بعد حفظ السجلات، انقر على زر "فحص الـ DNS والـ SSL". سيقوم محرك ClinicFlow بفحص انتشار السجلات عالمياً عبر خوادم Cloudflare الآمنة.</li>
+          <li>بعد حفظ السجلات، انقر على زر "فحص الـ DNS والـ SSL". سيقوم محرك اسمارت كلينك بفحص انتشار السجلات عالمياً عبر خوادم Cloudflare الآمنة.</li>
           <li>بمجرد اكتمال الفحص بنجاح، يتم تفعيل شهادة SSL مجانية وتوجيه جميع الزوار إلى الاتصال المشفر HTTPS تلقائياً وبوابة حجز العيادة الحصرية مباشرة.</li>
         </ol>
 

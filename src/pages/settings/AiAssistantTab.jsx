@@ -241,7 +241,7 @@ export default function AiAssistantTab() {
         </div>
 
         <p style={{ margin: '0 0 1rem', fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-          منصة ClinicFlow تدعم الربط المباشر مع بوابة OpenRouter للوصول إلى أقوى نماذج الذكاء الاصطناعي (مثل NVIDIA Nemotron 120B و LLaMA 3.3). يمكنك استخدام المفتاح الافتراضي المدمج للمنصة أو إدخال مفتاحك الخاص.
+          منصة اسمارت كلينك تدعم الربط المباشر مع بوابة OpenRouter للوصول إلى أقوى نماذج الذكاء الاصطناعي (مثل NVIDIA Nemotron 120B و LLaMA 3.3). يمكنك استخدام المفتاح الافتراضي المدمج للمنصة أو إدخال مفتاحك الخاص.
         </p>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>

@@ -67,22 +67,22 @@ const ROUTE_META = {
     schemaType: 'WebPage'
   },
   '/super-admin': {
-    title: 'إدارة منصة ClinicFlow B2B SaaS | Platform Control Plane',
+    title: 'إدارة منصة اسمارت كلينك (Smart Clinic SaaS) | Platform Control Plane',
     description: 'لوحة التحكم المركزية لمدير منصة الساس: إدارة تراخيص العيادات، استهلاك الـ SMS، ومراقبة البنية السحابية.',
     schemaType: 'AdminWebPage'
   },
   '/superadmin/login': {
-    title: 'تسجيل دخول إدارة المنصة المركزية | ClinicFlow SaaS Admin',
-    description: 'بوابة الدخول الآمنة لمديري منصة ClinicFlow وإدارة تراخيص المنظومة والعيادات.',
+    title: 'تسجيل دخول إدارة المنصة المركزية | Smart Clinic SaaS Admin',
+    description: 'بوابة الدخول الآمنة لمديري منصة اسمارت كلينك وإدارة تراخيص المنظومة والعيادات.',
     schemaType: 'AdminWebPage'
   },
   '/super-admin/login': {
-    title: 'تسجيل دخول إدارة المنصة المركزية | ClinicFlow SaaS Admin',
-    description: 'بوابة الدخول الآمنة لمديري منصة ClinicFlow وإدارة تراخيص المنظومة والعيادات.',
+    title: 'تسجيل دخول إدارة المنصة المركزية | Smart Clinic SaaS Admin',
+    description: 'بوابة الدخول الآمنة لمديري منصة اسمارت كلينك وإدارة تراخيص المنظومة والعيادات.',
     schemaType: 'AdminWebPage'
   },
   '/booking': {
-    title: 'بوابة استكشاف وحجز العيادات الطبية | ClinicFlow Discovery Hub',
+    title: 'بوابة استكشاف وحجز العيادات الطبية | Smart Clinic Discovery Hub',
     description: 'ابحث عن أفضل الأطباء والعيادات التخصصية واحجز موعدك فوراً برقم هاتفك دون الحاجة لإنشاء حساب.',
     schemaType: 'MedicalClinic'
   },
@@ -92,8 +92,8 @@ const ROUTE_META = {
     schemaType: 'MedicalWebPage'
   },
   '/login': {
-    title: 'تسجيل الدخول الآمن | منظومة ClinicFlow',
-    description: 'تسجيل دخول الأطباء وطاقم الاستقبال وإدارة العيادات إلى منظومة ClinicFlow السحابية.',
+    title: 'تسجيل الدخول الآمن | منظومة اسمارت كلينك (Smart Clinic)',
+    description: 'تسجيل دخول الأطباء وطاقم الاستقبال وإدارة العيادات إلى منظومة اسمارت كلينك السحابية.',
     schemaType: 'WebPage'
   },
   '/onboarding': {

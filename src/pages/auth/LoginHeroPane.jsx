@@ -13,8 +13,8 @@ export default function LoginHeroPane() {
           <Stethoscope size={22} className="brand-logo-icon" />
         </div>
         <div className="brand-titles">
-          <span className="brand-name">Clinic<span>Flow</span></span>
-          <span className="brand-tagline">السحابة الطبية</span>
+          <span className="brand-name">Smart<span>Clinic</span></span>
+          <span className="brand-tagline">اسمارت كلينك • السحابة الطبية</span>
         </div>
       </div>
 

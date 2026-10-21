@@ -97,7 +97,7 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <a 
-                href="https://wa.me/201006285031?text=مرحباً، أود تسوية اشتراك عيادتي على منصة كلينيك فلو" 
+                href="https://wa.me/201006285031?text=مرحباً، أود تسوية اشتراك عيادتي على منصة اسمارت كلينك" 
                 target="_blank" 
                 rel="noreferrer"
                 style={{
@@ -182,14 +182,14 @@ const ProtectedRoute = ({ children, allowedRoles, requiredPermission }) => {
             </h2>
             <p style={{ color: 'var(--text-secondary, #64748b)', fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1.25rem' }}>
               مرحباً بك د. <strong>{user?.name || tenant.doctorName || 'الفاضل'}</strong>، تم استلام بيانات عيادة <strong>{tenant.name}</strong> بنجاح.
-              حسابكم حالياً بانتظار الاعتماد من قِبل إدارة منصة ClinicFlow وسيتم تفعيله بالكامل فوراً.
+              حسابكم حالياً بانتظار الاعتماد من قِبل إدارة منصة اسمارت كلينك (Smart Clinic) وسيتم تفعيله بالكامل فوراً.
             </p>
             <div style={{ background: '#fff7ed', border: '1px solid #ffedd5', padding: '1rem', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '0.88rem', color: '#c2410c' }}>
               لتسريع تفعيل حساب عيادتكم والبدء في إدارة المواعيد والمرضى، يمكنك التواصل المباشر مع فريق الدعم والإدارة.
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <a 
-                href={`https://wa.me/201006285031?text=${encodeURIComponent(`مرحباً إدارة كلينيك فلو، قمت بتسجيل عيادة (${tenant.name}) وأود اعتماد وتفعيل الحساب.`)}`} 
+                href={`https://wa.me/201006285031?text=${encodeURIComponent(`مرحباً إدارة اسمارت كلينك، قمت بتسجيل عيادة (${tenant.name}) وأود اعتماد وتفعيل الحساب.`)}`} 
                 target="_blank" 
                 rel="noreferrer"
                 style={{

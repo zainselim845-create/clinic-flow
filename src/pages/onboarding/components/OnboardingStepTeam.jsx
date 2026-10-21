@@ -108,7 +108,7 @@ export default function OnboardingStepTeam({
       <div className="roles-guide-container">
         <div className="roles-guide-header">
           <ShieldCheck size={18} color="var(--primary)" />
-          <span>دليل أدوار وصلاحيات الطاقم في ClinicFlow:</span>
+          <span>دليل أدوار وصلاحيات الطاقم في اسمارت كلينك:</span>
         </div>
 
         <div className="roles-guide-grid">

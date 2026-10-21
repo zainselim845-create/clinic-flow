@@ -194,7 +194,7 @@ export default function SuperAdminDashboard() {
     const docEmail = tenant.doctorEmail || tenant.email || 'البريد المسجل';
     const docPass = tenant.doctorPassword || '(كلمة المرور المحددة عند الإنشاء)';
 
-    const message = `مرحباً د. ${tenant.doctorName || 'الفاضل'}،\nتم تجهيز وتفعيل حساب عيادتكم (${tenant.name}) على منظومة ClinicFlow بنجاح:\n\n1. رابط لوحة تحكم العيادة:\n${loginUrl}\n\n2. بيانات الدخول:\n- البريد الإلكتروني: ${docEmail}\n- كلمة المرور: ${docPass}\n\n3. رابط حجز المرضى الخاص بكم:\n${bookingUrl}\n\nنسعد بخدمتكم وتمنياتنا بعيادة موفقة دائماً.`;
+    const message = `مرحباً د. ${tenant.doctorName || 'الفاضل'}،\nتم تجهيز وتفعيل حساب عيادتكم (${tenant.name}) على منظومة اسمارت كلينك (Smart Clinic) بنجاح:\n\n1. رابط لوحة تحكم العيادة:\n${loginUrl}\n\n2. بيانات الدخول:\n- البريد الإلكتروني: ${docEmail}\n- كلمة المرور: ${docPass}\n\n3. رابط حجز المرضى الخاص بكم:\n${bookingUrl}\n\nنسعد بخدمتكم وتمنياتنا بعيادة موفقة دائماً.`;
 
     const success = await copyToClipboard(message);
     if (success) {
@@ -464,7 +464,7 @@ export default function SuperAdminDashboard() {
               <ShieldCheck size={14} />
               <span>Platform Control Plane</span>
             </div>
-            <h1>إدارة منصة ClinicFlow B2B SaaS</h1>
+            <h1>إدارة منصة اسمارت كلينك (Smart Clinic SaaS)</h1>
           </div>
 
           <div className="header-nav-shortcuts">

@@ -81,7 +81,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'هل نحتاج لشراء أجهزة حاسوب باهظة أو سيرفر خاص؟',
-    a: 'نهائياً. كلينيك فلو سحابي بالكامل ويعمل مباشرة من المتصفح على أي لابتوب، جهاز كمبيوتر مكتبي، تابلت، أو حتى من هاتفك الذكي.'
+    a: 'نهائياً. اسمارت كلينك سحابي بالكامل ويعمل مباشرة من المتصفح على أي لابتوب، جهاز كمبيوتر مكتبي، تابلت، أو حتى من هاتفك الذكي.'
   },
   {
     q: 'هل توجد عقود سنوية إلزامية أو شروط جزائية عند الإلغاء؟',
@@ -169,13 +169,13 @@ const LandingPage = () => {
       {/* 1. TOP NAVBAR */}
       <header className="landing-navbar">
         <div className="landing-nav-inner">
-          <Link to="/" className="landing-brand" aria-label="الصفحة الرئيسية لكلينيك فلو">
+          <Link to="/" className="landing-brand" aria-label="الصفحة الرئيسية لاسمارت كلينك">
             <div className="brand-logo-badge">
               <Stethoscope size={22} />
             </div>
             <div className="brand-titles">
-              <span className="brand-name">كلينيك فلو</span>
-              <span className="brand-tag">ClinicFlow • Enterprise Medical SaaS</span>
+              <span className="brand-name">اسمارت كلينك</span>
+              <span className="brand-tag">Smart Clinic • Enterprise Medical SaaS</span>
             </div>
           </Link>
 
@@ -527,7 +527,7 @@ const LandingPage = () => {
                 <button 
                   onClick={() => {
                     if (plan.id === 'enterprise') {
-                      window.open(getWhatsAppSupportUrl('مرحباً، أود الاستفسار عن باقة المراكز والمستشفيات في منصة ClinicFlow'), '_blank');
+                      window.open(getWhatsAppSupportUrl('مرحباً، أود الاستفسار عن باقة المراكز والمستشفيات في منصة اسمارت كلينك'), '_blank');
                     } else {
                       navigate(`/login?tab=register&plan=${plan.id}`);
                     }
@@ -564,7 +564,7 @@ const LandingPage = () => {
               <ArrowLeft size={18} />
             </button>
             <a 
-              href={getWhatsAppSupportUrl('مرحباً، أود استشارة سريعة حول تشغيل منظومة كلينيك فلو في عيادتي')} 
+              href={getWhatsAppSupportUrl('مرحباً، أود استشارة سريعة حول تشغيل منظومة اسمارت كلينك في عيادتي')} 
               target="_blank" 
               rel="noreferrer"
               className="btn-hero-secondary"
@@ -639,7 +639,7 @@ const LandingPage = () => {
         <div style={{ maxWidth: '680px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '4px 14px', borderRadius: '20px', backgroundColor: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', fontSize: '0.82rem', fontWeight: 700, marginBottom: '1rem' }}>
             <Mail size={15} />
-            <span>مجتمع أطباء كلينيك فلو</span>
+            <span>مجتمع أطباء اسمارت كلينك</span>
           </div>
           <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.75rem', color: 'inherit' }}>
             انضم لنخبة الأطباء والاستشاريين في تطوير العيادات
@@ -711,13 +711,13 @@ const LandingPage = () => {
       <footer className="landing-footer">
         <div className="footer-top">
           <div className="footer-brand-col">
-            <Link to="/" className="landing-brand" aria-label="الصفحة الرئيسية لكلينيك فلو">
+            <Link to="/" className="landing-brand" aria-label="الصفحة الرئيسية لاسمارت كلينك">
               <div className="brand-logo-badge">
                 <Stethoscope size={20} className="text-primary-brand" />
               </div>
               <div className="brand-titles">
-                <span className="brand-name">كلينيك فلو</span>
-                <span className="brand-tag">ClinicFlow SaaS</span>
+                <span className="brand-name">اسمارت كلينك</span>
+                <span className="brand-tag">Smart Clinic SaaS</span>
               </div>
             </Link>
             <p className="footer-about">
@@ -748,7 +748,7 @@ const LandingPage = () => {
               <li><Link to="/login?tab=register">تسجيل عيادة جديدة (14 يوماً مجاناً)</Link></li>
               <li><Link to="/login?portal=clinic">تسجيل دخول الأطباء والطاقم</Link></li>
               <li><a href="#pricing">باقات الاشتراك والتسعير</a></li>
-              <li><a href={getWhatsAppSupportUrl('مرحباً، أود التواصل مع فريق الدعم الفني لمنظومة ClinicFlow')} target="_blank" rel="noreferrer">الدعم الفني المباشر (واتساب)</a></li>
+              <li><a href={getWhatsAppSupportUrl('مرحباً، أود التواصل مع فريق الدعم الفني لمنظومة اسمارت كلينك')} target="_blank" rel="noreferrer">الدعم الفني المباشر (واتساب)</a></li>
             </ul>
           </div>
 
@@ -763,7 +763,7 @@ const LandingPage = () => {
         </div>
 
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} جميع الحقوق محفوظة لشركة كلينيك فلو (ClinicFlow Technologies Ltd).</p>
+          <p>© {new Date().getFullYear()} جميع الحقوق محفوظة لشركة اسمارت كلينك (Smart Clinic Technologies Ltd).</p>
           <p className="footer-dev-tag">Enterprise Multi-Tenant Medical Cloud • Dedicated Clinic Portals.</p>
         </div>
       </footer>
