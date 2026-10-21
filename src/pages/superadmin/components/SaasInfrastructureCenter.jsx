@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, ShieldCheck, CheckCircle2, Smartphone, Globe, CreditCard, Zap, Cpu } from 'lucide-react';
+import { Database, ShieldCheck, CheckCircle2, Smartphone, Globe, CreditCard, Zap, Cpu, Cloud } from 'lucide-react';
 import { useTenant } from '@/context/TenantContext';
 import { 
   SupabaseDatabaseTab, 
@@ -8,7 +8,8 @@ import {
   CustomDomainsTab, 
   SubscriptionPlansTab, 
   GoogleOAuthTab, 
-  Resilience100MTab 
+  Resilience100MTab,
+  R2StorageTab
 } from '@/pages/superadmin/components/infrastructure';
 
 export function SaasInfrastructureCenter({ allTenants = [], defaultTab = 'database', onOpenApiModal }) {
@@ -103,6 +104,14 @@ export function SaasInfrastructureCenter({ allTenants = [], defaultTab = 'databa
           <Zap size={16} />
           <span>طوابير المعالجة</span>
         </button>
+        <button
+          type="button"
+          onClick={() => setSubTab('r2')}
+          className={`saas-tab-btn ${subTab === 'r2' ? 'active-tab' : ''}`}
+        >
+          <Cloud size={16} />
+          <span>تخزين Cloudflare R2</span>
+        </button>
       </div>
 
       {subTab === 'database' && <SupabaseDatabaseTab allTenants={allTenants} />}
@@ -130,6 +139,7 @@ export function SaasInfrastructureCenter({ allTenants = [], defaultTab = 'databa
       )}
       {subTab === 'auth' && <GoogleOAuthTab />}
       {subTab === 'resilience' && <Resilience100MTab />}
+      {subTab === 'r2' && <R2StorageTab />}
     </div>
   );
 }

@@ -1,0 +1,106 @@
+{
+  "timestamp": "2026-10-21T10:10:46.710Z",
+  "target": "https://clinic-flow-lh3g.vercel.app",
+  "passRate": "100%",
+  "total": 16,
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "category": "Sensitive Exposure",
+      "testName": "Path: /.env",
+      "passed": true,
+      "details": "Status: 200 (Exposed: false)"
+    },
+    {
+      "category": "Sensitive Exposure",
+      "testName": "Path: /.git/config",
+      "passed": true,
+      "details": "Status: 200 (Exposed: false)"
+    },
+    {
+      "category": "Sensitive Exposure",
+      "testName": "Path: /package.json",
+      "passed": true,
+      "details": "Status: 200 (Exposed: false)"
+    },
+    {
+      "category": "Sensitive Exposure",
+      "testName": "Path: /docker-compose.yml",
+      "passed": true,
+      "details": "Status: 200 (Exposed: false)"
+    },
+    {
+      "category": "Sensitive Exposure",
+      "testName": "Path: /private.key",
+      "passed": true,
+      "details": "Status: 200 (Exposed: false)"
+    },
+    {
+      "category": "Sensitive Exposure",
+      "testName": "Path: /supabase/.temp",
+      "passed": true,
+      "details": "Status: 200 (Exposed: false)"
+    },
+    {
+      "category": "SQLi Resilience",
+      "testName": "Payload: ' OR 1=1 --...",
+      "passed": true,
+      "details": "Response code: 400, DB crash: false"
+    },
+    {
+      "category": "SQLi Resilience",
+      "testName": "Payload: '; DROP TABLE c...",
+      "passed": true,
+      "details": "Response code: 400, DB crash: false"
+    },
+    {
+      "category": "SQLi Resilience",
+      "testName": "Payload: \" OR \"\"=\"...",
+      "passed": true,
+      "details": "Response code: 400, DB crash: false"
+    },
+    {
+      "category": "SQLi Resilience",
+      "testName": "Payload: 1 UNION SELECT ...",
+      "passed": true,
+      "details": "Response code: 400, DB crash: false"
+    },
+    {
+      "category": "Tenant Isolation",
+      "testName": "Cross-Tenant IDOR & CORS Poisoning",
+      "passed": true,
+      "details": "CORS allowed: false"
+    },
+    {
+      "category": "Security Headers",
+      "testName": "HSTS Header",
+      "passed": true,
+      "details": "max-age=63072000; includeSubDomains; preload"
+    },
+    {
+      "category": "Security Headers",
+      "testName": "Content-Security-Policy (CSP)",
+      "passed": true,
+      "details": "Configured & Active"
+    },
+    {
+      "category": "Security Headers",
+      "testName": "X-Content-Type-Options",
+      "passed": true,
+      "details": "nosniff"
+    },
+    {
+      "category": "Security Headers",
+      "testName": "X-Frame-Options",
+      "passed": true,
+      "details": "DENY"
+    },
+    {
+      "category": "R2 Storage Security",
+      "testName": "S3 Secret Key Immunity",
+      "passed": true,
+      "details": "Status: 404, Leaked: false"
+    }
+  ]
+}

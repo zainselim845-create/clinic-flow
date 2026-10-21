@@ -5,3 +5,4 @@ export { CustomDomainsTab } from '@/pages/superadmin/components/infrastructure/C
 export { SubscriptionPlansTab } from '@/pages/superadmin/components/infrastructure/SubscriptionPlansTab';
 export { GoogleOAuthTab } from '@/pages/superadmin/components/infrastructure/GoogleOAuthTab';
 export { Resilience100MTab } from '@/pages/superadmin/components/infrastructure/Resilience100MTab';
+export { R2StorageTab } from '@/pages/superadmin/components/infrastructure/R2StorageTab';

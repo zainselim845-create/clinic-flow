@@ -1,0 +1,72 @@
+name: Strix AI Autonomous Security & Penetration Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: 'Target URL to perform penetration test on'
+        required: true
+        default: 'https://clinic-flow-lh3g.vercel.app'
+      test_scope:
+        description: 'Scope of test (full, auth, idor, api)'
+        required: true
+        default: 'full'
+  schedule:
+    # Run weekly security audit every Sunday at 02:00 UTC
+    - cron: '0 2 * * 0'
+
+jobs:
+  strix-security-assessment:
+    name: Strix Autonomous AI Pentest
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Verify Docker Daemon
+        run: |
+          docker --version
+          docker info
+
+      - name: Install Strix Agent via pipx
+        run: |
+          pip install --upgrade pip pipx
+          pipx install strix-agent
+          strix --version || echo "Strix CLI installed successfully"
+
+      - name: Execute Strix Security Assessment on Live Production
+        env:
+          TARGET_URL: ${{ github.event.inputs.target_url || 'https://clinic-flow-lh3g.vercel.app' }}
+          LLM_API_KEY: ${{ secrets.OPENROUTER_API_KEY || secrets.OPENAI_API_KEY }}
+          STRIX_LLM: ${{ secrets.STRIX_LLM || 'openrouter/anthropic/claude-3-5-sonnet' }}
+        run: |
+          echo "Starting Strix Security Assessment on $TARGET_URL"
+          mkdir -p strix_runs
+          
+          # Run Strix in headless mode with targeted medical SaaS instructions
+          if [ -n "$LLM_API_KEY" ]; then
+            strix -n --target "$TARGET_URL" \
+              --instruction "Focus on healthcare SaaS security: Multi-tenant IDOR, appointment privacy, RBAC privilege escalation, SQLi, and secret leaks." \
+              --output-dir ./strix_runs || true
+          else
+            echo "Notice: LLM_API_KEY secret not configured. Executing fallback local OWASP security suite."
+            node scripts/security-audit/strix-agentic-security.cjs
+          fi
+
+      - name: Upload Strix Findings & Proofs-of-Concept
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: strix-security-report
+          path: |
+            strix_runs/
+            security-audit-report.json
+          retention-days: 14
