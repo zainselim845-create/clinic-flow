@@ -17,6 +17,8 @@ export const DOMAIN_STATUS = {
 export const DEFAULT_CNAME_TARGET = 'cname.vercel-dns.com';
 export const VERCEL_CNAME_TARGET = 'cname.vercel-dns.com';
 export const VERCEL_DIRECT_TARGET = 'clinic-flow-lh3g.vercel.app';
+export const CLOUDFLARE_PAGES_TARGET = 'smart-clinic-6xg.pages.dev';
+export const SMART_CLINIC_CNAME_TARGET = 'cname.smartclinic.app';
 export const LEGACY_CNAME_TARGET = 'cname.clinicflow.app';
 export const DEFAULT_A_TARGET = '76.76.21.21';
 
@@ -98,7 +100,7 @@ export function getRequiredDnsRecords(domain, clinicId) {
         name: '@',
         value: DEFAULT_A_TARGET,
         ttl: '60s / Auto',
-        description: 'توجيه النطاق الرئيسي إلى حافة خوادم ClinicFlow الموزعة عالمياً'
+        description: 'توجيه النطاق الرئيسي إلى حافة خوادم اسمارت كلينك الموزعة عالمياً'
       },
       {
         type: 'CNAME',
@@ -127,7 +129,7 @@ export function getRequiredDnsRecords(domain, clinicId) {
       name: hostPrefix,
       value: DEFAULT_CNAME_TARGET,
       ttl: '60s / Auto',
-      description: `توجيه النطاق الفرعي (${hostPrefix}) إلى نظام ClinicFlow السحابي`
+      description: `توجيه النطاق الفرعي (${hostPrefix}) إلى نظام اسمارت كلينك السحابي`
     },
     {
       type: 'TXT',

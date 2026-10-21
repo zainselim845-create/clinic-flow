@@ -62,9 +62,9 @@ export function extractEdgeRouting(inputUrl) {
     return { type: 'platform', slug: null, customDomain: null };
   }
 
-  // Check primary platform domains (clinicflow.app and any configured domain)
+  // Check primary platform domains (smartclinic.app, clinicflow.app and any configured domain)
   const configuredDomain = ((typeof process !== 'undefined' && (process.env?.PLATFORM_DOMAIN || process.env?.VITE_PLATFORM_DOMAIN)) || '').toLowerCase().trim();
-  const knownPlatformDomains = Array.from(new Set(['clinicflow.app', ...(configuredDomain ? [configuredDomain] : [])]));
+  const knownPlatformDomains = Array.from(new Set(['smartclinic.app', 'clinicflow.app', ...(configuredDomain ? [configuredDomain] : [])]));
 
   if (knownPlatformDomains.includes(cleanHostname)) {
     return { type: 'platform', slug: null, customDomain: null };

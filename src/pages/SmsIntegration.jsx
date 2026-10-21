@@ -14,7 +14,7 @@ import './SmsIntegration.css';
 const SMS_PROVIDERS = [
   {
     id: 'clinicflow-gateway',
-    name: 'Smart Clinic Gateway',
+    name: 'Smart Clinic Gateway (ClinicFlow Gateway)',
     desc: 'بوابة اسمارت كلينك المدارة — جاهزة بدون إعداد',
     badge: 'موصى به',
     fields: []

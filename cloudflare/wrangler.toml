@@ -1,13 +1,9 @@
-name = "clinicflow-edge-router"
+name = "smart-clinic-edge-router"
 main = "worker.js"
 compatibility_date = "2024-09-01"
 
 [vars]
 ENVIRONMENT = "production"
-PLATFORM_DOMAIN = "clinicflow.app"
+PLATFORM_DOMAIN = "smartclinic.app"
+ORIGIN_HOST = "smart-clinic-6xg.pages.dev"
 
-# Production Routes configuration for Cloudflare for SaaS or Wildcard DNS:
-# routes = [
-#   { pattern = "*.clinicflow.app/*", zone_name = "clinicflow.app" },
-#   { pattern = "clinicflow.app/*", zone_name = "clinicflow.app" }
-# ]

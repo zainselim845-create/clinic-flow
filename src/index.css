@@ -176,7 +176,8 @@ h1, h2, h3, h4, h5, h6 {
   --transition-slow: 0.36s cubic-bezier(0.16, 1, 0.3, 1);
   
   /* Legacy & Baseline Color Tokens */
-  --primary: #1769FF;
+  --primary: #1769FF; /* Base Material Token: --primary: #1A73E8; */
+  --bg-primary: #F8FAFC;
 
   /* 3-Degree Dynamic Color System (Smart Clinic Official Palette) */
   /* Degree 1: Primary Brand Core (Electric Blue: #1769FF) */

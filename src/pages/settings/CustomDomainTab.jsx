@@ -261,7 +261,7 @@ export default function CustomDomainTab() {
                 النطاق الفرعي التلقائي المتاح دائماً لعيادتك:
               </div>
               <code style={{ fontSize: '0.84rem', color: '#0369A1', direction: 'ltr', display: 'inline-block', fontWeight: 600 }}>
-                https://{tenant?.slug || 'your-clinic'}.clinicflow.app
+                https://{tenant?.slug || 'your-clinic'}.smartclinic.app
               </code>
             </div>
           </div>

@@ -239,7 +239,7 @@ export function ClinicsTable({
                           }}
                           title="النطاق الفرعي السحابي المخصص"
                         >
-                          <span>{t.slug}.clinicflow.app</span>
+                          <span>{t.slug}.smartclinic.app</span>
                         </span>
                       </div>
                       {t.senderId && (

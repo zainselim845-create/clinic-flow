@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { getClinicBookingUrl } from '../utils/clinicUrls';
+import { getClinicBookingUrl, SAAS_PLATFORM_DOMAIN } from '../utils/clinicUrls';
 
 describe('Booking Privacy & Route Cancellation (Zero Tenant Leakage)', () => {
   it('1. getClinicBookingUrl safely falls back to / when tenant has no slug, preventing /booking exposure', () => {
@@ -30,9 +30,9 @@ describe('Booking Privacy & Route Cancellation (Zero Tenant Leakage)', () => {
 
   it('5. Direct clinic booking URL generation avoids directory exposure across environments', () => {
     const tenant = { slug: 'dr-tamer' };
-    const prodLocation = { origin: 'https://clinicflow.app', hostname: 'clinicflow.app' };
+    const prodLocation = { origin: `https://${SAAS_PLATFORM_DOMAIN}`, hostname: SAAS_PLATFORM_DOMAIN };
     const bookingUrl = getClinicBookingUrl(tenant, prodLocation);
     expect(bookingUrl).not.toContain('/booking');
-    expect(bookingUrl).toBe('https://dr-tamer.clinicflow.app/');
+    expect(bookingUrl).toBe(`https://dr-tamer.${SAAS_PLATFORM_DOMAIN}/`);
   });
 });

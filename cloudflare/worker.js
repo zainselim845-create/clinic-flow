@@ -63,12 +63,12 @@ export function extractCloudflareRouting(inputUrl) {
     return { type: 'platform', slug: null, customDomain: null };
   }
 
-  // Check primary platform domain (clinicflow.app)
-  if (cleanHostname === 'clinicflow.app') {
+  // Check primary platform domains (smartclinic.app, clinicflow.app)
+  if (cleanHostname === 'smartclinic.app' || cleanHostname === 'clinicflow.app') {
     return { type: 'platform', slug: null, customDomain: null };
   }
 
-  if (cleanHostname.endsWith('.clinicflow.app')) {
+  if (cleanHostname.endsWith('.smartclinic.app') || cleanHostname.endsWith('.clinicflow.app')) {
     if (parts.length >= 3 && !RESERVED_SUBDOMAINS.has(parts[0])) {
       return { type: 'subdomain', slug: parts[0], customDomain: null };
     }
@@ -89,7 +89,7 @@ export function extractCloudflareRouting(inputUrl) {
 }
 
 export default {
-  async fetch(request, env = {}, ctx = null) {
+  async fetch(request, env = {}, _ctx = null) {
     const url = new URL(request.url);
 
     // Bypass API routes and static assets directly to origin
@@ -111,6 +111,12 @@ export default {
     const effectiveUrl = new URL(url.pathname + url.search, `https://${hostHeader}`);
     const routing = extractCloudflareRouting(effectiveUrl);
     const targetUrl = new URL(request.url);
+
+    const originHost = env?.ORIGIN_HOST || 'smart-clinic-6xg.pages.dev';
+    if (targetUrl.hostname !== originHost && !targetUrl.hostname.includes('localhost') && !targetUrl.hostname.includes('127.0.0.1')) {
+      targetUrl.hostname = originHost;
+      targetUrl.protocol = 'https:';
+    }
 
     const forwardHeaders = new Headers(request.headers);
     forwardHeaders.set('x-edge-routed', 'cloudflare-worker');

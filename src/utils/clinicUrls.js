@@ -5,8 +5,9 @@
  * custom domains, QR codes, and WhatsApp sharing across production, staging, and local environments.
  */
 
-export const SAAS_PLATFORM_DOMAIN = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PLATFORM_DOMAIN) || 'clinicflow.app';
+export const SAAS_PLATFORM_DOMAIN = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PLATFORM_DOMAIN) || 'smartclinic.app';
 export const VERCEL_PRODUCTION_HOST = 'clinic-flow-ten-sigma.vercel.app';
+export const CLOUDFLARE_PAGES_HOST = 'smart-clinic-6xg.pages.dev';
 
 /**
  * Returns the clean hostname of the current environment
@@ -17,10 +18,31 @@ export function getCurrentHostname(location = (typeof window !== 'undefined' ? w
 }
 
 /**
+ * Returns the dedicated subdomain URL for a clinic.
+ * e.g. https://dr-ahmed.smartclinic.app
+ */
+export function getClinicSubdomainUrl(tenant, platformDomain = SAAS_PLATFORM_DOMAIN) {
+  const slug = (tenant?.slug || '').trim().toLowerCase();
+  if (!slug) return '';
+  return `https://${slug}.${platformDomain}`;
+}
+
+/**
+ * Returns the direct portal URL for a clinic that works on any host without wildcard DNS.
+ * e.g. https://smart-clinic-6xg.pages.dev/c/dr-ahmed/booking
+ */
+export function getClinicDirectPortalUrl(tenant, location = (typeof window !== 'undefined' ? window.location : null)) {
+  const slug = (tenant?.slug || '').trim().toLowerCase();
+  if (!slug) return '';
+  const origin = location?.origin || (typeof window !== 'undefined' ? window.location.origin : `https://${CLOUDFLARE_PAGES_HOST}`);
+  return `${origin}/c/${slug}/booking`;
+}
+
+/**
  * Returns the effective base domain/host for a clinic.
  * Priority:
  * 1. Verified Custom Domain (e.g. dr-hazem-clinic.com)
- * 2. Dedicated Subdomain (e.g. dr-ahmed.clinicflow.app)
+ * 2. Dedicated Subdomain (e.g. dr-ahmed.smartclinic.app)
  * 3. Platform Host
  */
 export function getClinicDomain(tenant, location = (typeof window !== 'undefined' ? window.location : null)) {
@@ -59,6 +81,11 @@ export function getClinicBookingUrl(tenant, location = (typeof window !== 'undef
 
   // If on Vercel deployment preview / production host
   if (hostname.endsWith('.vercel.app')) {
+    return `${origin}/c/${slug}/booking`;
+  }
+
+  // If on Cloudflare Pages host (e.g. smart-clinic-6xg.pages.dev)
+  if (hostname.endsWith('.pages.dev') || hostname.endsWith('.workers.dev')) {
     return `${origin}/c/${slug}/booking`;
   }
 

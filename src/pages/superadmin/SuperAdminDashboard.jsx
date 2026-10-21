@@ -188,13 +188,14 @@ export default function SuperAdminDashboard() {
 
   const handleCopyHandover = async (tenant) => {
     if (!tenant) return;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinicflow.app';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://smart-clinic-6xg.pages.dev';
     const bookingUrl = `${origin}/c/${tenant.slug}/booking`;
+    const subdomainUrl = `https://${tenant.slug}.smartclinic.app`;
     const loginUrl = `${origin}/login`;
     const docEmail = tenant.doctorEmail || tenant.email || 'البريد المسجل';
     const docPass = tenant.doctorPassword || '(كلمة المرور المحددة عند الإنشاء)';
 
-    const message = `مرحباً د. ${tenant.doctorName || 'الفاضل'}،\nتم تجهيز وتفعيل حساب عيادتكم (${tenant.name}) على منظومة اسمارت كلينك (Smart Clinic) بنجاح:\n\n1. رابط لوحة تحكم العيادة:\n${loginUrl}\n\n2. بيانات الدخول:\n- البريد الإلكتروني: ${docEmail}\n- كلمة المرور: ${docPass}\n\n3. رابط حجز المرضى الخاص بكم:\n${bookingUrl}\n\nنسعد بخدمتكم وتمنياتنا بعيادة موفقة دائماً.`;
+    const message = `مرحباً د. ${tenant.doctorName || 'الفاضل'}،\nتم تجهيز وتفعيل حساب عيادتكم (${tenant.name}) على منظومة اسمارت كلينك (Smart Clinic) بنجاح:\n\n1. رابط لوحة تحكم العيادة:\n${loginUrl}\n\n2. بيانات الدخول:\n- البريد الإلكتروني: ${docEmail}\n- كلمة المرور: ${docPass}\n\n3. رابط حجز المرضى المباشر:\n${bookingUrl}\n\n4. النطاق الفرعي السحابي (Subdomain):\n${subdomainUrl}\n\nنسعد بخدمتكم وتمنياتنا بعيادة موفقة دائماً.`;
 
     const success = await copyToClipboard(message);
     if (success) {
