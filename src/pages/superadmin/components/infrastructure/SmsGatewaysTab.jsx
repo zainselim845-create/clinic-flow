@@ -25,7 +25,7 @@ export function SmsGatewaysTab({ allTenants = [], onOpenApiModal, updateTenantIn
     try {
       const res = await testSmsConnection({
         phone: testPhone,
-        message: 'رسالة اختبارية من لوحة إدارة منصة ClinicFlow B2B SaaS'
+        message: 'رسالة اختبارية من لوحة إدارة منصة Smart Clinic B2B SaaS'
       });
       setSmsResult(res);
     } catch (err) {
@@ -220,7 +220,7 @@ export function SmsGatewaysTab({ allTenants = [], onOpenApiModal, updateTenantIn
                             {t.senderId}
                           </span>
                         ) : (
-                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.74rem' }}>افتراضي (ClinicFlow)</span>
+                          <span style={{ color: 'var(--text-secondary)', fontSize: '0.74rem' }}>افتراضي (Smart Clinic)</span>
                         )}
                       </td>
 

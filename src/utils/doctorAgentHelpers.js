@@ -40,7 +40,7 @@ export const formatDoctorName = (name, fallback = '') => {
 
 export const personalizeMessage = (templateText, patient, clinicInfo) => {
   if (!templateText) return '';
-  const clinicName = clinicInfo?.name || 'عيادة كلينك فلو';
+  const clinicName = clinicInfo?.name || 'اسمارت كلينك';
   const doctorName = formatDoctorName(clinicInfo?.doctorName || clinicInfo?.name, 'طبيب العيادة');
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow-lh3g.vercel.app';
   const clinicSlug = clinicInfo?.slug;

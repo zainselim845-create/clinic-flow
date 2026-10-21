@@ -131,7 +131,7 @@ export default function SuperAdminLogin() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="superadmin@clinicflow.com"
+                placeholder="superadmin@smartclinic.app"
                 required
                 disabled={isLocked || isLoading}
                 dir="ltr"

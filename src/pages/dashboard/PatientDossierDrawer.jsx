@@ -335,7 +335,7 @@ export default function PatientDossierDrawer({
                     <span>إرسال SMS</span>
                   </a>
                   <a
-                    href={getWhatsAppUri(patientPhone, `مرحباً أ/ ${patientName}، معك عيادة ${state.activeClinic?.name || 'كلينيك فلو'}.`)}
+                    href={getWhatsAppUri(patientPhone, `مرحباً أ/ ${patientName}، معك عيادة ${state.activeClinic?.name || 'اسمارت كلينك'}.`)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-contact whatsapp"

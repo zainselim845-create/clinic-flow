@@ -23,7 +23,7 @@ export default function AiAssistantConfigTab() {
 
     try {
       const res = await askDoctorAiAssistant([
-        { role: 'user', content: 'مرحباً، هل أنت جاهز للعمل كمساعد سريري في كلينك فلو؟' }
+        { role: 'user', content: 'مرحباً، هل أنت جاهز للعمل كمساعد سريري في اسمارت كلينك؟' }
       ], { doctorName: 'د. أحمد الشريف', name: 'عيادة د. أحمد' });
 
       if (res.success) {

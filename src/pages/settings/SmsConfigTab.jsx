@@ -8,7 +8,7 @@ export default function SmsConfigTab() {
   const clinicId = tenant?.id || 'default';
   const [config, setConfig] = useState(() => getSmsConfig(clinicId));
   const [testPhone, setTestPhone] = useState('');
-  const [testMessage, setTestMessage] = useState('مرحباً! هذه رسالة تجريبية ناجحة من نظام كلينك فلو للعيادات ');
+  const [testMessage, setTestMessage] = useState('مرحباً! هذه رسالة تجريبية ناجحة من نظام اسمارت كلينك للعيادات ');
   const [isSending, setIsSending] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [smsSaveSuccess, setSmsSaveSuccess] = useState(false);

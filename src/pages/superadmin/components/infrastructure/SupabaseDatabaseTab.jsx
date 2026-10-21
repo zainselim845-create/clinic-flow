@@ -14,7 +14,7 @@ export function SupabaseDatabaseTab({ allTenants = [] }) {
     try {
       const backupData = {
         exportedAt: new Date().toISOString(),
-        platform: 'ClinicFlow B2B SaaS',
+        platform: 'Smart Clinic B2B SaaS',
         version: '2.5.0',
         tenants: getRegisteredTenants(),
         users: getAllPlatformUsers(),

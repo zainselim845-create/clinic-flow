@@ -132,7 +132,7 @@ export async function askDoctorAiAssistant(chatHistory, clinicContext = {}, pati
   const rawDoctor = clinicContext?.doctorName || clinicContext?.name || 'طبيب العيادة';
   const doctorName = rawDoctor.startsWith('د.') || rawDoctor.startsWith('د/') ? rawDoctor : `د. ${rawDoctor}`;
   const specialty = clinicContext?.specialty || 'الطب العام والتخصصي';
-  const clinicName = clinicContext?.name || 'عيادة كلينك فلو';
+  const clinicName = clinicContext?.name || 'اسمارت كلينك';
   const todayStr = new Date().toISOString().split('T')[0];
 
   const allBlocked = systemState?.blockedSlots || [];
@@ -358,14 +358,14 @@ export async function testOpenRouterConnection(apiKey, model) {
       saveAiConfig({ apiKey, model: model || DEFAULT_AI_MODEL, enabled: true });
     }
     const res = await askDoctorAiAssistant([
-      { role: 'user', content: 'فحص الاتصال بمحرك الذكاء الاصطناعي المركزي لمنصة كلينك فلو' }
+      { role: 'user', content: 'فحص الاتصال بمحرك الذكاء الاصطناعي المركزي لمنصة اسمارت كلينك' }
     ], { doctorName: 'مدير المنصة', name: 'إدارة الساس' });
     if (res.success) {
       return { success: true, message: 'الاتصال بمحرك الذكاء الاصطناعي يعمل بنجاح!', content: res.content, model: res.model };
     } else {
       return { 
         success: true, 
-        message: 'محرك الذكاء الاصطناعي السريري لمنظومة ClinicFlow مهيأ مسبقاً ويعمل بكفاءة كاملة 100%!', 
+        message: 'محرك الذكاء الاصطناعي السريري لمنظومة اسمارت كلينك (Smart Clinic) مهيأ مسبقاً ويعمل بكفاءة كاملة 100%!', 
         content: 'المحرك السريري متصل ونشط لكافة عيادات المنصة.', 
         model: model || DEFAULT_AI_MODEL 
       };
@@ -374,7 +374,7 @@ export async function testOpenRouterConnection(apiKey, model) {
     console.warn('[AiAssistantService] Connection test fallback notice:', testErr);
     return { 
       success: true, 
-      message: 'محرك الذكاء الاصطناعي السريري لمنظومة ClinicFlow مهيأ مسبقاً ويعمل بكفاءة كاملة 100%!', 
+      message: 'محرك الذكاء الاصطناعي السريري لمنظومة اسمارت كلينك (Smart Clinic) مهيأ مسبقاً ويعمل بكفاءة كاملة 100%!', 
       model: model || DEFAULT_AI_MODEL 
     };
   }

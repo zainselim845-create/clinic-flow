@@ -442,7 +442,7 @@ export async function sendReminder(nameOrOptions, phone, date, time, clinicName,
  * Generate formatted WhatsApp link for booking confirmation
  */
 export function getBookingConfirmationWhatsAppUrl({ patientName, phone, date, time, clinicName, bookingCode, manageUrl, address, googleMapsUrl }) {
-  let msg = `${clinicName || 'عيادة كلينيك فلو'}\n`;
+  let msg = `${clinicName || 'اسمارت كلينك'}\n`;
   msg += `أهلاً بك أ/ ${patientName || 'المريض'}،\n`;
   msg += `يسعدنا إبلاغك بتأكيد حجز موعدك بنجاح.\n\n`;
   msg += `الموعد: ${date} الساعة ${time}\n`;
@@ -460,7 +460,7 @@ export function getBookingConfirmationWhatsAppUrl({ patientName, phone, date, ti
  * Generate formatted WhatsApp link for appointment reminder
  */
 export function getAppointmentReminderWhatsAppUrl({ patientName, phone, date, time, clinicName }) {
-  let msg = `${clinicName || 'عيادة كلينيك فلو'}\n`;
+  let msg = `${clinicName || 'اسمارت كلينك'}\n`;
   msg += `تذكير بموعد الكشف: مرحباً أ/ ${patientName || 'المريض'}\n\n`;
   msg += `نود تذكيرك بموعدك المحدد: ${date} في تمام الساعة ${time}.\n`;
   msg += `في حال رغبتك في التأكيد أو تأجيل الموعد، يُرجى الرد على هذه الرسالة لإتاحة الفرصة لحالة طارئة.\n`;
@@ -473,7 +473,7 @@ export function getAppointmentReminderWhatsAppUrl({ patientName, phone, date, ti
  * Generate formatted WhatsApp link for periodic recall & checkup
  */
 export function getRecallReminderWhatsAppUrl({ patientName, phone, clinicName, reason, dueDate }) {
-  let msg = `${clinicName || 'عيادة كلينيك فلو'}\n`;
+  let msg = `${clinicName || 'اسمارت كلينك'}\n`;
   msg += `تحية طيبة أ/ ${patientName || 'المريض'} من فريق ${clinicName || 'العيادة'}.\n\n`;
   msg += `حرصاً من الطبيب على متابعة تطور حالتكم الصحية والوقاية المستمرة، نود تذكيركم بموعد الفحص والمتابعة الدورية (${reason || 'فحص ومتابعة دورية'}).\n`;
   if (dueDate) msg += `الموعد المقترح: ${dueDate}\n`;
@@ -498,7 +498,7 @@ export function saveGlobalSmsProvider(provider) {
 
 export async function testSmsConnection({ phone, message }) {
   try {
-    const res = await sendSMS(phone, message || 'رسالة اختبارية من لوحة إدارة منصة كلينك فلو', 'default');
+    const res = await sendSMS(phone, message || 'رسالة اختبارية من لوحة إدارة منصة اسمارت كلينك', 'default');
     return res;
   } catch (err) {
     return { success: false, error: err.message };

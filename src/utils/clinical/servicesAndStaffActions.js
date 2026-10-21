@@ -358,7 +358,7 @@ export function evaluateServicesAndStaffActions(text, state = {}) {
     const matchedPatient = findPatientInText(text, state.patients);
     if (matchedPatient && matchedPatient.phone) {
       const cleanPhone = matchedPatient.phone.replace(/\D/g, '');
-      const defaultMsg = `مرحباً أستاذ/ة ${matchedPatient.name}، معك ${state.clinicInfo?.name || 'عيادة كلينك فلو'}. نتمنى لك دوام الصحة والعافية.`;
+      const defaultMsg = `مرحباً أستاذ/ة ${matchedPatient.name}، معك ${state.clinicInfo?.name || 'اسمارت كلينك'}. نتمنى لك دوام الصحة والعافية.`;
       const waUrl = `https://wa.me/20${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}?text=${encodeURIComponent(defaultMsg)}`;
 
       return {

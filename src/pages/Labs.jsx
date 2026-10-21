@@ -151,7 +151,7 @@ const Labs = () => {
       <div className="page-header">
         <div>
           <h1>إدارة المعامل وتتبع التركيبات (Lab Orders & Tracking)</h1>
-          <p>متابعة مراحل التيجان، الجسور، الأطقم، والعدسات من تاريخ الإرسال حتى التسليم للمريض (ClinicFlow Lab Management)</p>
+          <p>متابعة مراحل التيجان، الجسور، الأطقم، والعدسات من تاريخ الإرسال حتى التسليم للمريض (Smart Clinic Lab Management)</p>
         </div>
         <div className="header-actions-btns">
           <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">

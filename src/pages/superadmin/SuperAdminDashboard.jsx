@@ -342,7 +342,7 @@ export default function SuperAdminDashboard() {
     if (!newClinic.name || !newClinic.slug) return;
 
     const resolvedSenderId = newClinic.senderId?.trim() 
-      ? formatSenderId(newClinic.senderId, 'ClinicFlow')
+      ? formatSenderId(newClinic.senderId, 'SmartClinic')
       : '';
 
     const created = {

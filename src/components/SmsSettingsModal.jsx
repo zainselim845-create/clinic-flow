@@ -19,7 +19,7 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
   });
 
   const [testPhone, setTestPhone] = useState('');
-  const [testMessage, setTestMessage] = useState('تجربة إرسال رسالة SMS من نظام كلينك فلو بنجاح! ');
+  const [testMessage, setTestMessage] = useState('تجربة إرسال رسالة SMS من نظام اسمارت كلينك بنجاح! ');
   const [isSending, setIsSending] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -180,7 +180,7 @@ const SmsSettingsModal = ({ isOpen, onClose }) => {
                     id="cequens-sender-name"
                     type="text"
                     className="input-field"
-                    placeholder="e.g. keif أو ClinicFlow"
+                    placeholder="e.g. SmartClinic أو اسم العيادة"
                     value={config.cequensSenderName}
                     onChange={(e) => setConfig({ ...config, cequensSenderName: e.target.value })}
                     dir="ltr"

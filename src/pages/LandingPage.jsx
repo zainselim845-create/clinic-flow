@@ -338,7 +338,7 @@ const LandingPage = () => {
               </div>
               <div className="window-url-bar">
                 <Lock size={12} className="text-emerald-500" />
-                <span>https://dr-ahmed-dental.clinicflow.app/dashboard</span>
+                <span>https://dr-ahmed-dental.smartclinic.app/dashboard</span>
               </div>
               <span className="showcase-live-pill">● متصل ومباشر</span>
             </div>

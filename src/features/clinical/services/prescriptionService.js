@@ -158,7 +158,7 @@ export function createPrescription({
   return {
     id: 'rx-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9),
     clinicId,
-    clinicName: clinic?.name || 'عيادة كلينيك فلو',
+    clinicName: clinic?.name || 'اسمارت كلينك',
     clinicSpecialty: clinic?.specialty || 'طب عام وتخصصي',
     clinicPhone: clinic?.phone || '01000000000',
     clinicAddress: clinic?.address || 'مصر',
@@ -212,7 +212,7 @@ export function formatPrescriptionForWhatsApp(prescription) {
   } = prescription;
 
   let msg = `الروشتة الطبية الإلكترونية المعتمدة\n`;
-  msg += `${clinicName || 'عيادة كلينيك فلو'}\n`;
+  msg += `${clinicName || 'اسمارت كلينك'}\n`;
   if (doctorName) msg += `الطبيب: ${doctorName} ${doctorTitle ? `(${doctorTitle})` : ''}\n`;
   msg += `المريض: ${patientName}\n`;
   msg += `تاريخ الكشف: ${date}\n`;

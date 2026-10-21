@@ -82,17 +82,17 @@ export function CustomDomainsTab({ allTenants = [], updateTenantDomain }) {
         marginBottom: '1.5rem'
       }}>
         <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.92rem', color: 'var(--text-primary)' }}>
-          سجلات الـ DNS المطلوبة لتوجيه الدومين إلى خوادم كلينيك فلو:
+          سجلات الـ DNS المطلوبة لتوجيه الدومين إلى خوادم اسمارت كلينك:
         </h4>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '0.75rem' }}>
           <div style={{ background: 'var(--surface, #FFF)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#2563EB', background: '#EFF6FF', padding: '0.15rem 0.45rem', borderRadius: '4px' }}>CNAME</span>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '0.3rem' }}>cname.clinicflow.app</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginTop: '0.3rem' }}>cname.smartclinic.app</div>
             </div>
             <button
               type="button"
-              onClick={() => handleCopyText('cname', 'cname.clinicflow.app')}
+              onClick={() => handleCopyText('cname', 'cname.smartclinic.app')}
               className="btn btn-secondary"
               style={{ padding: '0.35rem 0.65rem', fontSize: '0.75rem' }}
             >
