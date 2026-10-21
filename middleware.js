@@ -115,7 +115,7 @@ const IS_TEST_ENV = (typeof process !== 'undefined' && process.env?.NODE_ENV ===
 const rateLimitStore = new Map();
 const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute sliding window
 const RATE_LIMIT_MAX_REQUESTS = IS_TEST_ENV ? 180 : 360; // Generous allowance for production browsing
-const RATE_LIMIT_AUTH_MAX = IS_TEST_ENV ? 10 : 120; // 10 in unit test, 120 in live production/preview to prevent user lockouts
+const RATE_LIMIT_AUTH_MAX = 10; // Strict limit for authentication & credential stuffing protection (OWASP A07)
 const RATE_LIMIT_CLEANUP_INTERVAL = 300_000; // Cleanup stale entries every 5 minutes
 let lastCleanup = Date.now();
 
@@ -155,9 +155,7 @@ export default function middleware(request) {
 
   // Rate limiting enforcement: distinguish auth endpoints from general browsing
   const ip = getRateLimitKey(request);
-  const isAuthEndpoint = IS_TEST_ENV
-    ? (url.pathname === '/login' || url.pathname.startsWith('/api/auth') || url.pathname.includes('/auth'))
-    : (request.method === 'POST' ? (url.pathname === '/login' || url.pathname.startsWith('/api/auth') || url.pathname.includes('/auth')) : url.pathname.startsWith('/api/auth'));
+  const isAuthEndpoint = url.pathname === '/login' || url.pathname.startsWith('/api/auth') || url.pathname.includes('/auth');
   const maxReqs = isAuthEndpoint ? RATE_LIMIT_AUTH_MAX : RATE_LIMIT_MAX_REQUESTS;
   const rateCheck = checkRateLimit(ip, maxReqs);
 
