@@ -16,7 +16,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const TARGET_URL = process.env.LIVE_URL || 'https://clinic-flow-ten-sigma.vercel.app';
+const TARGET_URL = process.env.LIVE_URL || 'https://clinic-flow-lh3g.vercel.app';
 
 function httpRequest(url, options = {}) {
   return new Promise((resolve, reject) => {

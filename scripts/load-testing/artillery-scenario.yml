@@ -1,5 +1,5 @@
 config:
-  target: "https://clinic-flow-ten-sigma.vercel.app"
+  target: "https://clinic-flow-lh3g.vercel.app"
   phases:
     - duration: 15
       arrivalRate: 2

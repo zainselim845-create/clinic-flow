@@ -7,7 +7,7 @@
 const { chromium } = require('playwright');
 const https = require('https');
 
-const LIVE_URL = process.env.LIVE_URL || 'https://clinic-flow-ten-sigma.vercel.app';
+const LIVE_URL = process.env.LIVE_URL || 'https://clinic-flow-lh3g.vercel.app';
 
 function httpGet(url, headers = {}) {
   return new Promise((resolve, reject) => {

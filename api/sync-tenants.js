@@ -140,7 +140,7 @@ function parseJsonBody(req) {
 export default async function handler(req, res) {
   // Security & CORS Headers — allow production, vercel deployments, and localhost
   const ALLOWED_ORIGINS = new Set([
-    'https://clinic-flow-ten-sigma.vercel.app',
+    'https://clinic-flow-lh3g.vercel.app',
     process.env.ALLOWED_ORIGIN // Optional additional origin from env
   ].filter(Boolean));
   const requestOrigin = req.headers.origin || '';

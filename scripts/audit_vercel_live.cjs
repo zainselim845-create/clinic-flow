@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
 async function auditVercelLive() {
-  const TARGET_BASE = process.env.LIVE_URL || 'https://clinic-flow-ten-sigma.vercel.app';
+  const TARGET_BASE = process.env.LIVE_URL || 'https://clinic-flow-lh3g.vercel.app';
   console.log(`\n================================================================`);
   console.log(`  LIVE VERCEL END-TO-END AUDIT`);
   console.log(`  Target: ${TARGET_BASE}`);

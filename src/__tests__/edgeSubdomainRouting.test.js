@@ -12,15 +12,15 @@ describe('Edge Subdomain & Dedicated Domain Routing Architecture', () => {
       expect(routing.customDomain).toBeNull();
     });
 
-    it('correctly extracts tenant slug from Vercel platform subdomain (e.g. dr-ahmed.clinic-flow-ten-sigma.vercel.app)', () => {
-      const routing = extractEdgeRouting('https://dr-ahmed.clinic-flow-ten-sigma.vercel.app/');
+    it('correctly extracts tenant slug from Vercel platform subdomain (e.g. dr-ahmed.clinic-flow-lh3g.vercel.app)', () => {
+      const routing = extractEdgeRouting('https://dr-ahmed.clinic-flow-lh3g.vercel.app/');
       expect(routing.type).toBe('subdomain');
       expect(routing.slug).toBe('dr-ahmed');
       expect(routing.customDomain).toBeNull();
     });
 
     it('correctly identifies Vercel platform root host as platform, NOT a subdomain', () => {
-      const routing = extractEdgeRouting('https://clinic-flow-ten-sigma.vercel.app/');
+      const routing = extractEdgeRouting('https://clinic-flow-lh3g.vercel.app/');
       expect(routing.type).toBe('platform');
       expect(routing.slug).toBeNull();
       expect(routing.customDomain).toBeNull();
@@ -121,7 +121,7 @@ describe('Edge Subdomain & Dedicated Domain Routing Architecture', () => {
     });
 
     it('correctly resolves subdomain forwarded via Host or x-forwarded-host header', () => {
-      const request = new Request('https://clinic-flow-ten-sigma.vercel.app/', {
+      const request = new Request('https://clinic-flow-lh3g.vercel.app/', {
         headers: { 'x-forwarded-host': 'dr-ahmed.clinicflow.app' }
       });
       const response = middleware(request);
@@ -229,7 +229,7 @@ describe('Edge Subdomain & Dedicated Domain Routing Architecture', () => {
 
     it('immediately identifies 4-part platform subdomain with empty tenants array', () => {
       const resolution = resolveTenantFromLocation([], {
-        hostname: 'dr-sara.clinic-flow-ten-sigma.vercel.app',
+        hostname: 'dr-sara.clinic-flow-lh3g.vercel.app',
         pathname: '/',
         search: ''
       });
@@ -244,7 +244,7 @@ describe('Edge Subdomain & Dedicated Domain Routing Architecture', () => {
       ];
 
       const resolution = resolveTenantFromLocation(mockTenants, {
-        hostname: 'clinic-flow-ten-sigma.vercel.app',
+        hostname: 'clinic-flow-lh3g.vercel.app',
         pathname: '/index.html',
         search: '?dedicatedDomain=dr-hazem-clinic.com'
       });

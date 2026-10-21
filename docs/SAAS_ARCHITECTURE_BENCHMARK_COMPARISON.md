@@ -1,7 +1,7 @@
 # المقارنة المعمارية العملية بالأدلة البرمجية: ClinicFlow vs كبار أنظمة الـ SaaS
 ## Concrete Code-Grounded Architectural Benchmark: ClinicFlow vs Shopify, Stripe, Linear & Salesforce
 > **وثيقة هندسية مدعومة بالأدلة البرمجية (Engineering Receipts):** كل بند في هذه الوثيقة مستند إلى كود فعلي، مسار ملف، رقم سطر، واختبارات قياس سرعة (`performance.now()`) مجربة ومحققة بنسبة 100% في مستودع المشروع.
-> **رابط بيئة الإنتاج الحية:** [https://clinic-flow-ten-sigma.vercel.app](https://clinic-flow-ten-sigma.vercel.app)
+> **رابط بيئة الإنتاج الحية:** [https://clinic-flow-lh3g.vercel.app](https://clinic-flow-lh3g.vercel.app)
 > **تاريخ التحديث:** 11 أكتوبر 2026
 
 ---
@@ -258,7 +258,7 @@
 
 ## 4. إثباتات بيئة الإنتاج الحية (Production Deployment Proofs)
 
-1. **الرابط المباشر:** [https://clinic-flow-ten-sigma.vercel.app](https://clinic-flow-ten-sigma.vercel.app)
+1. **الرابط المباشر:** [https://clinic-flow-lh3g.vercel.app](https://clinic-flow-lh3g.vercel.app)
 2. **بيانات الدخول التجريبية المحققة سحابياً:**
    - الحساب: `doctor1@enterprise-clinic1.com`
    - كلمة المرور: `passDoctor1!`

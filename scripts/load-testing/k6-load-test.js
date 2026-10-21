@@ -14,7 +14,7 @@ export const options = {
   },
 };
 
-const BASE_URL = __ENV.TARGET_URL || 'https://clinic-flow-ten-sigma.vercel.app';
+const BASE_URL = __ENV.TARGET_URL || 'https://clinic-flow-lh3g.vercel.app';
 
 export default function () {
   // Scenario 1: Load Root App

@@ -188,7 +188,7 @@ export default function SuperAdminDashboard() {
 
   const handleCopyHandover = async (tenant) => {
     if (!tenant) return;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://smart-clinic-6xg.pages.dev';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://clinic-flow-lh3g.vercel.app';
     const bookingUrl = `${origin}/c/${tenant.slug}/booking`;
     const subdomainUrl = `https://${tenant.slug}.smartclinic.app`;
     const loginUrl = `${origin}/login`;

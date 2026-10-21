@@ -8,7 +8,7 @@ const autocannon = require('autocannon');
 const fs = require('fs');
 const path = require('path');
 
-const BASE_URL = process.env.TARGET_URL || 'https://clinic-flow-ten-sigma.vercel.app';
+const BASE_URL = process.env.TARGET_URL || 'https://clinic-flow-lh3g.vercel.app';
 
 async function runBenchmark(title, options) {
   console.log(`\n======================================================`);
@@ -86,7 +86,7 @@ async function runAllBenchmarks() {
       connections: 15,
       duration: 10,
       headers: {
-        'Host': 'dr-ahmed.clinic-flow-ten-sigma.vercel.app',
+        'Host': 'dr-ahmed.clinic-flow-lh3g.vercel.app',
         'Accept': 'text/html'
       }
     });

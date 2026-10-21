@@ -1,7 +1,7 @@
 const https = require('https');
 const { performance } = require('perf_hooks');
 
-const TARGET_HOST = 'clinic-flow-ten-sigma.vercel.app';
+const TARGET_HOST = 'clinic-flow-lh3g.vercel.app';
 
 const ENDPOINTS = [
   { name: 'Root Homepage Edge CDN', path: '/' },

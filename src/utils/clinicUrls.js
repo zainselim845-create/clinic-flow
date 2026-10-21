@@ -6,7 +6,7 @@
  */
 
 export const SAAS_PLATFORM_DOMAIN = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PLATFORM_DOMAIN) || 'smartclinic.app';
-export const VERCEL_PRODUCTION_HOST = 'clinic-flow-ten-sigma.vercel.app';
+export const VERCEL_PRODUCTION_HOST = 'clinic-flow-lh3g.vercel.app';
 export const CLOUDFLARE_PAGES_HOST = 'smart-clinic-6xg.pages.dev';
 
 /**
@@ -29,12 +29,12 @@ export function getClinicSubdomainUrl(tenant, platformDomain = SAAS_PLATFORM_DOM
 
 /**
  * Returns the direct portal URL for a clinic that works on any host without wildcard DNS.
- * e.g. https://smart-clinic-6xg.pages.dev/c/dr-ahmed/booking
+ * e.g. https://clinic-flow-lh3g.vercel.app/c/dr-ahmed/booking
  */
 export function getClinicDirectPortalUrl(tenant, location = (typeof window !== 'undefined' ? window.location : null)) {
   const slug = (tenant?.slug || '').trim().toLowerCase();
   if (!slug) return '';
-  const origin = location?.origin || (typeof window !== 'undefined' ? window.location.origin : `https://${CLOUDFLARE_PAGES_HOST}`);
+  const origin = location?.origin || (typeof window !== 'undefined' ? window.location.origin : `https://${VERCEL_PRODUCTION_HOST}`);
   return `${origin}/c/${slug}/booking`;
 }
 

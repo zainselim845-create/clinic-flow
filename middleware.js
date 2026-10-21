@@ -55,7 +55,7 @@ export function extractEdgeRouting(inputUrl) {
 
   if (isHostingPlatform) {
     // Requires >= 4 parts for a subdomain on hosting platforms
-    // e.g. dr-ahmed.clinic-flow-ten-sigma.vercel.app -> parts.length is 4, parts[0] is dr-ahmed
+    // e.g. dr-ahmed.clinic-flow-lh3g.vercel.app -> parts.length is 4, parts[0] is dr-ahmed
     if (parts.length >= 4 && !RESERVED_SUBDOMAINS.has(parts[0])) {
       return { type: 'subdomain', slug: parts[0], customDomain: null };
     }

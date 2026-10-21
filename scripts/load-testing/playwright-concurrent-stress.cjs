@@ -6,7 +6,7 @@
 
 const { chromium } = require('playwright');
 
-const BASE_URL = process.env.TARGET_URL || 'https://clinic-flow-ten-sigma.vercel.app';
+const BASE_URL = process.env.TARGET_URL || 'https://clinic-flow-lh3g.vercel.app';
 const CONCURRENT_USERS = 5; // 5 headless browser instances simultaneously
 
 async function simulateVirtualUser(userId) {

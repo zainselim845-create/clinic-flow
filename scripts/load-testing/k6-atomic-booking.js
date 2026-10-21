@@ -23,7 +23,7 @@ export const options = {
   },
 };
 
-const BASE_URL = __ENV.TARGET_URL || 'https://clinic-flow-ten-sigma.vercel.app';
+const BASE_URL = __ENV.TARGET_URL || 'https://clinic-flow-lh3g.vercel.app';
 const API_KEY = __ENV.CLINIC_API_KEY || 'k6_test_partner_api_key_secure_123';
 
 export default function () {

@@ -74,7 +74,7 @@ function safeFetchSyncTenants(endpointUrl, options = {}) {
     } else if (typeof process !== 'undefined' && process.env?.VERCEL_URL) {
       finalUrl = `https://${process.env.VERCEL_URL}${endpointUrl}`;
     } else {
-      finalUrl = `https://clinic-flow-ten-sigma.vercel.app${endpointUrl}`;
+      finalUrl = `https://clinic-flow-lh3g.vercel.app${endpointUrl}`;
     }
   }
   return fetch(finalUrl, options);
