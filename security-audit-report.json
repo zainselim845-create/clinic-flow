@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-10-21T10:10:46.710Z",
+  "timestamp": "2026-10-21T11:02:32.764Z",
   "target": "https://clinic-flow-lh3g.vercel.app",
   "passRate": "100%",
   "total": 16,
@@ -100,7 +100,7 @@
       "category": "R2 Storage Security",
       "testName": "S3 Secret Key Immunity",
       "passed": true,
-      "details": "Status: 404, Leaked: false"
+      "details": "Status: 401, Leaked: false"
     }
   ]
 }
