@@ -3,8 +3,8 @@
  * S3-compatible API client implementing AWS Signature Version 4 for zero-egress Cloudflare R2 object storage.
  */
 
-const https = require('https');
-const crypto = require('crypto');
+import https from 'https';
+import crypto from 'crypto';
 
 // AWS Signature Version 4 utilities
 function hmac(key, string) {
@@ -101,7 +101,7 @@ function signedR2Request({ method, accountId, accessKeyId, secretAccessKey, buck
   });
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // CORS & Security headers
   const origin = req.headers.origin || '';
   const allowed = origin.includes('clinic-flow') || origin.includes('localhost') || origin.includes('smartclinic');
