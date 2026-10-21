@@ -11,6 +11,7 @@ export function systemReducer(state, action) {
         notifications: [],
         blockedSlots: [],
         expenses: [],
+        invoices: [],
         recalls: []
       };
 

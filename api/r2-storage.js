@@ -157,7 +157,7 @@ export default async function handler(req, res) {
 
     // 1. Connection Test Action
     if (action === 'test-connection') {
-      if (!isTest && !hasValidSecret && !hasAuthHeader) {
+      if (!isTest && !hasValidSecret && !hasAuthHeader && !hasClinicContext) {
         return res.status(403).json({ error: 'Forbidden: Admin authorization required to test storage connection' });
       }
 

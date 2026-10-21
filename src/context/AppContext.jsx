@@ -9,6 +9,7 @@ import * as notificationsService from '@/features/platform/services/notification
 import * as staffService from '@/features/platform/services/staffService';
 import * as clinicsService from '@/features/platform/services/clinicsService';
 import * as expensesService from '@/features/billing/services/expensesService';
+import * as invoicesService from '@/features/billing/services/invoicesService';
 import * as recallsService from '@/features/patients/services/recallsService';
 import * as doctorsService from '@/features/clinical/services/doctorsService';
 import { sendReminder } from '@/features/marketing/services/smsService';
@@ -78,6 +79,7 @@ export const initialState = {
   notifications: [],
   blockedSlots: [],
   expenses: [],
+  invoices: [],
   recalls: [],
   staffMembers: [],
   doctors: [],
@@ -95,12 +97,14 @@ const generateId = () => generateUuid();
 export const appReducer = combinedAppReducer;
 
 export function AppProvider({ children }) {
-  const [state, dispatch] = useReducer(appReducer, initialState);
+  const [state, dispatchBase] = useReducer(appReducer, initialState);
   const stateRef = useRef(state);
   const useSupabase = isSupabaseConfigured();
   const [realtimeStatus, setRealtimeStatus] = useState(REALTIME_STATUS.DISCONNECTED);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const realtimeManagerRef = useRef(null);
+  const instanceIdRef = useRef(`tab_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`);
+  const broadcastChannelRef = useRef(null);
 
   const refreshClinicData = useCallback(() => {
     setRefreshTrigger(prev => prev + 1);
@@ -111,6 +115,57 @@ export function AppProvider({ children }) {
   const activeTenant = tenantContext?.tenant;
   const tenantSlug = tenantContext?.tenantSlug || activeTenant?.slug || '';
   const tenantId = activeTenant?.id || (tenantSlug ? `tenant-${tenantSlug}` : 'tenant-default');
+
+  // Cross-Tab Instant Reactivity via BroadcastChannel
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+    const channelName = `clinicflow_app_actions_${tenantSlug || tenantId || 'default'}`;
+    let bc = null;
+    try {
+      bc = new BroadcastChannel(channelName);
+      bc.onmessage = (event) => {
+        const msg = event?.data;
+        if (!msg || msg.senderId === instanceIdRef.current) return;
+        if (msg.type === 'DOMAIN_ACTION' && msg.action) {
+          if (msg.action.type === 'ADD_APPOINTMENT' || msg.action.type === 'ADD_INVOICE') {
+            playChime('notification');
+          }
+          dispatchBase({ ...msg.action, _remote: true });
+        }
+      };
+      broadcastChannelRef.current = bc;
+    } catch (err) {
+      console.warn('[AppContext] BroadcastChannel setup notice:', err);
+    }
+
+    return () => {
+      try {
+        if (bc) bc.close();
+      } catch {}
+      broadcastChannelRef.current = null;
+    };
+  }, [tenantSlug, tenantId]);
+
+  const dispatch = useCallback((action) => {
+    dispatchBase(action);
+    if (!action?._remote && broadcastChannelRef.current) {
+      try {
+        broadcastChannelRef.current.postMessage({
+          type: 'DOMAIN_ACTION',
+          action,
+          senderId: instanceIdRef.current,
+          timestamp: Date.now()
+        });
+      } catch (err) {
+        console.warn('[AppContext] Broadcast action notice:', err);
+      }
+    }
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      try {
+        window.dispatchEvent(new CustomEvent('clinicflow:action', { detail: action }));
+      } catch {}
+    }
+  }, []);
 
   useEffect(() => {
     stateRef.current = state;
@@ -144,7 +199,7 @@ export function AppProvider({ children }) {
       if (useSupabase && cloudCircuitBreaker.isAvailable() && (isTestEnv || isRealUuid)) {
         try {
           // جلب البيانات من Supabase مع الفلترة بالعيادة النشطة فقط
-          const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, expensesRes, recallsRes, doctorsRes] = await Promise.all([
+          const [patientsRes, apptsRes, blockedRes, notifsRes, staffRes, clinicRes, expensesRes, recallsRes, doctorsRes, invoicesRes] = await Promise.all([
             patientsService.getPatients(currentClinicId),
             appointmentsService.getAppointments(currentClinicId),
             blockedSlotsService.getBlockedSlots(currentClinicId),
@@ -153,7 +208,8 @@ export function AppProvider({ children }) {
             clinicsService.getClinicInfo(currentClinicId),
             expensesService.getExpenses(currentClinicId),
             recallsService.getRecalls(currentClinicId),
-            doctorsService.getDoctors(currentClinicId)
+            doctorsService.getDoctors(currentClinicId),
+            invoicesService.getInvoices(currentClinicId)
           ]);
 
           // Verify whether Supabase schema is actually deployed or returned PGRST205
@@ -178,6 +234,7 @@ export function AppProvider({ children }) {
                 doctors: doctorsRes?.data || [],
                 clinicInfo: clinicRes?.data || activeTenant || null,
                 expenses: expensesRes?.data || [],
+                invoices: invoicesRes?.data || [],
                 recalls: recallsRes?.data || [],
                 useSupabase: true,
                 currentTenantSlug: currentSlug
@@ -212,6 +269,10 @@ export function AppProvider({ children }) {
             migratedPayload.doctors = [];
           }
 
+          if (!migratedPayload.invoices) {
+            migratedPayload.invoices = [];
+          }
+
           migratedPayload.staffMembers = reconcileStaffList(migratedPayload.staffMembers, currentSlug, currentClinicId);
 
           dispatch({ 
@@ -228,6 +289,7 @@ export function AppProvider({ children }) {
               notifications: [],
               blockedSlots: [],
               expenses: [],
+              invoices: [],
               recalls: [],
               staffMembers: reconcileStaffList([], currentSlug, currentClinicId),
               doctors: [],
@@ -246,6 +308,7 @@ export function AppProvider({ children }) {
             notifications: [],
             blockedSlots: [],
             expenses: [],
+            invoices: [],
             recalls: [],
             staffMembers: reconcileStaffList([], currentSlug, currentClinicId),
             doctors: [],
@@ -293,6 +356,7 @@ export function AppProvider({ children }) {
           staffMembers: state.staffMembers,
           clinicInfo: state.clinicInfo,
           expenses: state.expenses,
+          invoices: state.invoices,
           recalls: state.recalls
         };
         safeSetJSON(scopedKey, payload);
@@ -321,6 +385,7 @@ export function AppProvider({ children }) {
             staffMembers: state.staffMembers,
             clinicInfo: state.clinicInfo,
             expenses: state.expenses,
+            invoices: state.invoices,
             recalls: state.recalls
           };
           safeSetJSON(scopedKey, compactedState);
@@ -335,7 +400,7 @@ export function AppProvider({ children }) {
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [state.patients, state.appointments, state.blockedSlots, state.notifications, state.staffMembers, state.clinicInfo, state.expenses, state.recalls, state._freshReset, state.isLoading, state.currentTenantSlug, tenantSlug]);
+  }, [state.patients, state.appointments, state.blockedSlots, state.notifications, state.staffMembers, state.clinicInfo, state.expenses, state.invoices, state.recalls, state._freshReset, state.isLoading, state.currentTenantSlug, tenantSlug]);
 
   // ==========================================
   // Supabase Realtime Subscriptions معزولة بمفتاح العيادة فقط
@@ -643,11 +708,16 @@ export const useClinical = () => {
 export const useFinancial = () => {
   const app = useApp();
   const expenses = app.state.expenses || [];
+  const invoices = app.state.invoices || [];
   const totalExpenses = expenses.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
+  const totalRevenue = invoices.reduce((sum, inv) => sum + (Number(inv.paidAmount ?? inv.total) || 0), 0);
   return {
     expenses,
+    invoices,
     totalExpenses,
+    totalRevenue,
     expensesCount: expenses.length,
+    invoicesCount: invoices.length,
     dispatch: app.dispatch
   };
 };

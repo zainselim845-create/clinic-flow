@@ -218,7 +218,7 @@ export async function deleteClinicFile(clinicId, fileKey) {
 /**
  * Tests live connection to Cloudflare R2 bucket
  */
-export async function testR2Connection(customConfig = null) {
+export async function testR2Connection(customConfig = null, clinicId = null) {
   const config = customConfig || getR2Config();
 
   if (!config.accountId || !config.accessKeyId || !config.secretAccessKey || !config.bucketName) {
@@ -229,9 +229,15 @@ export async function testR2Connection(customConfig = null) {
   }
 
   try {
+    const headers = { 'Content-Type': 'application/json' };
+    const activeClinicId = clinicId || customConfig?.clinicId || (typeof window !== 'undefined' ? (window.__CLINICFLOW_ACTIVE_CLINIC_ID || 'default') : 'default');
+    if (activeClinicId) {
+      headers['x-clinic-id'] = activeClinicId;
+    }
+
     const res = await fetch('/api/r2-storage', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         action: 'test-connection',
         config: {

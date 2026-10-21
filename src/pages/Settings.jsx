@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
-  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Smartphone, Bot
+  Building2, Users, CalendarDays, CreditCard, Stethoscope, Globe, Smartphone, Bot, Key
 } from 'lucide-react';
 
 import { useApp } from '@/context/AppContext';
@@ -17,6 +17,7 @@ import SubscriptionPlanTab from '@/pages/settings/SubscriptionPlanTab';
 import CustomDomainTab from '@/pages/settings/CustomDomainTab';
 import SmsConfigTab from '@/pages/settings/SmsConfigTab';
 import AiAssistantTab from '@/pages/settings/AiAssistantTab';
+import ApiIntegrationsTab from '@/pages/settings/ApiIntegrationsTab';
 import { useTenant } from '@/context/TenantContext';
 import { clinicInfo as defaultClinicInfo } from '@/data/demoData';
 import { Tabs } from '@/components/ui/tabs';
@@ -24,9 +25,9 @@ import { isAdminRole } from '@/utils/permissions';
 import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 import './Settings.css';
 
-const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'aiAssistant', 'subscription', 'customDomain', 'sms'];
+const VALID_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'aiAssistant', 'apis', 'subscription', 'customDomain', 'sms'];
 // const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff']
-const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'aiAssistant', 'subscription', 'customDomain'];
+const CLIENT_TABS = ['clinic', 'schedule', 'visitTypes', 'staff', 'aiAssistant', 'apis', 'subscription', 'customDomain'];
 
 const Settings = () => {
   const { state, dispatch } = useApp();
@@ -265,6 +266,15 @@ const Settings = () => {
           </Tabs.Trigger>
 
           <Tabs.Trigger 
+            value="apis"
+            className={`tab-btn ${activeTab === 'apis' ? 'active' : ''}`}
+            title="الربط البرمجي وواجهات الـ APIs ومفاتيح الخدمات"
+          >
+            <Key size={18} />
+            <span>الربط و APIs</span>
+          </Tabs.Trigger>
+
+          <Tabs.Trigger 
             value="subscription"
             className={`tab-btn ${activeTab === 'subscription' ? 'active' : ''}`}
             title="متابعة باقة الاشتراك، الرصيد، والترخيص"
@@ -362,6 +372,12 @@ const Settings = () => {
           <Tabs.Content value="aiAssistant">
             <FeatureErrorBoundary featureName="إعدادات المساعد الذكي">
               <AiAssistantTab />
+            </FeatureErrorBoundary>
+          </Tabs.Content>
+
+          <Tabs.Content value="apis">
+            <FeatureErrorBoundary featureName="مركز الربط البرمجي وواجهات الـ APIs">
+              <ApiIntegrationsTab />
             </FeatureErrorBoundary>
           </Tabs.Content>
 

@@ -10,6 +10,8 @@ import { fromDbStaff } from '@/features/platform/services/staffService';
 import { fromDbBlockedSlot } from '@/features/appointments/services/blockedSlotsService';
 import { fromDbExpense } from '@/features/billing/services/expensesService';
 import { fromDbRecall } from '@/features/patients/services/recallsService';
+import { fromDbInvoice } from '@/features/billing/services/invoicesService';
+import { fromDbClinic } from '@/features/platform/services/clinicsService';
 import { apiCache } from '@/features/platform/services/apiCacheService';
 
 export const REALTIME_STATUS = {
@@ -183,6 +185,26 @@ export function mapPostgresChangeToDomainAction(table, payload) {
       return null;
     }
 
+    case 'invoices': {
+      if (eventType === 'INSERT') {
+        return { type: 'ADD_INVOICE', payload: fromDbInvoice(newRow) };
+      }
+      if (eventType === 'UPDATE') {
+        return { type: 'UPDATE_INVOICE', payload: fromDbInvoice(newRow) };
+      }
+      if (eventType === 'DELETE') {
+        return { type: 'DELETE_INVOICE', payload: oldRow?.id };
+      }
+      return null;
+    }
+
+    case 'clinics': {
+      if (eventType === 'INSERT' || eventType === 'UPDATE') {
+        return { type: 'UPDATE_CLINIC_INFO', payload: fromDbClinic(newRow) };
+      }
+      return null;
+    }
+
     default:
       return null;
   }
@@ -222,11 +244,14 @@ export function createClinicRealtimeManager({
     if (table === 'appointments' && payload.eventType === 'INSERT') {
       playChime('notification');
     }
+    if (table === 'invoices' && payload.eventType === 'INSERT') {
+      playChime('notification');
+    }
     onDispatch?.(action);
   };
 
   // Register table listeners with strict clinic_id scoping
-  const tables = ['appointments', 'patients', 'notifications', 'staff_members', 'blocked_slots', 'expenses', 'patient_recalls'];
+  const tables = ['appointments', 'patients', 'invoices', 'notifications', 'staff_members', 'blocked_slots', 'expenses', 'patient_recalls'];
   tables.forEach((tableName) => {
     channel.on(
       'postgres_changes',
@@ -239,6 +264,18 @@ export function createClinicRealtimeManager({
       (payload) => handlePostgresChange(tableName, payload)
     );
   });
+
+  // Register clinic info listener scoped by clinic id
+  channel.on(
+    'postgres_changes',
+    {
+      event: '*',
+      schema: 'public',
+      table: 'clinics',
+      filter: `id=eq.${clinicId}`
+    },
+    (payload) => handlePostgresChange('clinics', payload)
+  );
 
   // Listen to peer-to-peer broadcast events on this clinic channel
   channel.on('broadcast', { event: 'clinic_event' }, (msg) => {
