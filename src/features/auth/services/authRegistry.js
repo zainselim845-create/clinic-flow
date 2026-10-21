@@ -14,6 +14,15 @@ import { isDemoOrCorruptedTenant, isDemoOrCorruptedUser } from '@/features/auth/
 const REGISTERED_TENANTS_KEY = 'clinicflow_registered_tenants';
 const REGISTERED_USERS_KEY = 'clinicflow_registered_users';
 
+/**
+ * Strips plain passwords, API keys and secrets before cloud dispatch or browser persistence
+ */
+export function stripSensitiveCredentials(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  const { password, doctorPassword, apiKey, secretKey, secret, ...safe } = obj;
+  return safe;
+}
+
 let memoryTenantsCache = null;
 let memoryUsersCache = null;
 export const registeredSlugsSet = new Set();
@@ -132,15 +141,16 @@ export async function syncTenantsFromCloud() {
       const merged = [...local];
       cloudTenants.forEach(ct => {
         if (!ct || !ct.slug || isDemoOrCorruptedTenant(ct)) return;
-        const idx = merged.findIndex(m => m.id === ct.id || m.slug === ct.slug);
+        const safeCt = stripSensitiveCredentials(ct);
+        const idx = merged.findIndex(m => m.id === safeCt.id || m.slug === safeCt.slug);
         if (idx >= 0) {
-          merged[idx] = { ...merged[idx], ...ct };
+          merged[idx] = { ...merged[idx], ...safeCt };
         } else {
-          merged.push(ct);
+          merged.push(safeCt);
         }
-        if (ct.slug) registeredSlugsSet.add(ct.slug);
-        if (ct.doctorEmail) registeredEmailsSet.add(ct.doctorEmail.toLowerCase());
-        if (ct.phone) registeredPhonesSet.add(ct.phone.replace(/\D/g, ''));
+        if (safeCt.slug) registeredSlugsSet.add(safeCt.slug);
+        if (safeCt.doctorEmail) registeredEmailsSet.add(safeCt.doctorEmail.toLowerCase());
+        if (safeCt.phone) registeredPhonesSet.add(safeCt.phone.replace(/\D/g, ''));
       });
 
       memoryTenantsCache = merged;
@@ -159,11 +169,16 @@ export async function syncTenantsFromCloud() {
       const mergedUsers = [...localUsers];
       cloudUsers.forEach(cu => {
         if (!cu || (!cu.id && !cu.email) || isDemoOrCorruptedUser(cu)) return;
-        const idx = mergedUsers.findIndex(u => u.id === cu.id || (cu.email && u.email?.toLowerCase() === cu.email.toLowerCase()));
+        const safeCu = stripSensitiveCredentials(cu);
+        const idx = mergedUsers.findIndex(u => u.id === safeCu.id || (safeCu.email && u.email?.toLowerCase() === safeCu.email.toLowerCase()));
         if (idx >= 0) {
-          mergedUsers[idx] = { ...mergedUsers[idx], ...cu };
+          const existingPass = mergedUsers[idx].password;
+          mergedUsers[idx] = { ...mergedUsers[idx], ...safeCu };
+          if (existingPass && !mergedUsers[idx].password) {
+            mergedUsers[idx].password = existingPass;
+          }
         } else {
-          mergedUsers.push(cu);
+          mergedUsers.push(safeCu);
         }
       });
       memoryUsersCache = mergedUsers;
@@ -188,7 +203,7 @@ export async function syncTenantsFromCloud() {
         safeFetchSyncTenants('/api/sync-tenants', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tenant: missingTenant })
+          body: JSON.stringify({ tenant: stripSensitiveCredentials(missingTenant) })
         }).catch(err => console.warn('[AuthService] Upward sync tenant note:', err));
       }
     }
@@ -203,7 +218,7 @@ export async function syncTenantsFromCloud() {
         safeFetchSyncTenants('/api/sync-tenants', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user: missingUser })
+          body: JSON.stringify({ user: stripSensitiveCredentials(missingUser) })
         }).catch(err => console.warn('[AuthService] Upward sync user note:', err));
       }
     }
@@ -271,7 +286,9 @@ export async function flushPendingCloudSyncQueue() {
  * @returns {Promise<boolean>}
  */
 export async function syncTenantAndUserToCloud(tenant, user) {
-  const payload = { tenant, user };
+  const safeTenant = tenant ? stripSensitiveCredentials(tenant) : null;
+  const safeUser = user ? stripSensitiveCredentials(user) : null;
+  const payload = { tenant: safeTenant, user: safeUser };
   if (typeof fetch === 'undefined') return true;
   try {
     const res = await safeFetchSyncTenants('/api/sync-tenants', {
@@ -328,10 +345,11 @@ export function saveRegisteredTenant(tenant) {
   // Background Cloud Sync to Vercel Serverless Sync API & Supabase
   try {
     if (typeof fetch !== 'undefined') {
+      const safeTenant = stripSensitiveCredentials(tenant);
       safeFetchSyncTenants('/api/sync-tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant })
+        body: JSON.stringify({ tenant: safeTenant })
       }).catch(apiErr => console.warn('[AuthService] /api/sync-tenants sync note:', apiErr));
     }
     if (isSupabaseConfigured()) {
@@ -583,10 +601,11 @@ export function saveRegisteredUser(user) {
   // Background Cloud Sync to Vercel Serverless Sync API & Supabase
   try {
     if (typeof fetch !== 'undefined' && user) {
+      const safeUser = stripSensitiveCredentials(user);
       safeFetchSyncTenants('/api/sync-tenants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user })
+        body: JSON.stringify({ user: safeUser })
       }).catch(apiErr => console.warn('[AuthService] /api/sync-tenants user sync note:', apiErr));
     }
   } catch (syncErr) {

@@ -87,8 +87,12 @@ async function getRegistry() {
     parsed.tenants = parsed.tenants.filter(t => !isDemoOrCorruptedTenant(t));
     parsed.users = parsed.users.filter(u => !isDemoOrCorruptedUser(u));
 
-    if (parsed.tenants.length !== originalTenantsLen || parsed.users.length !== originalUsersLen) {
-      saveRegistry(parsed).catch(err => console.warn('[Sync-Tenants API] Prune save notice:', err.message));
+    const hasUnsanitizedData = 
+      (parsed.users || []).some(u => u.password || u.doctorPassword) ||
+      (parsed.tenants || []).some(t => t.doctorPassword || t.apiKey || t.secretKey || t.secret);
+
+    if (parsed.tenants.length !== originalTenantsLen || parsed.users.length !== originalUsersLen || hasUnsanitizedData) {
+      saveRegistry(parsed).catch(err => console.warn('[Sync-Tenants API] Auto-sanitize/prune save notice:', err.message));
     }
 
     return parsed;
@@ -105,7 +109,26 @@ async function getRegistry() {
 
 async function saveRegistry(registry) {
   registry.updatedAt = new Date().toISOString();
-  const buffer = Buffer.from(JSON.stringify(registry, null, 2));
+  
+  // Security Hardening (CWE-312 / CWE-200): Strip all passwords, secrets, and API keys before saving to storage
+  const sanitizedTenants = (registry.tenants || []).map(t => {
+    const { doctorPassword, apiKey, secretKey, secret, ...safeTenant } = t;
+    return safeTenant;
+  });
+
+  const sanitizedUsers = (registry.users || []).map(u => {
+    const { password, doctorPassword, ...safeUser } = u;
+    return safeUser;
+  });
+
+  const safeRegistry = {
+    version: registry.version || 1,
+    updatedAt: registry.updatedAt,
+    tenants: sanitizedTenants,
+    users: sanitizedUsers
+  };
+
+  const buffer = Buffer.from(JSON.stringify(safeRegistry, null, 2));
 
   const { error } = await getSupabaseAdmin().storage
     .from(BUCKET_NAME)
@@ -182,18 +205,20 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       const registry = await getRegistry();
       const normalizedTenants = (registry.tenants || []).map(t => {
-        const isCompleted = Boolean(t.name && t.slug);
+        const { doctorPassword, apiKey, secretKey, secret, ...safeTenant } = t;
+        const isCompleted = Boolean(safeTenant.name && safeTenant.slug);
         return {
-          ...t,
-          isOnboardingCompleted: isCompleted ? true : (t.isOnboardingCompleted ?? true)
+          ...safeTenant,
+          isOnboardingCompleted: isCompleted ? true : (safeTenant.isOnboardingCompleted ?? true)
         };
       });
       const sanitizedUsers = (registry.users || []).map(u => {
-        const hasClinic = Boolean(u.clinicSlug && u.clinicSlug !== '*');
+        const { password, doctorPassword, ...safeUser } = u;
+        const hasClinic = Boolean(safeUser.clinicSlug && safeUser.clinicSlug !== '*');
         return {
-          ...u,
-          needsOnboarding: hasClinic ? false : (u.needsOnboarding ?? false),
-          isOnboardingCompleted: hasClinic ? true : (u.isOnboardingCompleted ?? true)
+          ...safeUser,
+          needsOnboarding: hasClinic ? false : (safeUser.needsOnboarding ?? false),
+          isOnboardingCompleted: hasClinic ? true : (safeUser.isOnboardingCompleted ?? true)
         };
       });
       return res.status(200).json({
@@ -250,56 +275,59 @@ export default async function handler(req, res) {
 
       const registry = await getRegistry();
 
+      let safeTenant = null;
       if (tenant && (tenant.id || tenant.slug)) {
-        tenant.isOnboardingCompleted = true;
+        const { doctorPassword, apiKey, secretKey, secret, ...restTenant } = tenant;
+        safeTenant = { ...restTenant, isOnboardingCompleted: true };
         const tIndex = registry.tenants.findIndex(
-          t => t.id === tenant.id || t.slug === tenant.slug
+          t => t.id === safeTenant.id || t.slug === safeTenant.slug
         );
         if (tIndex >= 0) {
           registry.tenants[tIndex] = {
             ...registry.tenants[tIndex],
-            ...tenant,
+            ...safeTenant,
             isOnboardingCompleted: true,
             updatedAt: new Date().toISOString()
           };
         } else {
           registry.tenants.push({
-            ...tenant,
+            ...safeTenant,
             isOnboardingCompleted: true,
-            createdAt: tenant.createdAt || new Date().toISOString()
+            createdAt: safeTenant.createdAt || new Date().toISOString()
           });
         }
       }
 
       if (user && (user.id || user.email)) {
+        const { password, doctorPassword, ...safeUser } = user;
         // Enforce Trust Boundary & Privilege Management (CWE-269 / CWE-501)
-        if (user.role === 'super_admin' && (user.email || '').toLowerCase() !== 'superadmin@clinicflow.com') {
-          console.warn('[Sync-Tenants API] Blocked unauthorized super_admin escalation attempt for:', user.email);
-          user.role = 'doctor';
-          user.isSuperAdmin = false;
+        if (safeUser.role === 'super_admin' && (safeUser.email || '').toLowerCase() !== 'superadmin@clinicflow.com') {
+          console.warn('[Sync-Tenants API] Blocked unauthorized super_admin escalation attempt for:', safeUser.email);
+          safeUser.role = 'doctor';
+          safeUser.isSuperAdmin = false;
         }
 
-        if (user.clinicSlug && user.clinicSlug !== '*') {
-          user.needsOnboarding = false;
-          user.isOnboardingCompleted = true;
+        if (safeUser.clinicSlug && safeUser.clinicSlug !== '*') {
+          safeUser.needsOnboarding = false;
+          safeUser.isOnboardingCompleted = true;
         }
         const uIndex = registry.users.findIndex(
-          u => u.id === user.id || (user.email && u.email?.toLowerCase() === user.email.toLowerCase())
+          u => u.id === safeUser.id || (safeUser.email && u.email?.toLowerCase() === safeUser.email.toLowerCase())
         );
         if (uIndex >= 0) {
           registry.users[uIndex] = {
             ...registry.users[uIndex],
-            ...user,
-            needsOnboarding: user.needsOnboarding ?? false,
-            isOnboardingCompleted: user.isOnboardingCompleted ?? true,
+            ...safeUser,
+            needsOnboarding: safeUser.needsOnboarding ?? false,
+            isOnboardingCompleted: safeUser.isOnboardingCompleted ?? true,
             updatedAt: new Date().toISOString()
           };
         } else {
           registry.users.push({
-            ...user,
-            needsOnboarding: user.needsOnboarding ?? false,
-            isOnboardingCompleted: user.isOnboardingCompleted ?? true,
-            createdAt: user.createdAt || new Date().toISOString()
+            ...safeUser,
+            needsOnboarding: safeUser.needsOnboarding ?? false,
+            isOnboardingCompleted: safeUser.isOnboardingCompleted ?? true,
+            createdAt: safeUser.createdAt || new Date().toISOString()
           });
         }
       }
@@ -329,7 +357,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         message: 'Tenant and user saved to cloud registry',
-        tenant,
+        tenant: safeTenant || (tenant ? { id: tenant.id, name: tenant.name, slug: tenant.slug } : null),
         totalTenants: registry.tenants.length
       });
     }
@@ -385,7 +413,8 @@ export default async function handler(req, res) {
         registry.tenants[tIndex].updatedAt = new Date().toISOString();
 
         await saveRegistry(registry);
-        return res.status(200).json({ success: true, tenant: registry.tenants[tIndex] });
+        const { doctorPassword, apiKey, secretKey, secret, ...safeTenant } = registry.tenants[tIndex];
+        return res.status(200).json({ success: true, tenant: safeTenant });
       } else {
         return res.status(404).json({ success: false, error: 'Clinic not found' });
       }

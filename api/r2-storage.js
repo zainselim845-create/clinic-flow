@@ -119,11 +119,48 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Authentication & Tenant Boundary Gate (CWE-306 / CWE-284)
+  const clinicId = (req.headers['x-clinic-id'] || req.headers['x-clinic'] || '').trim();
+  const authHeader = req.headers['authorization'] || '';
+  const syncSecret = req.headers['x-sync-secret'] || '';
+  const requiredSecret = process.env.SYNC_API_SECRET;
+
+  const isTest = process.env.NODE_ENV === 'test';
+  const hasClinicContext = clinicId && /^[a-zA-Z0-9_-]+$/.test(clinicId);
+  const hasAuthHeader = Boolean(authHeader);
+  const hasValidSecret = Boolean(requiredSecret && (syncSecret === requiredSecret || authHeader.replace(/^Bearer\s+/i, '') === requiredSecret));
+
+  if (!isTest && !hasClinicContext && !hasAuthHeader && !hasValidSecret) {
+    return res.status(401).json({
+      error: 'Unauthorized: Missing clinic identification or authorization token.'
+    });
+  }
+
   try {
     const { action, fileKey, fileData, contentType, config } = req.body || {};
 
+    // Directory Traversal & Namespace Guard (CWE-22 / CWE-639)
+    if (action === 'upload' || action === 'delete') {
+      if (!fileKey || typeof fileKey !== 'string') {
+        return res.status(400).json({ error: 'Missing or invalid fileKey' });
+      }
+
+      const cleanKey = fileKey.replace(/\\/g, '/').replace(/\/\.\./g, '').replace(/\.\.\//g, '').replace(/^\/+/, '');
+      if (cleanKey.includes('..') || cleanKey.startsWith('/')) {
+        return res.status(400).json({ error: 'Invalid fileKey path format' });
+      }
+
+      if (clinicId && clinicId !== 'shared' && !cleanKey.startsWith(`clinics/${clinicId}/`) && !cleanKey.startsWith(`${clinicId}/`)) {
+        return res.status(403).json({ error: 'Forbidden: Access to specified storage namespace is denied' });
+      }
+    }
+
     // 1. Connection Test Action
     if (action === 'test-connection') {
+      if (!isTest && !hasValidSecret && !hasAuthHeader) {
+        return res.status(403).json({ error: 'Forbidden: Admin authorization required to test storage connection' });
+      }
+
       const activeConfig = config || {
         accountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID,
         accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID,

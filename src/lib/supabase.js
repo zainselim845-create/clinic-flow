@@ -15,7 +15,8 @@ export const NOT_CONFIGURED_ERROR = new Error('Supabase is not configured');
 
 export const DEFAULT_SUPABASE_URL = 'https://rogkodgqeowiylpckspi.supabase.co';
 export const DEFAULT_SUPABASE_KEY = 'sb_publishable_wuceFYy_wMujWGBRRVVfUg_oTXMFKrg';
-export const CLOUD_TENANTS_REGISTRY_URL = 'https://rogkodgqeowiylpckspi.supabase.co/storage/v1/object/public/tenants/sync/tenants_registry.json';
+// Disabled public CDN URL to prevent credential exposure; all tenant sync routes through secure /api/sync-tenants
+export const CLOUD_TENANTS_REGISTRY_URL = '';
 
 export const sanitizeConfigString = (str) => {
   if (!str || typeof str !== 'string') return '';

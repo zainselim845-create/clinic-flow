@@ -10,8 +10,7 @@ import { formatPhoneForWhatsApp } from '../../src/services/smsService.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rogkodgqeowiylpckspi.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
-const CRON_SECRET = process.env.CRON_SECRET || 'test-cron-secret-2026';
-
+// Authentication enforced dynamically inside handler based on environment
 let supabaseAdmin = null;
 function getSupabase() {
   if (!supabaseAdmin && (SUPABASE_SERVICE_KEY || process.env.NODE_ENV === 'test')) {
@@ -35,13 +34,24 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // 1. Strict Authentication via CRON_SECRET
+  // 1. Strict Authentication via CRON_SECRET (CWE-287 / CWE-798 Hardcoded Credential Mitigation)
   const authHeader = req.headers['authorization'] || '';
   const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   const headerSecret = req.headers['x-cron-secret'] || '';
   const providedSecret = token || headerSecret;
 
-  if (!providedSecret || providedSecret !== CRON_SECRET) {
+  const isTest = process.env.NODE_ENV === 'test';
+  const expectedSecret = process.env.CRON_SECRET || (isTest ? 'test-cron-secret-2026' : null);
+
+  if (!expectedSecret) {
+    console.error('[Dispatch Recalls Cron] Error: CRON_SECRET is not configured in production environment.');
+    return res.status(500).json({
+      success: false,
+      error: 'CRON_SECRET is not configured on the server'
+    });
+  }
+
+  if (!providedSecret || providedSecret !== expectedSecret) {
     return res.status(401).json({
       success: false,
       error: 'Unauthorized: Invalid or missing CRON_SECRET'
