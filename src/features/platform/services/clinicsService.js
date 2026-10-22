@@ -24,8 +24,8 @@ export function fromDbClinic(row) {
     branding: row.branding || { primaryColor: '#09090B', accentColor: '#10B981' },
     quotas: row.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
     googleMapsUrl: row.google_maps_url || row.googleMapsUrl || '',
-    coordinates: row.coordinates || null,
-    ownerLocation: row.owner_location || row.ownerLocation || (row.coordinates?.isOwnerDevice ? row.coordinates : null),
+    coordinates: row.coordinates || row.branding?.coordinates || null,
+    ownerLocation: row.owner_location || row.ownerLocation || row.branding?.ownerLocation || (row.coordinates?.isOwnerDevice ? row.coordinates : (row.branding?.coordinates?.isOwnerDevice ? row.branding.coordinates : null)),
     deletedAt: row.deleted_at || null,
     deleted_at: row.deleted_at || null,
     createdAt: row.created_at
@@ -57,9 +57,13 @@ export function toDbClinic(data) {
   if (data.googleMapsUrl !== undefined || data.google_maps_url !== undefined) {
     payload.google_maps_url = data.googleMapsUrl || data.google_maps_url;
   }
-  if (data.coordinates !== undefined) payload.coordinates = data.coordinates;
-  if (data.ownerLocation !== undefined || data.owner_location !== undefined) {
-    payload.owner_location = data.ownerLocation || data.owner_location;
+  if (data.coordinates !== undefined || data.ownerLocation !== undefined || data.owner_location !== undefined) {
+    const ownerLoc = data.ownerLocation !== undefined ? data.ownerLocation : data.owner_location;
+    payload.branding = {
+      ...(payload.branding || {}),
+      ...(data.coordinates !== undefined ? { coordinates: data.coordinates } : {}),
+      ...(ownerLoc !== undefined ? { ownerLocation: ownerLoc } : {})
+    };
   }
   if (data.deletedAt !== undefined || data.deleted_at !== undefined) {
     payload.deleted_at = data.deletedAt !== undefined ? data.deletedAt : data.deleted_at;

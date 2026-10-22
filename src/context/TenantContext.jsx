@@ -709,16 +709,19 @@ export const TenantProvider = ({ children }) => {
         if (updatedInfo.phone) dbPayload.phone = updatedInfo.phone;
         if (updatedInfo.address) dbPayload.address = updatedInfo.address;
         if (updatedInfo.googleMapsUrl !== undefined) dbPayload.google_maps_url = updatedInfo.googleMapsUrl;
-        if (updatedInfo.coordinates !== undefined) dbPayload.coordinates = updatedInfo.coordinates;
-        if (updatedInfo.ownerLocation !== undefined || updatedInfo.owner_location !== undefined) {
+        if (updatedInfo.branding) {
+          dbPayload.branding = { ...(dbPayload.branding || {}), ...updatedInfo.branding };
+        }
+        if (updatedInfo.coordinates !== undefined || updatedInfo.ownerLocation !== undefined || updatedInfo.owner_location !== undefined) {
           const ownerLoc = updatedInfo.ownerLocation || updatedInfo.owner_location;
-          dbPayload.coordinates = {
-            ...(dbPayload.coordinates || {}),
-            ...ownerLoc,
-            isOwnerDevice: true
+          const coords = updatedInfo.coordinates || (ownerLoc ? { ...ownerLoc, isOwnerDevice: true } : null);
+          dbPayload.branding = {
+            ...(activeTenant?.branding || {}),
+            ...(dbPayload.branding || {}),
+            ...(coords ? { coordinates: coords } : {}),
+            ...(ownerLoc ? { ownerLocation: ownerLoc } : {})
           };
         }
-        if (updatedInfo.branding) dbPayload.branding = updatedInfo.branding;
         if (updatedInfo.regularFee) dbPayload.regular_fee = updatedInfo.regularFee;
         if (updatedInfo.consultationFee) dbPayload.consultation_fee = updatedInfo.consultationFee;
         if (updatedInfo.customDomain !== undefined) dbPayload.custom_domain = updatedInfo.customDomain;
