@@ -268,23 +268,6 @@ export const MarketingCrmHub = () => {
         </div>
 
         <div className="hero-actions-and-kpis">
-          <div className="hero-kpis-pill">
-            <div className="kpi-micro">
-              <span className="lbl">إجمالي المرضى</span>
-              <strong className="val">{crmStats.totalPatients}</strong>
-            </div>
-            <div className="divider-v"></div>
-            <div className="kpi-micro">
-              <span className="lbl">المرضى المميزون</span>
-              <strong className="val text-primary">{crmStats.vipCount}</strong>
-            </div>
-            <div className="divider-v"></div>
-            <div className="kpi-micro">
-              <span className="lbl">إعادة التواصل</span>
-              <strong className="val text-warning">{crmStats.dormantCount}</strong>
-            </div>
-          </div>
-
           <button 
             type="button" 
             onClick={() => setActiveTab('ai_composer')}

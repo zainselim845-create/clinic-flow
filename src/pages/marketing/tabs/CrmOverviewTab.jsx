@@ -4,7 +4,7 @@ import {
   ChevronLeft, Zap, Star, MessageCircle, Bot,
   PlusCircle, Sparkles, ShieldCheck, ArrowUpRight,
   CheckCircle2, Send, Phone, Clock, Copy, ExternalLink,
-  Calendar, Check, AlertCircle, ArrowLeft
+  Calendar, Check, AlertCircle, ArrowLeft, Edit3
 } from 'lucide-react';
 import { copyToClipboard } from '@/utils/clipboard';
 
@@ -213,6 +213,17 @@ export function CrmOverviewTab({
     return '20' + digits;
   };
 
+  const handleLoadPatientIntoDispatcher = (item) => {
+    if (!item) return;
+    setDispatcherPhone(item.phone || '');
+    setDispatcherCustomText(item.message || '');
+    showToast(`تم تجهيز رسالة ${item.patientName} في مختبر الإرسال السريع`, 'info');
+    const el = document.getElementById('crm-instant-dispatcher');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   return (
     <div className="crm-tab-content">
       
@@ -338,16 +349,6 @@ export function CrmOverviewTab({
                 استعادة حجوزات
               </button>
             </div>
-
-            <button 
-              type="button" 
-              onClick={() => onOpenAddPackage ? onOpenAddPackage() : setActiveTab('packages')}
-              className="btn-action-primary"
-              style={{ fontSize: '0.82rem', padding: '0.45rem 0.9rem' }}
-            >
-              <PlusCircle size={15} />
-              <span>إضافة باقة جديدة</span>
-            </button>
           </div>
         </div>
 
@@ -356,12 +357,12 @@ export function CrmOverviewTab({
           <table className="crm-queue-table">
             <thead>
               <tr>
-                <th style={{ width: '38px', textAlign: 'center' }}>الحالة</th>
-                <th style={{ width: '150px' }}>المريض ورقم الهاتف</th>
-                <th style={{ width: '190px' }}>سبب المتابعة / الإجراء</th>
-                <th style={{ width: '100px' }}>الأولوية</th>
-                <th>معاينة الرسالة الذكية المقترحة</th>
-                <th style={{ textAlign: 'center', width: '190px', minWidth: '190px' }}>إجراء فوري</th>
+                <th style={{ width: '40px', textAlign: 'center' }}>الحالة</th>
+                <th style={{ width: '180px' }}>المريض ورقم الهاتف</th>
+                <th>سبب المتابعة / الإجراء</th>
+                <th style={{ width: '120px' }}>الأولوية</th>
+                <th style={{ textAlign: 'center', width: '220px', minWidth: '220px' }}>إجراء فوري</th>
+                <th style={{ textAlign: 'center', width: '85px' }}>تعديل</th>
               </tr>
             </thead>
             <tbody>
@@ -389,7 +390,10 @@ export function CrmOverviewTab({
                     <td>
                       <div className="patient-cell-info">
                         <strong className="patient-name">{item.patientName}</strong>
-                        <span className="patient-phone" dir="ltr">{item.phone}</span>
+                        <a href={`tel:${item.phone}`} className="patient-phone" dir="ltr" title="اتصال هاتفي مباشر">
+                          <Phone size={11} style={{ display: 'inline', marginInlineEnd: '4px', verticalAlign: 'middle' }} />
+                          {item.phone}
+                        </a>
                       </div>
                     </td>
 
@@ -411,13 +415,6 @@ export function CrmOverviewTab({
                       </span>
                     </td>
 
-                    {/* Message Preview */}
-                    <td>
-                      <div className="msg-preview-cell" title={item.message}>
-                        <span>{item.message}</span>
-                      </div>
-                    </td>
-
                     {/* Action Buttons */}
                     <td>
                       <div className="cell-actions-row">
@@ -427,7 +424,7 @@ export function CrmOverviewTab({
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="action-btn btn-whatsapp"
-                          title="إرسال عبر واتساب مباشرة"
+                          title={`إرسال عبر واتساب مباشرة:\n${item.message}`}
                         >
                           <Send size={13} />
                           <span>واتساب</span>
@@ -437,7 +434,7 @@ export function CrmOverviewTab({
                         <a 
                           href={smsUrl}
                           className="action-btn btn-sms"
-                          title="إرسال رسالة SMS"
+                          title={`إرسال رسالة SMS:\n${item.message}`}
                         >
                           <MessageCircle size={13} />
                           <span>SMS</span>
@@ -454,6 +451,19 @@ export function CrmOverviewTab({
                           <span>{isCompleted ? 'مكتمل' : 'تم'}</span>
                         </button>
                       </div>
+                    </td>
+
+                    {/* Load into Instant Dispatcher for Customization */}
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => handleLoadPatientIntoDispatcher(item)}
+                        className="btn-customize-msg"
+                        title="تعديل وتخصيص الرسالة في مختبر الإرسال السريع"
+                      >
+                        <Edit3 size={13} />
+                        <span>تعديل</span>
+                      </button>
                     </td>
                   </tr>
                 );
@@ -529,6 +539,16 @@ export function CrmOverviewTab({
 
                   <button
                     type="button"
+                    onClick={() => handleLoadPatientIntoDispatcher(item)}
+                    className="m-btn m-btn-customize"
+                    title="تعديل وتخصيص الرسالة في مختبر الإرسال السريع"
+                  >
+                    <Edit3 size={14} />
+                    <span>تعديل</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => toggleItemCompleted(item.id)}
                     className={`m-btn m-btn-resolve ${isCompleted ? 'resolved' : ''}`}
                   >
@@ -543,7 +563,7 @@ export function CrmOverviewTab({
       </div>
 
       {/* 3. Instant Message & Campaign Dispatcher (مختبر الإرسال والمراسلة السريعة المباشرة) */}
-      <div className="crm-dispatcher-card">
+      <div id="crm-instant-dispatcher" className="crm-dispatcher-card">
         <div className="dispatcher-header">
           <div className="disp-title-row">
             <div className="disp-icon bg-purple">
@@ -647,118 +667,6 @@ export function CrmOverviewTab({
             </div>
           </div>
         </div>
-      </div>
-
-      {/* 4. Split Operational Summary Grid (فرص البيع المتقاطع ورادار السمعة) */}
-      <div className="crm-split-grid">
-        
-        {/* Box A: Cross-Selling Opportunities */}
-        <div className="crm-section-box">
-          <div className="box-header">
-            <h4>
-              <Zap size={18} className="text-primary" />
-              <span>أهم فرص البيع المتقاطع السريري (Clinical Cross-Selling)</span>
-            </h4>
-            <button onClick={() => setActiveTab('cross_sell')} className="btn-link">
-              <span>عرض المحرك الكامل</span>
-              <ArrowUpRight size={14} />
-            </button>
-          </div>
-
-          {crossSellCount === 0 ? (
-            <div className="crm-compact-utility-box">
-              <div className="compact-util-info">
-                <Zap size={22} className="text-primary" />
-                <div>
-                  <strong>محرك التحليل السريري للخدمات التكميلية نشط</strong>
-                  <p>يقوم النظام تلقائياً بمطابقة خدمات المرضى السابقة (تنظيف، ليزر، كشف) واقتراح خدمات مكملة متوافقة طبياً عند تسجيل كشوفات جديدة.</p>
-                </div>
-              </div>
-              <button 
-                type="button" 
-                onClick={() => setActiveTab('segmentation')}
-                className="btn-secondary-bordered"
-                style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
-              >
-                <span>استعراض شرائح المرضى</span>
-                <ChevronLeft size={14} />
-              </button>
-            </div>
-          ) : (
-            <div className="opportunities-mini-list">
-              {(crossSellOpportunities || []).slice(0, 3).map((opp, idx) => (
-                <div key={idx} className="opp-mini-card">
-                  <div className="opp-meta">
-                    <strong>{opp.patientName}</strong>
-                    <span>خدمته: {opp.primaryService} ← <strong className="text-primary">{opp.suggestedService}</strong></span>
-                  </div>
-                  <a 
-                    href={`https://wa.me/${getCleanPhone(opp.patientPhone)}?text=${encodeURIComponent(opp.smsMessage || opp.whatsappMessage)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="action-btn btn-whatsapp"
-                  >
-                    <Send size={13} />
-                    <span>واتساب</span>
-                  </a>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Box B: Google Reviews & NPS Reputation Radar */}
-        <div className="crm-section-box">
-          <div className="box-header">
-            <h4>
-              <Star size={18} className="text-warning" />
-              <span>رادار السمعة الرقمية وتقييمات Google Reviews & NPS</span>
-            </h4>
-            <button onClick={() => setActiveTab('feedback')} className="btn-link">
-              <span>فتح البوابة</span>
-              <ArrowUpRight size={14} />
-            </button>
-          </div>
-
-          <div className="crm-compact-utility-box">
-            <div className="compact-util-info">
-              <ShieldCheck size={22} className="text-warning" />
-              <div>
-                <strong>نظام حماية السمعة الرقمية للعيادة مفعّل</strong>
-                <p>يتم إرسال استبيان الرضا بعد الكشف بـ 24 ساعة. التقييمات الممتازة (4-5 نجوم) تُوجّه مباشرة لخرائط جوجل، والشكاوى تُحوّل للإدارة فوراً.</p>
-              </div>
-            </div>
-            <button 
-              type="button" 
-              onClick={() => setActiveTab('feedback')}
-              className="btn-secondary-bordered"
-              style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
-            >
-              <span>إدارة التقييمات والاستبيانات</span>
-              <ChevronLeft size={14} />
-            </button>
-          </div>
-
-          {feedbacksCount > 0 && (
-            <div className="feedbacks-mini-list" style={{ marginTop: '0.75rem' }}>
-              {(feedbacksList || []).slice(0, 2).map((fb) => (
-                <div key={fb.id} className="fb-mini-card">
-                  <div className="fb-stars">
-                    {fb.rating} من 5 ★
-                  </div>
-                  <div className="fb-meta">
-                    <strong>{fb.patientName}</strong>
-                    <p>"{fb.comment}"</p>
-                  </div>
-                  <span className={`status-pill ${fb.rating >= 4 ? 'pill-success' : 'pill-warning'}`}>
-                    {fb.rating >= 4 ? 'Google Review' : 'متابعة داخلية'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
       </div>
     </div>
   );

@@ -620,6 +620,30 @@
   border-color: #10B981;
 }
 
+.btn-customize-msg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border-color, #CBD5E1);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn-customize-msg:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
 /* Mobile Queue Cards Styles (Touch-Friendly) */
 .crm-mobile-card {
   background: var(--surface);
@@ -715,8 +739,8 @@
 
 .m-card-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 0.45rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
   align-items: center;
 }
 
@@ -756,6 +780,18 @@
 .m-btn-sms:hover {
   background: var(--primary);
   color: #FFFFFF !important;
+}
+
+.m-btn-customize {
+  background: var(--surface);
+  color: var(--text-primary) !important;
+  border-color: var(--border-color, #CBD5E1);
+}
+
+.m-btn-customize:hover {
+  background: var(--primary-light);
+  color: var(--primary) !important;
+  border-color: var(--primary);
 }
 
 .m-btn-resolve {
@@ -2264,10 +2300,11 @@
 
   .m-card-actions {
     grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
   }
 
   .m-card-actions .m-btn-resolve {
-    grid-column: span 2;
+    grid-column: auto;
     width: 100%;
     justify-content: center;
   }
