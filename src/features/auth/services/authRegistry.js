@@ -342,7 +342,7 @@ export function saveRegisteredTenant(tenant) {
   // Cross-tab broadcast
   broadcastTenantUpdate('REGISTER_TENANT', tenant);
 
-  // Background Cloud Sync to Vercel Serverless Sync API & Supabase
+  // Background Cloud Sync to Vercel Serverless Sync API & Cloud Registry
   try {
     if (typeof fetch !== 'undefined') {
       const safeTenant = stripSensitiveCredentials(tenant);
@@ -351,9 +351,6 @@ export function saveRegisteredTenant(tenant) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenant: safeTenant })
       }).catch(apiErr => console.warn('[AuthService] /api/sync-tenants sync note:', apiErr));
-    }
-    if (isSupabaseConfigured()) {
-      createClinicInDb(tenant).catch(err => console.warn('Supabase tenant creation sync note:', err));
     }
   } catch (syncErr) {
     console.warn('[AuthService] Cloud sync trigger error:', syncErr);

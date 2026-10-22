@@ -408,10 +408,13 @@ export default async function handler(req, res) {
           registry.tenants[tIndex].customDomain = domainVal;
           registry.tenants[tIndex].custom_domain = domainVal;
           try {
-            await getSupabaseAdmin().from('clinics').update({
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetIdentifier);
+            let updateQuery = getSupabaseAdmin().from('clinics').update({
               custom_domain: domainVal,
               updated_at: new Date().toISOString()
-            }).or(`id.eq.${targetIdentifier},slug.eq.${targetIdentifier}`);
+            });
+            updateQuery = isUuid ? updateQuery.or(`id.eq.${targetIdentifier},slug.eq.${targetIdentifier}`) : updateQuery.eq('slug', targetIdentifier);
+            await updateQuery;
           } catch (dbErr) {
             console.warn('[Sync-Tenants API] Supabase custom_domain sync warning:', dbErr?.message || dbErr);
           }

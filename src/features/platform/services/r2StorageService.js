@@ -12,43 +12,87 @@ const R2_LOCAL_STORAGE_PREFIX = 'clinicflow_r2_local_file_';
 
 /**
  * Returns current Cloudflare R2 storage configuration
+ * Centralized SaaS Platform Architecture:
+ * Defaults to the central platform R2 configuration managed in Super Admin Dashboard.
+ * Clinics automatically inherit the platform R2 bucket unless a custom override is set.
+ * @param {string} [clinicId]
  */
-export function getR2Config() {
+export function getR2Config(clinicId = null) {
   const defaults = {
-    accountId: (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_ACCOUNT_ID) || '',
-    accessKeyId: (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_ACCESS_KEY_ID) || '',
-    secretAccessKey: (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_SECRET_ACCESS_KEY) || '',
-    bucketName: (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_BUCKET) || 'smart-clinic-storage',
-    publicDomain: (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_PUBLIC_DOMAIN) || '',
-    enabled: true
+    accountId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDFLARE_R2_ACCOUNT_ID) ||
+               (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_ACCOUNT_ID) || '',
+    accessKeyId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDFLARE_R2_ACCESS_KEY_ID) ||
+                 (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_ACCESS_KEY_ID) || '',
+    secretAccessKey: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY) ||
+                     (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_SECRET_ACCESS_KEY) || '',
+    bucketName: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDFLARE_R2_BUCKET) ||
+                (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_BUCKET) || 'smart-clinic-storage',
+    publicDomain: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDFLARE_R2_PUBLIC_DOMAIN) ||
+                  (typeof process !== 'undefined' && process.env?.CLOUDFLARE_R2_PUBLIC_DOMAIN) || '',
+    enabled: true,
+    isPlatformManaged: true
   };
 
+  // 1. Central SaaS Platform Config (managed from SuperAdmin Dashboard)
   const saved = safeStorage.getItem(R2_CONFIG_KEY);
-  if (!saved) return defaults;
-
-  try {
-    const parsed = typeof saved === 'string' ? JSON.parse(saved) : saved;
-    return { ...defaults, ...parsed };
-  } catch {
-    return defaults;
+  let resolved = { ...defaults };
+  if (saved) {
+    try {
+      const parsed = typeof saved === 'string' ? JSON.parse(saved) : saved;
+      resolved = { ...resolved, ...parsed, isPlatformManaged: true };
+    } catch {}
   }
+
+  // 2. Specific Clinic Override (if configured in clinic settings)
+  if (clinicId) {
+    const overrideKey = `clinicflow_r2_override_${clinicId}`;
+    const clinicSaved = safeStorage.getItem(overrideKey);
+    if (clinicSaved) {
+      try {
+        const parsedClinic = typeof clinicSaved === 'string' ? JSON.parse(clinicSaved) : clinicSaved;
+        if (parsedClinic.accountId || parsedClinic.accessKeyId) {
+          resolved = { ...resolved, ...parsedClinic, isPlatformManaged: false, isCustomOverride: true };
+        }
+      } catch {}
+    }
+  }
+
+  return resolved;
 }
 
 /**
  * Persists Cloudflare R2 configuration
+ * @param {Object} config
+ * @param {string} [clinicId] - If provided, saves as clinic override; otherwise saves as platform config
  */
-export function saveR2Config(config) {
-  const current = getR2Config();
+export function saveR2Config(config, clinicId = null) {
+  const current = getR2Config(clinicId);
   const updated = { ...current, ...config };
-  safeStorage.setItem(R2_CONFIG_KEY, JSON.stringify(updated));
+
+  if (clinicId) {
+    safeStorage.setItem(`clinicflow_r2_override_${clinicId}`, JSON.stringify(updated));
+  } else {
+    safeStorage.setItem(R2_CONFIG_KEY, JSON.stringify(updated));
+  }
+
+  // Broadcast across tabs
+  if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+    try {
+      const bc = new BroadcastChannel('clinicflow_r2_sync');
+      bc.postMessage({ type: 'R2_CONFIG_UPDATED', clinicId, config: updated });
+      bc.close();
+    } catch {}
+  }
+
   return updated;
 }
 
 /**
  * Checks if Cloudflare R2 credentials are fully configured
+ * @param {string} [clinicId]
  */
-export function isR2Configured() {
-  const config = getR2Config();
+export function isR2Configured(clinicId = null) {
+  const config = getR2Config(clinicId);
   return Boolean(
     config.enabled &&
     config.accountId?.trim() &&
@@ -97,10 +141,10 @@ export async function uploadClinicFile({ clinicId, category = 'general', fileNam
   }
 
   const fileKey = getClinicStorageKey(clinicId, category, fileName);
-  const config = getR2Config();
+  const config = getR2Config(clinicId);
 
   // If Cloudflare R2 is configured, invoke the R2 serverless upload proxy or direct S3 endpoint
-  if (isR2Configured()) {
+  if (isR2Configured(clinicId)) {
     try {
       const response = await fetch('/api/r2-storage', {
         method: 'POST',
@@ -162,7 +206,7 @@ export async function uploadClinicFile({ clinicId, category = 'general', fileNam
  */
 export function getClinicFileUrl(clinicId, fileKey) {
   if (!fileKey) return '';
-  const config = getR2Config();
+  const config = getR2Config(clinicId);
 
   // If local fallback file
   const localStoreKey = `${R2_LOCAL_STORAGE_PREFIX}${fileKey}`;
@@ -194,7 +238,7 @@ export async function deleteClinicFile(clinicId, fileKey) {
   // Remove from local fallback
   safeStorage.removeItem(`${R2_LOCAL_STORAGE_PREFIX}${fileKey}`);
 
-  if (isR2Configured()) {
+  if (isR2Configured(clinicId)) {
     try {
       await fetch('/api/r2-storage', {
         method: 'POST',
@@ -219,7 +263,7 @@ export async function deleteClinicFile(clinicId, fileKey) {
  * Tests live connection to Cloudflare R2 bucket
  */
 export async function testR2Connection(customConfig = null, clinicId = null) {
-  const config = customConfig || getR2Config();
+  const config = customConfig || getR2Config(clinicId);
 
   if (!config.accountId || !config.accessKeyId || !config.secretAccessKey || !config.bucketName) {
     return {
