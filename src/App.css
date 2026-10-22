@@ -80,14 +80,17 @@
 /* Responsive */
 @media (max-width: 768px) {
   .main-content {
-    margin-right: 0;
-    margin-inline-start: 0;
+    margin-right: 0 !important;
+    margin-inline-start: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
     padding-bottom: 70px;
   }
 
   .page-content {
-    padding: 0.75rem;
-    max-width: 100%;
+    padding: 0.75rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 

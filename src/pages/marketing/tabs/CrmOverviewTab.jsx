@@ -351,17 +351,17 @@ export function CrmOverviewTab({
           </div>
         </div>
 
-        {/* Operational Queue Table */}
-        <div className="crm-queue-table-wrapper">
+        {/* Operational Queue Table (Desktop & Laptop) */}
+        <div className="crm-queue-table-wrapper crm-desktop-only">
           <table className="crm-queue-table">
             <thead>
               <tr>
-                <th style={{ width: '40px' }}>الحالة</th>
-                <th>المريض ورقم الهاتف</th>
-                <th>سبب المتابعة / الإجراء السريري</th>
-                <th>الأولوية والتوقيت</th>
+                <th style={{ width: '38px', textAlign: 'center' }}>الحالة</th>
+                <th style={{ width: '150px' }}>المريض ورقم الهاتف</th>
+                <th style={{ width: '190px' }}>سبب المتابعة / الإجراء</th>
+                <th style={{ width: '100px' }}>الأولوية</th>
                 <th>معاينة الرسالة الذكية المقترحة</th>
-                <th style={{ textAlign: 'center', width: '255px', minWidth: '255px' }}>إجراء فوري بنقرة واحدة</th>
+                <th style={{ textAlign: 'center', width: '190px', minWidth: '190px' }}>إجراء فوري</th>
               </tr>
             </thead>
             <tbody>
@@ -460,6 +460,85 @@ export function CrmOverviewTab({
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Action Cards (Touch-Friendly Responsive View for Mobile <= 768px) */}
+        <div className="crm-queue-cards-mobile">
+          {filteredQueue.map((item) => {
+            const isCompleted = completedItemIds.has(item.id);
+            const cleanPhone = getCleanPhone(item.phone);
+            const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(item.message)}`;
+            const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(item.message)}`;
+
+            return (
+              <div key={`m_${item.id}`} className={`crm-mobile-card ${isCompleted ? 'card-completed' : ''}`}>
+                <div className="m-card-header">
+                  <div className="m-patient-group">
+                    <button 
+                      type="button"
+                      onClick={() => toggleItemCompleted(item.id)}
+                      className={`btn-check-toggle ${isCompleted ? 'checked' : ''}`}
+                      title={isCompleted ? 'إعادة فتح المهمة' : 'تعليم كمكتمل'}
+                    >
+                      {isCompleted ? <Check size={14} /> : null}
+                    </button>
+                    <div className="m-patient-names">
+                      <strong className="m-name">{item.patientName}</strong>
+                      <a href={`tel:${item.phone}`} className="m-phone" dir="ltr">
+                        <Phone size={12} />
+                        <span>{item.phone}</span>
+                      </a>
+                    </div>
+                  </div>
+                  <span className="priority-pill">
+                    <Clock size={11} />
+                    <span>{item.priority}</span>
+                  </span>
+                </div>
+
+                <div className="m-card-reason">
+                  <span className={`reason-type-badge badge-${item.typeColor}`}>
+                    {item.typeLabel}
+                  </span>
+                  <p className="m-reason-desc">{item.reason}</p>
+                </div>
+
+                <div className="m-card-message-preview">
+                  <span className="m-msg-label">نص الرسالة المجهزة:</span>
+                  <p className="m-msg-text">{item.message}</p>
+                </div>
+
+                <div className="m-card-actions">
+                  <a 
+                    href={whatsappUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="m-btn m-btn-whatsapp"
+                  >
+                    <Send size={14} />
+                    <span>واتساب</span>
+                  </a>
+
+                  <a 
+                    href={smsUrl}
+                    className="m-btn m-btn-sms"
+                  >
+                    <MessageCircle size={14} />
+                    <span>SMS</span>
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleItemCompleted(item.id)}
+                    className={`m-btn m-btn-resolve ${isCompleted ? 'resolved' : ''}`}
+                  >
+                    <CheckCircle2 size={14} />
+                    <span>{isCompleted ? 'مكتمل' : 'تم'}</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
