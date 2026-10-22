@@ -540,11 +540,14 @@ export const TenantProvider = ({ children }) => {
       }
 
       if (targetSlug) {
-        const { data, error } = await supabase
-          .from('clinics')
-          .select('*')
-          .or(`slug.eq.${targetSlug},id.eq.${targetSlug}`)
-          .maybeSingle();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetSlug);
+        let query = supabase.from('clinics').select('*');
+        if (isUuid) {
+          query = query.or(`slug.eq.${targetSlug},id.eq.${targetSlug}`);
+        } else {
+          query = query.eq('slug', targetSlug);
+        }
+        const { data, error } = await query.maybeSingle();
 
         if (data && !error) {
           const parsed = fromDbClinic(data);
@@ -721,14 +724,20 @@ export const TenantProvider = ({ children }) => {
         if (updatedInfo.customDomain !== undefined) dbPayload.custom_domain = updatedInfo.customDomain;
         if (Object.keys(dbPayload).length > 0) {
           const matchKey = targetId || targetSlug;
-          supabase
-            .from('clinics')
-            .update(dbPayload)
-            .or(`id.eq.${matchKey},slug.eq.${matchKey}`)
-            .then(() => {})
-            .catch((err) => {
-              console.warn('[TenantContext] Failed to sync tenant branding to Supabase:', err);
-            });
+          if (matchKey) {
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(matchKey);
+            let updateQuery = supabase.from('clinics').update(dbPayload);
+            if (isUuid) {
+              updateQuery = updateQuery.or(`id.eq.${matchKey},slug.eq.${matchKey}`);
+            } else {
+              updateQuery = updateQuery.eq('slug', matchKey);
+            }
+            updateQuery
+              .then(() => {})
+              .catch((err) => {
+                console.warn('[TenantContext] Failed to sync tenant branding to Supabase:', err);
+              });
+          }
         }
       } catch (err) {
         console.warn('[TenantContext] Tenant branding update error:', err);
@@ -837,15 +846,21 @@ export const TenantProvider = ({ children }) => {
     });
 
     // 5. Persist to Supabase if configured
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && target) {
       try {
-        await supabase
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target);
+        let updateQuery = supabase
           .from('clinics')
           .update({
             custom_domain: clean || null,
             updated_at: new Date().toISOString()
-          })
-          .or(`id.eq.${target},slug.eq.${target}`);
+          });
+        if (isUuid) {
+          updateQuery = updateQuery.or(`id.eq.${target},slug.eq.${target}`);
+        } else {
+          updateQuery = updateQuery.eq('slug', target);
+        }
+        await updateQuery;
       } catch (err) {
         console.warn('Could not sync custom domain to Supabase:', err);
       }

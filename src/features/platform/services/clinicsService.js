@@ -68,6 +68,20 @@ export function toDbClinic(data) {
   return payload;
 }
 
+// Track whether remote Supabase 'clinics' table contains deleted_at column.
+// Defaults to false to prevent HTTP 400 (code 42703) on live production databases lacking this column.
+let hasClinicsDeletedAtColumn = false;
+
+export function setHasClinicsDeletedAtColumn(supported) {
+  hasClinicsDeletedAtColumn = Boolean(supported);
+}
+
+export function getHasClinicsDeletedAtColumn() {
+  return hasClinicsDeletedAtColumn;
+}
+
+const isUuidString = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str.trim());
+
 export async function getClinicInfo(clinicId = null, options = {}) {
   if (!isSupabaseConfigured()) {
     return { data: null, error: NOT_CONFIGURED_ERROR };
@@ -75,24 +89,29 @@ export async function getClinicInfo(clinicId = null, options = {}) {
 
   try {
     let query = supabase.from('clinics').select('*');
-    if (!options.includeDeleted) {
+    if (hasClinicsDeletedAtColumn && !options.includeDeleted) {
       query = query.is('deleted_at', null);
     }
     if (clinicId) {
-      query = query.eq('id', clinicId);
+      query = isUuidString(clinicId) ? query.eq('id', clinicId) : query.eq('slug', clinicId);
     }
     let { data, error } = await query.limit(1).maybeSingle();
     if (error && (error.code === '42703' || String(error.message || '').includes('deleted_at'))) {
+      hasClinicsDeletedAtColumn = false;
       let fallbackQuery = supabase.from('clinics').select('*');
       if (clinicId) {
-        fallbackQuery = fallbackQuery.eq('id', clinicId);
+        fallbackQuery = isUuidString(clinicId) ? fallbackQuery.eq('id', clinicId) : fallbackQuery.eq('slug', clinicId);
       }
       const fallback = await fallbackQuery.limit(1).maybeSingle();
       data = fallback.data;
       error = fallback.error;
     }
     if (error) throw error;
-    return { data: data ? fromDbClinic(data) : null, error: null };
+    const parsed = data ? fromDbClinic(data) : null;
+    if (parsed && !options.includeDeleted && (parsed.deletedAt || parsed.deleted_at)) {
+      return { data: null, error: null };
+    }
+    return { data: parsed, error: null };
   } catch (error) {
     console.error('Error fetching clinic info:', error);
     return { data: null, error };
@@ -106,17 +125,22 @@ export async function getAllClinicsFromDb(options = {}) {
 
   try {
     let query = supabase.from('clinics').select('*');
-    if (!options.includeDeleted) {
+    if (hasClinicsDeletedAtColumn && !options.includeDeleted) {
       query = query.is('deleted_at', null);
     }
     let { data, error } = await query.order('created_at', { ascending: false });
     if (error && (error.code === '42703' || String(error.message || '').includes('deleted_at'))) {
+      hasClinicsDeletedAtColumn = false;
       const fallback = await supabase.from('clinics').select('*').order('created_at', { ascending: false });
       data = fallback.data;
       error = fallback.error;
     }
     if (error) throw error;
-    return { data: (data || []).map(fromDbClinic), error: null };
+    let list = (data || []).map(fromDbClinic);
+    if (!options.includeDeleted) {
+      list = list.filter(c => !c.deletedAt && !c.deleted_at);
+    }
+    return { data: list, error: null };
   } catch (error) {
     console.error('Error fetching all clinics from DB:', error);
     return { data: [], error };
@@ -152,27 +176,33 @@ export async function deleteClinicFromDb(clinicId, options = {}) {
   }
 
   try {
+    const isUuid = isUuidString(clinicId);
     if (options.hardDelete) {
-      const { error } = await supabase.from('clinics').delete().eq('id', clinicId);
+      let delQuery = supabase.from('clinics').delete();
+      delQuery = isUuid ? delQuery.eq('id', clinicId) : delQuery.eq('slug', clinicId);
+      const { error } = await delQuery;
       if (error) throw error;
       return { success: true, error: null };
     }
 
     // Default: Soft-delete for compliance, audit trails, and financial retention
-    let { error } = await supabase
-      .from('clinics')
-      .update({ 
-        deleted_at: new Date().toISOString(),
-        subscription_status: 'cancelled'
-      })
-      .eq('id', clinicId);
+    const payload = { 
+      subscription_status: 'cancelled'
+    };
+    if (hasClinicsDeletedAtColumn) {
+      payload.deleted_at = new Date().toISOString();
+    }
+
+    let updateQuery = supabase.from('clinics').update(payload);
+    updateQuery = isUuid ? updateQuery.eq('id', clinicId) : updateQuery.eq('slug', clinicId);
+    let { error } = await updateQuery;
 
     if (error && (error.code === '42703' || String(error.message || '').includes('deleted_at'))) {
-      const fallback = await supabase
-        .from('clinics')
-        .update({ subscription_status: 'cancelled' })
-        .eq('id', clinicId);
-      error = fallback.error;
+      hasClinicsDeletedAtColumn = false;
+      let fallback = supabase.from('clinics').update({ subscription_status: 'cancelled' });
+      fallback = isUuid ? fallback.eq('id', clinicId) : fallback.eq('slug', clinicId);
+      const res = await fallback;
+      error = res.error;
     }
 
     if (error) throw error;
@@ -194,7 +224,13 @@ export async function updateClinicInfo(clinicId, updateData) {
 
   try {
     const dbPayload = toDbClinic(updateData);
-    let query = supabase.from('clinics').update(dbPayload).or(`id.eq.${clinicId},slug.eq.${clinicId}`);
+    const isUuid = isUuidString(clinicId);
+    let query = supabase.from('clinics').update(dbPayload);
+    if (isUuid) {
+      query = query.or(`id.eq.${clinicId},slug.eq.${clinicId}`);
+    } else {
+      query = query.eq('slug', clinicId);
+    }
     const { data, error } = await query.select().maybeSingle();
     if (error) throw error;
     return { data: data ? fromDbClinic(data) : null, error: null };

@@ -295,14 +295,16 @@ export async function saveClinicDomainSettings(clinicId, domainConfig) {
 
   if (isSupabaseConfigured()) {
     try {
-      await supabase
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clinicId);
+      let updateQuery = supabase
         .from('clinics')
         .update({
           custom_domain: domainConfig.domain || null,
           custom_domain_ssl_status: domainConfig.sslStatus || DOMAIN_STATUS.PENDING_DNS,
           custom_domain_verified_at: domainConfig.verifiedAt || null
-        })
-        .eq('id', clinicId);
+        });
+      updateQuery = isUuid ? updateQuery.eq('id', clinicId) : updateQuery.eq('slug', clinicId);
+      await updateQuery;
     } catch (err) {
       console.warn('[customDomainService] Failed to sync domain to Supabase, fallback to safeStorage:', err);
     }
