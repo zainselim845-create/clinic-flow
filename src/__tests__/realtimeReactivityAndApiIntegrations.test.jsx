@@ -180,7 +180,7 @@ describe('Real-Time Instant Reactivity & API Integrations Suite', () => {
 
   describe('3. Settings Registration & Tab Architecture', () => {
     it('verifies Settings.jsx includes "apis" in VALID_TABS and CLIENT_TABS', () => {
-      const settingsContent = fs.readFileSync(path.resolve('D:/clinic-flow-source/src/pages/Settings.jsx'), 'utf8');
+      const settingsContent = fs.readFileSync(path.resolve(process.cwd(), 'src/pages/Settings.jsx'), 'utf8');
       expect(settingsContent).toContain("'apis'");
       expect(settingsContent).toMatch(/<Tabs\.Trigger\s+value="apis"/);
       expect(settingsContent).toContain('<Tabs.Content value="apis">');
@@ -198,7 +198,7 @@ describe('Real-Time Instant Reactivity & API Integrations Suite', () => {
     });
 
     it('verifies AppContext includes invoices and BroadcastChannel cross-tab dispatching', () => {
-      const appContextContent = fs.readFileSync(path.resolve('D:/clinic-flow-source/src/context/AppContext.jsx'), 'utf8');
+      const appContextContent = fs.readFileSync(path.resolve(process.cwd(), 'src/context/AppContext.jsx'), 'utf8');
       expect(appContextContent).toContain('BroadcastChannel');
       expect(appContextContent).toContain('clinicflow_app_actions_');
       expect(appContextContent).toContain('_remote: true');
