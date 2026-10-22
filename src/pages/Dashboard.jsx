@@ -138,15 +138,25 @@ const Dashboard = () => {
 
   // Booking Funnel Monitoring: Live abandoned leads and conversion analytics
   const bookingFunnelStats = useMemo(() => {
-    return getBookingFunnelStats(currentClinicId);
+    if (!currentClinicId) return { totalStarted: 0, totalCompleted: 0, conversionRate: 0, dropOffByStep: [] };
+    try {
+      return getBookingFunnelStats(currentClinicId);
+    } catch {
+      return { totalStarted: 0, totalCompleted: 0, conversionRate: 0, dropOffByStep: [] };
+    }
   }, [currentClinicId]);
 
   const recentAbandonedLeads = useMemo(() => {
-    const drafts = getBookingDrafts(currentClinicId);
-    return drafts
-      .filter(d => d.status === 'abandoned')
-      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
-      .slice(0, 5);
+    if (!currentClinicId) return [];
+    try {
+      const drafts = getBookingDrafts(currentClinicId);
+      return (drafts || [])
+        .filter(d => d && d.status === 'abandoned')
+        .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+        .slice(0, 5);
+    } catch {
+      return [];
+    }
   }, [currentClinicId]);
 
   const currentExamPatient = inProgressToday[0] || null;

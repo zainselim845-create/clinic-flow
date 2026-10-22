@@ -87,14 +87,20 @@ export const MarketingCrmHub = () => {
   });
 
   // Drafts & Recovery (scoped by clinic)
-  const [draftsList, setDraftsList] = useState(() => getBookingDrafts(currentClinicId) || []);
-  const [feedbacksList, setFeedbacksList] = useState(() => getStoredFeedbacks(currentClinicId) || []);
+  const [draftsList, setDraftsList] = useState(() => currentClinicId ? (getBookingDrafts(currentClinicId) || []) : []);
+  const [feedbacksList, setFeedbacksList] = useState(() => currentClinicId ? (getStoredFeedbacks(currentClinicId) || []) : []);
 
   // Re-sync clinic-scoped CRM data when active clinic changes
   useEffect(() => {
-    setPackagesList(getPatientPackages(currentClinicId) || []);
-    setDraftsList(getBookingDrafts(currentClinicId) || []);
-    setFeedbacksList(getStoredFeedbacks(currentClinicId) || []);
+    if (currentClinicId) {
+      setPackagesList(getPatientPackages(currentClinicId) || []);
+      setDraftsList(getBookingDrafts(currentClinicId) || []);
+      setFeedbacksList(getStoredFeedbacks(currentClinicId) || []);
+    } else {
+      setPackagesList([]);
+      setDraftsList([]);
+      setFeedbacksList([]);
+    }
   }, [currentClinicId]);
 
   const showToast = (text, type = 'success') => {
