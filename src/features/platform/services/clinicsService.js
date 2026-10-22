@@ -25,6 +25,7 @@ export function fromDbClinic(row) {
     quotas: row.quotas || { maxDoctors: 3, monthlySmsQuota: 1000, smsUsed: 0 },
     googleMapsUrl: row.google_maps_url || row.googleMapsUrl || '',
     coordinates: row.coordinates || null,
+    ownerLocation: row.owner_location || row.ownerLocation || (row.coordinates?.isOwnerDevice ? row.coordinates : null),
     deletedAt: row.deleted_at || null,
     deleted_at: row.deleted_at || null,
     createdAt: row.created_at
@@ -57,6 +58,9 @@ export function toDbClinic(data) {
     payload.google_maps_url = data.googleMapsUrl || data.google_maps_url;
   }
   if (data.coordinates !== undefined) payload.coordinates = data.coordinates;
+  if (data.ownerLocation !== undefined || data.owner_location !== undefined) {
+    payload.owner_location = data.ownerLocation || data.owner_location;
+  }
   if (data.deletedAt !== undefined || data.deleted_at !== undefined) {
     payload.deleted_at = data.deletedAt !== undefined ? data.deletedAt : data.deleted_at;
   }

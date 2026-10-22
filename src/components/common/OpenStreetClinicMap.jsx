@@ -101,8 +101,24 @@ export default function OpenStreetClinicMap({
           </div>
           ${loc.doctorName ? `<div style="font-size: 0.82rem; color: #334155; margin-bottom: 3px;">الطبيب: <strong>${loc.doctorName}</strong></div>` : ''}
           ${loc.specialty ? `<div style="font-size: 0.78rem; color: #0284C7; margin-bottom: 4px;">${loc.specialty}</div>` : ''}
-          ${loc.address ? `<div class="osm-popup-address" style="font-size: 0.76rem; color: #64748B; margin-bottom: 6px;">${loc.address}</div>` : ''}
-          ${loc.distanceKm !== undefined ? `
+          ${loc.isOwnerDeviceLocation !== undefined ? `
+            <div style="margin-bottom: 6px;">
+              ${loc.isOwnerDeviceLocation ? `
+                <span style="display:inline-flex; align-items:center; gap:3px; font-size:0.7rem; font-weight:800; color:#065F46; background:#ECFDF5; border:1px solid #6EE7B7; border-radius:4px; padding:2px 6px;">
+                  📍 موقع جهاز صاحب العيادة الفعلي (GPS/Network)
+                </span>
+              ` : `
+                <span style="display:inline-flex; align-items:center; gap:3px; font-size:0.7rem; font-weight:700; color:#92400E; background:#FFFBEB; border:1px solid #FDE68A; border-radius:4px; padding:2px 6px;">
+                  ⚠️ تخمين نصي مؤقت (لم يُلتقط جهاز المالك بعد)
+                </span>
+              `}
+            </div>
+          ` : ''}
+          ${loc.address ? `<div class="osm-popup-address" style="font-size: 0.76rem; color: #64748B; margin-bottom: 4px;">${loc.address}</div>` : ''}
+          <div style="font-size: 0.72rem; color: #64748B; font-family: monospace; direction: ltr; margin-bottom: 6px;">
+            ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}
+          </div>
+          ${loc.distanceKm !== undefined && loc.distanceKm !== null ? `
             <div style="font-size: 0.78rem; color: #059669; font-weight: 700; margin-bottom: 6px; display: inline-flex; align-items: center; gap: 4px;">
               <span>المسافة من موقعك:</span>
               <strong dir="ltr">${loc.distanceKm} km</strong>

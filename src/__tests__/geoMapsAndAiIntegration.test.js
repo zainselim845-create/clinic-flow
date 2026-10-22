@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { saveAiConfig, testAiConnection, askDoctorAiAssistant, DEFAULT_AI_MODEL } from '../services/aiAssistantService';
-import { calculateHaversineDistanceKm } from '../data/saasGeoData';
+import { 
+  calculateHaversineDistanceKm, 
+  detectClinicLocation, 
+  getClinicCoordinates, 
+  extractOwnerCoordinates 
+} from '../data/saasGeoData';
 describe('Geo Maps & AI Integration Suite', () => {
   let mockStorage = {};
 
@@ -105,6 +110,138 @@ describe('Geo Maps & AI Integration Suite', () => {
       expect(res.success).toBe(false);
       expect(res.isDisabled).toBe(true);
       expect(res.error).toContain('معطل في إعدادات العيادة');
+    });
+  });
+
+  describe('National Geographic Intelligence - Clinic Owner Device Location Priority', () => {
+    it('strictly assigns clinic to Dakahlia (Mansoura) based on owner device coordinates even if address says Cairo', () => {
+      const clinic = {
+        id: 'clinic-mansoura-1',
+        name: 'مركز النخبة للعيون',
+        address: 'شارع التسعين - التجمع الخامس - القاهرة الجديدة', // Deliberately misleading user typed text
+        ownerLocation: {
+          lat: 31.0409,
+          lng: 31.3785,
+          source: 'gps',
+          accuracyKm: 0.05,
+          capturedAt: '2026-10-22T10:00:00Z'
+        }
+      };
+
+      const loc = detectClinicLocation(clinic);
+      expect(loc.governorateId).toBe('dakahlia');
+      expect(loc.governorateName).toBe('الدقهلية (المنصورة)');
+      expect(loc.regionCluster).toBe('delta');
+      expect(loc.isOwnerDeviceLocation).toBe(true);
+      expect(loc.detectionSource).toBe('gps');
+      expect(loc.deviceCoordinates).toEqual({ lat: 31.0409, lng: 31.3785 });
+      expect(loc.distanceToGovCentroidKm).toBeLessThan(1); // Within 1 km of Mansoura centroid
+    });
+
+    it('assigns clinic to Alexandria based on owner coordinates even if address says Sohag', () => {
+      const clinic = {
+        id: 'clinic-alex-1',
+        name: 'عيادة الشفاء',
+        address: 'محافظة سوهاج - مركز طهطا', // Misleading user typed text
+        coordinates: {
+          lat: 31.2001,
+          lng: 29.9187,
+          source: 'owner_device_gps'
+        }
+      };
+
+      const loc = detectClinicLocation(clinic);
+      expect(loc.governorateId).toBe('alexandria');
+      expect(loc.governorateName).toBe('الإسكندرية');
+      expect(loc.regionCluster).toBe('alex_coast');
+      expect(loc.isOwnerDeviceLocation).toBe(true);
+    });
+
+    it('assigns clinic to Gharbia (Tanta) from raw lat/lng properties', () => {
+      const clinic = {
+        id: 'clinic-tanta-1',
+        name: 'عيادة الدلتا التخصصية',
+        address: 'طنطا',
+        lat: 30.7865,
+        lng: 31.0004
+      };
+
+      const loc = detectClinicLocation(clinic);
+      expect(loc.governorateId).toBe('gharbia');
+      expect(loc.governorateName).toBe('الغربية (طنطا)');
+      expect(loc.isOwnerDeviceLocation).toBe(true);
+    });
+
+    it('assigns clinic to Riyadh and Gulf region when device coordinates are located in Saudi Arabia', () => {
+      const clinic = {
+        id: 'clinic-riyadh-1',
+        name: 'مجمع الرياض الطبي',
+        ownerLocation: {
+          lat: 24.7136,
+          lng: 46.6753,
+          source: 'device_network'
+        }
+      };
+
+      const loc = detectClinicLocation(clinic);
+      expect(loc.governorateId).toBe('riyadh');
+      expect(loc.regionCluster).toBe('gulf_international');
+      expect(loc.isOwnerDeviceLocation).toBe(true);
+    });
+
+    it('correctly falls back to text heuristic and flags as unverified when no device coordinates exist', () => {
+      const clinic = {
+        id: 'clinic-cairo-unverified',
+        name: 'عيادة مدينة نصر التخصصية',
+        address: 'حي السفارات - مدينة نصر - القاهرة'
+      };
+
+      const loc = detectClinicLocation(clinic);
+      expect(loc.governorateId).toBe('cairo');
+      expect(loc.isOwnerDeviceLocation).toBe(false);
+      expect(loc.detectionSource).toBe('manual_text_fallback');
+      expect(loc.deviceCoordinates).toBeNull();
+    });
+
+    it('extractOwnerCoordinates properly parses valid coordinates from all supported sources', () => {
+      // 1. ownerLocation object
+      expect(extractOwnerCoordinates({ ownerLocation: { lat: 30.5, lng: 31.5 } })).toMatchObject({
+        lat: 30.5,
+        lng: 31.5,
+        isOwnerDevice: true
+      });
+
+      // 2. coordinates object
+      expect(extractOwnerCoordinates({ coordinates: { lat: 29.9, lng: 32.5 } })).toMatchObject({
+        lat: 29.9,
+        lng: 32.5,
+        isOwnerDevice: true
+      });
+
+      // 3. googleMapsUrl query pin
+      expect(extractOwnerCoordinates({ googleMapsUrl: 'https://maps.google.com/?q=31.0409,31.3785' })).toMatchObject({
+        lat: 31.0409,
+        lng: 31.3785,
+        isOwnerDevice: true
+      });
+
+      // 4. empty or invalid returns null
+      expect(extractOwnerCoordinates(null)).toBeNull();
+      expect(extractOwnerCoordinates({})).toBeNull();
+      expect(extractOwnerCoordinates({ lat: 'invalid', lng: NaN })).toBeNull();
+    });
+
+    it('getClinicCoordinates returns isOwnerDeviceLocation: true when coordinates exist', () => {
+      const clinic = {
+        id: 'c1',
+        ownerLocation: { lat: 31.04, lng: 31.38 }
+      };
+
+      const coords = getClinicCoordinates(clinic, { lat: 30.0, lng: 31.0 });
+      expect(coords.isExactGps).toBe(true);
+      expect(coords.isOwnerDeviceLocation).toBe(true);
+      expect(coords.lat).toBe(31.04);
+      expect(coords.lng).toBe(31.38);
     });
   });
 });

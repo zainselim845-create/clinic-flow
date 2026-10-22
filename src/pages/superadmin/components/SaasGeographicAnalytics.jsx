@@ -82,12 +82,21 @@ export default function SaasGeographicAnalytics({ allTenants = [] }) {
   const geoAnalytics = useMemo(() => {
     const govCounts = {};
     const clusterCounts = {};
+    let ownerGpsVerifiedCount = 0;
+    let manualFallbackCount = 0;
+
     const clinicsWithGeo = allTenants.map(t => {
       const loc = detectClinicLocation(t);
       const govObj = EGYPT_GOVERNORATES.find(g => g.id === loc.governorateId) || loc;
       const coords = getClinicCoordinates(t, govObj);
       const govKey = loc.governorateId;
       const clusterKey = loc.regionCluster;
+
+      if (loc.isOwnerDeviceLocation) {
+        ownerGpsVerifiedCount++;
+      } else {
+        manualFallbackCount++;
+      }
 
       if (!govCounts[govKey]) {
         govCounts[govKey] = {
@@ -146,7 +155,10 @@ export default function SaasGeographicAnalytics({ allTenants = [] }) {
       sortedClusters,
       totalClinics,
       topGov,
-      uniqueGovsCount
+      uniqueGovsCount,
+      ownerGpsVerifiedCount,
+      manualFallbackCount,
+      ownerVerificationRatio: totalClinics > 0 ? Math.round((ownerGpsVerifiedCount / totalClinics) * 100) : 0
     };
   }, [allTenants]);
 

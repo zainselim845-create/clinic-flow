@@ -233,7 +233,9 @@ export default function GeoInteractiveMap({
                   isClinic: true,
                   isSuspended: c.subscriptionStatus === 'suspended',
                   isLifetime: Boolean(c.isLifetimeLicense || c.subscriptionStatus === 'lifetime'),
-                  distanceKm: c.distanceKm
+                  distanceKm: c.distanceKm,
+                  isOwnerDeviceLocation: Boolean(c.geo?.isOwnerDeviceLocation),
+                  governorateName: c.geo?.governorateName
                 }))
               : (activeMapMode === 'egypt' ? EGYPT_GOVERNORATES : GULF_EXPANSION_REGIONS)
                   .filter(reg => (geoAnalytics.govCounts[reg.id]?.total || 0) > 0)

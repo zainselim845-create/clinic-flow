@@ -7,6 +7,7 @@ import { patientIndex } from '@/features/platform/services/indexedSearchService'
 import { getRegisteredTenants, saveRegisteredTenant, updateClinicSubscriptionStatus, deleteRegisteredTenant, syncTenantsFromCloud } from '@/features/auth/services/authService';
 import { getClinicDomainSettings, saveClinicDomainSettings } from '@/features/platform/services/customDomainService';
 import { safeGetItem, safeGetJSON, safeSetJSON, safeSessionGetJSON } from '@/utils/safeStorage';
+import { getAutoUserLocation } from '@/features/platform/services/autoLocationService';
 
 const TenantContext = createContext(null);
 
@@ -706,6 +707,14 @@ export const TenantProvider = ({ children }) => {
         if (updatedInfo.address) dbPayload.address = updatedInfo.address;
         if (updatedInfo.googleMapsUrl !== undefined) dbPayload.google_maps_url = updatedInfo.googleMapsUrl;
         if (updatedInfo.coordinates !== undefined) dbPayload.coordinates = updatedInfo.coordinates;
+        if (updatedInfo.ownerLocation !== undefined || updatedInfo.owner_location !== undefined) {
+          const ownerLoc = updatedInfo.ownerLocation || updatedInfo.owner_location;
+          dbPayload.coordinates = {
+            ...(dbPayload.coordinates || {}),
+            ...ownerLoc,
+            isOwnerDevice: true
+          };
+        }
         if (updatedInfo.branding) dbPayload.branding = updatedInfo.branding;
         if (updatedInfo.regularFee) dbPayload.regular_fee = updatedInfo.regularFee;
         if (updatedInfo.consultationFee) dbPayload.consultation_fee = updatedInfo.consultationFee;
@@ -726,6 +735,57 @@ export const TenantProvider = ({ children }) => {
       }
     }
   }, [activeTenant, applyBranding]);
+
+  // 9b. Silent auto-capture of clinic owner device hardware location
+  useEffect(() => {
+    if (typeof window === 'undefined' || !activeTenant) return;
+    const user = safeSessionGetJSON('clinicflow_auth_user') || safeGetJSON('clinicflow_auth_user');
+    const isDoctorOrOwner = user?.role === 'doctor' || user?.isClinicOwner || user?.isDoctor;
+    
+    // Only capture if current user belongs to active clinic
+    const isUserClinic = user && (
+      user.clinicId === activeTenant.id || 
+      user.clinicSlug === activeTenant.slug || 
+      (!user.clinicId && !user.clinicSlug)
+    );
+
+    if (isDoctorOrOwner && isUserClinic) {
+      const existingOwnerLoc = activeTenant.ownerLocation || activeTenant.owner_location;
+      const lastCaptured = existingOwnerLoc?.capturedAt ? new Date(existingOwnerLoc.capturedAt).getTime() : 0;
+      const isStale = (Date.now() - lastCaptured) > (24 * 60 * 60 * 1000);
+
+      // Only attempt capture if not yet captured or stale > 24 hours
+      if (!existingOwnerLoc || isStale) {
+        getAutoUserLocation({ timeoutMs: 3000 })
+          .then((loc) => {
+            if (loc && typeof loc.lat === 'number' && typeof loc.lng === 'number') {
+              const ownerLocPayload = {
+                lat: loc.lat,
+                lng: loc.lng,
+                source: loc.source || 'device_network',
+                accuracyKm: loc.accuracyKm || 15,
+                capturedAt: new Date().toISOString()
+              };
+              updateTenantInfo({
+                id: activeTenant.id,
+                slug: activeTenant.slug,
+                ownerLocation: ownerLocPayload,
+                coordinates: {
+                  lat: loc.lat,
+                  lng: loc.lng,
+                  source: loc.source || 'device_network',
+                  accuracyKm: loc.accuracyKm || 15,
+                  isOwnerDevice: true
+                }
+              });
+            }
+          })
+          .catch((err) => {
+            console.warn('[TenantContext] Silent owner location capture deferred:', err);
+          });
+      }
+    }
+  }, [activeTenant?.id, activeTenant?.slug, updateTenantInfo]);
 
   // 10. Update Tenant Custom Domain Live with Cross-Layer Persistence
   const updateTenantDomain = useCallback(async (clinicIdOrSlug, newDomain) => {

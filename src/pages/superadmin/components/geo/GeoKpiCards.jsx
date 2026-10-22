@@ -1,13 +1,14 @@
 import React from 'react';
-import { MapPin, Award, Building2, Activity, TrendingUp } from 'lucide-react';
+import { MapPin, Award, Building2, Activity, TrendingUp, LocateFixed } from 'lucide-react';
 
 /**
  * GeoKpiCards - Geographic key performance indicator metrics grid
  */
 export default function GeoKpiCards({ geoAnalytics }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
       
+      {/* 1. Covered Locations */}
       <div style={{ background: 'var(--surface, #FFF)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 600 }}>المواقع والمحافظات المغطاة</span>
@@ -22,6 +23,7 @@ export default function GeoKpiCards({ geoAnalytics }) {
         </div>
       </div>
 
+      {/* 2. Top Governorate */}
       <div style={{ background: 'var(--surface, #FFF)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 600 }}>المحافظة الأكثر كثافة</span>
@@ -35,6 +37,21 @@ export default function GeoKpiCards({ geoAnalytics }) {
         </div>
       </div>
 
+      {/* 3. Owner Device GPS Verification KPI */}
+      <div style={{ background: 'var(--surface, #FFF)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 600 }}>توثيق موقع جهاز صاحب العيادة</span>
+          <LocateFixed size={18} color="#059669" />
+        </div>
+        <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#059669' }}>
+          {geoAnalytics.ownerVerificationRatio || 0}٪
+        </div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+          {geoAnalytics.ownerGpsVerifiedCount || 0} من {geoAnalytics.totalClinics || 0} عيادة موثقة من جهاز المالك
+        </div>
+      </div>
+
+      {/* 4. Total Indexed Clinics */}
       <div style={{ background: 'var(--surface, #FFF)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 600 }}>إجمالي العيادات المفهرسة</span>
@@ -48,6 +65,7 @@ export default function GeoKpiCards({ geoAnalytics }) {
         </div>
       </div>
 
+      {/* 5. Regional Clusters */}
       <div style={{ background: 'var(--surface, #FFF)', border: '1px solid var(--border-color)', borderRadius: '14px', padding: '1.25rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontWeight: 600 }}>الأقاليم الحيوية (Clusters)</span>

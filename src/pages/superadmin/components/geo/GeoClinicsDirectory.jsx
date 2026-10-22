@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Building2, MapPin, Compass, ExternalLink, ArrowUpDown, Search, Navigation 
+  Building2, MapPin, Compass, ExternalLink, ArrowUpDown, Search, Navigation, ShieldCheck, AlertTriangle 
 } from 'lucide-react';
 
 /**
@@ -159,15 +159,53 @@ export default function GeoClinicsDirectory({
                           <span>{c.distanceKm} كم من موقعك</span>
                         </span>
                       )}
+                      {c.geo?.isOwnerDeviceLocation ? (
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 800,
+                          padding: '0.12rem 0.5rem',
+                          borderRadius: '4px',
+                          background: '#ECFDF5',
+                          color: '#065F46',
+                          border: '1px solid #6EE7B7',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}>
+                          <ShieldCheck size={11} color="#059669" />
+                          <span>موقع جهاز صاحب العيادة الفعلي (GPS/Network)</span>
+                        </span>
+                      ) : (
+                        <span style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          padding: '0.12rem 0.5rem',
+                          borderRadius: '4px',
+                          background: '#FFFBEB',
+                          color: '#92400E',
+                          border: '1px solid #FDE68A',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px'
+                        }}>
+                          <AlertTriangle size={11} color="#D97706" />
+                          <span>تخمين نصي مؤقت (لم يُلتقط جهاز المالك بعد)</span>
+                        </span>
+                      )}
                     </div>
 
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
                       الطبيب: {c.doctorName || 'طبيب العيادة'} | المسار: <code>/{c.slug}</code>
                     </div>
 
-                    <div style={{ fontSize: '0.74rem', color: '#0284C7', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <div style={{ fontSize: '0.74rem', color: '#0284C7', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
                       <MapPin size={12} />
-                      <span>{c.address || c.geo.governorateName}</span>
+                      <strong>{c.geo?.governorateName}</strong>
+                      {c.address && c.address !== c.geo?.governorateName && (
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.72rem' }}>
+                          (العنوان المسجل: {c.address})
+                        </span>
+                      )}
                       {c.coordinates && (
                         <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontFamily: 'monospace', direction: 'ltr' }}>
                           ({c.coordinates.lat.toFixed(4)}, {c.coordinates.lng.toFixed(4)})

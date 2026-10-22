@@ -279,52 +279,6 @@ export const GULF_EXPANSION_REGIONS = [
 ];
 
 /**
- * Heuristic detector for clinic location based on address, phone, and name
- */
-export function detectClinicLocation(clinic = {}) {
-  const address = (clinic.address || '').toLowerCase();
-  const name = (clinic.name || '').toLowerCase();
-  const text = `${address} ${name}`;
-
-  // 1. Check Egyptian governorates
-  for (const gov of EGYPT_GOVERNORATES) {
-    for (const kw of gov.keywords) {
-      if (text.includes(kw)) {
-        return {
-          country: 'مصر',
-          countryCode: 'EG',
-          governorateId: gov.id,
-          governorateName: gov.name,
-          regionCluster: gov.region,
-          regionClusterName: REGIONAL_CLUSTERS[gov.region]
-        };
-      }
-    }
-  }
-
-  // 2. Check Gulf / International
-  if (text.includes('سعودية') || text.includes('رياض') || text.includes('جدة') || text.includes('saudi') || (clinic.phone && clinic.phone.startsWith('+966'))) {
-    return { country: 'المملكة العربية السعودية', countryCode: 'SA', governorateId: 'riyadh', governorateName: 'الرياض والمملكة', regionCluster: 'gulf_international', regionClusterName: REGIONAL_CLUSTERS.gulf_international };
-  }
-  if (text.includes('إمارات') || text.includes('دبي') || text.includes('uae') || text.includes('dubai') || (clinic.phone && clinic.phone.startsWith('+971'))) {
-    return { country: 'الإمارات العربية المتحدة', countryCode: 'AE', governorateId: 'dubai', governorateName: 'دبي والإمارات', regionCluster: 'gulf_international', regionClusterName: REGIONAL_CLUSTERS.gulf_international };
-  }
-  if (text.includes('كويت') || text.includes('kuwait') || (clinic.phone && clinic.phone.startsWith('+965'))) {
-    return { country: 'الكويت', countryCode: 'KW', governorateId: 'kuwait', governorateName: 'دولة الكويت', regionCluster: 'gulf_international', regionClusterName: REGIONAL_CLUSTERS.gulf_international };
-  }
-
-  // Default: Cairo (Heart of Operations)
-  return {
-    country: 'مصر',
-    countryCode: 'EG',
-    governorateId: 'cairo',
-    governorateName: 'القاهرة',
-    regionCluster: 'greater_cairo',
-    regionClusterName: REGIONAL_CLUSTERS.greater_cairo
-  };
-}
-
-/**
  * Calculates straight-line distance in kilometers between two GPS coordinates using Haversine formula
  */
 export function calculateHaversineDistanceKm(lat1, lon1, lat2, lon2) {
@@ -342,34 +296,221 @@ export function calculateHaversineDistanceKm(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Resolves accurate coordinates for a clinic:
- * Priority: 1. Explicit clinic coordinates (lat, lng)
- *           2. Coordinates parsed from Google Maps URL
- *           3. Real coordinates of detected Egyptian governorate/city with deterministic spread
+ * Extracts validated hardware device / GPS / IP coordinates of the clinic owner.
+ * Strictly checks device-level coordinate sources before any manual text inputs.
  */
-export function getClinicCoordinates(clinic = {}, detectedGov = {}) {
-  // 1. Explicit coordinates object
-  if (clinic.coordinates && typeof clinic.coordinates.lat === 'number' && typeof clinic.coordinates.lng === 'number') {
-    return { lat: clinic.coordinates.lat, lng: clinic.coordinates.lng, isExactGps: true };
-  }
-  if (typeof clinic.lat === 'number' && typeof clinic.lng === 'number') {
-    return { lat: clinic.lat, lng: clinic.lng, isExactGps: true };
+export function extractOwnerCoordinates(clinic = {}) {
+  if (!clinic || typeof clinic !== 'object') return null;
+
+  // 1. Check ownerLocation object (persisted from autoLocationService)
+  const ownerLoc = clinic.ownerLocation || clinic.owner_location || clinic.ownerCoordinates || clinic.deviceLocation;
+  if (ownerLoc && typeof ownerLoc === 'object') {
+    const lat = Number(ownerLoc.lat);
+    const lng = Number(ownerLoc.lng);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return {
+        lat: Math.round(lat * 10000) / 10000,
+        lng: Math.round(lng * 10000) / 10000,
+        source: ownerLoc.source || 'owner_device_gps',
+        accuracyKm: typeof ownerLoc.accuracyKm === 'number' ? ownerLoc.accuracyKm : (ownerLoc.accuracy ? Math.round(ownerLoc.accuracy / 1000 * 10) / 10 : 0.1),
+        capturedAt: ownerLoc.capturedAt || null,
+        isOwnerDevice: true
+      };
+    }
   }
 
-  // 2. Parse from googleMapsUrl if present
+  // 2. Check explicit coordinates object (set on tenant)
+  if (clinic.coordinates && typeof clinic.coordinates === 'object') {
+    const lat = Number(clinic.coordinates.lat);
+    const lng = Number(clinic.coordinates.lng);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return {
+        lat: Math.round(lat * 10000) / 10000,
+        lng: Math.round(lng * 10000) / 10000,
+        source: clinic.coordinates.source || 'owner_device_coordinates',
+        accuracyKm: typeof clinic.coordinates.accuracyKm === 'number' ? clinic.coordinates.accuracyKm : 0.1,
+        capturedAt: clinic.coordinates.capturedAt || null,
+        isOwnerDevice: true
+      };
+    }
+  }
+
+  // 3. Check direct lat / lng properties
+  if (clinic.lat !== undefined && clinic.lng !== undefined && clinic.lat !== null && clinic.lng !== null) {
+    const lat = Number(clinic.lat);
+    const lng = Number(clinic.lng);
+    if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      return {
+        lat: Math.round(lat * 10000) / 10000,
+        lng: Math.round(lng * 10000) / 10000,
+        source: 'owner_device_gps',
+        accuracyKm: 0.1,
+        capturedAt: null,
+        isOwnerDevice: true
+      };
+    }
+  }
+
+  // 4. Check Google Maps pin URL if owner explicitly attached their map pin
   if (clinic.googleMapsUrl && typeof clinic.googleMapsUrl === 'string') {
     const match = clinic.googleMapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || 
                   clinic.googleMapsUrl.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
     if (match) {
       const lat = parseFloat(match[1]);
       const lng = parseFloat(match[2]);
-      if (!isNaN(lat) && !isNaN(lng)) {
-        return { lat, lng, isExactGps: true };
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        return {
+          lat: Math.round(lat * 10000) / 10000,
+          lng: Math.round(lng * 10000) / 10000,
+          source: 'google_maps_pin',
+          accuracyKm: 0.1,
+          capturedAt: null,
+          isOwnerDevice: true
+        };
       }
     }
   }
 
-  // 3. Governorate base coordinates with deterministic spread so multiple clinics in same city don't overlap
+  return null;
+}
+
+/**
+ * National Geographic Intelligence Detector for Clinics
+ * STRICT PRIORITY:
+ * 1. Owner's physical device hardware location (GPS / IP coordinates).
+ *    Mathematically computes closest Egyptian governorate or Gulf region via Haversine distance.
+ * 2. Unverified manual text fallback ONLY if zero hardware coordinates have been captured yet.
+ */
+export function detectClinicLocation(clinic = {}) {
+  // TIER 1: Actual hardware device location of clinic owner (GPS / Device Coordinates)
+  const ownerCoords = extractOwnerCoordinates(clinic);
+  if (ownerCoords) {
+    // A. Check international / Gulf expansion regions proximity
+    for (const gulf of GULF_EXPANSION_REGIONS) {
+      const dist = calculateHaversineDistanceKm(ownerCoords.lat, ownerCoords.lng, gulf.lat, gulf.lng);
+      if (dist !== null && dist < 450) {
+        return {
+          country: gulf.name,
+          countryCode: gulf.code,
+          governorateId: gulf.id,
+          governorateName: gulf.name,
+          regionCluster: gulf.region,
+          regionClusterName: REGIONAL_CLUSTERS[gulf.region],
+          isOwnerDeviceLocation: true,
+          detectionSource: ownerCoords.source,
+          accuracyKm: ownerCoords.accuracyKm,
+          capturedAt: ownerCoords.capturedAt,
+          deviceCoordinates: { lat: ownerCoords.lat, lng: ownerCoords.lng },
+          distanceToGovCentroidKm: dist
+        };
+      }
+    }
+
+    // B. Calculate Haversine distance to each of the 27 Egyptian governorates
+    let closestGov = null;
+    let minDistance = Infinity;
+
+    for (const gov of EGYPT_GOVERNORATES) {
+      const dist = calculateHaversineDistanceKm(ownerCoords.lat, ownerCoords.lng, gov.lat, gov.lng);
+      if (dist !== null && dist < minDistance) {
+        minDistance = dist;
+        closestGov = gov;
+      }
+    }
+
+    if (closestGov) {
+      return {
+        country: 'مصر',
+        countryCode: 'EG',
+        governorateId: closestGov.id,
+        governorateName: closestGov.name,
+        regionCluster: closestGov.region,
+        regionClusterName: REGIONAL_CLUSTERS[closestGov.region],
+        isOwnerDeviceLocation: true,
+        detectionSource: ownerCoords.source,
+        accuracyKm: ownerCoords.accuracyKm,
+        capturedAt: ownerCoords.capturedAt,
+        deviceCoordinates: { lat: ownerCoords.lat, lng: ownerCoords.lng },
+        distanceToGovCentroidKm: minDistance
+      };
+    }
+  }
+
+  // TIER 2: Secondary unverified fallback for clinics whose owners have not captured device location yet
+  const address = (clinic.address || '').toLowerCase();
+  const name = (clinic.name || '').toLowerCase();
+  const text = `${address} ${name}`;
+
+  // 1. Check Egyptian governorates text keywords
+  for (const gov of EGYPT_GOVERNORATES) {
+    for (const kw of gov.keywords) {
+      if (text.includes(kw)) {
+        return {
+          country: 'مصر',
+          countryCode: 'EG',
+          governorateId: gov.id,
+          governorateName: gov.name,
+          regionCluster: gov.region,
+          regionClusterName: REGIONAL_CLUSTERS[gov.region],
+          isOwnerDeviceLocation: false,
+          detectionSource: 'manual_text_fallback',
+          accuracyKm: null,
+          capturedAt: null,
+          deviceCoordinates: null,
+          distanceToGovCentroidKm: null
+        };
+      }
+    }
+  }
+
+  // 2. Check Gulf / International text
+  if (text.includes('سعودية') || text.includes('رياض') || text.includes('جدة') || text.includes('saudi') || (clinic.phone && clinic.phone.startsWith('+966'))) {
+    return { country: 'المملكة العربية السعودية', countryCode: 'SA', governorateId: 'riyadh', governorateName: 'الرياض والمملكة', regionCluster: 'gulf_international', regionClusterName: REGIONAL_CLUSTERS.gulf_international, isOwnerDeviceLocation: false, detectionSource: 'manual_text_fallback', accuracyKm: null, capturedAt: null, deviceCoordinates: null, distanceToGovCentroidKm: null };
+  }
+  if (text.includes('إمارات') || text.includes('دبي') || text.includes('uae') || text.includes('dubai') || (clinic.phone && clinic.phone.startsWith('+971'))) {
+    return { country: 'الإمارات العربية المتحدة', countryCode: 'AE', governorateId: 'dubai', governorateName: 'دبي والإمارات', regionCluster: 'gulf_international', regionClusterName: REGIONAL_CLUSTERS.gulf_international, isOwnerDeviceLocation: false, detectionSource: 'manual_text_fallback', accuracyKm: null, capturedAt: null, deviceCoordinates: null, distanceToGovCentroidKm: null };
+  }
+  if (text.includes('كويت') || text.includes('kuwait') || (clinic.phone && clinic.phone.startsWith('+965'))) {
+    return { country: 'الكويت', countryCode: 'KW', governorateId: 'kuwait', governorateName: 'دولة الكويت', regionCluster: 'gulf_international', regionClusterName: REGIONAL_CLUSTERS.gulf_international, isOwnerDeviceLocation: false, detectionSource: 'manual_text_fallback', accuracyKm: null, capturedAt: null, deviceCoordinates: null, distanceToGovCentroidKm: null };
+  }
+
+  // Default: Cairo (Heart of Operations) - Flagged as unverified manual fallback
+  return {
+    country: 'مصر',
+    countryCode: 'EG',
+    governorateId: 'cairo',
+    governorateName: 'القاهرة',
+    regionCluster: 'greater_cairo',
+    regionClusterName: REGIONAL_CLUSTERS.greater_cairo,
+    isOwnerDeviceLocation: false,
+    detectionSource: 'manual_text_fallback',
+    accuracyKm: null,
+    capturedAt: null,
+    deviceCoordinates: null,
+    distanceToGovCentroidKm: null
+  };
+}
+
+/**
+ * Resolves accurate coordinates for a clinic:
+ * Priority: 1. Real owner device / GPS coordinates (isExactGps: true, isOwnerDeviceLocation: true)
+ *           2. Governorate base coordinates with deterministic spread (isExactGps: false, isOwnerDeviceLocation: false)
+ */
+export function getClinicCoordinates(clinic = {}, detectedGov = {}) {
+  // 1. Real Owner Device Coordinates
+  const ownerCoords = extractOwnerCoordinates(clinic);
+  if (ownerCoords) {
+    return {
+      lat: ownerCoords.lat,
+      lng: ownerCoords.lng,
+      isExactGps: true,
+      isOwnerDeviceLocation: true,
+      source: ownerCoords.source,
+      accuracyKm: ownerCoords.accuracyKm
+    };
+  }
+
+  // 2. Fallback: Governorate base coordinates with deterministic spread
   const baseLat = detectedGov.lat || 30.0444;
   const baseLng = detectedGov.lng || 31.2357;
   let hash = 0;
@@ -384,6 +525,7 @@ export function getClinicCoordinates(clinic = {}, detectedGov = {}) {
   return {
     lat: Math.round((baseLat + offsetLat) * 10000) / 10000,
     lng: Math.round((baseLng + offsetLng) * 10000) / 10000,
-    isExactGps: false
+    isExactGps: false,
+    isOwnerDeviceLocation: false
   };
 }
