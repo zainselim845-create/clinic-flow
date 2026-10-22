@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Key, 
   Copy, 
@@ -30,7 +31,6 @@ import { copyToClipboard } from '@/utils/clipboard';
 import { testR2Connection, saveR2Config, getR2Config } from '@/features/platform/services/r2StorageService';
 import { testAiConnection } from '@/features/clinical/services/aiAssistantService';
 import { sendSMS, formatSenderId } from '@/features/marketing/services/smsService';
-import { AI_MODELS_CATALOG } from '@/pages/settings/AiAssistantTab';
 import { safeGetJSON, safeSetJSON } from '@/utils/safeStorage';
 
 export default function ApiIntegrationsTab() {
@@ -38,9 +38,10 @@ export default function ApiIntegrationsTab() {
   const { user } = useAuth();
   const { state, dispatch } = useApp();
 
+  const isSuperAdmin = user?.role === 'super_admin' || user?.isSuperAdmin === true;
   const isAdmin = isAdminRole(user);
   const isDoctor = isDoctorRole(user);
-  const canManageApis = isAdmin || isDoctor;
+  const canManageApis = isAdmin || isDoctor || isSuperAdmin;
 
   const clinicId = tenant?.id || state.clinicInfo?.id || (tenantSlug ? `clinic-${tenantSlug}` : 'default');
   const activeSlug = tenantSlug || tenant?.slug || state.clinicInfo?.slug || 'clinic';
@@ -49,7 +50,7 @@ export default function ApiIntegrationsTab() {
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
 
-  // 2. Cloudflare R2 State
+  // 2. Cloudflare R2 State (Central SaaS Managed)
   const [r2Config, setR2Config] = useState(() => {
     const saved = getR2Config();
     return {
@@ -61,22 +62,19 @@ export default function ApiIntegrationsTab() {
       enabled: true
     };
   });
-  const [showR2Secret, setShowR2Secret] = useState(false);
   const [r2Testing, setR2Testing] = useState(false);
   const [r2TestResult, setR2TestResult] = useState(null);
 
   // 3. WhatsApp & SMS State
   const [senderId, setSenderId] = useState('');
   const [smsApiKey, setSmsApiKey] = useState('');
-  const [showSmsKey, setShowSmsKey] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [smsTesting, setSmsTesting] = useState(false);
   const [smsTestPhone, setSmsTestPhone] = useState('');
   const [smsTestResult, setSmsTestResult] = useState(null);
 
-  // 4. Medical AI Assistant State
+  // 4. Medical AI Assistant State (Central SaaS Managed)
   const [aiApiKey, setAiApiKey] = useState('');
-  const [showAiKey, setShowAiKey] = useState(false);
   const [aiModel, setAiModel] = useState('google/gemini-2.0-flash-exp:free');
   const [aiTesting, setAiTesting] = useState(false);
   const [aiTestResult, setAiTestResult] = useState(null);
@@ -92,11 +90,6 @@ export default function ApiIntegrationsTab() {
   });
   const [webhookTesting, setWebhookTesting] = useState(false);
   const [webhookTestResult, setWebhookTestResult] = useState(null);
-
-  // Custom Overrides Toggles (All APIs default to SaaS Platform Managed)
-  const [showCustomR2, setShowCustomR2] = useState(false);
-  const [showCustomSms, setShowCustomSms] = useState(false);
-  const [showCustomAi, setShowCustomAi] = useState(false);
 
   // Snippets Tab
   const [activeSnippetTab, setActiveSnippetTab] = useState('curl');
@@ -116,9 +109,6 @@ export default function ApiIntegrationsTab() {
     if (source.aiModel) setAiModel(source.aiModel);
     setWebhookUrl(source.webhookUrl || '');
     setWebhookSecret(source.webhookSecret || '');
-    if (source.r2AccountId || source.r2AccessKeyId) setShowCustomR2(true);
-    if (source.smsApiKey || source.customSmsKey) setShowCustomSms(true);
-    if (source.aiApiKey || source.customAiKey) setShowCustomAi(true);
   }, [tenant, state.clinicInfo, activeSlug]);
 
   const handleCopy = async (text, id) => {
@@ -229,21 +219,30 @@ export default function ApiIntegrationsTab() {
         apiKey: apiKey.trim(),
         api_key: apiKey.trim(),
         senderId: senderId.trim(),
-        smsApiKey: smsApiKey.trim(),
-        customSmsKey: smsApiKey.trim(),
         whatsappNumber: whatsappNumber.trim(),
-        aiApiKey: aiApiKey.trim(),
-        customAiKey: aiApiKey.trim(),
-        aiModel,
-        r2AccountId: r2Config.accountId.trim(),
-        r2AccessKeyId: r2Config.accessKeyId.trim(),
-        r2SecretAccessKey: r2Config.secretAccessKey.trim(),
-        r2BucketName: r2Config.bucketName.trim(),
-        r2PublicDomain: r2Config.publicDomain.trim(),
         webhookUrl: webhookUrl.trim(),
         webhookSecret: webhookSecret.trim(),
         webhookEvents
       };
+
+      if (smsApiKey) {
+        payloadUpdates.smsApiKey = smsApiKey.trim();
+        payloadUpdates.customSmsKey = smsApiKey.trim();
+      }
+      if (aiApiKey) {
+        payloadUpdates.aiApiKey = aiApiKey.trim();
+        payloadUpdates.customAiKey = aiApiKey.trim();
+      }
+      if (aiModel) {
+        payloadUpdates.aiModel = aiModel;
+      }
+      if (r2Config?.accountId) {
+        payloadUpdates.r2AccountId = r2Config.accountId.trim();
+        payloadUpdates.r2AccessKeyId = (r2Config.accessKeyId || '').trim();
+        payloadUpdates.r2SecretAccessKey = (r2Config.secretAccessKey || '').trim();
+        payloadUpdates.r2BucketName = (r2Config.bucketName || 'smart-clinic-storage').trim();
+        payloadUpdates.r2PublicDomain = (r2Config.publicDomain || '').trim();
+      }
 
       // Persist to R2 storage service
       saveR2Config(r2Config);
@@ -599,27 +598,50 @@ print(response.json())`;
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary, #71717A)' }}>سلة تخزين S3 متوافقة مع R2 لحفظ أشعة الأسنان، تقارير المختبر، والنسخ الاحتياطية بدون تكاليف نقل (Zero-Egress)</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleTestR2}
-            disabled={r2Testing}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '8px',
-              border: '1px solid #D97706',
-              background: 'rgba(245, 158, 11, 0.1)',
-              color: '#B45309',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              cursor: r2Testing ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {r2Testing ? <RefreshCw size={14} className="animate-spin" /> : <Activity size={14} />}
-            <span>{r2Testing ? 'جاري الفحص...' : 'اختبار اتصال R2'}</span>
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {isSuperAdmin && (
+              <Link
+                to="/super-admin"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid #D97706',
+                  background: 'transparent',
+                  color: '#B45309',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  textDecoration: 'none'
+                }}
+              >
+                <ExternalLink size={13} />
+                <span>إدارة مفاتيح R2 في لوحة الساس</span>
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={handleTestR2}
+              disabled={r2Testing}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.4rem 0.85rem',
+                borderRadius: '8px',
+                border: '1px solid #D97706',
+                background: 'rgba(245, 158, 11, 0.1)',
+                color: '#B45309',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: r2Testing ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {r2Testing ? <RefreshCw size={14} className="animate-spin" /> : <Activity size={14} />}
+              <span>{r2Testing ? 'جاري الفحص...' : 'اختبار اتصال R2'}</span>
+            </button>
+          </div>
         </div>
 
         {r2TestResult && (
@@ -646,176 +668,69 @@ print(response.json())`;
           background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.04) 100%)',
           border: '1px solid rgba(245, 158, 11, 0.25)',
           borderRadius: '12px',
-          padding: '1rem 1.25rem',
-          marginBottom: '1.25rem',
+          padding: '1.25rem',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
+          flexDirection: 'column',
+          gap: '1rem'
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
             <div style={{
               background: '#F59E0B',
               color: '#FFF',
               borderRadius: '50%',
-              width: '28px',
-              height: '28px',
+              width: '32px',
+              height: '32px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
               marginTop: '2px'
             }}>
-              <CheckCircle2 size={18} />
+              <CheckCircle2 size={20} />
             </div>
-            <div>
+            <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <strong style={{ fontSize: '0.92rem', color: '#92400E' }}>
+                <strong style={{ fontSize: '0.98rem', color: '#92400E' }}>
                   التخزين السحابي الطبي مُدار ومُهيأ بالكامل بواسطة إدارة منصة الساس (SaaS Managed)
                 </strong>
                 <span style={{
                   background: '#10B981',
                   color: '#FFF',
-                  padding: '0.15rem 0.5rem',
+                  padding: '0.15rem 0.55rem',
                   borderRadius: '12px',
-                  fontSize: '0.72rem',
+                  fontSize: '0.74rem',
                   fontWeight: 800
                 }}>
-                  تلقائي ونشط
+                  تلقائي ونشط (Zero-Egress)
                 </span>
               </div>
-              <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary, #71717A)', lineHeight: 1.5 }}>
-                سلة التخزين: <strong style={{ color: '#D97706', fontFamily: 'monospace' }}>smart-clinic-storage</strong> (Cloudflare R2 فائقة السرعة مع Zero-Egress Fees).
-                أشعة وملفات العيادة معزولة ومحمية برمجياً في المسار: <code dir="ltr" style={{ color: '#09090B', background: '#F4F4F5', padding: '0.1rem 0.35rem', borderRadius: '4px' }}>/clinics/{activeSlug}/</code>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary, #71717A)', lineHeight: 1.6 }}>
+                يتم حفظ أشعة الأسنان، صور الفحص المجهري، تقارير التحاليل، والنسخ الاحتياطية تلقائياً في سلة التخزين السحابية المركزية المخصصة للمنصة بدون أي رسوم لنقل البيانات.
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setShowCustomR2(!showCustomR2)}
-            style={{
-              background: showCustomR2 ? '#F59E0B' : 'transparent',
-              color: showCustomR2 ? '#FFF' : '#B45309',
-              border: '1px solid #D97706',
-              borderRadius: '8px',
-              padding: '0.35rem 0.75rem',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem'
-            }}
-          >
-            <span>{showCustomR2 ? 'إخفاء الإعداد المتقدم' : '⚙️ تخصيص سلة R2 خاصة (اختياري)'}</span>
-          </button>
-        </div>
-
-        {showCustomR2 && (
           <div style={{
-            background: 'var(--bg-secondary, #F8FAFC)',
-            padding: '1rem',
-            borderRadius: '10px',
-            border: '1px dashed var(--border-color, #CBD5E1)',
-            marginBottom: '1rem'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '0.75rem',
+            paddingTop: '0.75rem',
+            borderTop: '1px dashed rgba(245, 158, 11, 0.3)'
           }}>
-            <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: 'var(--text-secondary, #64748B)', fontWeight: 600 }}>
-              تجاوز السلة المركزية وتخصيص سلة Cloudflare R2 / S3 خاصة بعيادتكم فقط:
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>Cloudflare Account ID</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 5f4a7b9c1d2e3f..."
-                  value={r2Config.accountId}
-                  onChange={(e) => setR2Config({ ...r2Config, accountId: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color, #E4E4E7)',
-                    fontSize: '0.85rem',
-                    fontFamily: 'monospace'
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>R2 Access Key ID</label>
-                <input
-                  type="text"
-                  placeholder="e.g. 7c9a8b1d2e3f4a..."
-                  value={r2Config.accessKeyId}
-                  onChange={(e) => setR2Config({ ...r2Config, accessKeyId: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color, #E4E4E7)',
-                    fontSize: '0.85rem',
-                    fontFamily: 'monospace'
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>R2 Secret Access Key</label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showR2Secret ? 'text' : 'password'}
-                    placeholder="R2 Secret Key..."
-                    value={r2Config.secretAccessKey}
-                    onChange={(e) => setR2Config({ ...r2Config, secretAccessKey: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '0.55rem 0.75rem 0.55rem 2.2rem',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color, #E4E4E7)',
-                      fontSize: '0.85rem',
-                      fontFamily: 'monospace'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowR2Secret(!showR2Secret)}
-                    style={{
-                      position: 'absolute',
-                      left: '0.5rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#71717A',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {showR2Secret ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>اسم السلة (Bucket Name)</label>
-                <input
-                  type="text"
-                  placeholder="smart-clinic-storage"
-                  value={r2Config.bucketName}
-                  onChange={(e) => setR2Config({ ...r2Config, bucketName: e.target.value })}
-                  style={{
-                    width: '100%',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color, #E4E4E7)',
-                    fontSize: '0.85rem'
-                  }}
-                />
-              </div>
+            <div style={{ background: '#FFF', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', fontWeight: 600 }}>سلة التخزين المركزية</span>
+              <strong style={{ fontSize: '0.86rem', color: '#B45309', fontFamily: 'monospace' }}>smart-clinic-storage</strong>
+            </div>
+            <div style={{ background: '#FFF', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', fontWeight: 600 }}>مسار العزل الطبي المعزول</span>
+              <code dir="ltr" style={{ fontSize: '0.84rem', color: '#09090B', fontWeight: 700 }}>/clinics/{activeSlug}/</code>
+            </div>
+            <div style={{ background: '#FFF', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', fontWeight: 600 }}>بروتوكول التشفير الطبي</span>
+              <strong style={{ fontSize: '0.86rem', color: '#10B981' }}>AES-256 GCM (HIPAA Ready)</strong>
             </div>
           </div>
-        )}
+        </div>
       </div>
 
       {/* SECTION 3: WhatsApp & SMS Gateway */}
@@ -837,6 +752,27 @@ print(response.json())`;
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary, #71717A)' }}>إرسال تنبيهات المواعيد، تأكيد الحجوزات، وروابط الروشتات الرقمية باسم عيادتكم</p>
             </div>
           </div>
+          {isSuperAdmin && (
+            <Link
+              to="/super-admin"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.4rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid #0284C7',
+                background: 'transparent',
+                color: '#0369A1',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}
+            >
+              <ExternalLink size={13} />
+              <span>إدارة بوابات SMS في لوحة الساس</span>
+            </Link>
+          )}
         </div>
 
         {/* SaaS Managed SMS Banner */}
@@ -844,70 +780,45 @@ print(response.json())`;
           background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(3, 105, 161, 0.04) 100%)',
           border: '1px solid rgba(2, 132, 199, 0.25)',
           borderRadius: '12px',
-          padding: '1rem 1.25rem',
-          marginBottom: '1.25rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
+          padding: '1.25rem',
+          marginBottom: '1.25rem'
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
             <div style={{
               background: '#0284C7',
               color: '#FFF',
               borderRadius: '50%',
-              width: '28px',
-              height: '28px',
+              width: '32px',
+              height: '32px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
               marginTop: '2px'
             }}>
-              <CheckCircle2 size={18} />
+              <CheckCircle2 size={20} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <strong style={{ fontSize: '0.92rem', color: '#0369A1' }}>
+                <strong style={{ fontSize: '0.98rem', color: '#0369A1' }}>
                   بوابة الرسائل والتنبيهات نشطة وتعمل عبر باقة الساس المركزية (SaaS Managed SMS Pool)
                 </strong>
                 <span style={{
                   background: '#10B981',
                   color: '#FFF',
-                  padding: '0.15rem 0.5rem',
+                  padding: '0.15rem 0.55rem',
                   borderRadius: '12px',
-                  fontSize: '0.72rem',
+                  fontSize: '0.74rem',
                   fontWeight: 800
                 }}>
                   جاهز للتشغيل
                 </span>
               </div>
-              <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary, #71717A)', lineHeight: 1.5 }}>
-                تُرسل رسائل تأكيد المواعيد، التذكيرات، وروابط الروشتات الرقمية تلقائياً من المجمع المركزي للبوابات المعتمدة (EasySendSMS / Cequens) بدون حاجة لربط خارجي من العيادة.
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary, #71717A)', lineHeight: 1.6 }}>
+                تُرسل رسائل تأكيد المواعيد، التذكيرات، وروابط الروشتات الرقمية تلقائياً من المجمع المركزي للبوابات المعتمدة (EasySendSMS / Cequens) بدون حاجة لربط خارجي أو شراء أرصدة مستقلة من العيادة.
               </p>
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setShowCustomSms(!showCustomSms)}
-            style={{
-              background: showCustomSms ? '#0284C7' : 'transparent',
-              color: showCustomSms ? '#FFF' : '#0369A1',
-              border: '1px solid #0284C7',
-              borderRadius: '8px',
-              padding: '0.35rem 0.75rem',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem'
-            }}
-          >
-            <span>{showCustomSms ? 'إخفاء الإعداد المتقدم' : '⚙️ تخصيص Sender ID / بوابة خاصة'}</span>
-          </button>
         </div>
 
         {smsTestResult && (
@@ -929,90 +840,59 @@ print(response.json())`;
           </div>
         )}
 
-        {showCustomSms && (
-          <div style={{
-            background: 'var(--bg-secondary, #F8FAFC)',
-            padding: '1rem',
-            borderRadius: '10px',
-            border: '1px dashed var(--border-color, #CBD5E1)',
-            marginBottom: '1rem'
-          }}>
-            <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: 'var(--text-secondary, #64748B)', fontWeight: 600 }}>
-              تخصيص هوية مرسل خاصة بالعيادة أو بوابة SMS مباشرة:
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>اسم المرسل المعتمد (Sender ID)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. DrAhmedClinic"
-                  value={senderId}
-                  onChange={(e) => setSenderId(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color, #E4E4E7)',
-                    fontSize: '0.85rem'
-                  }}
-                />
-              </div>
+        {/* Clinic Identity inputs */}
+        <div style={{
+          background: 'var(--bg-secondary, #F8FAFC)',
+          padding: '1.25rem',
+          borderRadius: '12px',
+          border: '1px solid var(--border-color, #E2E8F0)',
+          marginBottom: '1rem'
+        }}>
+          <h5 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', fontWeight: 800 }}>
+            هوية العيادة في الرسائل والإشعارات (Clinic Messaging Identity)
+          </h5>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>اسم المرسل المعتمد (Sender ID)</label>
+              <input
+                type="text"
+                placeholder="e.g. DrAhmedClinic"
+                value={senderId}
+                onChange={(e) => setSenderId(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.55rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #E4E4E7)',
+                  fontSize: '0.85rem'
+                }}
+              />
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginTop: '0.25rem' }}>
+                الاسم أو العنوان الذي يظهر كمرسل رسائل الـ SMS للمرضى
+              </span>
+            </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>مفتاح بوابة SMS (EasySendSMS / Cequens)</label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showSmsKey ? 'text' : 'password'}
-                    placeholder="SMS API Token..."
-                    value={smsApiKey}
-                    onChange={(e) => setSmsApiKey(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.55rem 0.75rem 0.55rem 2.2rem',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color, #E4E4E7)',
-                      fontSize: '0.85rem',
-                      fontFamily: 'monospace'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowSmsKey(!showSmsKey)}
-                    style={{
-                      position: 'absolute',
-                      left: '0.5rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#71717A',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {showSmsKey ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>رقم واتساب العيادة المعتمد (WhatsApp Business)</label>
-                <input
-                  type="tel"
-                  placeholder="010xxxxxxxx"
-                  value={whatsappNumber}
-                  onChange={(e) => setWhatsappNumber(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color, #E4E4E7)',
-                    fontSize: '0.85rem'
-                  }}
-                />
-              </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>رقم واتساب العيادة المعتمد (WhatsApp Business)</label>
+              <input
+                type="tel"
+                placeholder="010xxxxxxxx"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.55rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #E4E4E7)',
+                  fontSize: '0.85rem'
+                }}
+              />
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', marginTop: '0.25rem' }}>
+                الرقم المخصص لتلقي استفسارات المرضى والردود التلقائية
+              </span>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Live SMS Test Field */}
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: 'var(--bg-secondary, #F4F4F5)', padding: '0.75rem', borderRadius: '8px' }}>
@@ -1069,102 +949,54 @@ print(response.json())`;
               <Bot size={18} />
             </div>
             <div>
-              <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>محرك الذكاء الاصطناعي الطبي (OpenRouter / Medical LLM)</h4>
+              <h4 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>محرك الذكاء الاصطناعي الطبي (Medical Clinical AI)</h4>
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary, #71717A)' }}>استدلال سريري، اقتراح أدوية وجرعات، وتحليل شكاوى المرضى تلقائياً</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleTestAi}
-            disabled={aiTesting}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.4rem 0.85rem',
-              borderRadius: '8px',
-              border: '1px solid #7C3AED',
-              background: 'rgba(139, 92, 246, 0.1)',
-              color: '#6D28D9',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              cursor: aiTesting ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {aiTesting ? <RefreshCw size={14} className="animate-spin" /> : <Activity size={14} />}
-            <span>{aiTesting ? 'جاري الفحص...' : 'اختبار سرعة النموذج'}</span>
-          </button>
-        </div>
-
-        {/* SaaS Managed AI Core Banner */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(124, 58, 237, 0.04) 100%)',
-          border: '1px solid rgba(139, 92, 246, 0.25)',
-          borderRadius: '12px',
-          padding: '1rem 1.25rem',
-          marginBottom: '1.25rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-            <div style={{
-              background: '#8B5CF6',
-              color: '#FFF',
-              borderRadius: '50%',
-              width: '28px',
-              height: '28px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              marginTop: '2px'
-            }}>
-              <CheckCircle2 size={18} />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <strong style={{ fontSize: '0.92rem', color: '#6D28D9' }}>
-                  محرك الذكاء الاصطناعي الطبي الفائق مفعّل سحابياً بواسطة الساس (SaaS Managed Medical LLM)
-                </strong>
-                <span style={{
-                  background: '#10B981',
-                  color: '#FFF',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '12px',
-                  fontSize: '0.72rem',
-                  fontWeight: 800
-                }}>
-                  جاهز للاستدلال السريري
-                </span>
-              </div>
-              <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', color: 'var(--text-secondary, #71717A)', lineHeight: 1.5 }}>
-                يعمل بنموذج الذكاء الاصطناعي الطبي السريري المتقدم (Google Gemini 2.0 Flash / Medical LLM). مدعوم بتحليل التاريخ المرضي، التداخلات الدوائية، والجرعات الطبية المقترحة بدون إعداد يدوي.
-              </p>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {isSuperAdmin && (
+              <Link
+                to="/super-admin"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.4rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid #7C3AED',
+                  background: 'transparent',
+                  color: '#6D28D9',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  textDecoration: 'none'
+                }}
+              >
+                <ExternalLink size={13} />
+                <span>إدارة محرك الذكاء في لوحة الساس</span>
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={handleTestAi}
+              disabled={aiTesting}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.4rem 0.85rem',
+                borderRadius: '8px',
+                border: '1px solid #7C3AED',
+                background: 'rgba(139, 92, 246, 0.1)',
+                color: '#6D28D9',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: aiTesting ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {aiTesting ? <RefreshCw size={14} className="animate-spin" /> : <Activity size={14} />}
+              <span>{aiTesting ? 'جاري الفحص...' : 'اختبار سرعة النموذج'}</span>
+            </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setShowCustomAi(!showCustomAi)}
-            style={{
-              background: showCustomAi ? '#8B5CF6' : 'transparent',
-              color: showCustomAi ? '#FFF' : '#6D28D9',
-              border: '1px solid #8B5CF6',
-              borderRadius: '8px',
-              padding: '0.35rem 0.75rem',
-              fontSize: '0.78rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem'
-            }}
-          >
-            <span>{showCustomAi ? 'إخفاء الإعداد المتقدم' : '⚙️ تخصيص مفتاح OpenRouter خاص'}</span>
-          </button>
         </div>
 
         {aiTestResult && (
@@ -1186,78 +1018,74 @@ print(response.json())`;
           </div>
         )}
 
-        {showCustomAi && (
-          <div style={{
-            background: 'var(--bg-secondary, #F8FAFC)',
-            padding: '1rem',
-            borderRadius: '10px',
-            border: '1px dashed var(--border-color, #CBD5E1)',
-            marginBottom: '1rem'
-          }}>
-            <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: 'var(--text-secondary, #64748B)', fontWeight: 600 }}>
-              تخصيص مفتاح OpenRouter أو نموذج ذكاء اصطناعي محدد لعيادتكم فقط:
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>مفتاح OpenRouter API Key الخاص بالعيادة</label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showAiKey ? 'text' : 'password'}
-                    placeholder="sk-or-v1-..."
-                    value={aiApiKey}
-                    onChange={(e) => setAiApiKey(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.55rem 0.75rem 0.55rem 2.2rem',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-color, #E4E4E7)',
-                      fontSize: '0.85rem',
-                      fontFamily: 'monospace'
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowAiKey(!showAiKey)}
-                    style={{
-                      position: 'absolute',
-                      left: '0.5rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#71717A',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {showAiKey ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
-                </div>
+        {/* SaaS Managed AI Core Banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(124, 58, 237, 0.04) 100%)',
+          border: '1px solid rgba(139, 92, 246, 0.25)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+            <div style={{
+              background: '#8B5CF6',
+              color: '#FFF',
+              borderRadius: '50%',
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              marginTop: '2px'
+            }}>
+              <CheckCircle2 size={20} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <strong style={{ fontSize: '0.98rem', color: '#6D28D9' }}>
+                  محرك الذكاء الاصطناعي الطبي الفائق مفعّل سحابياً بواسطة الساس (SaaS Managed Medical LLM)
+                </strong>
+                <span style={{
+                  background: '#10B981',
+                  color: '#FFF',
+                  padding: '0.15rem 0.55rem',
+                  borderRadius: '12px',
+                  fontSize: '0.74rem',
+                  fontWeight: 800
+                }}>
+                  جاهز للاستدلال السريري
+                </span>
               </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>النموذج الذكي المعتمد (Medical Model)</label>
-                <select
-                  value={aiModel}
-                  onChange={(e) => setAiModel(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color, #E4E4E7)',
-                    fontSize: '0.85rem',
-                    background: '#FFF'
-                  }}
-                >
-                  {AI_MODELS_CATALOG.map(m => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} ({m.badge})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary, #71717A)', lineHeight: 1.6 }}>
+                يعمل بنموذج الذكاء الاصطناعي الطبي السريري المتقدم (Google Gemini 2.0 Flash / Medical LLM). مدعوم بتحليل التاريخ المرضي، التداخلات الدوائية، والجرعات الطبية المقترحة بدون الحاجة لأي مفاتيح أو تكاليف إضافية من العيادة.
+              </p>
             </div>
           </div>
-        )}
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '0.75rem',
+            paddingTop: '0.75rem',
+            borderTop: '1px dashed rgba(139, 92, 246, 0.3)'
+          }}>
+            <div style={{ background: '#FFF', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', fontWeight: 600 }}>النموذج السريري الفعّال</span>
+              <strong style={{ fontSize: '0.86rem', color: '#6D28D9' }}>Gemini 2.0 Flash Medical</strong>
+            </div>
+            <div style={{ background: '#FFF', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', fontWeight: 600 }}>القدرات التشخيصية المتاحة</span>
+              <span style={{ fontSize: '0.82rem', color: '#09090B', fontWeight: 700 }}>تحليل التاريخ المرضي وتعارض الأدوية</span>
+            </div>
+            <div style={{ background: '#FFF', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid rgba(139, 92, 246, 0.2)' }}>
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#71717A', fontWeight: 600 }}>سرية السجلات الطبية</span>
+              <strong style={{ fontSize: '0.86rem', color: '#10B981' }}>تشفير معزول بنسبة 100%</strong>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* SECTION 5: Outgoing Webhooks */}
