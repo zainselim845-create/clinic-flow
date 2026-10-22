@@ -58,11 +58,11 @@ export const parsePatientsExcelFile = async (fileBuffer, clinicId, existingPatie
     throw new Error('لم يتم العثور على أي صفوف أو بيانات مرضى داخل شيت الإكسيل.');
   }
 
-  // Determine header mapping from the first row keys
+  // Determine header mapping from the first row keys (using null-prototype dictionary)
   const firstRow = rawRows[0];
-  const fieldMapping = {};
+  const fieldMapping = Object.create(null);
   Object.keys(firstRow).forEach(colName => {
-    if (colName === '__proto__' || colName === 'constructor' || colName === 'prototype') return;
+    if (!colName || colName === '__proto__' || colName === 'constructor' || colName === 'prototype') return;
     const matchedField = matchHeaderToField(colName);
     if (matchedField && !fieldMapping[matchedField]) {
       fieldMapping[matchedField] = colName;
@@ -83,6 +83,11 @@ export const parsePatientsExcelFile = async (fileBuffer, clinicId, existingPatie
   const duplicates = [];
 
   rawRows.forEach((row, index) => {
+    if (!row || typeof row !== 'object') return;
+    // Immunize against prototype pollution attacks
+    delete row.__proto__;
+    delete row.constructor;
+    delete row.prototype;
     const rawName = fieldMapping.name ? String(row[fieldMapping.name] || '').trim() : '';
     const rawPhone = fieldMapping.phone ? String(row[fieldMapping.phone] || '').trim() : '';
 
