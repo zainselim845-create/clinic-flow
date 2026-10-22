@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Users, RefreshCw, AlertTriangle, Layers, Star, Activity, Bot, HeartHandshake, Smile, CheckCircle2, Zap, Cake } from 'lucide-react';
+import { Users, RefreshCw, AlertTriangle, Layers, Star, Activity, Bot, HeartHandshake, Smile, CheckCircle2, Zap, Cake, Sparkles } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useTenant } from '@/context/TenantContext';
@@ -58,8 +58,9 @@ export const MarketingCrmHub = () => {
     return (state.invoices || []).filter(inv => !currentClinicId || !inv.clinicId || inv.clinicId === currentClinicId);
   }, [state.invoices, currentClinicId]);
 
-  // Active Hub Tab (11 Engines)
+  // Active Hub Tab (11 Engines) & Category Organization
   const [activeTab, setActiveTab] = useState('overview'); 
+  const [activeCategory, setActiveCategory] = useState('all');
   const [selectedSegment, setSelectedSegment] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedLinkIndex, setCopiedLinkIndex] = useState(null);
@@ -228,6 +229,33 @@ export const MarketingCrmHub = () => {
     showToast('تمت إضافة الباقة وتفعيل تتبع الجلسات بنجاح');
   };
 
+  // 9. Categorized Hub Navigation Definition (Clean, Clutter-Free, Zero Zeros)
+  const crmCategories = useMemo(() => [
+    { id: 'all', label: 'كافة المحركات', icon: Sparkles },
+    { id: 'care', label: 'رعاية واحتفاظ المرضى', icon: Users },
+    { id: 'services', label: 'الخدمات والباقات', icon: Layers },
+    { id: 'growth', label: 'التسويق والنمو الذكي', icon: Zap }
+  ], []);
+
+  const allCrmTabs = useMemo(() => [
+    { id: 'overview', label: 'نظرة عامة', icon: Activity, category: 'all', count: null },
+    { id: 'segmentation', label: 'شرائح المرضى', icon: Users, category: 'care', count: crmStats.totalPatients, badgeTheme: 'blue' },
+    { id: 'reactivation', label: 'إعادة التواصل', icon: RefreshCw, category: 'care', count: crmStats.dormantCount, badgeTheme: 'amber' },
+    { id: 'recovery', label: 'استعادة المواعيد', icon: AlertTriangle, category: 'care', count: (abandonedLeads || []).length + (noShowAppointments || []).length, badgeTheme: 'rose' },
+    { id: 'treatment_plans', label: 'خطط العلاج', icon: Smile, category: 'care', count: (unfinishedPlans || []).length, badgeTheme: 'purple' },
+    { id: 'packages', label: 'الباقات والجلسات', icon: Layers, category: 'services', count: stalledPackages.length > 0 ? stalledPackages.length : (packagesList || []).length, badgeTheme: stalledPackages.length > 0 ? 'amber' : 'blue' },
+    { id: 'cross_sell', label: 'خدمات إضافية', icon: Zap, category: 'services', count: (crossSellOpportunities || []).length, badgeTheme: 'teal' },
+    { id: 'feedback', label: 'التقييمات', icon: Star, category: 'growth', count: (postVisitPatients || []).length, badgeTheme: 'yellow' },
+    { id: 'occasions', label: 'الأعياد والمناسبات', icon: Cake, category: 'growth', count: (occasionCandidates || []).length, badgeTheme: 'pink' },
+    { id: 'referrals', label: 'برنامج الإحالة', icon: HeartHandshake, category: 'growth', count: null, badgeTheme: 'indigo' },
+    { id: 'ai_composer', label: 'منشئ الحملات (AI)', icon: Bot, category: 'growth', count: null, badgeTheme: 'purple' }
+  ], [crmStats, abandonedLeads, noShowAppointments, unfinishedPlans, stalledPackages, packagesList, crossSellOpportunities, postVisitPatients, occasionCandidates]);
+
+  const visibleTabs = useMemo(() => {
+    if (activeCategory === 'all') return allCrmTabs;
+    return allCrmTabs.filter(tab => tab.category === 'all' || tab.category === activeCategory);
+  }, [activeCategory, allCrmTabs]);
+
   return (
     <div className="crm-hub-page">
       {/* Toast Notification */}
@@ -242,11 +270,11 @@ export const MarketingCrmHub = () => {
       <div className="crm-header-hero">
         <div className="hero-content">
           <div className="hero-badge">
-            <Activity size={15} />
-            <span>رسائل المرضى</span>
+            <Sparkles size={14} />
+            <span>محرك الرعاية والنمو الذكي</span>
           </div>
           <h1 style={{ fontSize: '1.45rem', fontWeight: 800, margin: '0.35rem 0', color: 'var(--text-primary)' }}>متابعة ورعاية المرضى</h1>
-          <p>تذكير بالمواعيد، متابعة الخطط العلاجية، والتواصل السريع مع المرضى.</p>
+          <p>تذكير بالمواعيد، متابعة الخطط العلاجية، وإعادة تنشيط المرضى بأعلى كفاءة وعائد للعيادة.</p>
         </div>
         <div className="hero-kpis-pill">
           <div className="kpi-micro">
@@ -266,96 +294,54 @@ export const MarketingCrmHub = () => {
         </div>
       </div>
 
-      {/* Hub Navigation Segmented Tabs */}
+      {/* Category Filter Chips Bar */}
+      <div className="crm-category-filter-bar">
+        {crmCategories.map(cat => {
+          const CatIcon = cat.icon;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              className={`category-chip ${activeCategory === cat.id ? 'active' : ''}`}
+              onClick={() => setActiveCategory(cat.id)}
+            >
+              <CatIcon size={14} />
+              <span>{cat.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Hub Navigation Segmented Tabs (Clean & Zero-Clutter) */}
       <div className="crm-nav-tabs-wrapper">
         <div className="crm-nav-tabs">
-          <button 
-            className={`crm-tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            <Activity size={16} />
-            <span>نظرة عامة</span>
-          </button>
-          
-          <button 
-            className={`crm-tab-btn ${activeTab === 'segmentation' ? 'active' : ''}`}
-            onClick={() => setActiveTab('segmentation')}
-          >
-            <Users size={16} />
-            <span>شرائح المرضى ({crmStats.totalPatients})</span>
-          </button>
+          {visibleTabs.map((tab) => {
+            const TabIcon = tab.icon;
+            const isActive = activeTab === tab.id;
+            const hasBadge = typeof tab.count === 'number' && tab.count > 0;
 
-          <button 
-            className={`crm-tab-btn ${activeTab === 'reactivation' ? 'active' : ''}`}
-            onClick={() => setActiveTab('reactivation')}
-          >
-            <RefreshCw size={16} />
-            <span>إعادة التواصل ({crmStats.dormantCount})</span>
-          </button>
-
-          <button 
-            className={`crm-tab-btn ${activeTab === 'cross_sell' ? 'active' : ''}`}
-            onClick={() => setActiveTab('cross_sell')}
-          >
-            <Zap size={16} />
-            <span>خدمات إضافية ({(crossSellOpportunities || []).length})</span>
-          </button>
-
-          <button 
-            className={`crm-tab-btn ${activeTab === 'recovery' ? 'active' : ''}`}
-            onClick={() => setActiveTab('recovery')}
-          >
-            <AlertTriangle size={16} />
-            <span>استعادة المواعيد ({(abandonedLeads || []).length + (noShowAppointments || []).length})</span>
-          </button>
-
-          <button 
-            className={`crm-tab-btn ${activeTab === 'feedback' ? 'active' : ''}`}
-            onClick={() => setActiveTab('feedback')}
-          >
-            <Star size={16} />
-            <span>التقييمات</span>
-          </button>
-
-          <button 
-            className={`crm-tab-btn ${activeTab === 'treatment_plans' ? 'active' : ''}`}
-            onClick={() => setActiveTab('treatment_plans')}
-          >
-            <Smile size={16} />
-            <span>خطط العلاج ({(unfinishedPlans || []).length})</span>
-          </button>
-
-          <button 
-            className={`crm-tab-btn ${activeTab === 'packages' ? 'active' : ''}`}
-            onClick={() => setActiveTab('packages')}
-          >
-            <Layers size={16} />
-            <span>الباقات والجلسات ({stalledPackages.length > 0 ? `${stalledPackages.length} متوقفة / ${(packagesList || []).length}` : (packagesList || []).length})</span>
-          </button>
-
-          <button 
-            className={`crm-tab-btn ${activeTab === 'occasions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('occasions')}
-          >
-            <Cake size={16} />
-            <span>الأعياد والمناسبات</span>
-          </button>
-
-          <button 
-            className={`crm-tab-btn ${activeTab === 'referrals' ? 'active' : ''}`}
-            onClick={() => setActiveTab('referrals')}
-          >
-            <HeartHandshake size={16} />
-            <span>برنامج الإحالة (Referral)</span>
-          </button>
-
-          <button 
-            className={`crm-tab-btn ${activeTab === 'ai_composer' ? 'active' : ''}`}
-            onClick={() => setActiveTab('ai_composer')}
-          >
-            <Bot size={16} />
-            <span>منشئ الحملات الذكي (AI)</span>
-          </button>
+            return (
+              <button 
+                key={tab.id}
+                type="button"
+                className={`crm-tab-btn ${isActive ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.category !== 'all' && activeCategory !== 'all' && activeCategory !== tab.category) {
+                    setActiveCategory(tab.category);
+                  }
+                }}
+              >
+                <TabIcon size={16} />
+                <span>{tab.label}</span>
+                {hasBadge && (
+                  <span className={`tab-counter-badge badge-${tab.badgeTheme || 'blue'}`}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -369,6 +355,7 @@ export const MarketingCrmHub = () => {
           crossSellOpportunities={crossSellOpportunities}
           feedbacksList={feedbacksList}
           setActiveTab={setActiveTab}
+          onOpenAddPackage={() => setIsAddPackageModalOpen(true)}
         />
       )}
 

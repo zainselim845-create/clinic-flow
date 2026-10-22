@@ -18,35 +18,47 @@ export function ReferralsTab({
         <p>كل مريض لديه كود ورابط إحالة خاص به. عند قدوم مريض جديد من خلاله، يحصل المريض وصديقه على نقاط وخصومات مسجلة في المحفظة.</p>
       </div>
 
-      <div className="referral-cards-grid">
-        {(patients || []).slice(0, 6).map((p, idx) => {
-          const code = getPatientReferralCode(p.id);
-          const link = getPatientReferralLink(code, currentClinic?.slug);
+      {(patients || []).length === 0 ? (
+        <div className="crm-empty-state-box">
+          <div className="empty-state-icon-wrap bg-indigo">
+            <Copy size={30} />
+          </div>
+          <h4>جاهز لتفعيل روابط الإحالة</h4>
+          <p>
+            يتم توليد كود ورابط إحالة خاص بكل مريض تلقائياً بمجرد تسجيل أول مريض في العيادة لتحفيز المرضى على ترشيح أصدقائهم ومكافأتهم برصيد في المحفظة.
+          </p>
+        </div>
+      ) : (
+        <div className="referral-cards-grid">
+          {(patients || []).slice(0, 6).map((p, idx) => {
+            const code = getPatientReferralCode(p.id);
+            const link = getPatientReferralLink(code, currentClinic?.slug);
 
-          return (
-            <div key={p.id} className="referral-patient-box">
-              <div className="ref-top">
-                <strong>{p.name}</strong>
-                <span className="ref-code-tag">{code}</span>
+            return (
+              <div key={p.id} className="referral-patient-box">
+                <div className="ref-top">
+                  <strong>{p.name}</strong>
+                  <span className="ref-code-tag">{code}</span>
+                </div>
+                <div className="ref-link-row">
+                  <input type="text" readOnly value={link} dir="ltr" />
+                  <button 
+                    onClick={() => handleCopyLink(link, idx)}
+                    className="btn-copy-code"
+                    title="نسخ رابط الإحالة"
+                  >
+                    {copiedLinkIndex === idx ? <Check size={16} /> : <Copy size={16} />}
+                  </button>
+                </div>
+                <div className="ref-stats-row">
+                  <span>عدد الإحالات الناجحة: <strong>{(parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 3}</strong></span>
+                  <span>رصيد المكافآت: <strong className="text-success">{((parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 3) * 150} ج.م</strong></span>
+                </div>
               </div>
-              <div className="ref-link-row">
-                <input type="text" readOnly value={link} dir="ltr" />
-                <button 
-                  onClick={() => handleCopyLink(link, idx)}
-                  className="btn-copy-code"
-                  title="نسخ رابط الإحالة"
-                >
-                  {copiedLinkIndex === idx ? <Check size={16} /> : <Copy size={16} />}
-                </button>
-              </div>
-              <div className="ref-stats-row">
-                <span>عدد الإحالات الناجحة: <strong>{(parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 3}</strong></span>
-                <span>رصيد المكافآت: <strong className="text-success">{((parseInt((p.id || '1').replace(/\D/g, ''), 10) || 1) % 3) * 150} ج.م</strong></span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

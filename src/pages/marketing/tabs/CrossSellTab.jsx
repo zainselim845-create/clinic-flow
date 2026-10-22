@@ -9,51 +9,63 @@ export function CrossSellTab({ crossSellOpportunities }) {
         <p>يحلل التاريخ الطبي للمريض ويقترح الخدمات التكميلية المعتمدة طبياً (تنظيف إلى تبييض | بوتوكس إلى سكن بوستر | ليزر إلى مناطق إضافية).</p>
       </div>
 
-      <div className="cross-sell-grid">
-        {(crossSellOpportunities || []).map((opp, idx) => {
-          const cleanPhone = (opp.patientPhone || '').replace(/^0/, '20');
-          const messageText = opp.smsMessage || opp.whatsappMessage;
-          const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(messageText)}`;
+      {(crossSellOpportunities || []).length === 0 ? (
+        <div className="crm-empty-state-box">
+          <div className="empty-state-icon-wrap bg-teal">
+            <MessageCircle size={30} />
+          </div>
+          <h4>لا توجد فرص بيع متقاطع مكتشفة حالياً</h4>
+          <p>
+            يقوم المحرك تلقائياً برصد كشوفات وخدمات المرضى واقتراح خدمات تكميلية متوافقة طبياً (مثل: تبييض بعد التنظيف) عند تسجيل كشوفات جديدة لمرضى العيادة.
+          </p>
+        </div>
+      ) : (
+        <div className="cross-sell-grid">
+          {(crossSellOpportunities || []).map((opp, idx) => {
+            const cleanPhone = (opp.patientPhone || '').replace(/^0/, '20');
+            const messageText = opp.smsMessage || opp.whatsappMessage;
+            const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(messageText)}`;
 
-          return (
-            <div key={idx} className="cross-sell-card">
-              <div className="cs-top">
-                <div>
-                  <strong>{opp.patientName}</strong>
-                  <span className="cs-phone" dir="ltr">{opp.patientPhone}</span>
+            return (
+              <div key={idx} className="cross-sell-card">
+                <div className="cs-top">
+                  <div>
+                    <strong>{opp.patientName}</strong>
+                    <span className="cs-phone" dir="ltr">{opp.patientPhone}</span>
+                  </div>
+                  <span className="confidence-pill">{opp.confidence}% مطابقة طبية</span>
                 </div>
-                <span className="confidence-pill">{opp.confidence}% مطابقة طبية</span>
-              </div>
 
-              <div className="cs-logic">
-                <div className="logic-node">
-                  <span className="l-lbl">الخدمة السابقة:</span>
-                  <strong className="l-val">{opp.primaryService}</strong>
+                <div className="cs-logic">
+                  <div className="logic-node">
+                    <span className="l-lbl">الخدمة السابقة:</span>
+                    <strong className="l-val">{opp.primaryService}</strong>
+                  </div>
+                  <div className="logic-arrow"><ArrowLeft size={16} /></div>
+                  <div className="logic-node highlight">
+                    <span className="l-lbl">الخدمة المقترحة:</span>
+                    <strong className="l-val text-primary">{opp.suggestedService}</strong>
+                  </div>
                 </div>
-                <div className="logic-arrow"><ArrowLeft size={16} /></div>
-                <div className="logic-node highlight">
-                  <span className="l-lbl">الخدمة المقترحة:</span>
-                  <strong className="l-val text-primary">{opp.suggestedService}</strong>
+
+                <p className="cs-reason">{opp.reason}</p>
+
+                <div className="cs-msg-preview">
+                  <small>نص رسالة الـ SMS:</small>
+                  <p>{messageText}</p>
+                </div>
+
+                <div className="cs-card-footer">
+                  <a href={smsUrl} className="default-custom-btn">
+                    <MessageCircle size={16} />
+                    <span>إرسال العرض المقترح عبر SMS</span>
+                  </a>
                 </div>
               </div>
-
-              <p className="cs-reason">{opp.reason}</p>
-
-              <div className="cs-msg-preview">
-                <small>نص رسالة الـ SMS:</small>
-                <p>{messageText}</p>
-              </div>
-
-              <div className="cs-card-footer">
-                <a href={smsUrl} className="default-custom-btn">
-                  <MessageCircle size={16} />
-                  <span>إرسال العرض المقترح عبر SMS</span>
-                </a>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

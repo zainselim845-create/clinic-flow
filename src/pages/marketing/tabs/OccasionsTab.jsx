@@ -152,29 +152,41 @@ export function OccasionsTab({
         </div>
       )}
 
-      <div className="candidates-grid">
-        {(occasionCandidates || []).map((c) => {
-          const msg = generatePersonalizedOccasionMessage(c, selectedOccasion, currentClinic, customOccasionOffer);
-          const cleanPhone = (c.patientPhone || '').replace(/^0/, '20');
-          const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
+      {(occasionCandidates || []).length === 0 ? (
+        <div className="crm-empty-state-box">
+          <div className="empty-state-icon-wrap bg-pink">
+            <Send size={30} />
+          </div>
+          <h4>لا يوجد مرضى مرشحون لهذه المناسبة حالياً</h4>
+          <p>
+            يقوم النظام آلياً برصد تواريخ ميلاد ومناسبات المرضى لمراسلتهم بتهنئة وعرض مخصص عند حلول موعد المناسبة.
+          </p>
+        </div>
+      ) : (
+        <div className="candidates-grid">
+          {(occasionCandidates || []).map((c) => {
+            const msg = generatePersonalizedOccasionMessage(c, selectedOccasion, currentClinic, customOccasionOffer);
+            const cleanPhone = (c.patientPhone || '').replace(/^0/, '20');
+            const smsUrl = `sms:+${cleanPhone}?body=${encodeURIComponent(msg)}`;
 
-          return (
-            <div key={c.patientId} className="candidate-card">
-              <div className="c-meta">
-                <strong>{c.patientName}</strong>
-                <span>الخدمة المفضلة له: <strong className="text-primary">{c.favoriteService}</strong></span>
+            return (
+              <div key={c.patientId} className="candidate-card">
+                <div className="c-meta">
+                  <strong>{c.patientName}</strong>
+                  <span>الخدمة المفضلة له: <strong className="text-primary">{c.favoriteService}</strong></span>
+                </div>
+                <div className="c-msg-preview">
+                  <p>{msg}</p>
+                </div>
+                <a href={smsUrl} className="btn-action-primary full-width">
+                  <Send size={15} />
+                  <span>إرسال فردي عبر SMS</span>
+                </a>
               </div>
-              <div className="c-msg-preview">
-                <p>{msg}</p>
-              </div>
-              <a href={smsUrl} className="btn-action-primary full-width">
-                <Send size={15} />
-                <span>إرسال فردي عبر SMS</span>
-              </a>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

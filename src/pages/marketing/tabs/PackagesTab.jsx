@@ -19,47 +19,68 @@ export function PackagesTab({
         </button>
       </div>
 
-      <div className="packages-cards-grid">
-        {(packagesList || []).map((pkg) => {
-          const progress = Math.round((pkg.completedSessions / pkg.totalSessions) * 100);
-          const isStalled = pkg.completedSessions < pkg.totalSessions;
+      {(packagesList || []).length === 0 ? (
+        <div className="crm-empty-state-box">
+          <div className="empty-state-icon-wrap bg-blue">
+            <UserPlus size={30} />
+          </div>
+          <h4>لا توجد باقات أو جلسات مضافة بعد</h4>
+          <p>
+            يمكنك إنشاء باقات جلسات متعددة لمرضى الجلدية، الليزر، أو جلسات الأسنان ومتابعة عدد الجلسات المنجزة والمتبقية بدقة مع إمكانية التذكير التلقائي.
+          </p>
+          <button 
+            type="button" 
+            className="btn btn-primary" 
+            onClick={() => setIsAddPackageModalOpen(true)}
+            style={{ marginTop: '0.85rem' }}
+          >
+            <UserPlus size={16} />
+            <span>إضافة أول باقة لمريض</span>
+          </button>
+        </div>
+      ) : (
+        <div className="packages-cards-grid">
+          {(packagesList || []).map((pkg) => {
+            const progress = Math.round((pkg.completedSessions / pkg.totalSessions) * 100);
+            const isStalled = pkg.completedSessions < pkg.totalSessions;
 
-          return (
-            <div key={pkg.id} className="package-crm-card">
-              <div className="pkg-top">
-                <div>
-                  <strong>{pkg.patientName}</strong>
-                  <h5>{pkg.packageName}</h5>
+            return (
+              <div key={pkg.id} className="package-crm-card">
+                <div className="pkg-top">
+                  <div>
+                    <strong>{pkg.patientName}</strong>
+                    <h5>{pkg.packageName}</h5>
+                  </div>
+                  <span className="pkg-price-badge">{pkg.price}</span>
                 </div>
-                <span className="pkg-price-badge">{pkg.price}</span>
-              </div>
 
-              <div className="pkg-progress-container">
-                <div className="pkg-progress-bar">
-                  <div className="pkg-progress-fill" style={{ width: `${progress}%` }}></div>
+                <div className="pkg-progress-container">
+                  <div className="pkg-progress-bar">
+                    <div className="pkg-progress-fill" style={{ width: `${progress}%` }}></div>
+                  </div>
+                  <div className="pkg-progress-labels">
+                    <span>أنجز {pkg.completedSessions} من {pkg.totalSessions} جلسات</span>
+                    <span>{progress}%</span>
+                  </div>
                 </div>
-                <div className="pkg-progress-labels">
-                  <span>أنجز {pkg.completedSessions} من {pkg.totalSessions} جلسات</span>
-                  <span>{progress}%</span>
-                </div>
-              </div>
 
-              <div className="pkg-footer-actions">
-                <span className="pkg-remaining">المتبقي: <strong>{pkg.totalSessions - pkg.completedSessions} جلسات</strong></span>
-                {isStalled && (
-                  <a 
-                    href={`sms:+${(pkg.patientPhone || '').replace(/^0/, '20')}?body=${encodeURIComponent(`مرحباً بك ${pkg.patientName.split(' ')[0]}.\nنود تذكيرك من ${currentClinic?.name || 'العيادة'} بموعد جلستك القادمة في ${pkg.packageName}. متبقي لك (${pkg.totalSessions - pkg.completedSessions}) جلسات.`)}`}
-                    className="btn-action-primary"
-                  >
-                    <MessageCircle size={14} />
-                    <span>تذكير بالجلسة عبر SMS</span>
-                  </a>
-                )}
+                <div className="pkg-footer-actions">
+                  <span className="pkg-remaining">المتبقي: <strong>{pkg.totalSessions - pkg.completedSessions} جلسات</strong></span>
+                  {isStalled && (
+                    <a 
+                      href={`sms:+${(pkg.patientPhone || '').replace(/^0/, '20')}?body=${encodeURIComponent(`مرحباً بك ${pkg.patientName.split(' ')[0]}.\nنود تذكيرك من ${currentClinic?.name || 'العيادة'} بموعد جلستك القادمة في ${pkg.packageName}. متبقي لك (${pkg.totalSessions - pkg.completedSessions}) جلسات.`)}`}
+                      className="btn-action-primary"
+                    >
+                      <MessageCircle size={14} />
+                      <span>تذكير بالجلسة عبر SMS</span>
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
