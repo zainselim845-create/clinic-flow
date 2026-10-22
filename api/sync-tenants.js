@@ -130,15 +130,19 @@ async function saveRegistry(registry) {
 
   const buffer = Buffer.from(JSON.stringify(safeRegistry, null, 2));
 
-  const { error } = await getSupabaseAdmin().storage
-    .from(BUCKET_NAME)
-    .upload(REGISTRY_FILE, buffer, {
-      contentType: 'application/json',
-      upsert: true
-    });
+  try {
+    const { error } = await getSupabaseAdmin().storage
+      .from(BUCKET_NAME)
+      .upload(REGISTRY_FILE, buffer, {
+        contentType: 'application/json',
+        upsert: true
+      });
 
-  if (error) {
-    throw new Error(`Failed to save registry to storage: ${error.message}`);
+    if (error) {
+      console.warn(`[Sync-Tenants API] Storage upload warning (non-fatal): ${error.message}`);
+    }
+  } catch (storageErr) {
+    console.warn('[Sync-Tenants API] Storage upload exception (non-fatal):', storageErr.message);
   }
 }
 
@@ -337,8 +341,9 @@ export default async function handler(req, res) {
       // Best effort sync to PostgreSQL clinics table if active
       if (tenant) {
         try {
-          await getSupabaseAdmin().from('clinics').upsert({
-            id: tenant.id,
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenant.id);
+          const upsertPayload = {
+            ...(isUuid ? { id: tenant.id } : {}),
             name: tenant.name,
             slug: tenant.slug,
             doctor_name: tenant.doctorName || tenant.name,
@@ -348,7 +353,8 @@ export default async function handler(req, res) {
             custom_domain: tenant.customDomain || tenant.custom_domain || null,
             subscription_tier: tenant.subscriptionTier || 'pro',
             subscription_status: tenant.subscriptionStatus || 'active'
-          }).select().maybeSingle();
+          };
+          await getSupabaseAdmin().from('clinics').upsert(upsertPayload).select().maybeSingle();
         } catch (pgErr) {
           console.warn('[Sync-Tenants API] Supabase DB upsert warning:', pgErr?.message || pgErr);
         }

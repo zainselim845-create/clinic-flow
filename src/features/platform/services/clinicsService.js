@@ -157,8 +157,9 @@ export async function createClinicInDb(clinicData) {
   }
 
   try {
+    const isUuid = isUuidString(clinicData.id);
     const payload = {
-      ...(clinicData.id ? { id: clinicData.id } : {}),
+      ...(isUuid ? { id: clinicData.id } : {}),
       ...toDbClinic(clinicData)
     };
     const { data, error } = await supabase.from('clinics').insert(payload).select().maybeSingle();
